@@ -5,12 +5,12 @@ Instead of chaotic message threads, Uniscept helps users visualize reasoning, bu
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Framework | Next.js 15 (App Router) |
-| Language | TypeScript (strict mode) |
-| Styles | Tailwind CSS |
-| Linting | ESLint |
+| Layer     | Technology               |
+| --------- | ------------------------ |
+| Framework | Next.js 15 (App Router)  |
+| Language  | TypeScript (strict mode) |
+| Styles    | Tailwind CSS             |
+| Linting   | ESLint                   |
 
 > Updated as new technologies are added to the project.
 

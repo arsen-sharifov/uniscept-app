@@ -1,20 +1,27 @@
-# Uniscent
+# Uniscept
 
 A web platform for structured discussions in the form of an argument graph.
-Instead of chaotic message threads, Uniscent helps users visualize reasoning, build logical connections between arguments, and move toward consensus.
+Instead of chaotic message threads, Uniscept helps users visualize reasoning, build logical connections between arguments, and move toward consensus.
 
 ## Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
-| Framework | Next.js (App Router) |
+| Framework | Next.js 15 (App Router) |
 | Language | TypeScript (strict mode) |
+| Styles | Tailwind CSS |
+| Linting | ESLint |
 
 > Updated as new technologies are added to the project.
 
 ## Getting Started
 
-> To be added after project setup.
+```bash
+pnpm install
+pnpm dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) to see the app.
 
 ## Git Conventions
 
@@ -49,6 +56,12 @@ fix(dev-7): prevent duplicate edges between nodes
 docs(dev-1): add project description and conventions to README
 chore(dev-2): initialize Next.js project
 ```
+
+### Issue Naming
+
+Format: `PREFIX: Description`
+
+- `DEV:` — development tasks
 
 ### Labels
 

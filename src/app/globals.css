@@ -1,1 +1,4 @@
 @import 'tailwindcss';
+@import './fragments/landing.css';
+
+@source '../**/*.{ts,tsx,js,jsx}';

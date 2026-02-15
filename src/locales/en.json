@@ -1,0 +1,98 @@
+{
+  "landing": {
+    "header": {
+      "logo": "Uniscept",
+      "login": "Login",
+      "getStarted": "Get Started"
+    },
+    "hero": {
+      "title": "Thought is",
+      "titleAccent": "structure.",
+      "subtitle1": "Every Slack thread is a graveyard of ideas.",
+      "subtitle2": "Every meeting is structured amnesia.",
+      "tagline": "Build knowledge. Not chaos.",
+      "ctaPrimary": "Get Started",
+      "ctaSecondary": "Learn More"
+    },
+    "problem": {
+      "title": "The Problem",
+      "subtitle": "Shallow tools breed shallow thinking."
+    },
+    "product": {
+      "title": "This is a reasoning engine.",
+      "subtitle1": "Not Notion. Not a chatbot. Not a wiki.",
+      "subtitle2": "A system for structured thought.",
+      "features": {
+        "structured": {
+          "title": "Structured reasoning",
+          "description": "Break down complex problems into nodes and logical connections. Make implicit reasoning explicit. See the architecture of your thinking.",
+          "tags": ["Visual Mapping", "Logical Flow", "Clear Structure"]
+        },
+        "validation": {
+          "title": "Path validation",
+          "description": "Mark reasoning paths as valid or invalid. Track what works. Build on truth."
+        },
+        "references": {
+          "title": "Cross-references",
+          "description": "Link canvases without duplication. Reuse conclusions. Let knowledge compound."
+        },
+        "collaboration": {
+          "title": "Team collaboration",
+          "description": "Role-based access. Contextual comments. Real-time updates. Think together, decide faster, build stronger."
+        }
+      }
+    },
+    "builders": {
+      "title": "Built for builders.",
+      "subtitle": "People who hate shallow thinking.",
+      "founders": {
+        "title": "Founders",
+        "description": "Make better decisions. Document your reasoning. Stop rehashing the same arguments every quarter.",
+        "useCases": [
+          "Product strategy",
+          "Market analysis",
+          "Technical architecture"
+        ]
+      },
+      "researchers": {
+        "title": "Researchers",
+        "description": "Map literature. Build frameworks. Turn papers into structured knowledge graphs that actually make sense.",
+        "useCases": [
+          "Literature synthesis",
+          "Hypothesis mapping",
+          "Citation networks"
+        ]
+      },
+      "engineers": {
+        "title": "Engineers",
+        "description": "Design systems. Debug logic. Document architectural decisions that actually matter and won't be lost.",
+        "useCases": ["System design", "Debugging workflows", "Tech decisions"]
+      }
+    },
+    "pricing": {
+      "title": "Pricing",
+      "subtitle": "Simple. Transparent. Fair.",
+      "footer": "Try free with Demo mode. No credit card required.",
+      "tryDemo": "Try Demo",
+      "getStarted": "Get Started"
+    },
+    "howItWorks": {
+      "title": "Three steps.",
+      "subtitle": "That's it."
+    },
+    "cta": {
+      "title1": "Stop talking.",
+      "title2": "Start building.",
+      "subtitle": "Join researchers, founders, and engineers who actually ship.",
+      "button": "Get Started Free"
+    },
+    "footer": {
+      "copyright": "© 2026 Uniscept",
+      "links": {
+        "twitter": "Twitter",
+        "github": "GitHub",
+        "docs": "Docs"
+      }
+    }
+  }
+}

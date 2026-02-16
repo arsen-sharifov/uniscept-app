@@ -1,0 +1,73 @@
+name: Version Check
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'package.json'
+
+jobs:
+  check-version:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get version from PR branch
+        id: pr-version
+        run: |
+          HEAD_VERSION=$(node -p "require('./package.json').version")
+          echo "version=$HEAD_VERSION" >> $GITHUB_OUTPUT
+          echo "📦 PR version: $HEAD_VERSION"
+
+      - name: Get version from base branch
+        id: base-version
+        run: |
+          BASE_VERSION=$(git show origin/${{ github.base_ref }}:package.json | node -p "JSON.parse(require('fs').readFileSync(0, 'utf-8')).version")
+          echo "version=$BASE_VERSION" >> $GITHUB_OUTPUT
+          echo "📦 Base version: $BASE_VERSION"
+
+      - name: Compare versions
+        run: |
+          BASE="${{ steps.base-version.outputs.version }}"
+          HEAD="${{ steps.pr-version.outputs.version }}"
+
+          COMPARE_RESULT=$(node -e "
+            const base = '$BASE'.split('.').map(Number);
+            const head = '$HEAD'.split('.').map(Number);
+
+            for (let i = 0; i < 3; i++) {
+              if (head[i] > base[i]) {
+                console.log('greater');
+                process.exit(0);
+              }
+              if (head[i] < base[i]) {
+                console.log('smaller');
+                process.exit(0);
+              }
+            }
+            console.log('equal');
+          ")
+
+          if [ "$COMPARE_RESULT" = "greater" ]; then
+            echo "✅ Version bumped correctly: $BASE → $HEAD"
+          elif [ "$COMPARE_RESULT" = "equal" ]; then
+            echo "❌ Version not changed in package.json"
+            echo ""
+            echo "Current version: $BASE"
+            echo "Please update the version following Semantic Versioning:"
+            echo "  - Patch (e.g., 0.2.1) - bug fixes"
+            echo "  - Minor (e.g., 0.3.0) - new features"
+            echo "  - Major (e.g., 1.0.0) - breaking changes"
+            exit 1
+          else
+            echo "❌ Version downgrade detected: $BASE → $HEAD"
+            echo ""
+            echo "New version ($HEAD) is lower than base version ($BASE)."
+            echo "Please ensure you're incrementing the version correctly."
+            exit 1
+          fi

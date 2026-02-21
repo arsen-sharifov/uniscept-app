@@ -2,7 +2,7 @@ import Link from 'next/link';
 import clsx from 'clsx';
 import type { PricingPlan } from '@/lib/interfaces';
 import { useTranslations } from '@/lib/hooks';
-import { CheckmarkFilledIcon } from '@/components/icons';
+import { CircleCheck } from 'lucide-react';
 
 interface PricingCardProps {
   plan: PricingPlan;
@@ -77,7 +77,7 @@ export const PricingCard = ({ plan }: PricingCardProps) => {
         {plan.features.map((feature) => (
           <li key={feature} className="flex items-start gap-3">
             <span className={isDark ? 'text-emerald-400' : 'text-emerald-600'}>
-              <CheckmarkFilledIcon className="mt-0.5 h-5 w-5 flex-shrink-0" />
+              <CircleCheck className="mt-0.5 h-5 w-5 flex-shrink-0" />
             </span>
             <span
               className={clsx(

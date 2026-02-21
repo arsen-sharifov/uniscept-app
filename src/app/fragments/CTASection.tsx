@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Section } from '@/components/ui';
+import { Section } from './components';
 import { useTranslations } from '@/lib/hooks';
 
 export const CTASection = () => {

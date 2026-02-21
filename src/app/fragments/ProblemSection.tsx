@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { Section } from '@/components/ui';
+import { Section } from './components';
 import { PROBLEM_CARDS } from '@/lib/constants/content';
 import { useTranslations } from '@/lib/hooks';
 

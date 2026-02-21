@@ -1,11 +1,6 @@
-import { Section } from '@/components/ui';
+import { Section } from './components';
 import { useTranslations } from '@/lib/hooks';
-import {
-  CheckCircleIcon,
-  LinkIcon,
-  MapIcon,
-  UsersIcon,
-} from '@/components/icons';
+import { CheckCircle, Link2, Map, Users } from 'lucide-react';
 
 export const ProductSection = () => {
   const t = useTranslations();
@@ -30,7 +25,7 @@ export const ProductSection = () => {
         <div data-reveal className="scroll-reveal grid gap-5 md:grid-cols-3">
           <div className="card-3d group relative overflow-hidden rounded-2xl border border-black/5 bg-white p-8 shadow-xl transition-all duration-300 ease-in-out hover:border-emerald-500/20 hover:shadow-2xl md:col-span-2">
             <div className="mb-5 inline-flex rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-500 p-3">
-              <MapIcon className="h-8 w-8 text-white" />
+              <Map className="h-8 w-8 text-white" />
             </div>
             <h3 className="mb-3 text-2xl font-black text-black">
               {t.landing.product.features.structured.title}
@@ -54,7 +49,7 @@ export const ProductSection = () => {
             <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 blur-2xl transition-all duration-500 ease-in-out group-hover:scale-150" />
             <div className="relative">
               <div className="mb-5 inline-flex rounded-xl bg-emerald-500/10 p-2.5">
-                <CheckCircleIcon className="h-7 w-7 text-emerald-600" />
+                <CheckCircle className="h-7 w-7 text-emerald-600" />
               </div>
               <h3 className="mb-2 text-xl font-black text-black">
                 {t.landing.product.features.validation.title}
@@ -69,7 +64,7 @@ export const ProductSection = () => {
             <div className="absolute right-0 bottom-0 h-40 w-40 rounded-full bg-gradient-to-br from-purple-500/20 to-pink-500/20 blur-2xl transition-all duration-500 ease-in-out group-hover:scale-150" />
             <div className="relative">
               <div className="mb-5 inline-flex rounded-xl bg-purple-500/10 p-2.5">
-                <LinkIcon className="h-7 w-7 text-purple-600" />
+                <Link2 className="h-7 w-7 text-purple-600" />
               </div>
               <h3 className="mb-2 text-xl font-black text-black">
                 {t.landing.product.features.references.title}
@@ -84,7 +79,7 @@ export const ProductSection = () => {
             <div className="absolute top-0 left-0 h-40 w-40 rounded-full bg-gradient-to-br from-blue-500/20 to-cyan-500/20 blur-2xl transition-all duration-500 ease-in-out group-hover:scale-150" />
             <div className="relative">
               <div className="mb-5 inline-flex rounded-xl bg-blue-500/10 p-2.5">
-                <UsersIcon className="h-7 w-7 text-blue-600" />
+                <Users className="h-7 w-7 text-blue-600" />
               </div>
               <h3 className="mb-2 text-xl font-black text-black">
                 {t.landing.product.features.collaboration.title}

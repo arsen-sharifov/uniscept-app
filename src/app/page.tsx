@@ -1,13 +1,15 @@
 'use client';
 
-import { Header, Footer } from '@/components/layout';
-import { Hero } from './fragments/Hero';
-import { ProblemSection } from './fragments/ProblemSection';
-import { ProductSection } from './fragments/ProductSection';
-import { BuildersSection } from './fragments/BuildersSection';
-import { HowItWorksSection } from './fragments/HowItWorksSection';
-import { PricingSection } from './fragments/PricingSection';
-import { CTASection } from './fragments/CTASection';
+import { Header, Footer } from './fragments/components';
+import {
+  Hero,
+  ProblemSection,
+  ProductSection,
+  BuildersSection,
+  HowItWorksSection,
+  PricingSection,
+  CTASection,
+} from './fragments';
 import { useScrollReveal } from '@/lib/hooks';
 
 export default function LandingPage() {

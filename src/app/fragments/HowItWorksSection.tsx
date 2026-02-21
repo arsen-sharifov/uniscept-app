@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { Section } from '@/components/ui';
+import { Section } from './components';
 import { STEPS } from '@/lib/constants/content';
 import { useTranslations } from '@/lib/hooks';
 

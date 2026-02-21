@@ -1,5 +1,4 @@
-import { Section } from '@/components/ui';
-import { PricingCard } from './PricingCard';
+import { PricingCard, Section } from './components';
 import { PRICING_PLANS } from '@/lib/constants/pricing';
 import { useTranslations } from '@/lib/hooks';
 

@@ -1,6 +1,6 @@
-import { Section } from '@/components/ui';
+import { Section } from './components';
 import { useTranslations } from '@/lib/hooks';
-import { BoltIcon, CodeBracketIcon, LightbulbIcon } from '@/components/icons';
+import { Zap, Lightbulb, Braces } from 'lucide-react';
 
 export const BuildersSection = () => {
   const t = useTranslations();
@@ -22,7 +22,7 @@ export const BuildersSection = () => {
             <div className="absolute -top-20 -right-20 h-64 w-64 rounded-full bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 blur-3xl" />
             <div className="relative">
               <div className="mb-6 inline-flex rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-500 p-4">
-                <BoltIcon className="h-8 w-8 text-white" />
+                <Zap className="h-8 w-8 text-white" />
               </div>
               <h3 className="mb-3 text-2xl font-black text-white">
                 {t.landing.builders.founders.title}
@@ -48,7 +48,7 @@ export const BuildersSection = () => {
             <div className="absolute bottom-0 -left-20 h-64 w-64 rounded-full bg-gradient-to-br from-purple-500/20 to-pink-500/20 blur-3xl" />
             <div className="relative">
               <div className="mb-6 inline-flex rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 p-4">
-                <LightbulbIcon className="h-8 w-8 text-white" />
+                <Lightbulb className="h-8 w-8 text-white" />
               </div>
               <h3 className="mb-3 text-2xl font-black text-black">
                 {t.landing.builders.researchers.title}
@@ -76,7 +76,7 @@ export const BuildersSection = () => {
             <div className="absolute -top-20 -right-20 h-64 w-64 rounded-full bg-gradient-to-br from-blue-500/20 to-cyan-500/20 blur-3xl" />
             <div className="relative">
               <div className="mb-6 inline-flex rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 p-4">
-                <CodeBracketIcon className="h-8 w-8 text-white" />
+                <Braces className="h-8 w-8 text-white" />
               </div>
               <h3 className="mb-3 text-2xl font-black text-black">
                 {t.landing.builders.engineers.title}

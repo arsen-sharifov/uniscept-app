@@ -1,7 +1,3 @@
-export interface IconProps {
-  className?: string;
-}
-
 export interface PricingPlan {
   id: string;
   name: string;

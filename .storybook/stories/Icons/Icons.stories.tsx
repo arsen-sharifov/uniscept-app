@@ -1,52 +1,16 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import type { LucideProps } from 'lucide-react';
-import { icons } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
-import { ARG_CATEGORIES } from '../consts';
+import { ARG_CATEGORIES } from '../../consts';
+import { iconEntries } from './consts';
 
-const meta: Meta<LucideProps> = {
-  title: 'Components/Icons',
-  parameters: {
-    docs: {
-      description: {
-        component: 'Gallery of all available Lucide icons.',
-      },
-    },
-  },
-  argTypes: {
-    size: {
-      control: { type: 'range', min: 12, max: 36, step: 1 },
-      description: 'Icon size in pixels',
-      table: { category: ARG_CATEGORIES.APPEARANCE },
-    },
-    color: {
-      control: 'color',
-      description: 'Icon stroke color',
-      table: { category: ARG_CATEGORIES.APPEARANCE },
-    },
-    strokeWidth: {
-      control: { type: 'range', min: 0.5, max: 4, step: 0.25 },
-      description: 'Stroke width of icon paths',
-      table: { category: ARG_CATEGORIES.APPEARANCE },
-    },
-    absoluteStrokeWidth: {
-      control: 'boolean',
-      description:
-        'When enabled, stroke width stays constant regardless of icon size',
-      table: { category: ARG_CATEGORIES.BEHAVIOR },
-    },
-  },
-};
-
-const iconEntries = Object.entries(icons);
-
-const IconGallery = ({
+function IconGallery({
   size,
   color,
   strokeWidth,
   absoluteStrokeWidth,
-}: LucideProps) => {
+}: LucideProps) {
   const [search, setSearch] = useState('');
   const [scroll, setScroll] = useState({ top: 0, height: 800 });
 
@@ -121,6 +85,40 @@ const IconGallery = ({
       </div>
     </div>
   );
+}
+
+const meta: Meta<LucideProps> = {
+  title: 'Components/Icons',
+  parameters: {
+    docs: {
+      description: {
+        component: 'Gallery of all available Lucide icons.',
+      },
+    },
+  },
+  argTypes: {
+    size: {
+      control: { type: 'range', min: 12, max: 36, step: 1 },
+      description: 'Icon size in pixels',
+      table: { category: ARG_CATEGORIES.APPEARANCE },
+    },
+    color: {
+      control: 'color',
+      description: 'Icon stroke color',
+      table: { category: ARG_CATEGORIES.APPEARANCE },
+    },
+    strokeWidth: {
+      control: { type: 'range', min: 0.5, max: 4, step: 0.25 },
+      description: 'Stroke width of icon paths',
+      table: { category: ARG_CATEGORIES.APPEARANCE },
+    },
+    absoluteStrokeWidth: {
+      control: 'boolean',
+      description:
+        'When enabled, stroke width stays constant regardless of icon size',
+      table: { category: ARG_CATEGORIES.BEHAVIOR },
+    },
+  },
 };
 
 export default meta;
@@ -128,5 +126,5 @@ export default meta;
 type Story = StoryObj<LucideProps>;
 
 export const All: Story = {
-  render: (args) => <IconGallery {...args} />,
+  render: IconGallery,
 };

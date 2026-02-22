@@ -20,10 +20,14 @@ export default meta;
 
 type Story = StoryObj<typeof Canvas>;
 
-export const Default: Story = {
-  render: () => (
+function DefaultStory() {
+  return (
     <div style={{ width: '100%', height: '100vh' }}>
       <Canvas />
     </div>
-  ),
+  );
+}
+
+export const Default: Story = {
+  render: DefaultStory,
 };

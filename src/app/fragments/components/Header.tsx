@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { Logo } from '@/components/branding';
 import { useTranslations } from '@/lib/hooks';
 
 export const Header = () => {
@@ -10,9 +11,9 @@ export const Header = () => {
         <div className="flex h-20 items-center justify-between">
           <button
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            className="gradient-text-animated cursor-pointer text-2xl font-black tracking-tight transition-opacity hover:opacity-80"
+            className="cursor-pointer transition-opacity hover:opacity-80"
           >
-            {t.landing.header.logo}
+            <Logo className="text-2xl" />
           </button>
           <nav className="flex items-center gap-8">
             <Link

@@ -1,14 +1,14 @@
 import Link from 'next/link';
 import clsx from 'clsx';
-import type { PricingPlan } from '@/lib/interfaces';
+import type { IPricingPlan } from '@/lib/interfaces';
 import { useTranslations } from '@/lib/hooks';
 import { CircleCheck } from 'lucide-react';
 
-interface PricingCardProps {
-  plan: PricingPlan;
+interface IPricingCardProps {
+  plan: IPricingPlan;
 }
 
-export const PricingCard = ({ plan }: PricingCardProps) => {
+export const PricingCard = ({ plan }: IPricingCardProps) => {
   const t = useTranslations();
   const isDark = plan.highlighted;
   const isDemo = plan.id === 'demo';

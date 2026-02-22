@@ -24,7 +24,13 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@interfaces": ["./src/lib/interfaces"],
+      "@interfaces/*": ["./src/lib/interfaces/*"],
+      "@constants": ["./src/lib/constants"],
+      "@constants/*": ["./src/lib/constants/*"],
+      "@hooks": ["./src/lib/hooks"],
+      "@hooks/*": ["./src/lib/hooks/*"]
     }
   },
   "include": [

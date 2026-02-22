@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
-import { Canvas } from '@/components/canvas';
+import { Canvas } from '@/components';
 
 const meta: Meta<typeof Canvas> = {
   title: 'Components/Canvas',

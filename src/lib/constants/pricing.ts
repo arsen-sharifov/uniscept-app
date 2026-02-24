@@ -1,6 +1,6 @@
-import type { PricingPlan } from '../interfaces';
+import type { IPricingPlan } from '../interfaces';
 
-export const PRICING_PLANS: PricingPlan[] = [
+export const PRICING_PLANS: IPricingPlan[] = [
   {
     id: 'demo',
     name: 'Demo',

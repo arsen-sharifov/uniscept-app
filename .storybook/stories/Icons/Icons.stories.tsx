@@ -3,7 +3,7 @@ import type { LucideProps } from 'lucide-react';
 import { icons } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
-import { ARG_CATEGORIES } from '../consts';
+import { ARG_CATEGORIES } from '../../consts';
 
 const meta: Meta<LucideProps> = {
   title: 'Components/Icons',

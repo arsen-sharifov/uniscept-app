@@ -1,9 +1,14 @@
+'use client';
+
+import { ReactFlowProvider } from '@xyflow/react';
 import { Canvas } from '@/components';
 
 const ThreadPage = () => {
   return (
     <div className="h-screen w-screen">
-      <Canvas />
+      <ReactFlowProvider>
+        <Canvas />
+      </ReactFlowProvider>
     </div>
   );
 };

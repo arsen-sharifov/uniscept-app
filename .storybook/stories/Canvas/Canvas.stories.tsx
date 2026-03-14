@@ -1,10 +1,21 @@
-import type { Meta, StoryObj } from '@storybook/nextjs-vite';
-
+import type { Decorator, Meta, StoryObj } from '@storybook/nextjs-vite';
+import { ReactFlowProvider } from '@xyflow/react';
 import { Canvas } from '@/components';
 
-const meta: Meta<typeof Canvas> = {
+const WithFullscreen: Decorator = (Story) => (
+  <div className="relative h-screen w-screen bg-neutral-100/60">
+    <Story />
+  </div>
+);
+
+const WithReactFlowProvider: Decorator = (Story) => (
+  <ReactFlowProvider>
+    <Story />
+  </ReactFlowProvider>
+);
+
+const meta: Meta = {
   title: 'Components/Canvas',
-  component: Canvas,
   parameters: {
     layout: 'fullscreen',
     docs: {
@@ -14,16 +25,13 @@ const meta: Meta<typeof Canvas> = {
       },
     },
   },
+  decorators: [WithFullscreen, WithReactFlowProvider],
 };
 
 export default meta;
 
-type Story = StoryObj<typeof Canvas>;
+type Story = StoryObj;
 
 export const Default: Story = {
-  render: () => (
-    <div style={{ width: '100%', height: '100vh' }}>
-      <Canvas />
-    </div>
-  ),
+  render: () => <Canvas />,
 };

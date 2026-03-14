@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import type { Decorator, Meta, StoryObj } from '@storybook/nextjs-vite';
-import { Sidebar } from '@/components';
-import type { ISidebarProps } from '@/components';
+import { type ISidebarProps, Sidebar } from '@/components';
 import { ARG_CATEGORIES } from '../../consts';
 import {
   deepTree,
@@ -17,6 +16,23 @@ const WithFullscreen: Decorator = (Story) => (
     <Story />
   </div>
 );
+
+const SidebarWithState = (args: ISidebarProps) => {
+  const [activeItemId, setActiveItemId] = useState(args.activeItemId);
+  const [activeWorkspaceId, setActiveWorkspaceId] = useState(
+    args.activeWorkspaceId
+  );
+
+  return (
+    <Sidebar
+      {...args}
+      activeItemId={activeItemId}
+      activeWorkspaceId={activeWorkspaceId}
+      onItemClick={setActiveItemId}
+      onWorkspaceSelect={setActiveWorkspaceId}
+    />
+  );
+};
 
 const meta: Meta<typeof Sidebar> = {
   title: 'Components/Sidebar',
@@ -51,23 +67,6 @@ const meta: Meta<typeof Sidebar> = {
     },
   },
   decorators: [WithFullscreen],
-};
-
-const SidebarWithState = (args: ISidebarProps) => {
-  const [activeItemId, setActiveItemId] = useState(args.activeItemId);
-  const [activeWorkspaceId, setActiveWorkspaceId] = useState(
-    args.activeWorkspaceId
-  );
-
-  return (
-    <Sidebar
-      {...args}
-      activeItemId={activeItemId}
-      activeWorkspaceId={activeWorkspaceId}
-      onItemClick={setActiveItemId}
-      onWorkspaceSelect={setActiveWorkspaceId}
-    />
-  );
 };
 
 export default meta;

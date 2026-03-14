@@ -1,13 +1,26 @@
 import type { Decorator, Meta, StoryObj } from '@storybook/nextjs-vite';
 import { List } from '@/components';
-
 import { ARG_CATEGORIES } from '../../consts';
-import { SimpleTrigger, SampleContent } from './consts';
+import { SampleContent, SimpleTrigger } from './consts';
 
 const WithContainer: Decorator = (Story) => (
   <div className="w-72 p-4">
     <Story />
   </div>
+);
+
+const NestedStory = () => (
+  <List trigger={SimpleTrigger('Parent')} defaultOpen>
+    <div className="ml-6 space-y-0.5 border-l border-black/5 pl-3">
+      <SampleContent text="Sibling item" />
+      <List trigger={SimpleTrigger('Child')} defaultOpen>
+        <div className="ml-6 space-y-0.5 border-l border-black/5 pl-3">
+          <SampleContent text="Leaf item A" />
+          <SampleContent text="Leaf item B" />
+        </div>
+      </List>
+    </div>
+  </List>
 );
 
 const meta: Meta<typeof List> = {
@@ -58,22 +71,6 @@ export const Expanded: Story = {
     children: <SampleContent text="This content is visible by default." />,
     defaultOpen: true,
   },
-};
-
-const NestedStory = () => {
-  return (
-    <List trigger={SimpleTrigger('Parent')} defaultOpen>
-      <div className="ml-6 space-y-0.5 border-l border-black/5 pl-3">
-        <SampleContent text="Sibling item" />
-        <List trigger={SimpleTrigger('Child')} defaultOpen>
-          <div className="ml-6 space-y-0.5 border-l border-black/5 pl-3">
-            <SampleContent text="Leaf item A" />
-            <SampleContent text="Leaf item B" />
-          </div>
-        </List>
-      </div>
-    </List>
-  );
 };
 
 export const Nested: Story = {

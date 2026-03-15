@@ -8,7 +8,7 @@ import {
   useReactFlow,
 } from '@xyflow/react';
 import { useCanvasStore } from '@/lib/stores';
-import { ECanvasTool } from '@/components/tools';
+import { ECanvasTool } from '@interfaces';
 import { findNearestHandlePair } from './utils';
 
 export const useCanvasTools = () => {

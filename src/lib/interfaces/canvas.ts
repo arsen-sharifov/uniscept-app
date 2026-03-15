@@ -32,3 +32,16 @@ export interface IReferenceNodeData {
 }
 
 export type TReferenceNode = Node<IReferenceNodeData>;
+
+export enum ECanvasTool {
+  Select = 'select',
+  Pan = 'pan',
+  AddNode = 'add-node',
+  Connect = 'connect',
+  Delete = 'delete',
+  ValidPath = 'valid-path',
+  InvalidPath = 'invalid-path',
+  CrossReference = 'cross-reference',
+  Undo = 'undo',
+  Redo = 'redo',
+}

@@ -17,3 +17,10 @@ export interface IWorkspaceItem {
   id: string;
   name: string;
 }
+
+export interface IFlatTopic {
+  id: string;
+  name: string;
+  parent_id: string | null;
+  type: 'topic' | 'folder';
+}

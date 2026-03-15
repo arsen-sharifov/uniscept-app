@@ -1,7 +1,8 @@
 'use client';
 
 import { useCallback, useMemo } from 'react';
-import { CANVAS_TOOL_GROUPS, ECanvasTool } from '@/components/tools';
+import { ECanvasTool } from '@interfaces';
+import { CANVAS_TOOL_GROUPS } from '@/components/tools';
 import { useCanvasStore } from '@/lib/stores';
 
 export const useToolbar = () => {

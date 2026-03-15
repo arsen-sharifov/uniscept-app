@@ -1,16 +1,11 @@
-'use client';
-
-import { ReactFlowProvider } from '@xyflow/react';
-import { Canvas } from '@/components';
-
-const AppPage = () => {
+const PlatformPage = () => {
   return (
-    <div className="h-screen w-screen">
-      <ReactFlowProvider>
-        <Canvas />
-      </ReactFlowProvider>
+    <div className="flex h-screen w-screen items-center justify-center">
+      <p className="text-sm text-black/30">
+        Select a topic from the sidebar or create a new one
+      </p>
     </div>
   );
 };
 
-export default AppPage;
+export default PlatformPage;

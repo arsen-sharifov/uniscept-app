@@ -10,20 +10,7 @@ import {
   Undo2,
   XCircle,
 } from 'lucide-react';
-import type { IToolItem } from '@interfaces';
-
-export enum ECanvasTool {
-  Select = 'select',
-  Pan = 'pan',
-  AddNode = 'add-node',
-  Connect = 'connect',
-  Delete = 'delete',
-  ValidPath = 'valid-path',
-  InvalidPath = 'invalid-path',
-  CrossReference = 'cross-reference',
-  Undo = 'undo',
-  Redo = 'redo',
-}
+import { ECanvasTool, type IToolItem } from '@interfaces';
 
 export const CANVAS_TOOLS: Record<ECanvasTool, IToolItem> = {
   [ECanvasTool.Select]: {

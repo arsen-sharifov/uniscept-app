@@ -1,13 +1,15 @@
 'use client';
 
+import { type MouseEvent, useCallback } from 'react';
 import {
   Background,
   BackgroundVariant,
   ConnectionMode,
+  type Node,
   ReactFlow,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { ECanvasTool } from '@/components/tools';
+import { ECanvasTool } from '@interfaces';
 import { useCanvasStore } from '@/lib/stores';
 import { CanvasNode } from './CanvasNode';
 import { ReferenceNode } from './ReferenceNode';
@@ -25,6 +27,7 @@ export const Canvas = () => {
   const edges = useCanvasStore((s) => s.edges);
   const onNodesChange = useCanvasStore((s) => s.onNodesChange);
   const onEdgesChange = useCanvasStore((s) => s.onEdgesChange);
+  const saveNodePosition = useCanvasStore((s) => s.saveNodePosition);
 
   const {
     onPaneClick,
@@ -33,6 +36,13 @@ export const Canvas = () => {
     onConnect,
     isValidConnection,
   } = useCanvasTools();
+
+  const onNodeDragStop = useCallback(
+    (_event: MouseEvent, node: Node) => {
+      saveNodePosition(node.id, node.position);
+    },
+    [saveNodePosition]
+  );
 
   return (
     <ReactFlow
@@ -44,6 +54,7 @@ export const Canvas = () => {
       onPaneClick={onPaneClick}
       onNodeClick={onNodeClick}
       onEdgeClick={onEdgeClick}
+      onNodeDragStop={onNodeDragStop}
       onConnect={onConnect}
       isValidConnection={isValidConnection}
       connectionMode={ConnectionMode.Loose}

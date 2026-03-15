@@ -1,0 +1,5 @@
+{
+  "permissions": {
+    "allow": ["Bash(cd:*)", "mcp__claude_ai_Notion__notion-fetch"]
+  }
+}

@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import type { Decorator, Meta, StoryObj } from '@storybook/nextjs-vite';
 import { ReactFlowProvider } from '@xyflow/react';
+import { ECanvasTool, type IToolItem } from '@interfaces';
 import {
   type IToolbarProps,
   Canvas,
   Toolbar,
   CANVAS_TOOL_GROUPS,
-  ECanvasTool,
 } from '@/components';
 import { useToolbar } from '@/components/Toolbar';
 import { useCanvasStore } from '@/lib/stores';
@@ -101,8 +101,8 @@ export const Default: Story = {
 export const WithDisabledTools: Story = {
   render: ToolbarWithState,
   args: {
-    groups: CANVAS_TOOL_GROUPS.map((group) =>
-      group.map((tool) =>
+    groups: CANVAS_TOOL_GROUPS.map((group: IToolItem[]) =>
+      group.map((tool: IToolItem) =>
         tool.id === ECanvasTool.Undo || tool.id === ECanvasTool.Redo
           ? { ...tool, disabled: true }
           : tool

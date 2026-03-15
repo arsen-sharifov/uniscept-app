@@ -1,9 +1,14 @@
-import { Canvas } from '@/components/canvas';
+'use client';
+
+import { ReactFlowProvider } from '@xyflow/react';
+import { Canvas } from '@/components';
 
 const AppPage = () => {
   return (
     <div className="h-screen w-screen">
-      <Canvas />
+      <ReactFlowProvider>
+        <Canvas />
+      </ReactFlowProvider>
     </div>
   );
 };

@@ -7,4 +7,5 @@ export interface IPricingPlan {
   features: string[];
   href: string;
   highlighted?: boolean;
+  disabled?: boolean;
 }

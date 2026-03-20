@@ -1,8 +1,11 @@
 'use client';
 
-import { ChevronDown, Plus, Settings, User } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { ChevronDown, LogOut, Plus, Settings, User } from 'lucide-react';
 import { clsx } from 'clsx';
 import type { TNavItem, IWorkspaceItem } from '@interfaces';
+import { useTranslations } from '@hooks';
+import { signOut } from '@api/client';
 import { Logo, List } from '@/components';
 import { NavItems } from './NavItems';
 
@@ -29,8 +32,16 @@ export const Sidebar = ({
   onWorkspaceSelect,
   onCreateWorkspace,
 }: ISidebarProps) => {
+  const router = useRouter();
+  const t = useTranslations();
+
   const activeWorkspaceName =
     workspaces.find((w) => w.id === activeWorkspaceId)?.name ?? 'My Workspace';
+
+  const handleSignOut = async () => {
+    await signOut();
+    router.push('/login');
+  };
 
   return (
     <aside className="fixed top-4 left-4 z-40 flex h-[calc(100vh-2rem)] w-60 flex-col rounded-2xl border border-black/5 bg-white/80 shadow-lg backdrop-blur-xl">
@@ -111,6 +122,13 @@ export const Sidebar = ({
         <button className="flex w-full items-center gap-3 rounded-xl px-3 py-1.5 text-sm text-black/50 transition-colors hover:bg-black/5 hover:text-black">
           <User className="h-4 w-4 shrink-0" />
           <span>Account</span>
+        </button>
+        <button
+          onClick={handleSignOut}
+          className="flex w-full items-center gap-3 rounded-xl px-3 py-1.5 text-sm text-black/50 transition-colors hover:bg-black/5 hover:text-red-600"
+        >
+          <LogOut className="h-4 w-4 shrink-0" />
+          <span>{t.platform.sidebar.signOut}</span>
         </button>
       </div>
     </aside>

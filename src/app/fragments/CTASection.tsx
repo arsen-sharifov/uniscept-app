@@ -22,7 +22,7 @@ export const CTASection = () => {
             {t.landing.cta.subtitle}
           </p>
           <Link
-            href="/get-started"
+            href="/signup"
             className="inline-flex items-center justify-center rounded-xl bg-black px-10 py-5 text-lg font-bold text-white shadow-2xl transition-all duration-300 ease-in-out hover:scale-105 hover:bg-black/90"
           >
             {t.landing.cta.button}

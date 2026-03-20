@@ -12,7 +12,8 @@ export const PRICING_PLANS: IPricingPlan[] = [
       'Explore features',
       'Session storage',
     ],
-    href: '/get-started?plan=demo',
+    href: '/platform',
+    disabled: true,
   },
   {
     id: 'lite',
@@ -25,7 +26,7 @@ export const PRICING_PLANS: IPricingPlan[] = [
       'Cloud storage',
       'Export options',
     ],
-    href: '/get-started?plan=lite',
+    href: '/signup',
   },
   {
     id: 'standard',
@@ -38,7 +39,7 @@ export const PRICING_PLANS: IPricingPlan[] = [
       'Team collaboration',
       'Real-time sync',
     ],
-    href: '/get-started?plan=standard',
+    href: '/signup',
     highlighted: true,
   },
   {
@@ -53,6 +54,6 @@ export const PRICING_PLANS: IPricingPlan[] = [
       'Priority support',
       'API access',
     ],
-    href: '/get-started?plan=pro',
+    href: '/signup',
   },
 ];

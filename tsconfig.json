@@ -30,7 +30,9 @@
       "@constants": ["./src/lib/constants"],
       "@constants/*": ["./src/lib/constants/*"],
       "@hooks": ["./src/lib/hooks"],
-      "@hooks/*": ["./src/lib/hooks/*"]
+      "@hooks/*": ["./src/lib/hooks/*"],
+      "@api": ["./src/api"],
+      "@api/*": ["./src/api/*"]
     }
   },
   "include": [

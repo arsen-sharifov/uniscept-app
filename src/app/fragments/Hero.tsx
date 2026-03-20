@@ -37,7 +37,7 @@ export const Hero = () => {
 
         <div className="animate-fade-in-up mt-12 flex items-center justify-center gap-4">
           <Link
-            href="/get-started"
+            href="/signup"
             className="group relative overflow-hidden rounded-xl bg-black px-8 py-3.5 text-base font-semibold text-white shadow-2xl transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-emerald-500/25"
           >
             <span className="relative z-10">{t.landing.hero.ctaPrimary}</span>

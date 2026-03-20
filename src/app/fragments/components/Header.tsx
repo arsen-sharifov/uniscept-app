@@ -20,10 +20,10 @@ export const Header = () => {
               href="/login"
               className="text-base font-medium text-black/60 transition-all duration-300 ease-in-out hover:text-black"
             >
-              {t.landing.header.login}
+              {t.landing.header.signIn}
             </Link>
             <Link
-              href="/get-started"
+              href="/signup"
               className="group relative overflow-hidden rounded-lg bg-black px-6 py-2.5 text-base font-medium text-white transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-xl"
             >
               <span className="relative z-10">

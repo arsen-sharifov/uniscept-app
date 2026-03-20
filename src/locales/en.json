@@ -1,8 +1,72 @@
 {
+  "auth": {
+    "signIn": {
+      "heading": "Sign In",
+      "subtitle": "Welcome back",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Sign In",
+      "submitting": "Signing in...",
+      "emailSent": "Check your email to confirm your account.",
+      "noAccount": "Don't have an account?",
+      "signUpLink": "Sign Up"
+    },
+    "signUp": {
+      "heading": "Create Account",
+      "subtitle": "Fill in your details",
+      "steps": {
+        "plan": "Plan",
+        "account": "Account"
+      },
+      "planStep": {
+        "heading": "Choose your plan",
+        "subtitle": "Select how you want to get started",
+        "available": "Available",
+        "betaPlan": "Beta",
+        "free": "Free",
+        "betaDescription": "Full access during closed beta. Invite code required.",
+        "comingSoon": "Coming soon",
+        "paidPlansNote": "Paid plans will be available after the beta period.",
+        "earlyBirdNote": "Beta users will get early-bird pricing.",
+        "continue": "Continue"
+      },
+      "accountStep": {
+        "name": "Full Name",
+        "inviteCode": "Invite Code",
+        "inviteCodeTooltip": "Required during closed beta. Ask the team for your code.",
+        "inviteCodePlaceholder": "Enter your invite code",
+        "email": "Email",
+        "password": "Password",
+        "back": "Back",
+        "submit": "Sign Up",
+        "submitting": "Creating account..."
+      },
+      "hasAccount": "Already have an account?",
+      "signInLink": "Sign In"
+    },
+    "placeholders": {
+      "name": "John Doe",
+      "email": "you@example.com",
+      "password": "••••••••"
+    },
+    "errors": {
+      "invalidInviteCode": "Invalid invite code"
+    },
+    "confirmed": {
+      "heading": "Email Confirmed",
+      "message": "Your email has been successfully verified. You can close this tab and return to the previous one.",
+      "close": "Close Tab"
+    }
+  },
+  "platform": {
+    "sidebar": {
+      "signOut": "Sign Out"
+    }
+  },
   "landing": {
     "header": {
       "logo": "Uniscept",
-      "login": "Login",
+      "signIn": "Sign In",
       "getStarted": "Get Started"
     },
     "hero": {

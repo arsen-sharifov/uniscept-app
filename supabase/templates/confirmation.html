@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Confirm your email</title>
+  </head>
+  <body
+    style="
+      margin: 0;
+      padding: 0;
+      background-color: #000000;
+      font-family:
+        -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial,
+        sans-serif;
+    "
+  >
+    <table
+      cellpadding="0"
+      cellspacing="0"
+      role="presentation"
+      style="background-color: #000000"
+      width="100%"
+    >
+      <tr>
+        <td align="center" style="padding: 40px 20px">
+          <table
+            cellpadding="0"
+            cellspacing="0"
+            role="presentation"
+            style="max-width: 500px; width: 100%"
+            width="500"
+          >
+            <tr>
+              <td
+                style="
+                  background: linear-gradient(
+                    135deg,
+                    #0a0a0a 0%,
+                    #111111 50%,
+                    #0a0a0a 100%
+                  );
+                  border-radius: 20px 20px 0 0;
+                  padding: 48px 40px 40px;
+                  text-align: center;
+                  border: 1px solid rgba(255, 255, 255, 0.06);
+                  border-bottom: none;
+                "
+              >
+                <table
+                  cellpadding="0"
+                  cellspacing="0"
+                  role="presentation"
+                  style="margin: 0 auto 32px"
+                >
+                  <tr>
+                    <td
+                      style="
+                        background: linear-gradient(135deg, #10b981, #06b6d4);
+                        border-radius: 12px;
+                        padding: 10px 14px;
+                      "
+                    >
+                      <span
+                        style="
+                          font-size: 18px;
+                          font-weight: 800;
+                          color: #ffffff;
+                          letter-spacing: -0.5px;
+                        "
+                        >U</span
+                      >
+                    </td>
+                    <td style="padding-left: 10px">
+                      <span
+                        style="
+                          font-size: 22px;
+                          font-weight: 700;
+                          color: #ffffff;
+                          letter-spacing: -0.5px;
+                        "
+                        >Uniscept</span
+                      >
+                    </td>
+                  </tr>
+                </table>
+
+                <h1
+                  style="
+                    margin: 0 0 12px;
+                    font-size: 26px;
+                    font-weight: 700;
+                    color: #ffffff;
+                    letter-spacing: -0.5px;
+                  "
+                >
+                  Verify your email
+                </h1>
+                <p
+                  style="
+                    margin: 0;
+                    font-size: 15px;
+                    color: rgba(255, 255, 255, 0.5);
+                    line-height: 1.6;
+                  "
+                >
+                  You're one step away from your account.
+                </p>
+              </td>
+            </tr>
+
+            <tr>
+              <td
+                style="
+                  height: 2px;
+                  background: linear-gradient(90deg, #10b981, #06b6d4, #8b5cf6);
+                  border-left: 1px solid rgba(255, 255, 255, 0.06);
+                  border-right: 1px solid rgba(255, 255, 255, 0.06);
+                "
+              ></td>
+            </tr>
+
+            <tr>
+              <td
+                style="
+                  background-color: #0f0f0f;
+                  padding: 40px;
+                  border: 1px solid rgba(255, 255, 255, 0.06);
+                  border-top: none;
+                  border-bottom: none;
+                "
+              >
+                <table
+                  cellpadding="0"
+                  cellspacing="0"
+                  role="presentation"
+                  style="
+                    background-color: rgba(255, 255, 255, 0.03);
+                    border-radius: 12px;
+                    border: 1px solid rgba(255, 255, 255, 0.06);
+                  "
+                  width="100%"
+                >
+                  <tr>
+                    <td style="padding: 24px; text-align: center">
+                      <p
+                        style="
+                          margin: 0 0 4px;
+                          font-size: 13px;
+                          font-weight: 600;
+                          color: rgba(255, 255, 255, 0.4);
+                          text-transform: uppercase;
+                          letter-spacing: 1px;
+                        "
+                      >
+                        Almost there
+                      </p>
+                      <p
+                        style="
+                          margin: 0;
+                          font-size: 14px;
+                          color: rgba(255, 255, 255, 0.6);
+                          line-height: 1.6;
+                        "
+                      >
+                        Click below to confirm your email and activate your
+                        Uniscept account.
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+
+                <table
+                  cellpadding="0"
+                  cellspacing="0"
+                  role="presentation"
+                  style="margin-top: 28px"
+                  width="100%"
+                >
+                  <tr>
+                    <td align="center">
+                      <a
+                        href="{{ .ConfirmationURL }}"
+                        style="
+                          display: inline-block;
+                          width: 100%;
+                          max-width: 340px;
+                          padding: 14px 32px;
+                          background: linear-gradient(135deg, #10b981, #06b6d4);
+                          color: #ffffff;
+                          font-size: 15px;
+                          font-weight: 700;
+                          text-decoration: none;
+                          border-radius: 12px;
+                          text-align: center;
+                          letter-spacing: -0.2px;
+                        "
+                        target="_blank"
+                      >
+                        Confirm Email Address
+                      </a>
+                    </td>
+                  </tr>
+                </table>
+
+                <p
+                  style="
+                    margin: 24px 0 0;
+                    font-size: 12px;
+                    color: rgba(255, 255, 255, 0.25);
+                    text-align: center;
+                    line-height: 1.6;
+                  "
+                >
+                  If you didn't create an account, ignore this email.
+                </p>
+              </td>
+            </tr>
+
+            <tr>
+              <td
+                style="
+                  background-color: #080808;
+                  border-radius: 0 0 20px 20px;
+                  padding: 24px 40px;
+                  border: 1px solid rgba(255, 255, 255, 0.06);
+                  border-top: none;
+                  text-align: center;
+                "
+              >
+                <p
+                  style="
+                    margin: 0 0 6px;
+                    font-size: 12px;
+                    color: rgba(255, 255, 255, 0.2);
+                  "
+                >
+                  &copy; 2026 Uniscept &middot; Build knowledge. Not chaos.
+                </p>
+                <p
+                  style="
+                    margin: 0;
+                    font-size: 11px;
+                    color: rgba(255, 255, 255, 0.12);
+                  "
+                >
+                  This is an automated message. Please do not reply.
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

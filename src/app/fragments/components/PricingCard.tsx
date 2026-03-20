@@ -11,7 +11,6 @@ interface IPricingCardProps {
 export const PricingCard = ({ plan }: IPricingCardProps) => {
   const t = useTranslations();
   const isDark = plan.highlighted;
-  const isDemo = plan.id === 'demo';
 
   return (
     <div
@@ -91,19 +90,23 @@ export const PricingCard = ({ plan }: IPricingCardProps) => {
         ))}
       </ul>
 
-      <Link
-        href={plan.href}
-        className={clsx(
-          'block w-full rounded-lg py-3.5 text-center text-sm font-bold transition-all duration-300 ease-in-out hover:scale-105',
-          isDark
-            ? 'bg-gradient-to-r from-emerald-600 to-cyan-500 text-white shadow-xl hover:from-emerald-500 hover:to-cyan-400 hover:shadow-2xl'
-            : isDemo
-              ? 'border-2 border-black/20 bg-white text-black hover:border-black/40 hover:bg-black/5'
+      {plan.disabled ? (
+        <span className="block w-full cursor-not-allowed rounded-lg border-2 border-black/10 bg-black/5 py-3.5 text-center text-sm font-bold text-black/30">
+          {t.landing.pricing.tryDemo}
+        </span>
+      ) : (
+        <Link
+          href={plan.href}
+          className={clsx(
+            'block w-full rounded-lg py-3.5 text-center text-sm font-bold transition-all duration-300 ease-in-out hover:scale-105',
+            isDark
+              ? 'bg-gradient-to-r from-emerald-600 to-cyan-500 text-white shadow-xl hover:from-emerald-500 hover:to-cyan-400 hover:shadow-2xl'
               : 'border-2 border-black bg-black text-white hover:bg-black/90'
-        )}
-      >
-        {isDemo ? t.landing.pricing.tryDemo : t.landing.pricing.getStarted}
-      </Link>
+          )}
+        >
+          {t.landing.pricing.getStarted}
+        </Link>
+      )}
     </div>
   );
 };

@@ -1,7 +1,12 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { ChevronDown, LogOut, Plus, Settings, User } from 'lucide-react';
+import {
+  ChevronDown,
+  LogOut,
+  Plus,
+  Settings as SettingsIcon,
+} from 'lucide-react';
 import { clsx } from 'clsx';
 import type { TNavItem, IWorkspaceItem } from '@interfaces';
 import { useTranslations } from '@hooks';
@@ -19,6 +24,7 @@ export interface ISidebarProps {
   onCreateTopic?: (folderId?: string) => void;
   onWorkspaceSelect?: (id: string) => void;
   onCreateWorkspace?: () => void;
+  onSettingsClick?: () => void;
 }
 
 export const Sidebar = ({
@@ -31,12 +37,14 @@ export const Sidebar = ({
   onCreateTopic,
   onWorkspaceSelect,
   onCreateWorkspace,
+  onSettingsClick,
 }: ISidebarProps) => {
   const router = useRouter();
   const t = useTranslations();
 
   const activeWorkspaceName =
-    workspaces.find((w) => w.id === activeWorkspaceId)?.name ?? 'My Workspace';
+    workspaces.find((w) => w.id === activeWorkspaceId)?.name ??
+    t.platform.sidebar.defaultWorkspace;
 
   const handleSignOut = async () => {
     await signOut();
@@ -86,7 +94,7 @@ export const Sidebar = ({
               className="flex w-full items-center gap-2 rounded-xl px-3 py-1.5 text-sm text-black/40 transition-colors hover:bg-black/5 hover:text-black/60"
             >
               <Plus className="h-3.5 w-3.5 shrink-0" />
-              <span>New workspace</span>
+              <span>{t.platform.sidebar.newWorkspace}</span>
             </button>
           </div>
         </List>
@@ -95,7 +103,7 @@ export const Sidebar = ({
       <div className="flex-1 overflow-x-hidden overflow-y-auto px-3 py-2">
         <div className="mb-1.5 flex items-center justify-between px-2">
           <span className="text-xs font-medium tracking-wider text-black/30 uppercase">
-            Structure
+            {t.platform.sidebar.structure}
           </span>
           <button
             onClick={() => onCreateTopic?.()}
@@ -115,17 +123,16 @@ export const Sidebar = ({
       </div>
 
       <div className="space-y-0.5 border-t border-black/5 px-3 py-2">
-        <button className="flex w-full items-center gap-3 rounded-xl px-3 py-1.5 text-sm text-black/50 transition-colors hover:bg-black/5 hover:text-black">
-          <Settings className="h-4 w-4 shrink-0" />
-          <span>Settings</span>
-        </button>
-        <button className="flex w-full items-center gap-3 rounded-xl px-3 py-1.5 text-sm text-black/50 transition-colors hover:bg-black/5 hover:text-black">
-          <User className="h-4 w-4 shrink-0" />
-          <span>Account</span>
+        <button
+          onClick={onSettingsClick}
+          className="flex w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-1.5 text-sm text-black/50 transition-colors hover:bg-black/5 hover:text-black"
+        >
+          <SettingsIcon className="h-4 w-4 shrink-0" />
+          <span>{t.platform.settings.title}</span>
         </button>
         <button
           onClick={handleSignOut}
-          className="flex w-full items-center gap-3 rounded-xl px-3 py-1.5 text-sm text-black/50 transition-colors hover:bg-black/5 hover:text-red-600"
+          className="flex w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-1.5 text-sm text-black/50 transition-colors hover:bg-black/5 hover:text-red-600"
         >
           <LogOut className="h-4 w-4 shrink-0" />
           <span>{t.platform.sidebar.signOut}</span>

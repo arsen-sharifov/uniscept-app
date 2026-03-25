@@ -60,7 +60,91 @@
   },
   "platform": {
     "sidebar": {
+      "defaultWorkspace": "My Workspace",
+      "newWorkspace": "New workspace",
+      "structure": "Structure",
       "signOut": "Sign Out"
+    },
+    "settings": {
+      "title": "Settings",
+      "comingSoon": "Coming soon",
+      "groups": {
+        "account": "Account",
+        "preferences": "Preferences",
+        "subscription": "Subscription"
+      },
+      "sections": {
+        "profile": "Profile",
+        "security": "Security",
+        "notifications": "Notifications",
+        "appearance": "Appearance",
+        "editor": "Editor",
+        "plan": "Plan & Billing"
+      },
+      "profile": {
+        "email": "Email",
+        "name": "Full Name",
+        "save": "Save",
+        "saving": "Saving...",
+        "saved": "Saved",
+        "changeEmail": "Change Email",
+        "changingEmail": "Sending...",
+        "emailChangeRequested": "Confirmation email sent to the new address.",
+        "saveFailed": "Failed to save. Please try again.",
+        "emailChangeFailed": "Failed to change email. Please try again."
+      },
+      "security": {
+        "changePassword": "Change Password",
+        "newPassword": "New Password",
+        "confirmPassword": "Confirm Password",
+        "updatePassword": "Update Password",
+        "updatingPassword": "Updating...",
+        "passwordUpdated": "Password updated",
+        "passwordMismatch": "Passwords do not match",
+        "dangerZone": "Danger Zone",
+        "deleteAccount": "Delete Account",
+        "deleteConfirm": "Are you sure? This action cannot be undone. All your data will be permanently deleted.",
+        "deleteButton": "Delete My Account",
+        "deleting": "Deleting...",
+        "cancel": "Cancel",
+        "updateFailed": "Failed to update password. Please try again.",
+        "deleteFailed": "Failed to delete account. Please try again."
+      },
+      "notifications": {
+        "description": "Choose what notifications you receive",
+        "mentions": "Mentions",
+        "mentionsDescription": "Notify me when someone mentions me",
+        "comments": "Comments",
+        "commentsDescription": "Notify me when someone comments on my nodes",
+        "invites": "Workspace invites",
+        "invitesDescription": "Notify me about workspace invitations",
+        "digest": "Weekly digest",
+        "digestDescription": "Receive a weekly summary of workspace activity"
+      },
+      "appearance": {
+        "theme": "Theme",
+        "themeLight": "Light",
+        "themeDark": "Dark",
+        "themeSystem": "System",
+        "language": "Language",
+        "english": "English"
+      },
+      "editor": {
+        "canvas": "Canvas",
+        "snapToGrid": "Snap to grid",
+        "snapToGridDescription": "Align elements to grid when moving",
+        "showGrid": "Show grid",
+        "showGridDescription": "Display grid lines on the canvas",
+        "showMinimap": "Show minimap",
+        "showMinimapDescription": "Show a minimap overview in the corner",
+        "defaultZoom": "Default zoom level"
+      },
+      "plan": {
+        "current": "Current",
+        "free": "Free",
+        "paidPlansNote": "Paid plans will be available after the beta period.",
+        "earlyBirdNote": "Beta users will receive early-bird pricing."
+      }
     }
   },
   "landing": {

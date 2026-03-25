@@ -1,7 +1,7 @@
-export { Hero } from './Hero';
-export { ProblemSection } from './ProblemSection';
-export { ProductSection } from './ProductSection';
-export { BuildersSection } from './BuildersSection';
-export { HowItWorksSection } from './HowItWorksSection';
-export { PricingSection } from './PricingSection';
-export { CTASection } from './CTASection';
+export * from './Hero';
+export * from './ProblemSection';
+export * from './ProductSection';
+export * from './BuildersSection';
+export * from './HowItWorksSection';
+export * from './PricingSection';
+export * from './CTASection';

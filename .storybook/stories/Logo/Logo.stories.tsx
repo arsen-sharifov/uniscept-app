@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { Logo } from '@/components';
-
 import { ARG_CATEGORIES } from '../../consts';
 import { sizes } from './consts';
 
@@ -23,13 +22,11 @@ const meta: Meta<typeof Logo> = {
     },
   },
   decorators: [
-    function WithPadding(Story) {
-      return (
-        <div className="flex items-center justify-center p-12">
-          <Story />
-        </div>
-      );
-    },
+    (Story) => (
+      <div className="flex items-center justify-center p-12">
+        <Story />
+      </div>
+    ),
   ],
 };
 

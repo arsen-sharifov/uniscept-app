@@ -12,7 +12,7 @@ import { useCanvasStore } from '@/lib/stores';
 import { CanvasNode } from './CanvasNode';
 import { ReferenceNode } from './ReferenceNode';
 import { ReferenceSearchPanel } from './ReferenceSearchPanel';
-import { useCanvasTools } from './useCanvasTools';
+import { useCanvasTools } from './hooks';
 
 const nodeTypes = {
   'canvas-node': CanvasNode,

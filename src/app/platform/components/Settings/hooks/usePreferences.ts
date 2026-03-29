@@ -3,8 +3,8 @@
 import { useEffect, useRef, useState } from 'react';
 import type { IPreferences } from '@interfaces';
 import { getPreferences, upsertPreferences } from '@api/client';
-import { STORAGE_KEY } from './consts';
-import { readFromStorage } from './utils';
+import { STORAGE_KEY } from '../consts';
+import { readFromStorage } from '../utils';
 
 export const usePreferences = () => {
   const [preferences, setPreferences] = useState<IPreferences>(readFromStorage);

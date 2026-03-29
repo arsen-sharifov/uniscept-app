@@ -10,6 +10,7 @@ import {
   applyEdgeChanges,
 } from '@xyflow/react';
 import type {
+  ICanvasData,
   ICanvasNodeData,
   IComment,
   IReferenceNodeData,
@@ -19,19 +20,14 @@ import type {
 } from '@interfaces';
 import { ECanvasTool } from '@/components/tools';
 
-interface ISnapshot {
-  nodes: Node[];
-  edges: Edge[];
-}
-
 interface ICanvasStore {
   activeTool: ECanvasTool;
   nodes: Node[];
   edges: Edge[];
   pendingConnection: string | null;
   referenceSearchPosition: XYPosition | null;
-  _past: ISnapshot[];
-  _future: ISnapshot[];
+  _past: ICanvasData[];
+  _future: ICanvasData[];
 
   setActiveTool: (tool: ECanvasTool) => void;
   onNodesChange: OnNodesChange;
@@ -183,8 +179,8 @@ export const useCanvasStore = create<ICanvasStore>((set, get) => {
 
     undo: () => {
       const { _past, _future, nodes, edges } = get();
-      if (_past.length === 0) return;
-      const prev = _past[_past.length - 1]!;
+      const prev = _past.at(-1);
+      if (!prev) return;
       set({
         nodes: prev.nodes,
         edges: prev.edges,
@@ -195,8 +191,8 @@ export const useCanvasStore = create<ICanvasStore>((set, get) => {
 
     redo: () => {
       const { _past, _future, nodes, edges } = get();
-      if (_future.length === 0) return;
-      const next = _future[0]!;
+      const next = _future.at(0);
+      if (!next) return;
       set({
         nodes: next.nodes,
         edges: next.edges,

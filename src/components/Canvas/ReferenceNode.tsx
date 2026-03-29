@@ -9,7 +9,7 @@ export const ReferenceNode = ({
   data,
   selected,
 }: NodeProps<TReferenceNode>) => {
-  const { label, sourceTopicName, sourceWorkspaceId } = data;
+  const { label, sourceThreadName, sourceWorkspaceId } = data;
 
   return (
     <div
@@ -25,7 +25,7 @@ export const ReferenceNode = ({
       <p className="text-sm font-medium text-black/50 select-none">{label}</p>
 
       <p className="mt-0.5 truncate text-[10px] text-black/30">
-        from: {sourceWorkspaceId} / {sourceTopicName}
+        from: {sourceWorkspaceId} / {sourceThreadName}
       </p>
 
       <Handle

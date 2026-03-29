@@ -1,16 +1,15 @@
 'use client';
 
-import { ReactFlowProvider } from '@xyflow/react';
-import { Canvas } from '@/components';
+import { useTranslations } from '@hooks';
 
-const AppPage = () => {
+const PlatformPage = () => {
+  const t = useTranslations();
+
   return (
-    <div className="h-screen w-screen">
-      <ReactFlowProvider>
-        <Canvas />
-      </ReactFlowProvider>
+    <div className="flex h-screen w-screen items-center justify-center">
+      <p className="text-sm text-black/30">{t.platform.sidebar.emptyState}</p>
     </div>
   );
 };
 
-export default AppPage;
+export default PlatformPage;

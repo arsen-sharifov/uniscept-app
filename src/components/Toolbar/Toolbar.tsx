@@ -29,12 +29,12 @@ export const Toolbar = ({
                 title={tool.label}
                 disabled={tool.disabled}
                 className={clsx(
-                  'flex h-8 w-8 items-center justify-center rounded-xl transition-all',
+                  'flex h-8 w-8 items-center justify-center rounded-xl transition-all duration-150',
                   tool.disabled
                     ? 'cursor-not-allowed text-black/20'
                     : isActive
-                      ? 'bg-gradient-to-br from-emerald-500 to-cyan-500 text-white shadow-sm'
-                      : 'text-black/40 hover:bg-gradient-to-br hover:from-emerald-500/10 hover:to-cyan-500/10 hover:text-emerald-700'
+                      ? 'scale-105 bg-gradient-to-br from-emerald-500 to-cyan-500 text-white shadow-md'
+                      : 'text-black/40 hover:scale-110 hover:bg-gradient-to-br hover:from-emerald-500/10 hover:to-cyan-500/10 hover:text-emerald-700 active:scale-95'
                 )}
               >
                 <Icon className="h-4 w-4" />

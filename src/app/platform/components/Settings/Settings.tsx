@@ -5,8 +5,7 @@ import { X } from 'lucide-react';
 import type { TSettingsSection } from '@interfaces';
 import { useTranslations } from '@hooks';
 import { Modal } from '@/components';
-import { useSettings } from './useSettings';
-import { usePreferences } from './usePreferences';
+import { usePreferences, useSettings } from './hooks';
 import { SettingsSidebar } from './SettingsSidebar';
 import {
   AppearanceSection,
@@ -15,7 +14,7 @@ import {
   PlanSection,
   ProfileSection,
   SecuritySection,
-} from './sections';
+} from './fragments';
 
 export interface ISettingsProps {
   onClose: () => void;

@@ -1,5 +1,5 @@
 import type { IPreferences } from '@interfaces';
-import { DEFAULT_PREFERENCES, STORAGE_KEY } from './consts';
+import { DEFAULT_PREFERENCES, STORAGE_KEY } from '../consts';
 
 export const readFromStorage = (): IPreferences => {
   try {

@@ -1,12 +1,5 @@
 import type { Node } from '@xyflow/react';
 
-export interface ITopic {
-  id: string;
-  name: string;
-  workspaceId: string;
-  workspaceName: string;
-}
-
 export type TNodeStatus = 'valid' | 'invalid' | null;
 
 export interface IComment {
@@ -25,10 +18,12 @@ export type TCanvasNode = Node<ICanvasNodeData>;
 
 export interface IReferenceNodeData {
   label: string;
-  sourceTopicId: string;
-  sourceTopicName: string;
+  sourceThreadId: string;
+  sourceThreadName: string;
   sourceWorkspaceId: string;
   [key: string]: unknown;
 }
 
 export type TReferenceNode = Node<IReferenceNodeData>;
+
+export type THandleId = 'top' | 'right' | 'bottom' | 'left';

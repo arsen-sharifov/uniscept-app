@@ -1,15 +1,13 @@
 import type { Node, XYPosition } from '@xyflow/react';
-
-export type THandleId = 'top' | 'right' | 'bottom' | 'left';
-
-export const HANDLE_IDS: THandleId[] = ['top', 'right', 'bottom', 'left'];
+import type { THandleId } from '@interfaces';
+import { DEFAULT_NODE_HEIGHT, DEFAULT_NODE_WIDTH, HANDLE_IDS } from '../consts';
 
 export const getHandlePosition = (
   node: Node,
   handleId: THandleId
 ): XYPosition => {
-  const w = node.measured?.width ?? 160;
-  const h = node.measured?.height ?? 40;
+  const w = node.measured?.width ?? DEFAULT_NODE_WIDTH;
+  const h = node.measured?.height ?? DEFAULT_NODE_HEIGHT;
   const x = node.position.x;
   const y = node.position.y;
 
@@ -25,8 +23,7 @@ export const getHandlePosition = (
   }
 };
 
-export const dist = (a: XYPosition, b: XYPosition) =>
-  Math.hypot(a.x - b.x, a.y - b.y);
+const dist = (a: XYPosition, b: XYPosition) => Math.hypot(a.x - b.x, a.y - b.y);
 
 export const findNearestHandlePair = (
   source: Node,

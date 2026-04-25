@@ -1,2 +1,2 @@
 export * from './Toolbar';
-export * from './useToolbar';
+export * from './hooks';

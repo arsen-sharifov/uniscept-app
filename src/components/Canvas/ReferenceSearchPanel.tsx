@@ -3,15 +3,16 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useReactFlow, type XYPosition } from '@xyflow/react';
 import { Search } from 'lucide-react';
-import type { IReferenceNodeData, ITopic } from '@interfaces';
+import type { IReferenceNodeData, IThreadReference } from '@interfaces';
+import { useTranslations } from '@hooks';
 import { useCanvasStore } from '@/lib/stores';
 
 interface IReferenceSearchPanelProps {
-  topics?: ITopic[];
+  threads?: IThreadReference[];
 }
 
 interface IReferenceSearchPanelContentProps {
-  topics: ITopic[];
+  threads: IThreadReference[];
   position: XYPosition;
   screenPos: XYPosition;
   onSelect: (position: XYPosition, data: IReferenceNodeData) => void;
@@ -19,12 +20,13 @@ interface IReferenceSearchPanelContentProps {
 }
 
 const ReferenceSearchPanelContent = ({
-  topics,
+  threads,
   screenPos,
   position,
   onSelect,
   onClose,
 }: IReferenceSearchPanelContentProps) => {
+  const t = useTranslations();
   const [query, setQuery] = useState('');
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -49,18 +51,18 @@ const ReferenceSearchPanelContent = ({
     };
   }, [onClose]);
 
-  const filtered = topics.filter(
+  const filtered = threads.filter(
     (t) =>
       t.name.toLowerCase().includes(query.toLowerCase()) ||
       t.workspaceName.toLowerCase().includes(query.toLowerCase())
   );
 
-  const handleSelect = (topic: ITopic) => {
+  const handleSelect = (thread: IThreadReference) => {
     onSelect(position, {
-      label: topic.name,
-      sourceTopicId: topic.id,
-      sourceTopicName: topic.name,
-      sourceWorkspaceId: topic.workspaceName,
+      label: thread.name,
+      sourceThreadId: thread.id,
+      sourceThreadName: thread.name,
+      sourceWorkspaceId: thread.workspaceName,
     });
   };
 
@@ -76,7 +78,7 @@ const ReferenceSearchPanelContent = ({
           ref={inputCallbackRef}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search topics..."
+          placeholder={t.platform.canvas.searchThreads}
           className="min-w-0 flex-1 bg-transparent text-sm text-black/70 outline-none placeholder:text-black/30"
         />
       </div>
@@ -84,20 +86,20 @@ const ReferenceSearchPanelContent = ({
       <div className="flex max-h-60 flex-col overflow-y-auto p-1.5">
         {filtered.length === 0 ? (
           <p className="px-3 py-4 text-center text-xs text-black/30">
-            No topics found
+            {t.platform.canvas.noThreadsFound}
           </p>
         ) : (
-          filtered.map((topic) => (
+          filtered.map((thread) => (
             <button
-              key={topic.id}
-              onClick={() => handleSelect(topic)}
+              key={thread.id}
+              onClick={() => handleSelect(thread)}
               className="flex flex-col rounded-xl px-3 py-2 text-left transition-colors hover:bg-gradient-to-r hover:from-emerald-500/5 hover:to-cyan-500/5"
             >
               <span className="text-sm font-medium text-black/60">
-                {topic.name}
+                {thread.name}
               </span>
               <span className="text-[10px] text-black/30">
-                {topic.workspaceName}
+                {thread.workspaceName}
               </span>
             </button>
           ))
@@ -108,7 +110,7 @@ const ReferenceSearchPanelContent = ({
 };
 
 export const ReferenceSearchPanel = ({
-  topics = [],
+  threads = [],
 }: IReferenceSearchPanelProps) => {
   const { flowToScreenPosition } = useReactFlow();
 
@@ -132,7 +134,7 @@ export const ReferenceSearchPanel = ({
   return (
     <ReferenceSearchPanelContent
       key={key}
-      topics={topics}
+      threads={threads}
       position={referenceSearchPosition}
       screenPos={screenPos}
       onSelect={addReferenceNode}

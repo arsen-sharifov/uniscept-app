@@ -9,7 +9,7 @@ import {
 } from '@xyflow/react';
 import { useCanvasStore } from '@/lib/stores';
 import { ECanvasTool } from '@/components/tools';
-import { findNearestHandlePair } from './utils';
+import { findNearestHandlePair } from '../utils';
 
 export const useCanvasTools = () => {
   const { screenToFlowPosition } = useReactFlow();

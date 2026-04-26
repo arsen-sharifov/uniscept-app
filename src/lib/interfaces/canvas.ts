@@ -21,6 +21,7 @@ export interface IReferenceNodeData {
   sourceThreadId: string;
   sourceThreadName: string;
   sourceWorkspaceId: string;
+  sourceWorkspaceName: string;
   [key: string]: unknown;
 }
 

@@ -13,15 +13,16 @@ export const useToolbar = () => {
 
   const groups = useMemo(
     () =>
-      CANVAS_TOOL_GROUPS.map((group) =>
-        group.map((tool) => {
+      CANVAS_TOOL_GROUPS.map((group) => ({
+        ...group,
+        tools: group.tools.map((tool) => {
           if (tool.id === ECanvasTool.Undo)
             return { ...tool, disabled: !canUndo };
           if (tool.id === ECanvasTool.Redo)
             return { ...tool, disabled: !canRedo };
           return tool;
-        })
-      ),
+        }),
+      })),
     [canUndo, canRedo]
   );
 

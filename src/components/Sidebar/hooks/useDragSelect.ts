@@ -1,12 +1,6 @@
 'use client';
 
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  type RefObject,
-} from 'react';
+import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
 import type { IDragSelectRect } from '@interfaces';
 import {
   AUTO_SCROLL_INTERVAL_MS,
@@ -22,16 +16,9 @@ interface IUseDragSelectOptions {
 }
 
 const rectsOverlap = (a: DOMRect, b: IDragSelectRect): boolean =>
-  a.left < b.x + b.width &&
-  a.right > b.x &&
-  a.top < b.y + b.height &&
-  a.bottom > b.y;
+  a.left < b.x + b.width && a.right > b.x && a.top < b.y + b.height && a.bottom > b.y;
 
-export const useDragSelect = ({
-  containerRef,
-  onSelectionChange,
-  enabled = true,
-}: IUseDragSelectOptions) => {
+export const useDragSelect = ({ containerRef, onSelectionChange, enabled = true }: IUseDragSelectOptions) => {
   const [rect, setRect] = useState<IDragSelectRect | null>(null);
   const startPos = useRef<{ x: number; y: number } | null>(null);
   const isActive = useRef(false);
@@ -46,20 +33,17 @@ export const useDragSelect = ({
     }
   }, []);
 
-  const computeRect = useCallback(
-    (clientX: number, clientY: number): IDragSelectRect | null => {
-      const start = startPos.current;
-      if (!start) return null;
+  const computeRect = useCallback((clientX: number, clientY: number): IDragSelectRect | null => {
+    const start = startPos.current;
+    if (!start) return null;
 
-      const x = Math.min(start.x, clientX);
-      const y = Math.min(start.y, clientY);
-      const width = Math.abs(clientX - start.x);
-      const height = Math.abs(clientY - start.y);
+    const x = Math.min(start.x, clientX);
+    const y = Math.min(start.y, clientY);
+    const width = Math.abs(clientX - start.x);
+    const height = Math.abs(clientY - start.y);
 
-      return { x, y, width, height };
-    },
-    []
-  );
+    return { x, y, width, height };
+  }, []);
 
   const findIntersectingIds = useCallback(
     (selectionRect: IDragSelectRect): Set<string> => {
@@ -74,9 +58,7 @@ export const useDragSelect = ({
           }))
           .filter(
             (entry): entry is { id: string; rect: DOMRect } =>
-              entry.id !== null &&
-              entry.rect.height > 0 &&
-              rectsOverlap(entry.rect, selectionRect)
+              entry.id !== null && entry.rect.height > 0 && rectsOverlap(entry.rect, selectionRect)
           )
           .map((entry) => entry.id)
       );
@@ -126,9 +108,7 @@ export const useDragSelect = ({
         }
       });
 
-      const scrollParent = containerRef.current?.closest(
-        '[data-sidebar-scroll]'
-      ) as HTMLElement | null;
+      const scrollParent = containerRef.current?.closest('[data-sidebar-scroll]') as HTMLElement | null;
       if (!scrollParent) return;
 
       const scrollBounds = scrollParent.getBoundingClientRect();
@@ -144,21 +124,14 @@ export const useDragSelect = ({
         }, AUTO_SCROLL_INTERVAL_MS);
       } else if (
         distFromBottom < AUTO_SCROLL_ZONE_PX &&
-        scrollParent.scrollTop <
-          scrollParent.scrollHeight - scrollParent.clientHeight
+        scrollParent.scrollTop < scrollParent.scrollHeight - scrollParent.clientHeight
       ) {
         scrollInterval.current = setInterval(() => {
           scrollParent.scrollTop += AUTO_SCROLL_STEP_PX;
         }, AUTO_SCROLL_INTERVAL_MS);
       }
     },
-    [
-      computeRect,
-      findIntersectingIds,
-      onSelectionChange,
-      containerRef,
-      clearAutoScroll,
-    ]
+    [computeRect, findIntersectingIds, onSelectionChange, containerRef, clearAutoScroll]
   );
 
   const handleMouseUp = useCallback(() => {
@@ -177,9 +150,7 @@ export const useDragSelect = ({
     const container = containerRef.current;
     if (!container || !enabled) return;
 
-    const scrollParent = container.closest(
-      '[data-sidebar-scroll]'
-    ) as HTMLElement | null;
+    const scrollParent = container.closest('[data-sidebar-scroll]') as HTMLElement | null;
     const mouseDownTarget = scrollParent ?? container;
 
     mouseDownTarget.addEventListener('mousedown', handleMouseDown);
@@ -193,14 +164,7 @@ export const useDragSelect = ({
       clearAutoScroll();
       if (rafId.current !== null) cancelAnimationFrame(rafId.current);
     };
-  }, [
-    containerRef,
-    enabled,
-    handleMouseDown,
-    handleMouseMove,
-    handleMouseUp,
-    clearAutoScroll,
-  ]);
+  }, [containerRef, enabled, handleMouseDown, handleMouseMove, handleMouseUp, clearAutoScroll]);
 
   return { rect };
 };

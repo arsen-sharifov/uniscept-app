@@ -14,12 +14,7 @@ import {
   useSensors,
 } from '@dnd-kit/core';
 import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
-import type {
-  IProjection,
-  TDropZone,
-  TNavItem,
-  TNavItemType,
-} from '@interfaces';
+import type { IProjection, TDropZone, TNavItem, TNavItemType } from '@interfaces';
 import { flattenTree, getProjection, removeChildrenOf } from '../dnd';
 import {
   AUTO_EXPAND_DELAY_MS,
@@ -31,12 +26,7 @@ import {
 
 interface IUseDndTreeOptions {
   items: TNavItem[];
-  onMoveItem?: (
-    id: string,
-    type: TNavItemType,
-    parentId: string | null,
-    position: number
-  ) => void;
+  onMoveItem?: (id: string, type: TNavItemType, parentId: string | null, position: number) => void;
   onBulkMove?: (ids: Set<string>, parentId: string | null) => void;
   editingId?: string | null;
   selectedIds?: Set<string>;
@@ -50,44 +40,23 @@ const findAnchorAtParent = <T extends { id: string; parentId: string | null }>(
   const node = items.find((item) => item.id === id);
   if (!node) return null;
   if (node.parentId === targetParentId) return node.id;
-  return node.parentId
-    ? findAnchorAtParent(items, node.parentId, targetParentId)
-    : null;
+  return node.parentId ? findAnchorAtParent(items, node.parentId, targetParentId) : null;
 };
 
-const resolveFolderZone = (
-  ratio: number,
-  prev: TDropZone,
-  sameTarget: boolean,
-  buffer: number
-): TDropZone => {
+const resolveFolderZone = (ratio: number, prev: TDropZone, sameTarget: boolean, buffer: number): TDropZone => {
   if (!sameTarget) return ratio < FOLDER_INSIDE_THRESHOLD ? 'before' : 'inside';
-  if (prev === 'before')
-    return ratio > FOLDER_INSIDE_THRESHOLD + buffer ? 'inside' : 'before';
-  if (prev === 'inside')
-    return ratio < FOLDER_INSIDE_THRESHOLD - buffer ? 'before' : 'inside';
+  if (prev === 'before') return ratio > FOLDER_INSIDE_THRESHOLD + buffer ? 'inside' : 'before';
+  if (prev === 'inside') return ratio < FOLDER_INSIDE_THRESHOLD - buffer ? 'before' : 'inside';
   return ratio < FOLDER_INSIDE_THRESHOLD ? 'before' : 'inside';
 };
 
-const resolveLeafZone = (
-  ratio: number,
-  prev: TDropZone,
-  sameTarget: boolean,
-  buffer: number
-): TDropZone => {
+const resolveLeafZone = (ratio: number, prev: TDropZone, sameTarget: boolean, buffer: number): TDropZone => {
   if (!sameTarget) return ratio < LEAF_SPLIT_THRESHOLD ? 'before' : 'after';
-  if (prev === 'before')
-    return ratio > LEAF_SPLIT_THRESHOLD + buffer ? 'after' : 'before';
+  if (prev === 'before') return ratio > LEAF_SPLIT_THRESHOLD + buffer ? 'after' : 'before';
   return ratio < LEAF_SPLIT_THRESHOLD - buffer ? 'before' : 'after';
 };
 
-export const useDndTree = ({
-  items,
-  onMoveItem,
-  onBulkMove,
-  editingId,
-  selectedIds,
-}: IUseDndTreeOptions) => {
+export const useDndTree = ({ items, onMoveItem, onBulkMove, editingId, selectedIds }: IUseDndTreeOptions) => {
   const [collapsedIds, setCollapsedIds] = useState<Set<string>>(new Set());
   const [activeId, setActiveId] = useState<string | null>(null);
   const [overId, setOverId] = useState<string | null>(null);
@@ -108,10 +77,7 @@ export const useDndTree = ({
       stickyOverIdRef.current = pw[0]!.id;
       return pw;
     }
-    if (
-      stickyOverIdRef.current !== null &&
-      args.droppableRects.get(stickyOverIdRef.current)
-    ) {
+    if (stickyOverIdRef.current !== null && args.droppableRects.get(stickyOverIdRef.current)) {
       return [{ id: stickyOverIdRef.current }];
     }
     return closestCenter(args);
@@ -126,10 +92,7 @@ export const useDndTree = ({
     })
   );
 
-  const flattenedItems = useMemo(
-    () => flattenTree(items, collapsedIds),
-    [items, collapsedIds]
-  );
+  const flattenedItems = useMemo(() => flattenTree(items, collapsedIds), [items, collapsedIds]);
 
   const sortableItems = useMemo(() => {
     if (!activeId) return flattenedItems;
@@ -140,44 +103,27 @@ export const useDndTree = ({
     return removeChildrenOf(flattenedItems, excludeIds);
   }, [flattenedItems, activeId, selectedIds]);
 
-  const sortedIds = useMemo(
-    () => sortableItems.map((item) => item.id),
-    [sortableItems]
-  );
+  const sortedIds = useMemo(() => sortableItems.map((item) => item.id), [sortableItems]);
 
   const projected: IProjection | null = useMemo(() => {
     if (!activeId || !overId) return null;
     const base = getProjection(sortableItems, activeId, overId, dropZone);
     if (!base) return null;
-    const result: IProjection = isPastLast
-      ? { depth: 0, parentId: null, zone: 'after' }
-      : base;
+    const result: IProjection = isPastLast ? { depth: 0, parentId: null, zone: 'after' } : base;
 
     const activeItem = sortableItems.find((item) => item.id === activeId);
     if (!activeItem || activeItem.parentId !== result.parentId) return result;
 
-    const siblings = sortableItems.filter(
-      (item) => item.parentId === result.parentId
-    );
+    const siblings = sortableItems.filter((item) => item.parentId === result.parentId);
     const activeIdx = siblings.findIndex((item) => item.id === activeId);
     if (activeIdx === -1) return result;
 
     const targetIdx = (() => {
       if (result.zone === 'inside') return 0;
-      const anchorId = findAnchorAtParent(
-        sortableItems,
-        overId,
-        result.parentId
-      );
-      const siblingsSansActive = siblings.filter(
-        (item) => item.id !== activeId
-      );
-      const anchorIdx = anchorId
-        ? siblingsSansActive.findIndex((item) => item.id === anchorId)
-        : -1;
-      return anchorIdx === -1
-        ? siblingsSansActive.length
-        : anchorIdx + (result.zone === 'after' ? 1 : 0);
+      const anchorId = findAnchorAtParent(sortableItems, overId, result.parentId);
+      const siblingsSansActive = siblings.filter((item) => item.id !== activeId);
+      const anchorIdx = anchorId ? siblingsSansActive.findIndex((item) => item.id === anchorId) : -1;
+      return anchorIdx === -1 ? siblingsSansActive.length : anchorIdx + (result.zone === 'after' ? 1 : 0);
     })();
 
     if (targetIdx === activeIdx) return null;
@@ -226,14 +172,8 @@ export const useDndTree = ({
       if (editingId) return;
 
       const id = active.id as string;
-      const item = flattenedItems.find(
-        (flattenedItem) => flattenedItem.id === id
-      );
-      isBulkDragRef.current = !!(
-        selectedIds &&
-        selectedIds.size > 1 &&
-        selectedIds.has(id)
-      );
+      const item = flattenedItems.find((flattenedItem) => flattenedItem.id === id);
+      isBulkDragRef.current = !!(selectedIds && selectedIds.size > 1 && selectedIds.has(id));
 
       stickyOverIdRef.current = null;
 
@@ -254,17 +194,12 @@ export const useDndTree = ({
       setOverId((prev) => (prev === curOverId ? prev : curOverId));
 
       const hasPointer = 'clientY' in activatorEvent;
-      const pointerY = hasPointer
-        ? (activatorEvent as PointerEvent).clientY + delta.y
-        : null;
+      const pointerY = hasPointer ? (activatorEvent as PointerEvent).clientY + delta.y : null;
 
       const lastItem = sortableItems[sortableItems.length - 1];
-      const lastEl = lastItem
-        ? document.querySelector(`[data-item-id="${lastItem.id}"]`)
-        : null;
+      const lastEl = lastItem ? document.querySelector(`[data-item-id="${lastItem.id}"]`) : null;
       const lastBottom = lastEl?.getBoundingClientRect().bottom;
-      const nextPastLast =
-        pointerY !== null && lastBottom !== undefined && pointerY > lastBottom;
+      const nextPastLast = pointerY !== null && lastBottom !== undefined && pointerY > lastBottom;
       setIsPastLast((prev) => (prev === nextPastLast ? prev : nextPastLast));
 
       if (!curOverId || curOverId === activeId) {
@@ -283,10 +218,7 @@ export const useDndTree = ({
       if (!el) return;
 
       const rect = el.getBoundingClientRect();
-      const ratio = Math.max(
-        0,
-        Math.min(1, (pointerY - rect.top) / rect.height)
-      );
+      const ratio = Math.max(0, Math.min(1, (pointerY - rect.top) / rect.height));
 
       const overItem = sortableItems.find((item) => item.id === curOverId);
       const isFolder = overItem?.type === 'folder';
@@ -305,11 +237,7 @@ export const useDndTree = ({
         setDropZone(zone);
       }
 
-      if (
-        zone === 'inside' &&
-        overItem?.type === 'folder' &&
-        collapsedIds.has(curOverId)
-      ) {
+      if (zone === 'inside' && overItem?.type === 'folder' && collapsedIds.has(curOverId)) {
         if (expandTargetRef.current !== curOverId) {
           clearExpandTimer();
           expandTargetRef.current = curOverId;
@@ -351,32 +279,19 @@ export const useDndTree = ({
         return;
       }
 
-      const activeIndex = sortableItems.findIndex(
-        (item) => item.id === draggedId
-      );
+      const activeIndex = sortableItems.findIndex((item) => item.id === draggedId);
       if (activeIndex === -1) {
         resetDragState();
         return;
       }
 
-      const activeItem = sortableItems[
-        activeIndex
-      ] as (typeof sortableItems)[number];
+      const activeItem = sortableItems[activeIndex] as (typeof sortableItems)[number];
 
       const getPosition = () => {
         if (projected.zone === 'inside') return 0;
-        const siblings = sortableItems.filter(
-          (item) =>
-            item.id !== draggedId && item.parentId === projected.parentId
-        );
-        const anchorId = findAnchorAtParent(
-          sortableItems,
-          endOverId,
-          projected.parentId
-        );
-        const anchor = anchorId
-          ? siblings.findIndex((item) => item.id === anchorId)
-          : -1;
+        const siblings = sortableItems.filter((item) => item.id !== draggedId && item.parentId === projected.parentId);
+        const anchorId = findAnchorAtParent(sortableItems, endOverId, projected.parentId);
+        const anchor = anchorId ? siblings.findIndex((item) => item.id === anchorId) : -1;
         if (anchor === -1) return siblings.length;
         return anchor + (projected.zone === 'after' ? 1 : 0);
       };
@@ -395,16 +310,7 @@ export const useDndTree = ({
 
       resetDragState();
     },
-    [
-      sortableItems,
-      projected,
-      isPastLast,
-      clearExpandTimer,
-      resetDragState,
-      onMoveItem,
-      onBulkMove,
-      selectedIds,
-    ]
+    [sortableItems, projected, isPastLast, clearExpandTimer, resetDragState, onMoveItem, onBulkMove, selectedIds]
   );
 
   const handleDragCancel = useCallback(() => {

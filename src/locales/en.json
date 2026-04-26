@@ -94,8 +94,168 @@
       "noWorkspaceHintCta": "Create a workspace or select one to start working."
     },
     "canvas": {
-      "searchThreads": "Search threads...",
-      "noThreadsFound": "No threads found"
+      "referenceSearch": {
+        "placeholder": "Search nodes...",
+        "noResults": "No nodes found",
+        "noMatch": "Nothing matches \"{query}\"",
+        "hint": "Try a different node label or keyword.",
+        "actionLink": "link",
+        "actionNavigate": "navigate",
+        "actionClose": "close"
+      },
+      "tools": {
+        "ariaLabel": "Canvas tools",
+        "help": "Keyboard shortcuts",
+        "groups": {
+          "navigate": "Navigate",
+          "history": "History",
+          "build": "Build",
+          "annotate": "Annotate",
+          "link": "Link"
+        },
+        "items": {
+          "select": {
+            "label": "Select",
+            "description": "Select and drag nodes around the canvas."
+          },
+          "pan": {
+            "label": "Pan",
+            "description": "Hold and drag to pan the viewport."
+          },
+          "zoomIn": {
+            "label": "Zoom in",
+            "description": "Click anywhere to zoom in toward that point. Hold Shift to zoom out instead."
+          },
+          "zoomOut": {
+            "label": "Zoom out",
+            "description": "Click anywhere to zoom out from that point. Hold Shift to zoom in instead."
+          },
+          "addNode": {
+            "label": "Add node",
+            "description": "Click anywhere on the canvas to drop a new node."
+          },
+          "connect": {
+            "label": "Connect",
+            "description": "Click two nodes to wire them together."
+          },
+          "delete": {
+            "label": "Delete",
+            "description": "Click a node or edge to remove it."
+          },
+          "validPath": {
+            "label": "Mark valid",
+            "description": "Tag clicked nodes as a valid path."
+          },
+          "invalidPath": {
+            "label": "Mark invalid",
+            "description": "Tag clicked nodes as an invalid path."
+          },
+          "comment": {
+            "label": "Comment",
+            "description": "Click a node to open its comments panel."
+          },
+          "crossReference": {
+            "label": "Cross-reference",
+            "description": "Drop a reference to a node from another canvas."
+          },
+          "undo": {
+            "label": "Undo",
+            "description": "Step back through your changes."
+          },
+          "redo": {
+            "label": "Redo",
+            "description": "Replay the change you just undid."
+          }
+        }
+      },
+      "loadError": {
+        "title": "Canvas backend unreachable",
+        "hint": "Couldn't reach Supabase to load this canvas. Check that the local Supabase instance is running, then retry.",
+        "retry": "Retry"
+      },
+      "empty": {
+        "title": "Empty canvas",
+        "hint": "Press {key} and click anywhere to drop your first node",
+        "contextHint": "or right-click the canvas for more options"
+      },
+      "node": {
+        "defaultLabel": "New node",
+        "showMore": "Show more",
+        "showLess": "Show less",
+        "viewComments": "View comments",
+        "addComment": "Add a comment",
+        "addCommentPlaceholder": "Add a comment…",
+        "sendComment": "Send comment",
+        "closeComments": "Close",
+        "commentsHeader": "Comments",
+        "noComments": "No comments yet. Start the conversation."
+      },
+      "reference": {
+        "badge": "Reference",
+        "openHint": "Double-click to open",
+        "openLabel": "Open {name}",
+        "workspaceFallback": "workspace"
+      },
+      "comments": {
+        "panelTitle": "Canvas comments",
+        "addPlaceholder": "Add a canvas comment…",
+        "addAriaLabel": "Add a canvas comment",
+        "sendAriaLabel": "Send comment",
+        "sendTitle": "Send (Enter)",
+        "deleteAriaLabel": "Delete comment",
+        "deleteTitle": "Delete comment",
+        "closeAriaLabel": "Close (Esc)",
+        "closeTitle": "Close (Esc)",
+        "emptyTitle": "No comments on this canvas yet.",
+        "emptyHint": "Start the discussion below."
+      },
+      "save": {
+        "saving": "Saving…",
+        "retrying": "Retrying…",
+        "retryAttempt": "Attempt {n}",
+        "saved": "Saved",
+        "offline": "Offline",
+        "offlinePending": "{count} pending",
+        "errorTitle": "Couldn't save",
+        "errorChange": "{count} change",
+        "errorChanges": "{count} changes",
+        "retry": "Retry",
+        "retryAriaLabel": "Retry failed changes",
+        "discard": "Discard",
+        "discardAriaLabel": "Discard failed changes",
+        "relativeTime": {
+          "justNow": "just now",
+          "secondsAgo": "{n}s ago",
+          "minutesAgo": "{n}m ago",
+          "hoursAgo": "{n}h ago",
+          "daysAgo": "{n}d ago"
+        }
+      },
+      "context": {
+        "ariaLabel": "Canvas actions",
+        "addNode": "Add node",
+        "addReference": "Add reference",
+        "openComments": "Open canvas comments",
+        "deleteEdge": "Delete edge",
+        "openReferenced": "Open referenced canvas",
+        "deleteReference": "Delete reference",
+        "markValid": "Mark valid",
+        "unmarkValid": "Unmark valid",
+        "markInvalid": "Mark invalid",
+        "unmarkInvalid": "Unmark invalid",
+        "comment": "Comment",
+        "duplicate": "Duplicate",
+        "delete": "Delete"
+      },
+      "shortcuts": {
+        "title": "Keyboard shortcuts",
+        "subtitle": "Press a key to switch tools instantly.",
+        "footerHint": "Shortcuts work even while this panel is open.",
+        "closeHint": "close",
+        "ariaLabel": "Keyboard shortcuts",
+        "closeAriaLabel": "Close",
+        "activeBadge": "Active"
+      }
     },
     "settings": {
       "title": "Settings",
@@ -228,20 +388,12 @@
       "founders": {
         "title": "Founders",
         "description": "Make better decisions. Document your reasoning. Stop rehashing the same arguments every quarter.",
-        "useCases": [
-          "Product strategy",
-          "Market analysis",
-          "Technical architecture"
-        ]
+        "useCases": ["Product strategy", "Market analysis", "Technical architecture"]
       },
       "researchers": {
         "title": "Researchers",
         "description": "Map literature. Build frameworks. Turn papers into structured knowledge graphs that actually make sense.",
-        "useCases": [
-          "Literature synthesis",
-          "Hypothesis mapping",
-          "Citation networks"
-        ]
+        "useCases": ["Literature synthesis", "Hypothesis mapping", "Citation networks"]
       },
       "engineers": {
         "title": "Engineers",

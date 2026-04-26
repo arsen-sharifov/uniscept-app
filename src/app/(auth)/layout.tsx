@@ -22,9 +22,7 @@ const AuthLayout = ({ children }: { children: ReactNode }) => {
             <p className="text-lg leading-relaxed font-medium text-white/80">
               {'\u201C'}Build knowledge. Not chaos.{'\u201D'}
             </p>
-            <p className="mt-3 text-sm text-white/40">
-              Structured reasoning for teams that ship.
-            </p>
+            <p className="mt-3 text-sm text-white/40">Structured reasoning for teams that ship.</p>
           </blockquote>
         </div>
       </div>

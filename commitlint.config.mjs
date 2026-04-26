@@ -1,11 +1,7 @@
 const config = {
   extends: ['@commitlint/config-conventional'],
   rules: {
-    'type-enum': [
-      2,
-      'always',
-      ['feat', 'fix', 'chore', 'docs', 'refactor', 'test'],
-    ],
+    'type-enum': [2, 'always', ['feat', 'fix', 'chore', 'docs', 'refactor', 'test']],
     'scope-empty': [2, 'never'],
     'scope-case': [2, 'always', 'lower-case'],
     'scope-dev-format': [2, 'always'],
@@ -21,10 +17,7 @@ const config = {
           if (!scope) return [true];
           const pattern = /^dev-\d+$/;
           const isValid = pattern.test(scope);
-          return [
-            isValid,
-            `Scope must match format "dev-{number}" (e.g., dev-1, dev-42). Got: "${scope}"`,
-          ];
+          return [isValid, `Scope must match format "dev-{number}" (e.g., dev-1, dev-42). Got: "${scope}"`];
         },
       },
     },

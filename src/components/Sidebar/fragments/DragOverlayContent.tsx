@@ -8,10 +8,7 @@ interface IDragOverlayContentProps {
   bulkCount?: number;
 }
 
-export const DragOverlayContent = ({
-  item,
-  bulkCount,
-}: IDragOverlayContentProps) => (
+export const DragOverlayContent = ({ item, bulkCount }: IDragOverlayContentProps) => (
   <div className="relative">
     {bulkCount && bulkCount > 1 && (
       <>

@@ -13,9 +13,7 @@ export const AppearanceSection = () => {
     <div className="space-y-8">
       <div>
         <div className="mb-3 flex items-center gap-2">
-          <h3 className="text-xs font-medium tracking-wider text-black/30 uppercase">
-            {appearance.theme}
-          </h3>
+          <h3 className="text-xs font-medium tracking-wider text-black/30 uppercase">{appearance.theme}</h3>
           <Tooltip text={comingSoon} />
         </div>
         <div className="flex gap-3 opacity-50">
@@ -26,9 +24,7 @@ export const AppearanceSection = () => {
               className="flex flex-1 cursor-not-allowed flex-col items-center gap-2 rounded-xl border-2 border-black/5 px-4 py-4 text-black/40"
             >
               <Icon className="h-5 w-5" />
-              <span className="text-sm font-medium">
-                {appearance[labelKey]}
-              </span>
+              <span className="text-sm font-medium">{appearance[labelKey]}</span>
             </button>
           ))}
         </div>
@@ -36,9 +32,7 @@ export const AppearanceSection = () => {
 
       <div className="border-t border-black/5 pt-6">
         <div className="mb-3 flex items-center gap-2">
-          <h3 className="text-xs font-medium tracking-wider text-black/30 uppercase">
-            {appearance.language}
-          </h3>
+          <h3 className="text-xs font-medium tracking-wider text-black/30 uppercase">{appearance.language}</h3>
           <Tooltip text={comingSoon} />
         </div>
         <div className="relative inline-flex items-center">

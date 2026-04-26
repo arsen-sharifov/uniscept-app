@@ -7,13 +7,7 @@ const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
   ...storybook.configs['flat/recommended'],
-  globalIgnores([
-    '.next/**',
-    'out/**',
-    'build/**',
-    'storybook-static/**',
-    'next-env.d.ts',
-  ]),
+  globalIgnores(['.next/**', 'out/**', 'build/**', 'storybook-static/**', 'next-env.d.ts']),
 ]);
 
 export default eslintConfig;

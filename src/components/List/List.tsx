@@ -9,11 +9,7 @@ interface IListProps {
   defaultOpen?: boolean;
 }
 
-export const List = ({
-  trigger,
-  children,
-  defaultOpen = false,
-}: IListProps) => {
+export const List = ({ trigger, children, defaultOpen = false }: IListProps) => {
   const [open, setOpen] = useState(defaultOpen);
   const toggle = () => setOpen((prev) => !prev);
 

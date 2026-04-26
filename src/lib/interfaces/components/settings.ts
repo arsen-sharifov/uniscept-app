@@ -1,13 +1,7 @@
 import type { LucideIcon } from 'lucide-react';
 import type { IPreferences } from '../preferences';
 
-export type TSettingsSection =
-  | 'profile'
-  | 'security'
-  | 'notifications'
-  | 'appearance'
-  | 'editor'
-  | 'plan';
+export type TSettingsSection = 'profile' | 'security' | 'notifications' | 'appearance' | 'editor' | 'plan';
 
 export interface ISettingsSidebarItem {
   id: TSettingsSection;

@@ -13,9 +13,7 @@ export const HowItWorksSection = () => {
           <h2 className="mb-6 text-5xl font-black tracking-tight text-black sm:text-6xl">
             {t.landing.howItWorks.title}
           </h2>
-          <p className="text-xl text-black/60">
-            {t.landing.howItWorks.subtitle}
-          </p>
+          <p className="text-xl text-black/60">{t.landing.howItWorks.subtitle}</p>
         </div>
 
         <div data-reveal className="scroll-reveal">
@@ -31,12 +29,8 @@ export const HowItWorksSection = () => {
                   {step.number}
                 </div>
                 <div className="flex-1 rounded-xl border border-black/5 bg-white p-6 shadow-xl transition-all duration-300 ease-in-out group-hover:border-emerald-500/20 group-hover:shadow-2xl">
-                  <h3 className="mb-2 text-2xl font-black text-black">
-                    {step.title}
-                  </h3>
-                  <p className="text-lg leading-relaxed text-black/60">
-                    {step.description}
-                  </p>
+                  <h3 className="mb-2 text-2xl font-black text-black">{step.title}</h3>
+                  <p className="text-lg leading-relaxed text-black/60">{step.description}</p>
                 </div>
               </div>
             ))}

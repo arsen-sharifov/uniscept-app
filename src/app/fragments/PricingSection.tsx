@@ -11,24 +11,17 @@ export const PricingSection = () => {
 
       <div className="mx-auto max-w-7xl">
         <div data-reveal className="scroll-reveal mb-16 text-center">
-          <h2 className="mb-6 text-5xl font-black tracking-tight text-black sm:text-6xl">
-            {t.landing.pricing.title}
-          </h2>
+          <h2 className="mb-6 text-5xl font-black tracking-tight text-black sm:text-6xl">{t.landing.pricing.title}</h2>
           <p className="text-xl text-black/60">{t.landing.pricing.subtitle}</p>
         </div>
 
-        <div
-          data-reveal
-          className="scroll-reveal grid gap-6 md:grid-cols-2 lg:grid-cols-4"
-        >
+        <div data-reveal className="scroll-reveal grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {PRICING_PLANS.map((plan) => (
             <PricingCard key={plan.id} plan={plan} />
           ))}
         </div>
 
-        <p className="mt-8 text-center text-sm text-black/50">
-          {t.landing.pricing.footer}
-        </p>
+        <p className="mt-8 text-center text-sm text-black/50">{t.landing.pricing.footer}</p>
       </div>
     </Section>
   );

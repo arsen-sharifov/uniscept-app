@@ -30,10 +30,7 @@ export const usePreferences = () => {
 
   useEffect(() => () => clearTimeout(debounceRef.current), []);
 
-  const updatePreference = <Key extends keyof IPreferences>(
-    key: Key,
-    value: IPreferences[Key]
-  ) => {
+  const updatePreference = <Key extends keyof IPreferences>(key: Key, value: IPreferences[Key]) => {
     setPreferences((prev) => {
       if (prev[key] === value) return prev;
       const next = { ...prev, [key]: value };

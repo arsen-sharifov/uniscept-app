@@ -1,17 +1,8 @@
-import type {
-  IFlattenedItem,
-  IProjection,
-  TDropZone,
-  TNavItem,
-} from '@interfaces';
+import type { IFlattenedItem, IProjection, TDropZone, TNavItem } from '@interfaces';
 import { MAX_DEPTH } from '../../consts';
 
 const countDescendants = (items: TNavItem[]): number =>
-  items.reduce(
-    (sum, item) =>
-      sum + 1 + (item.type === 'folder' ? countDescendants(item.items) : 0),
-    0
-  );
+  items.reduce((sum, item) => sum + 1 + (item.type === 'folder' ? countDescendants(item.items) : 0), 0);
 
 export const flattenTree = (
   items: TNavItem[],
@@ -22,15 +13,8 @@ export const flattenTree = (
   items.flatMap((item, index) => {
     const isFolder = item.type === 'folder';
     const collapsed = isFolder && collapsedIds.has(item.id);
-    const children =
-      isFolder && !collapsed
-        ? flattenTree(item.items, collapsedIds, item.id, depth + 1)
-        : [];
-    const childCount = isFolder
-      ? collapsed
-        ? countDescendants(item.items)
-        : children.length
-      : 0;
+    const children = isFolder && !collapsed ? flattenTree(item.items, collapsedIds, item.id, depth + 1) : [];
+    const childCount = isFolder ? (collapsed ? countDescendants(item.items) : children.length) : 0;
 
     const flatItem: IFlattenedItem = {
       id: item.id,
@@ -46,11 +30,7 @@ export const flattenTree = (
     return [flatItem, ...children];
   });
 
-const isDescendantOf = (
-  flatItems: IFlattenedItem[],
-  itemId: string,
-  potentialAncestorId: string
-): boolean => {
+const isDescendantOf = (flatItems: IFlattenedItem[], itemId: string, potentialAncestorId: string): boolean => {
   if (itemId === potentialAncestorId) return true;
   const parentId = flatItems.find((item) => item.id === itemId)?.parentId;
   return !!parentId && isDescendantOf(flatItems, parentId, potentialAncestorId);
@@ -70,17 +50,10 @@ export const getProjection = (
   const overItem = flatItems[overIndex] as IFlattenedItem;
   const maxDepth = activeItem.type === 'folder' ? MAX_DEPTH - 1 : MAX_DEPTH;
 
-  if (
-    zone === 'inside' &&
-    overItem.type === 'folder' &&
-    overItem.id !== activeId
-  ) {
+  if (zone === 'inside' && overItem.type === 'folder' && overItem.id !== activeId) {
     const depth = overItem.depth + 1;
     if (depth <= maxDepth) {
-      if (
-        activeItem.type !== 'folder' ||
-        !isDescendantOf(flatItems, overItem.id, activeId)
-      ) {
+      if (activeItem.type !== 'folder' || !isDescendantOf(flatItems, overItem.id, activeId)) {
         return { depth, parentId: overItem.id, zone: 'inside' };
       }
     }
@@ -101,10 +74,7 @@ export const getProjection = (
   return { depth, parentId, zone };
 };
 
-export const removeChildrenOf = (
-  flatItems: IFlattenedItem[],
-  ids: Set<string>
-): IFlattenedItem[] => {
+export const removeChildrenOf = (flatItems: IFlattenedItem[], ids: Set<string>): IFlattenedItem[] => {
   const excluded = flatItems.reduce((acc, item) => {
     if (item.parentId && (ids.has(item.parentId) || acc.has(item.parentId))) {
       acc.add(item.id);

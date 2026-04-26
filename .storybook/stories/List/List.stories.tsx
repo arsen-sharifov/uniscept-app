@@ -41,8 +41,7 @@ const meta: Meta<typeof List> = {
       table: { category: ARG_CATEGORIES.BEHAVIOR },
     },
     trigger: {
-      description:
-        'Render function `(open: boolean, toggle: () => void) => ReactNode` for the trigger element',
+      description: 'Render function `(open: boolean, toggle: () => void) => ReactNode` for the trigger element',
       table: { category: ARG_CATEGORIES.CONTENT },
     },
     children: {

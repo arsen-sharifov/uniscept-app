@@ -21,8 +21,7 @@ const meta: Meta<typeof Modal> = {
       table: { category: ARG_CATEGORIES.BEHAVIOR },
     },
     onClose: {
-      description:
-        'Callback when the modal is closed (backdrop click or Escape)',
+      description: 'Callback when the modal is closed (backdrop click or Escape)',
       table: { category: ARG_CATEGORIES.BEHAVIOR },
     },
     children: {
@@ -31,14 +30,12 @@ const meta: Meta<typeof Modal> = {
     },
     className: {
       control: 'text',
-      description:
-        'Additional classes for the modal container (e.g. max-w-[1100px])',
+      description: 'Additional classes for the modal container (e.g. max-w-[1100px])',
       table: { category: ARG_CATEGORIES.APPEARANCE },
     },
     overflowHidden: {
       control: 'boolean',
-      description:
-        'When true, hides the default close button and sets overflow-hidden',
+      description: 'When true, hides the default close button and sets overflow-hidden',
       table: { category: ARG_CATEGORIES.BEHAVIOR },
     },
   },
@@ -64,8 +61,7 @@ export const Default: Story = {
           <div className="p-6">
             <h2 className="mb-2 text-lg font-bold text-black">Default Modal</h2>
             <p className="text-sm text-black/50">
-              Click the backdrop, press Escape, or use the close button to
-              dismiss.
+              Click the backdrop, press Escape, or use the close button to dismiss.
             </p>
           </div>
         </Modal>
@@ -89,9 +85,7 @@ export const CustomWidth: Story = {
         <Modal open={open} onClose={() => setOpen(false)} className="max-w-3xl">
           <div className="p-6">
             <h2 className="mb-2 text-lg font-bold text-black">Wide Modal</h2>
-            <p className="text-sm text-black/50">
-              This modal uses a custom max-w-3xl width class.
-            </p>
+            <p className="text-sm text-black/50">This modal uses a custom max-w-3xl width class.</p>
           </div>
         </Modal>
       </>
@@ -119,12 +113,8 @@ export const OverflowHidden: Story = {
             >
               X
             </button>
-            <h2 className="mb-2 text-lg font-bold text-black">
-              Overflow Hidden
-            </h2>
-            <p className="text-sm text-black/50">
-              The default close button is hidden. The consumer provides its own.
-            </p>
+            <h2 className="mb-2 text-lg font-bold text-black">Overflow Hidden</h2>
+            <p className="text-sm text-black/50">The default close button is hidden. The consumer provides its own.</p>
           </div>
         </Modal>
       </>

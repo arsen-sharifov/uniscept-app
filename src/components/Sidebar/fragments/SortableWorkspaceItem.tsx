@@ -43,15 +43,10 @@ export const SortableWorkspaceItem = ({
   dropIndicator,
 }: ISortableWorkspaceItemProps) => {
   const translations = useTranslations();
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    setActivatorNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: workspace.id, disabled: isEditing });
+  const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({
+    id: workspace.id,
+    disabled: isEditing,
+  });
 
   return (
     <div
@@ -76,10 +71,7 @@ export const SortableWorkspaceItem = ({
       )}
 
       <div
-        className={clsx(
-          'relative flex min-h-7 min-w-0 items-stretch',
-          isDragging && 'pointer-events-none opacity-40'
-        )}
+        className={clsx('relative flex min-h-7 min-w-0 items-stretch', isDragging && 'pointer-events-none opacity-40')}
       >
         <button
           onClick={(event) => onClick(workspace.id, event)}
@@ -113,9 +105,7 @@ export const SortableWorkspaceItem = ({
                 className={clsx(
                   'pointer-events-none absolute inset-0 flex cursor-grab touch-none items-center justify-center opacity-0 transition-opacity duration-150 select-none active:cursor-grabbing',
                   'group-hover/item:pointer-events-auto group-hover/item:opacity-100',
-                  isActive
-                    ? 'text-emerald-500/80'
-                    : 'text-black/40 hover:text-black/70'
+                  isActive ? 'text-emerald-500/80' : 'text-black/40 hover:text-black/70'
                 )}
               >
                 <GripVertical className="h-3 w-3" strokeWidth={2.5} />
@@ -133,11 +123,7 @@ export const SortableWorkspaceItem = ({
               className="min-w-0 flex-1 truncate border-0 bg-transparent p-0 underline decoration-emerald-500 decoration-2 underline-offset-[3px] caret-emerald-500 outline-none [font:inherit] selection:bg-emerald-400/40"
             />
           ) : (
-            <SmartTooltip
-              content={workspace.name}
-              className="truncate"
-              onlyIfTruncated
-            >
+            <SmartTooltip content={workspace.name} className="truncate" onlyIfTruncated>
               {workspace.name}
             </SmartTooltip>
           )}

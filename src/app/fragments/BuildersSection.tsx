@@ -11,9 +11,7 @@ export const BuildersSection = () => {
 
       <div className="mx-auto max-w-7xl">
         <div data-reveal className="scroll-reveal mb-20 text-center">
-          <h2 className="mb-6 text-5xl font-black tracking-tight text-black sm:text-6xl">
-            {t.landing.builders.title}
-          </h2>
+          <h2 className="mb-6 text-5xl font-black tracking-tight text-black sm:text-6xl">{t.landing.builders.title}</h2>
           <p className="text-xl text-black/60">{t.landing.builders.subtitle}</p>
         </div>
 
@@ -24,18 +22,11 @@ export const BuildersSection = () => {
               <div className="mb-6 inline-flex rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-500 p-4">
                 <Zap className="h-8 w-8 text-white" />
               </div>
-              <h3 className="mb-3 text-2xl font-black text-white">
-                {t.landing.builders.founders.title}
-              </h3>
-              <p className="mb-6 text-base leading-relaxed text-white/90">
-                {t.landing.builders.founders.description}
-              </p>
+              <h3 className="mb-3 text-2xl font-black text-white">{t.landing.builders.founders.title}</h3>
+              <p className="mb-6 text-base leading-relaxed text-white/90">{t.landing.builders.founders.description}</p>
               <div className="space-y-2.5">
                 {t.landing.builders.founders.useCases.map((useCase: string) => (
-                  <div
-                    key={useCase}
-                    className="flex items-center gap-3 text-white/80"
-                  >
+                  <div key={useCase} className="flex items-center gap-3 text-white/80">
                     <div className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
                     <span className="text-sm font-medium">{useCase}</span>
                   </div>
@@ -50,24 +41,17 @@ export const BuildersSection = () => {
               <div className="mb-6 inline-flex rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 p-4">
                 <Lightbulb className="h-8 w-8 text-white" />
               </div>
-              <h3 className="mb-3 text-2xl font-black text-black">
-                {t.landing.builders.researchers.title}
-              </h3>
+              <h3 className="mb-3 text-2xl font-black text-black">{t.landing.builders.researchers.title}</h3>
               <p className="mb-6 text-base leading-relaxed text-black/70">
                 {t.landing.builders.researchers.description}
               </p>
               <div className="space-y-2.5">
-                {t.landing.builders.researchers.useCases.map(
-                  (useCase: string) => (
-                    <div
-                      key={useCase}
-                      className="flex items-center gap-3 text-black/60"
-                    >
-                      <div className="h-1.5 w-1.5 rounded-full bg-purple-500" />
-                      <span className="text-sm font-medium">{useCase}</span>
-                    </div>
-                  )
-                )}
+                {t.landing.builders.researchers.useCases.map((useCase: string) => (
+                  <div key={useCase} className="flex items-center gap-3 text-black/60">
+                    <div className="h-1.5 w-1.5 rounded-full bg-purple-500" />
+                    <span className="text-sm font-medium">{useCase}</span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -78,24 +62,15 @@ export const BuildersSection = () => {
               <div className="mb-6 inline-flex rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 p-4">
                 <Braces className="h-8 w-8 text-white" />
               </div>
-              <h3 className="mb-3 text-2xl font-black text-black">
-                {t.landing.builders.engineers.title}
-              </h3>
-              <p className="mb-6 text-base leading-relaxed text-black/70">
-                {t.landing.builders.engineers.description}
-              </p>
+              <h3 className="mb-3 text-2xl font-black text-black">{t.landing.builders.engineers.title}</h3>
+              <p className="mb-6 text-base leading-relaxed text-black/70">{t.landing.builders.engineers.description}</p>
               <div className="space-y-2.5">
-                {t.landing.builders.engineers.useCases.map(
-                  (useCase: string) => (
-                    <div
-                      key={useCase}
-                      className="flex items-center gap-3 text-black/60"
-                    >
-                      <div className="h-1.5 w-1.5 rounded-full bg-blue-500" />
-                      <span className="text-sm font-medium">{useCase}</span>
-                    </div>
-                  )
-                )}
+                {t.landing.builders.engineers.useCases.map((useCase: string) => (
+                  <div key={useCase} className="flex items-center gap-3 text-black/60">
+                    <div className="h-1.5 w-1.5 rounded-full bg-blue-500" />
+                    <span className="text-sm font-medium">{useCase}</span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>

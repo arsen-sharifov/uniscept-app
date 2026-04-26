@@ -62,11 +62,7 @@ const WorkspaceLayout = ({ children }: { children: ReactNode }) => {
         onMoveWorkspace={onMoveWorkspace}
         footer={<UserMenu onSettingsClick={() => setSettingsOpen(true)} />}
       />
-      <Toolbar
-        groups={groups}
-        activeTool={activeTool}
-        onToolClick={handleToolClick}
-      />
+      <Toolbar groups={groups} activeTool={activeTool} onToolClick={handleToolClick} />
       {children}
       {settingsOpen && <Settings onClose={() => setSettingsOpen(false)} />}
     </div>

@@ -10,7 +10,4 @@ export interface IPreferences {
   emailDigest: boolean;
 }
 
-export type TPreferenceUpdater = <Key extends keyof IPreferences>(
-  key: Key,
-  value: IPreferences[Key]
-) => void;
+export type TPreferenceUpdater = <Key extends keyof IPreferences>(key: Key, value: IPreferences[Key]) => void;

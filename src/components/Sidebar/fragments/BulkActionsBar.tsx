@@ -42,9 +42,7 @@ export const BulkActionsBar = ({
         {count}
       </span>
       <Icon className="h-3.5 w-3.5 shrink-0 text-emerald-700/70" />
-      <span className="truncate text-[11px] font-medium text-emerald-900/85">
-        {label}
-      </span>
+      <span className="truncate text-[11px] font-medium text-emerald-900/85">{label}</span>
       <div className="ml-auto flex items-center gap-0.5">
         {onMove && (
           <button

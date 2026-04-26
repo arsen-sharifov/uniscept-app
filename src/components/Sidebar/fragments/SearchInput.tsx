@@ -9,20 +9,14 @@ interface ISearchInputProps {
   placeholder: string;
 }
 
-export const SearchInput = ({
-  value,
-  onChange,
-  placeholder,
-}: ISearchInputProps) => {
+export const SearchInput = ({ value, onChange, placeholder }: ISearchInputProps) => {
   const ref = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const handler = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement | null;
       const isEditable =
-        target instanceof HTMLInputElement ||
-        target instanceof HTMLTextAreaElement ||
-        target?.isContentEditable;
+        target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target?.isContentEditable;
       if (isEditable) return;
       if (event.key === '/') {
         event.preventDefault();

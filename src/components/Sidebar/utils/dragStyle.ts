@@ -10,9 +10,7 @@ export const getDragTransformStyle = (
   if (isDragActive) return { transform: undefined, transition: undefined };
 
   return {
-    transform: CSS.Transform.toString(
-      transform ? { ...transform, scaleX: 1, scaleY: 1 } : null
-    ),
+    transform: CSS.Transform.toString(transform ? { ...transform, scaleX: 1, scaleY: 1 } : null),
     transition,
   };
 };

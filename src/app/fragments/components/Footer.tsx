@@ -20,11 +20,7 @@ export const Footer = () => {
           </div>
           <nav className="flex gap-10 text-sm font-medium text-black/60">
             {FOOTER_LINKS.map((link) => (
-              <a
-                key={link.key}
-                href={link.href}
-                className="transition-colors hover:text-black hover:underline"
-              >
+              <a key={link.key} href={link.href} className="transition-colors hover:text-black hover:underline">
                 {t.landing.footer.links[link.key]}
               </a>
             ))}

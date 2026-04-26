@@ -67,10 +67,7 @@ const LoginPage = () => {
 
       <form onSubmit={handleLogin} className="space-y-4">
         <div>
-          <label
-            htmlFor="email"
-            className="mb-1 block text-sm font-medium text-black/70"
-          >
+          <label htmlFor="email" className="mb-1 block text-sm font-medium text-black/70">
             {signInT.email}
           </label>
           <input
@@ -85,10 +82,7 @@ const LoginPage = () => {
         </div>
 
         <div>
-          <label
-            htmlFor="password"
-            className="mb-1 block text-sm font-medium text-black/70"
-          >
+          <label htmlFor="password" className="mb-1 block text-sm font-medium text-black/70">
             {signInT.password}
           </label>
           <input
@@ -115,10 +109,7 @@ const LoginPage = () => {
 
       <p className="mt-6 text-center text-sm text-black/50">
         {signInT.noAccount}{' '}
-        <Link
-          href="/signup"
-          className="font-medium text-black transition-colors duration-200 hover:underline"
-        >
+        <Link href="/signup" className="font-medium text-black transition-colors duration-200 hover:underline">
           {signInT.signUpLink}
         </Link>
       </p>

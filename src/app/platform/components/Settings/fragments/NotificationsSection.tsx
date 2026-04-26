@@ -11,10 +11,7 @@ export interface INotificationsSectionProps {
   onUpdate: TPreferenceUpdater;
 }
 
-export const NotificationsSection = ({
-  preferences,
-  onUpdate,
-}: INotificationsSectionProps) => {
+export const NotificationsSection = ({ preferences, onUpdate }: INotificationsSectionProps) => {
   const t = useTranslations();
   const { notifications, comingSoon } = t.platform.settings;
 

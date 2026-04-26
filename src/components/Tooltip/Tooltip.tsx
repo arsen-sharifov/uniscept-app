@@ -8,11 +8,7 @@ export interface ITooltipProps {
   position?: 'top' | 'bottom';
 }
 
-export const Tooltip = ({
-  text,
-  children,
-  position = 'top',
-}: ITooltipProps) => {
+export const Tooltip = ({ text, children, position = 'top' }: ITooltipProps) => {
   const isTop = position === 'top';
 
   return (

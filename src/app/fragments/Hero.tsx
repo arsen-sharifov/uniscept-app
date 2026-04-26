@@ -18,9 +18,7 @@ export const Hero = () => {
           <h1 className="mb-6 text-7xl leading-[1.05] font-black tracking-tight text-black sm:text-8xl lg:text-[9rem]">
             {t.landing.hero.title}
             <br />
-            <span className="gradient-text-animated">
-              {t.landing.hero.titleAccent}
-            </span>
+            <span className="gradient-text-animated">{t.landing.hero.titleAccent}</span>
           </h1>
         </div>
 
@@ -30,9 +28,7 @@ export const Hero = () => {
             <br />
             {t.landing.hero.subtitle2}
           </p>
-          <p className="mx-auto mt-4 max-w-2xl text-xl font-bold text-black sm:text-2xl">
-            {t.landing.hero.tagline}
-          </p>
+          <p className="mx-auto mt-4 max-w-2xl text-xl font-bold text-black sm:text-2xl">{t.landing.hero.tagline}</p>
         </div>
 
         <div className="animate-fade-in-up mt-12 flex items-center justify-center gap-4">
@@ -44,11 +40,7 @@ export const Hero = () => {
             <div className="animate-shimmer absolute inset-0" />
           </Link>
           <button
-            onClick={() =>
-              document
-                .getElementById('problem')
-                ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-            }
+            onClick={() => document.getElementById('problem')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
             className="cursor-pointer rounded-xl border-2 border-black/10 bg-white px-8 py-3.5 text-base font-semibold text-black backdrop-blur-sm transition-all duration-300 ease-in-out hover:scale-105 hover:border-black/20 hover:shadow-xl"
           >
             {t.landing.hero.ctaSecondary}

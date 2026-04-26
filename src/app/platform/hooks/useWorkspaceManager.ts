@@ -6,7 +6,7 @@ import type { TNavItem, TNavItemType, IWorkspaceItem } from '@interfaces';
 import {
   getWorkspaces,
   createWorkspace,
-  renameWorkspace,
+  updateWorkspaceName,
   deleteWorkspace,
   deleteWorkspaces,
   moveWorkspace,
@@ -14,8 +14,8 @@ import {
   getThreads,
   createFolder,
   createThread,
-  renameFolder,
-  renameThread,
+  updateFolderName,
+  updateThreadName,
   deleteFolder,
   deleteThread,
   deleteFolders,
@@ -23,7 +23,7 @@ import {
   moveFolder,
   moveThread,
 } from '@api/client';
-import { createClient } from '@/lib/supabase/client';
+import { createClient } from '@/lib/supabase';
 import {
   buildNavTree,
   containsThread,
@@ -42,19 +42,13 @@ export const useWorkspaceManager = () => {
   const threadIdParam = params.threadId as string | undefined;
 
   const [workspaces, setWorkspaces] = useState<IWorkspaceItem[]>([]);
-  const [activeWorkspaceId, setActiveWorkspaceId] = useState<string | null>(
-    null
-  );
+  const [activeWorkspaceId, setActiveWorkspaceId] = useState<string | null>(null);
   const [navItems, setNavItems] = useState<TNavItem[]>([]);
-  const [activeThreadId, setActiveThreadId] = useState<string | undefined>(
-    threadIdParam
-  );
+  const [activeThreadId, setActiveThreadId] = useState<string | undefined>(threadIdParam);
   const [loading, setLoading] = useState(true);
 
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
-  const [editingWorkspaceId, setEditingWorkspaceId] = useState<string | null>(
-    null
-  );
+  const [editingWorkspaceId, setEditingWorkspaceId] = useState<string | null>(null);
 
   const initialized = useRef(false);
 
@@ -63,10 +57,7 @@ export const useWorkspaceManager = () => {
   }, [threadIdParam]);
 
   const loadWorkspaceContent = useCallback(async (workspaceId: string) => {
-    const [folders, threads] = await Promise.all([
-      getFolders(workspaceId),
-      getThreads(workspaceId),
-    ]);
+    const [folders, threads] = await Promise.all([getFolders(workspaceId), getThreads(workspaceId)]);
     setNavItems(buildNavTree(folders, threads));
   }, []);
 
@@ -75,10 +66,7 @@ export const useWorkspaceManager = () => {
     initialized.current = true;
 
     const init = async () => {
-      const [, workspaceList] = await Promise.all([
-        createClient().auth.getSession(),
-        getWorkspaces(),
-      ]);
+      const [, workspaceList] = await Promise.all([createClient().auth.getSession(), getWorkspaces()]);
       setWorkspaces(
         workspaceList.map((workspace) => ({
           id: workspace.id,
@@ -87,8 +75,7 @@ export const useWorkspaceManager = () => {
       );
 
       const targetWorkspaceId = workspaceIdParam
-        ? workspaceList.find((workspace) => workspace.id === workspaceIdParam)
-            ?.id
+        ? workspaceList.find((workspace) => workspace.id === workspaceIdParam)?.id
         : undefined;
 
       if (targetWorkspaceId) {
@@ -142,13 +129,9 @@ export const useWorkspaceManager = () => {
 
   const handleRenameWorkspace = useCallback(
     async (id: string, name: string) => {
-      setWorkspaces((prev) =>
-        prev.map((workspace) =>
-          workspace.id === id ? { ...workspace, name } : workspace
-        )
-      );
+      setWorkspaces((prev) => prev.map((workspace) => (workspace.id === id ? { ...workspace, name } : workspace)));
       try {
-        await renameWorkspace(id, name);
+        await updateWorkspaceName(id, name);
       } catch {
         await reloadWorkspaces();
       }
@@ -196,11 +179,7 @@ export const useWorkspaceManager = () => {
         id: thread.id,
         name: thread.name,
       };
-      setNavItems((prev) =>
-        folderId
-          ? insertIntoTree(prev, newItem, folderId, Infinity)
-          : [...prev, newItem]
-      );
+      setNavItems((prev) => (folderId ? insertIntoTree(prev, newItem, folderId, Infinity) : [...prev, newItem]));
       setEditingItemId(thread.id);
       router.push(`/platform/${activeWorkspaceId}/${thread.id}`);
     },
@@ -213,10 +192,7 @@ export const useWorkspaceManager = () => {
     const folder = await createFolder(activeWorkspaceId);
     if (!folder) return;
 
-    setNavItems((prev) => [
-      ...prev,
-      { type: 'folder', id: folder.id, name: folder.name, items: [] },
-    ]);
+    setNavItems((prev) => [...prev, { type: 'folder', id: folder.id, name: folder.name, items: [] }]);
     setEditingItemId(folder.id);
   }, [activeWorkspaceId]);
 
@@ -240,9 +216,7 @@ export const useWorkspaceManager = () => {
       setNavItems((prev) => removeFromTree(prev, id));
 
       const shouldNavigate =
-        item.type === 'thread'
-          ? threadIdParam === id
-          : threadIdParam && containsThread(item, threadIdParam);
+        item.type === 'thread' ? threadIdParam === id : threadIdParam && containsThread(item, threadIdParam);
       if (shouldNavigate) {
         router.push(`/platform`);
       }
@@ -259,9 +233,9 @@ export const useWorkspaceManager = () => {
 
       try {
         if (item.type === 'folder') {
-          await renameFolder(id, name);
+          await updateFolderName(id, name);
         } else {
-          await renameThread(id, name);
+          await updateThreadName(id, name);
         }
       } catch {
         if (activeWorkspaceId) await loadWorkspaceContent(activeWorkspaceId);
@@ -271,12 +245,7 @@ export const useWorkspaceManager = () => {
   );
 
   const handleMoveItem = useCallback(
-    async (
-      id: string,
-      type: TNavItemType,
-      parentId: string | null,
-      position: number
-    ) => {
+    async (id: string, type: TNavItemType, parentId: string | null, position: number) => {
       if (!activeWorkspaceId) return;
 
       const oldParentId = findParentId(navItems, id) ?? null;
@@ -287,8 +256,7 @@ export const useWorkspaceManager = () => {
         type: sibling.type,
         oldPos: index,
       }));
-      const draggedOldPos =
-        siblingEntries.find((sibling) => sibling.id === id)?.oldPos ?? -1;
+      const draggedOldPos = siblingEntries.find((sibling) => sibling.id === id)?.oldPos ?? -1;
 
       setNavItems((prev) => {
         const item = findInTree(prev, id);
@@ -297,9 +265,7 @@ export const useWorkspaceManager = () => {
         return insertIntoTree(without, item, parentId, position);
       });
 
-      const withoutDragged = siblingEntries.filter(
-        (sibling) => sibling.id !== id
-      );
+      const withoutDragged = siblingEntries.filter((sibling) => sibling.id !== id);
       withoutDragged.splice(position, 0, { id, type, oldPos: draggedOldPos });
 
       const newParentUpdates = withoutDragged
@@ -314,19 +280,15 @@ export const useWorkspaceManager = () => {
 
       if (oldParentId !== parentId) {
         const oldSiblings = getSiblings(navItems, oldParentId);
-        const removedIndex = oldSiblings.findIndex(
-          (sibling) => sibling.id === id
-        );
+        const removedIndex = oldSiblings.findIndex((sibling) => sibling.id === id);
         if (removedIndex !== -1) {
-          const compactUpdates = oldSiblings
-            .slice(removedIndex + 1)
-            .map((sibling, index) => ({
-              id: sibling.id,
-              type: sibling.type,
-              oldPos: -1,
-              newPos: removedIndex + index,
-              targetParentId: oldParentId,
-            }));
+          const compactUpdates = oldSiblings.slice(removedIndex + 1).map((sibling, index) => ({
+            id: sibling.id,
+            type: sibling.type,
+            oldPos: -1,
+            newPos: removedIndex + index,
+            targetParentId: oldParentId,
+          }));
           allUpdates.push(...compactUpdates);
         }
       }
@@ -350,19 +312,11 @@ export const useWorkspaceManager = () => {
     async (ids: Set<string>) => {
       if (!activeWorkspaceId) return;
 
-      const resolved = [...ids]
-        .map((id) => findInTree(navItems, id))
-        .filter((item): item is TNavItem => item !== null);
-      const folderIds = resolved
-        .filter((item) => item.type === 'folder')
-        .map((item) => item.id);
-      const threadIds = resolved
-        .filter((item) => item.type === 'thread')
-        .map((item) => item.id);
+      const resolved = [...ids].map((id) => findInTree(navItems, id)).filter((item): item is TNavItem => item !== null);
+      const folderIds = resolved.filter((item) => item.type === 'folder').map((item) => item.id);
+      const threadIds = resolved.filter((item) => item.type === 'thread').map((item) => item.id);
 
-      setNavItems((prev) =>
-        [...ids].reduce((acc, id) => removeFromTree(acc, id), prev)
-      );
+      setNavItems((prev) => [...ids].reduce((acc, id) => removeFromTree(acc, id), prev));
 
       const promises: Promise<unknown>[] = [];
       if (folderIds.length > 0) promises.push(deleteFolders(folderIds));
@@ -437,9 +391,7 @@ export const useWorkspaceManager = () => {
       }));
 
       try {
-        await Promise.all(
-          updates.map((update) => moveWorkspace(update.id, update.position))
-        );
+        await Promise.all(updates.map((update) => moveWorkspace(update.id, update.position)));
       } catch {
         await reloadWorkspaces();
       }
@@ -452,9 +404,7 @@ export const useWorkspaceManager = () => {
       if (!activeWorkspaceId) return;
 
       const targetSiblings = getSiblings(navItems, targetParentId);
-      const existingCount = targetSiblings.filter(
-        (sibling) => !ids.has(sibling.id)
-      ).length;
+      const existingCount = targetSiblings.filter((sibling) => !ids.has(sibling.id)).length;
 
       const itemsToMove = [...ids]
         .map((id) => findInTree(navItems, id))
@@ -462,13 +412,9 @@ export const useWorkspaceManager = () => {
         .map((item) => ({ item, type: item.type }));
 
       setNavItems((prev) => {
-        const removed = [...ids].reduce(
-          (acc, id) => removeFromTree(acc, id),
-          prev
-        );
+        const removed = [...ids].reduce((acc, id) => removeFromTree(acc, id), prev);
         return itemsToMove.reduce(
-          (acc, { item }, index) =>
-            insertIntoTree(acc, item, targetParentId, existingCount + index),
+          (acc, { item }, index) => insertIntoTree(acc, item, targetParentId, existingCount + index),
           removed
         );
       });

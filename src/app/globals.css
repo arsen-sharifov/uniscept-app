@@ -1,4 +1,5 @@
 @import 'tailwindcss';
-@import './fragments/styles/landing.css';
+@import './styles/landing.css';
+@import '../components/Canvas/canvas.css';
 
 @source '../**/*.{ts,tsx,js,jsx}';

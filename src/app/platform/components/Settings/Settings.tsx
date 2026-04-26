@@ -21,21 +21,10 @@ export interface ISettingsProps {
   defaultSection?: TSettingsSection;
 }
 
-export const Settings = ({
-  onClose,
-  defaultSection = 'profile',
-}: ISettingsProps) => {
+export const Settings = ({ onClose, defaultSection = 'profile' }: ISettingsProps) => {
   const t = useTranslations();
-  const [activeSection, setActiveSection] =
-    useState<TSettingsSection>(defaultSection);
-  const {
-    user,
-    loading,
-    updateProfile,
-    changeEmail,
-    changePassword,
-    deleteAccount,
-  } = useSettings();
+  const [activeSection, setActiveSection] = useState<TSettingsSection>(defaultSection);
+  const { user, loading, updateProfile, changeEmail, changePassword, deleteAccount } = useSettings();
   const { preferences, updatePreference } = usePreferences();
 
   const handleClose = useCallback(() => {
@@ -46,10 +35,7 @@ export const Settings = ({
   return (
     <Modal open onClose={handleClose} className="max-w-[1100px]" overflowHidden>
       <div className="flex h-[80vh]">
-        <SettingsSidebar
-          activeSection={activeSection}
-          onSectionChange={setActiveSection}
-        />
+        <SettingsSidebar activeSection={activeSection} onSectionChange={setActiveSection} />
 
         <div className="relative flex-1 overflow-y-auto px-10 py-8">
           <button
@@ -59,37 +45,22 @@ export const Settings = ({
             <X className="h-4 w-4" />
           </button>
 
-          <h2 className="mb-6 text-lg font-bold text-black">
-            {t.platform.settings.sections[activeSection]}
-          </h2>
+          <h2 className="mb-6 text-lg font-bold text-black">{t.platform.settings.sections[activeSection]}</h2>
 
           {loading ? (
             <div className="flex h-40 items-center justify-center">
               <div className="h-6 w-6 animate-spin rounded-full border-2 border-emerald-500 border-t-transparent" />
             </div>
           ) : activeSection === 'profile' ? (
-            <ProfileSection
-              user={user}
-              onUpdateProfile={updateProfile}
-              onUpdateEmail={changeEmail}
-            />
+            <ProfileSection user={user} onUpdateProfile={updateProfile} onUpdateEmail={changeEmail} />
           ) : activeSection === 'security' ? (
-            <SecuritySection
-              onChangePassword={changePassword}
-              onDeleteAccount={deleteAccount}
-            />
+            <SecuritySection onChangePassword={changePassword} onDeleteAccount={deleteAccount} />
           ) : activeSection === 'notifications' ? (
-            <NotificationsSection
-              preferences={preferences}
-              onUpdate={updatePreference}
-            />
+            <NotificationsSection preferences={preferences} onUpdate={updatePreference} />
           ) : activeSection === 'appearance' ? (
             <AppearanceSection />
           ) : activeSection === 'editor' ? (
-            <EditorSection
-              preferences={preferences}
-              onUpdate={updatePreference}
-            />
+            <EditorSection preferences={preferences} onUpdate={updatePreference} />
           ) : (
             <PlanSection user={user} />
           )}

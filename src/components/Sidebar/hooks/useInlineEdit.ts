@@ -10,13 +10,7 @@ interface IUseInlineEditOptions {
   findItem?: (id: string) => { id: string; name: string } | null | undefined;
 }
 
-export const useInlineEdit = ({
-  items,
-  autoEditId,
-  onAutoEditHandled,
-  onRename,
-  findItem,
-}: IUseInlineEditOptions) => {
+export const useInlineEdit = ({ items, autoEditId, onAutoEditHandled, onRename, findItem }: IUseInlineEditOptions) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
   const [prevAutoEditId, setPrevAutoEditId] = useState<string | null>(null);
@@ -24,9 +18,7 @@ export const useInlineEdit = ({
   if (autoEditId !== prevAutoEditId) {
     setPrevAutoEditId(autoEditId ?? null);
     if (autoEditId) {
-      const match = findItem
-        ? findItem(autoEditId)
-        : items.find((item) => item.id === autoEditId);
+      const match = findItem ? findItem(autoEditId) : items.find((item) => item.id === autoEditId);
       if (match) {
         setEditingId(match.id);
         setEditValue(match.name);

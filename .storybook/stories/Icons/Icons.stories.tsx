@@ -6,31 +6,18 @@ import { ARG_CATEGORIES } from '../../consts';
 
 const iconEntries = Object.entries(icons);
 
-const IconGallery = ({
-  size,
-  color,
-  strokeWidth,
-  absoluteStrokeWidth,
-}: LucideProps) => {
+const IconGallery = ({ size, color, strokeWidth, absoluteStrokeWidth }: LucideProps) => {
   const [search, setSearch] = useState('');
   const [scroll, setScroll] = useState({ top: 0, height: 800 });
 
   const filtered = useMemo(
-    () =>
-      search
-        ? iconEntries.filter(([name]) =>
-            name.toLowerCase().includes(search.toLowerCase())
-          )
-        : iconEntries,
+    () => (search ? iconEntries.filter(([name]) => name.toLowerCase().includes(search.toLowerCase())) : iconEntries),
     [search]
   );
 
   const totalRows = Math.ceil(filtered.length / 12);
   const from = Math.max(0, Math.floor(scroll.top / 72) - 3);
-  const to = Math.min(
-    totalRows,
-    Math.ceil((scroll.top + scroll.height) / 72) + 3
-  );
+  const to = Math.min(totalRows, Math.ceil((scroll.top + scroll.height) / 72) + 3);
 
   return (
     <div className="flex h-screen flex-col gap-3 p-4">
@@ -74,9 +61,7 @@ const IconGallery = ({
                       strokeWidth={strokeWidth}
                       absoluteStrokeWidth={absoluteStrokeWidth}
                     />
-                    <span className="w-full truncate text-center text-[10px] text-gray-400">
-                      {name}
-                    </span>
+                    <span className="w-full truncate text-center text-[10px] text-gray-400">{name}</span>
                   </div>
                 ))}
               </div>
@@ -115,8 +100,7 @@ const meta: Meta<LucideProps> = {
     },
     absoluteStrokeWidth: {
       control: 'boolean',
-      description:
-        'When enabled, stroke width stays constant regardless of icon size',
+      description: 'When enabled, stroke width stays constant regardless of icon size',
       table: { category: ARG_CATEGORIES.BEHAVIOR },
     },
   },

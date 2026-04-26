@@ -4,5 +4,4 @@ const subscribe = () => () => {};
 const getSnapshot = () => true;
 const getServerSnapshot = () => false;
 
-export const useMounted = () =>
-  useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+export const useMounted = () => useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);

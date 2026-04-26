@@ -1,24 +1,22 @@
 import type { IFolder, IFolderRow } from '@interfaces';
-import { createClient } from '@/lib/supabase/client';
+import { createClient } from '@/lib/supabase';
 import { toFolder } from './utils';
 
 export const getFolders = async (workspaceId: string): Promise<IFolder[]> => {
   const supabase = createClient();
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('folders')
     .select('id, workspace_id, parent_folder_id, name, position')
     .eq('workspace_id', workspaceId)
-    .order('position');
+    .order('position')
+    .returns<IFolderRow[]>();
 
-  if (!data) return [];
+  if (error) throw error;
 
-  return data.map((folder) => toFolder(folder as IFolderRow));
+  return (data ?? []).map(toFolder);
 };
 
-export const createFolder = async (
-  workspaceId: string,
-  parentFolderId?: string
-): Promise<IFolder | null> => {
+export const createFolder = async (workspaceId: string, parentFolderId?: string): Promise<IFolder | null> => {
   const supabase = createClient();
 
   let countQuery = supabase
@@ -32,9 +30,11 @@ export const createFolder = async (
     countQuery = countQuery.is('parent_folder_id', null);
   }
 
-  const { count } = await countQuery;
+  const { count, error: countError } = await countQuery;
 
-  const { data } = await supabase
+  if (countError) throw countError;
+
+  const { data, error: insertError } = await supabase
     .from('folders')
     .insert({
       workspace_id: workspaceId,
@@ -42,36 +42,37 @@ export const createFolder = async (
       position: count ?? 0,
     })
     .select('id, workspace_id, parent_folder_id, name, position')
-    .single();
+    .single<IFolderRow>();
 
-  if (!data) return null;
+  if (insertError) throw insertError;
 
-  return toFolder(data as IFolderRow);
+  return data ? toFolder(data) : null;
 };
 
-export const renameFolder = async (id: string, name: string) => {
+export const updateFolderName = async (id: string, name: string): Promise<void> => {
   const supabase = createClient();
-  return supabase.from('folders').update({ name }).eq('id', id);
+  const { error } = await supabase.from('folders').update({ name }).eq('id', id);
+
+  if (error) throw error;
 };
 
-export const deleteFolder = async (id: string) => {
+export const deleteFolder = async (id: string): Promise<void> => {
   const supabase = createClient();
-  return supabase.from('folders').delete().eq('id', id);
+  const { error } = await supabase.from('folders').delete().eq('id', id);
+
+  if (error) throw error;
 };
 
-export const deleteFolders = async (ids: string[]) => {
+export const deleteFolders = async (ids: string[]): Promise<void> => {
   const supabase = createClient();
-  return supabase.from('folders').delete().in('id', ids);
+  const { error } = await supabase.from('folders').delete().in('id', ids);
+
+  if (error) throw error;
 };
 
-export const moveFolder = async (
-  id: string,
-  parentFolderId: string | null,
-  position: number
-) => {
+export const moveFolder = async (id: string, parentFolderId: string | null, position: number): Promise<void> => {
   const supabase = createClient();
-  return supabase
-    .from('folders')
-    .update({ parent_folder_id: parentFolderId, position })
-    .eq('id', id);
+  const { error } = await supabase.from('folders').update({ parent_folder_id: parentFolderId, position }).eq('id', id);
+
+  if (error) throw error;
 };

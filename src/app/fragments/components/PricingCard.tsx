@@ -32,43 +32,17 @@ export const PricingCard = ({ plan }: IPricingCardProps) => {
       )}
 
       <div className={clsx('mb-8', isDark && 'relative')}>
-        <h3
-          className={clsx(
-            'mb-2 text-xl font-bold',
-            isDark ? 'text-white' : 'text-black'
-          )}
-        >
-          {plan.name}
-        </h3>
+        <h3 className={clsx('mb-2 text-xl font-bold', isDark ? 'text-white' : 'text-black')}>{plan.name}</h3>
         <div className="flex items-baseline gap-2">
-          <span
-            className={clsx(
-              'text-5xl font-black',
-              isDark ? 'text-white' : 'text-black'
-            )}
-          >
+          <span className={clsx('text-5xl font-black', isDark ? 'text-white' : 'text-black')}>
             {plan.price === 'free' ? 'Free' : `$${plan.price}`}
           </span>
           {plan.period && (
-            <span
-              className={clsx(
-                'text-lg',
-                isDark ? 'text-white/60' : 'text-black/60'
-              )}
-            >
-              /{plan.period}
-            </span>
+            <span className={clsx('text-lg', isDark ? 'text-white/60' : 'text-black/60')}>/{plan.period}</span>
           )}
         </div>
         {plan.description && (
-          <p
-            className={clsx(
-              'mt-2 text-sm',
-              isDark ? 'text-white/60' : 'text-black/60'
-            )}
-          >
-            {plan.description}
-          </p>
+          <p className={clsx('mt-2 text-sm', isDark ? 'text-white/60' : 'text-black/60')}>{plan.description}</p>
         )}
       </div>
 
@@ -78,14 +52,7 @@ export const PricingCard = ({ plan }: IPricingCardProps) => {
             <span className={isDark ? 'text-emerald-400' : 'text-emerald-600'}>
               <CircleCheck className="mt-0.5 h-5 w-5 flex-shrink-0" />
             </span>
-            <span
-              className={clsx(
-                'text-sm',
-                isDark ? 'text-white/90' : 'text-black/70'
-              )}
-            >
-              {feature}
-            </span>
+            <span className={clsx('text-sm', isDark ? 'text-white/90' : 'text-black/70')}>{feature}</span>
           </li>
         ))}
       </ul>

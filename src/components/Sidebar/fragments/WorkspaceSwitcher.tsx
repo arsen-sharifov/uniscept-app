@@ -48,9 +48,7 @@ export const WorkspaceSwitcher = ({
 }: IWorkspaceSwitcherProps) => {
   const t = useTranslations();
   const [open, setOpen] = useState(false);
-  const active = workspaces.find(
-    (workspace) => workspace.id === activeWorkspaceId
-  );
+  const active = workspaces.find((workspace) => workspace.id === activeWorkspaceId);
 
   return (
     <Popover
@@ -68,9 +66,7 @@ export const WorkspaceSwitcher = ({
           type="button"
           className={clsx(
             'group flex w-full min-w-0 items-center gap-2 rounded-xl px-2 py-1.5 text-left transition-colors duration-150',
-            open
-              ? 'bg-black/[0.04]'
-              : 'hover:bg-black/[0.03] active:bg-black/[0.05]'
+            open ? 'bg-black/[0.04]' : 'hover:bg-black/[0.03] active:bg-black/[0.05]'
           )}
         >
           <span
@@ -88,12 +84,7 @@ export const WorkspaceSwitcher = ({
               {t.platform.sidebar.workspaces}
             </span>
             <span
-              className={clsx(
-                'truncate text-sm',
-                active
-                  ? 'font-semibold text-black/85'
-                  : 'font-medium text-black/40'
-              )}
+              className={clsx('truncate text-sm', active ? 'font-semibold text-black/85' : 'font-medium text-black/40')}
               title={active?.name ?? t.platform.sidebar.noWorkspaceSelected}
             >
               {active?.name ?? t.platform.sidebar.noWorkspaceSelected}
@@ -130,9 +121,7 @@ export const WorkspaceSwitcher = ({
             <div className="mb-2 flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500/20 to-cyan-500/20">
               <LayoutGrid className="h-4 w-4 text-emerald-600" />
             </div>
-            <p className="mb-3 text-xs text-black/40">
-              {t.platform.sidebar.noWorkspaces}
-            </p>
+            <p className="mb-3 text-xs text-black/40">{t.platform.sidebar.noWorkspaces}</p>
             <button
               type="button"
               onClick={() => {
@@ -157,8 +146,7 @@ export const WorkspaceSwitcher = ({
             handleKeyDown={handleKeyDown}
             onClick={(id, event) => {
               onWorkspaceClick(id, event);
-              if (!event.shiftKey && !event.ctrlKey && !event.metaKey)
-                setOpen(false);
+              if (!event.shiftKey && !event.ctrlKey && !event.metaKey) setOpen(false);
             }}
             onRequestRename={onRequestRename}
             onRequestDelete={onRequestDelete}

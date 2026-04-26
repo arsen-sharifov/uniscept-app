@@ -2,10 +2,7 @@
 
 import { useCallback, useEffect, useRef, type MouseEvent } from 'react';
 import { DndContext, DragOverlay } from '@dnd-kit/core';
-import {
-  SortableContext,
-  verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { createPortal } from 'react-dom';
 import type { TDropZone, TNavItem, TNavItemType } from '@interfaces';
 import { DND_MEASURING } from '../consts';
@@ -20,22 +17,14 @@ export interface INavItemsProps {
   activeItemId?: string;
   selectedIds: Set<string>;
   onToggleSelection: (id: string) => void;
-  onSelectRange: (
-    targetId: string,
-    orderedItems: readonly { id: string }[]
-  ) => void;
+  onSelectRange: (targetId: string, orderedItems: readonly { id: string }[]) => void;
   onClearAndSelect: (id: string) => void;
   setSelectedIds: (ids: Set<string>) => void;
   onItemClick?: (id: string) => void;
   onRequestDelete?: (id: string, name: string, type: TNavItemType) => void;
   onCreateThread?: (folderId?: string) => void;
   onRenameItem?: (id: string, name: string) => void;
-  onMoveItem?: (
-    id: string,
-    type: TNavItemType,
-    parentId: string | null,
-    position: number
-  ) => void;
+  onMoveItem?: (id: string, type: TNavItemType, parentId: string | null, position: number) => void;
   onBulkMove?: (ids: Set<string>, parentId: string | null) => void;
   autoEditId?: string | null;
   onAutoEditHandled?: () => void;
@@ -60,15 +49,7 @@ export const NavItems = ({
 }: INavItemsProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const {
-    editingId,
-    editValue,
-    setEditValue,
-    inputRef,
-    startEditing,
-    commitRename,
-    handleKeyDown,
-  } = useInlineEdit({
+  const { editingId, editValue, setEditValue, inputRef, startEditing, commitRename, handleKeyDown } = useInlineEdit({
     items,
     autoEditId,
     onAutoEditHandled,
@@ -112,13 +93,7 @@ export const NavItems = ({
       onClearAndSelect(id);
       onItemClick?.(id);
     },
-    [
-      flattenedItems,
-      onSelectRange,
-      onToggleSelection,
-      onClearAndSelect,
-      onItemClick,
-    ]
+    [flattenedItems, onSelectRange, onToggleSelection, onClearAndSelect, onItemClick]
   );
 
   const prevAutoEditId = useRef(autoEditId);
@@ -130,23 +105,16 @@ export const NavItems = ({
     prevAutoEditId.current = autoEditId;
   }, [autoEditId, items, expandForDrop]);
 
-  const activeItem = activeId
-    ? flattenedItems.find((item) => item.id === activeId)
-    : null;
+  const activeItem = activeId ? flattenedItems.find((item) => item.id === activeId) : null;
 
-  const isBulkDragActive =
-    activeId !== null && selectedIds.size > 1 && selectedIds.has(activeId);
+  const isBulkDragActive = activeId !== null && selectedIds.size > 1 && selectedIds.has(activeId);
   const bulkCount = isBulkDragActive ? selectedIds.size : undefined;
 
   const isDragActive = activeId !== null;
 
   const visualOverId =
     isPastLast && flattenedItems.length > 0
-      ? (
-          flattenedItems[
-            flattenedItems.length - 1
-          ] as (typeof flattenedItems)[number]
-        ).id
+      ? (flattenedItems[flattenedItems.length - 1] as (typeof flattenedItems)[number]).id
       : overId;
 
   const getDropIndicator = (itemId: string): TDropZone | null => {
@@ -206,9 +174,7 @@ export const NavItems = ({
         typeof document !== 'undefined' &&
         createPortal(
           <DragOverlay dropAnimation={null}>
-            {activeItem ? (
-              <DragOverlayContent item={activeItem} bulkCount={bulkCount} />
-            ) : null}
+            {activeItem ? <DragOverlayContent item={activeItem} bulkCount={bulkCount} /> : null}
           </DragOverlay>,
           document.body
         )}

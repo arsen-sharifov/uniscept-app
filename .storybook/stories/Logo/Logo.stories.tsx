@@ -9,8 +9,7 @@ const meta: Meta<typeof Logo> = {
   parameters: {
     docs: {
       description: {
-        component:
-          'Animated gradient logotype. Use the `className` prop to control font size.',
+        component: 'Animated gradient logotype. Use the `className` prop to control font size.',
       },
     },
   },

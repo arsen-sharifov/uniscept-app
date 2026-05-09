@@ -16,12 +16,8 @@ const ConfirmedPage = () => {
           <CircleCheck className="h-8 w-8 text-emerald-500" />
         </div>
 
-        <h1 className="mb-2 text-2xl font-bold text-black">
-          {confirmed.heading}
-        </h1>
-        <p className="text-sm leading-relaxed text-black/50">
-          {confirmed.message}
-        </p>
+        <h1 className="mb-2 text-2xl font-bold text-black">{confirmed.heading}</h1>
+        <p className="text-sm leading-relaxed text-black/50">{confirmed.message}</p>
 
         <button
           onClick={() => window.close()}

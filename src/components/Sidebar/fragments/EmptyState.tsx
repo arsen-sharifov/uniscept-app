@@ -11,14 +11,7 @@ interface IEmptyStateProps {
   ctaIcon?: LucideIcon;
 }
 
-export const EmptyState = ({
-  icon: Icon,
-  title,
-  hint,
-  ctaLabel,
-  onCta,
-  ctaIcon: CtaIcon,
-}: IEmptyStateProps) => {
+export const EmptyState = ({ icon: Icon, title, hint, ctaLabel, onCta, ctaIcon: CtaIcon }: IEmptyStateProps) => {
   return (
     <div className="flex flex-col items-center px-4 py-8 text-center">
       <div className="relative mb-3">
@@ -28,11 +21,7 @@ export const EmptyState = ({
         </div>
       </div>
       <p className="mb-1 text-xs font-semibold text-black/70">{title}</p>
-      {hint && (
-        <p className="mb-3 max-w-[200px] text-[11px] leading-snug text-black/40">
-          {hint}
-        </p>
-      )}
+      {hint && <p className="mb-3 max-w-[200px] text-[11px] leading-snug text-black/40">{hint}</p>}
       {ctaLabel && onCta && (
         <button
           type="button"

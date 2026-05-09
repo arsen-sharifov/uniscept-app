@@ -14,13 +14,9 @@ export const CTASection = () => {
           <h2 className="mb-8 text-6xl leading-[1.1] font-black tracking-tight text-black sm:text-7xl">
             {t.landing.cta.title1}
             <br />
-            <span className="gradient-text-animated">
-              {t.landing.cta.title2}
-            </span>
+            <span className="gradient-text-animated">{t.landing.cta.title2}</span>
           </h2>
-          <p className="mx-auto mb-12 max-w-3xl text-xl leading-relaxed text-black/60">
-            {t.landing.cta.subtitle}
-          </p>
+          <p className="mx-auto mb-12 max-w-3xl text-xl leading-relaxed text-black/60">{t.landing.cta.subtitle}</p>
           <Link
             href="/signup"
             className="inline-flex items-center justify-center rounded-xl bg-black px-10 py-5 text-lg font-bold text-white shadow-2xl transition-all duration-300 ease-in-out hover:scale-105 hover:bg-black/90"

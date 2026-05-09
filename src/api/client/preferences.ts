@@ -1,11 +1,9 @@
 import type { IPreferences } from '@interfaces';
 import { createClient } from '@/lib/supabase/client';
 
-const toSnakeCase = (str: string) =>
-  str.replace(/[A-Z]/g, (c) => `_${c.toLowerCase()}`);
+const toSnakeCase = (str: string) => str.replace(/[A-Z]/g, (c) => `_${c.toLowerCase()}`);
 
-const toCamelCase = (str: string) =>
-  str.replace(/_([a-z])/g, (_, c: string) => c.toUpperCase());
+const toCamelCase = (str: string) => str.replace(/_([a-z])/g, (_, c: string) => c.toUpperCase());
 
 export const getPreferences = async (): Promise<IPreferences | null> => {
   const supabase = createClient();
@@ -17,9 +15,7 @@ export const getPreferences = async (): Promise<IPreferences | null> => {
     .maybeSingle();
   if (!data) return null;
 
-  return Object.fromEntries(
-    Object.entries(data).map(([k, v]) => [toCamelCase(k), v])
-  ) as IPreferences;
+  return Object.fromEntries(Object.entries(data).map(([k, v]) => [toCamelCase(k), v])) as IPreferences;
 };
 
 export const upsertPreferences = async (prefs: IPreferences) => {
@@ -31,8 +27,6 @@ export const upsertPreferences = async (prefs: IPreferences) => {
 
   return supabase.from('user_preferences').upsert({
     user_id: user.id,
-    ...Object.fromEntries(
-      Object.entries(prefs).map(([k, v]) => [toSnakeCase(k), v])
-    ),
+    ...Object.fromEntries(Object.entries(prefs).map(([k, v]) => [toSnakeCase(k), v])),
   });
 };

@@ -10,20 +10,14 @@ export interface ISettingsSidebarProps {
   onSectionChange: (section: TSettingsSection) => void;
 }
 
-export const SettingsSidebar = ({
-  activeSection,
-  onSectionChange,
-}: ISettingsSidebarProps) => {
+export const SettingsSidebar = ({ activeSection, onSectionChange }: ISettingsSidebarProps) => {
   const t = useTranslations();
   const { groups, sections } = t.platform.settings;
 
   return (
     <div className="w-52 shrink-0 overflow-y-auto border-r border-black/5 bg-black/[0.02] py-4">
       {SIDEBAR_GROUPS.map((group, index) => (
-        <div
-          key={group.labelKey}
-          className={clsx('px-3 py-3', index > 0 && 'border-t border-black/5')}
-        >
+        <div key={group.labelKey} className={clsx('px-3 py-3', index > 0 && 'border-t border-black/5')}>
           <span className="mb-2 block px-3 text-xs font-medium tracking-wider text-black/30 uppercase">
             {groups[group.labelKey]}
           </span>

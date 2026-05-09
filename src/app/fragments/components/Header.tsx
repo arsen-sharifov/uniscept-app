@@ -26,9 +26,7 @@ export const Header = () => {
               href="/signup"
               className="group relative overflow-hidden rounded-lg bg-black px-6 py-2.5 text-base font-medium text-white transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-xl"
             >
-              <span className="relative z-10">
-                {t.landing.header.getStarted}
-              </span>
+              <span className="relative z-10">{t.landing.header.getStarted}</span>
               <div className="absolute inset-0 bg-gradient-to-r from-emerald-600 to-cyan-500 opacity-0 transition-all duration-300 ease-in-out group-hover:opacity-100" />
             </Link>
           </nav>

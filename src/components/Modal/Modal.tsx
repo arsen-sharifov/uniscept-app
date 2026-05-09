@@ -1,13 +1,6 @@
 'use client';
 
-import {
-  type MouseEvent,
-  type ReactNode,
-  type TransitionEvent,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import { type MouseEvent, type ReactNode, type TransitionEvent, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { clsx } from 'clsx';
@@ -20,13 +13,7 @@ export interface IModalProps {
   overflowHidden?: boolean;
 }
 
-export const Modal = ({
-  open,
-  onClose,
-  children,
-  className,
-  overflowHidden,
-}: IModalProps) => {
+export const Modal = ({ open, onClose, children, className, overflowHidden }: IModalProps) => {
   const overlayRef = useRef<HTMLDivElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
   const onCloseRef = useRef(onClose);
@@ -80,9 +67,7 @@ export const Modal = ({
       <div
         className={clsx(
           'relative max-h-[90vh] w-full max-w-[90vw] rounded-2xl bg-white shadow-xl transition-all duration-200 ease-out starting:translate-y-2 starting:scale-95 starting:opacity-0',
-          open
-            ? 'translate-y-0 scale-100 opacity-100'
-            : 'translate-y-2 scale-95 opacity-0',
+          open ? 'translate-y-0 scale-100 opacity-100' : 'translate-y-2 scale-95 opacity-0',
           !className?.includes('max-w-') && 'max-w-lg',
           overflowHidden ? 'overflow-hidden' : 'overflow-y-auto',
           className

@@ -10,14 +10,7 @@ import {
   type ISidebarProps,
 } from '@/components';
 import { ARG_CATEGORIES } from '../../consts';
-import {
-  deepTree,
-  defaultWorkspaceId,
-  flatThreads,
-  fullTree,
-  manyItems,
-  workspaces,
-} from './consts';
+import { deepTree, defaultWorkspaceId, flatThreads, fullTree, manyItems, workspaces } from './consts';
 
 const WithFullscreen: Decorator = (Story) => (
   <div className="relative h-screen w-screen bg-neutral-100/60">
@@ -27,17 +20,11 @@ const WithFullscreen: Decorator = (Story) => (
 
 const SidebarWithState = (args: ISidebarProps) => {
   const [activeItemId, setActiveItemId] = useState(args.activeItemId);
-  const [activeWorkspaceId, setActiveWorkspaceId] = useState(
-    args.activeWorkspaceId
-  );
+  const [activeWorkspaceId, setActiveWorkspaceId] = useState(args.activeWorkspaceId);
   const [items, setItems] = useState<TNavItem[]>(args.items ?? []);
-  const [wsItems, setWsItems] = useState<IWorkspaceItem[]>(
-    args.workspaces ?? []
-  );
+  const [wsItems, setWsItems] = useState<IWorkspaceItem[]>(args.workspaces ?? []);
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
-  const [editingWorkspaceId, setEditingWorkspaceId] = useState<string | null>(
-    null
-  );
+  const [editingWorkspaceId, setEditingWorkspaceId] = useState<string | null>(null);
   const counterRef = useRef(0);
   const nextId = (prefix: string) => `${prefix}-${++counterRef.current}`;
 
@@ -67,21 +54,12 @@ const SidebarWithState = (args: ISidebarProps) => {
       }}
       onCreateFolder={() => {
         const id = nextId('folder');
-        setItems((prev) => [
-          ...prev,
-          { type: 'folder', id, name: 'New Folder', items: [] },
-        ]);
+        setItems((prev) => [...prev, { type: 'folder', id, name: 'New Folder', items: [] }]);
         setEditingItemId(id);
       }}
-      onRenameItem={(id, name) =>
-        setItems((prev) => updateNavItemName(prev, id, name))
-      }
+      onRenameItem={(id, name) => setItems((prev) => updateNavItemName(prev, id, name))}
       onDeleteItem={(id) => setItems((prev) => removeFromTree(prev, id))}
-      onBulkDelete={(ids) =>
-        setItems((prev) =>
-          [...ids].reduce((acc, id) => removeFromTree(acc, id), prev)
-        )
-      }
+      onBulkDelete={(ids) => setItems((prev) => [...ids].reduce((acc, id) => removeFromTree(acc, id), prev))}
       onBulkDeleteWorkspaces={(ids) =>
         setWsItems((prev) => {
           const remaining = prev.filter((w) => !ids.has(w.id));
@@ -93,17 +71,9 @@ const SidebarWithState = (args: ISidebarProps) => {
       }
       onBulkMove={(ids, parentId) =>
         setItems((prev) => {
-          const toMove = [...ids]
-            .map((id) => findInTree(prev, id))
-            .filter((item): item is TNavItem => item !== null);
-          const removed = [...ids].reduce(
-            (acc, id) => removeFromTree(acc, id),
-            prev
-          );
-          return toMove.reduce(
-            (acc, item) => insertIntoTree(acc, item, parentId, Infinity),
-            removed
-          );
+          const toMove = [...ids].map((id) => findInTree(prev, id)).filter((item): item is TNavItem => item !== null);
+          const removed = [...ids].reduce((acc, id) => removeFromTree(acc, id), prev);
+          return toMove.reduce((acc, item) => insertIntoTree(acc, item, parentId, Infinity), removed);
         })
       }
       onMoveItem={(id, _type, parentId, position) =>
@@ -120,11 +90,7 @@ const SidebarWithState = (args: ISidebarProps) => {
         setActiveWorkspaceId(id);
         setEditingWorkspaceId(id);
       }}
-      onRenameWorkspace={(id, name) =>
-        setWsItems((prev) =>
-          prev.map((w) => (w.id === id ? { ...w, name } : w))
-        )
-      }
+      onRenameWorkspace={(id, name) => setWsItems((prev) => prev.map((w) => (w.id === id ? { ...w, name } : w)))}
       onDeleteWorkspace={(id) => {
         setWsItems((prev) => {
           const remaining = prev.filter((w) => w.id !== id);

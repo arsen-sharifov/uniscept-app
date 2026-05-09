@@ -1,5 +1,3 @@
-import type { Node, Edge } from '@xyflow/react';
-
 export interface IWorkspace {
   id: string;
   name: string;
@@ -16,23 +14,19 @@ export interface IFolder {
   position: number;
 }
 
-export interface ICanvasData {
-  nodes: Node[];
-  edges: Edge[];
-}
-
 export interface IThread {
   id: string;
   workspaceId: string;
   folderId: string | null;
   name: string;
-  canvasData: ICanvasData;
   position: number;
 }
 
-export interface IThreadReference {
+export interface INodeReference {
   id: string;
-  name: string;
+  label: string;
+  threadId: string;
+  threadName: string;
   workspaceId: string;
   workspaceName: string;
 }

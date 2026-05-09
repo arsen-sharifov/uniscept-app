@@ -6,13 +6,6 @@ interface ILogoProps {
 
 export const Logo = ({ className }: ILogoProps) => {
   return (
-    <span
-      className={clsx(
-        'gradient-text-animated font-black tracking-tight select-none',
-        className
-      )}
-    >
-      Uniscept
-    </span>
+    <span className={clsx('gradient-text-animated font-black tracking-tight select-none', className)}>Uniscept</span>
   );
 };

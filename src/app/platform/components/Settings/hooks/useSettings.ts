@@ -2,13 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import type { User } from '@supabase/supabase-js';
-import {
-  deleteAccount,
-  getUser,
-  updateUserMetadata,
-  updateEmail,
-  updatePassword,
-} from '@api/client';
+import { deleteAccount, getUser, updateUserMetadata, updateEmail, updatePassword } from '@api/client';
 
 export const useSettings = () => {
   const [user, setUser] = useState<User | null>(null);

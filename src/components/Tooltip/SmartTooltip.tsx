@@ -1,13 +1,6 @@
 'use client';
 
-import {
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-  type CSSProperties,
-  type ReactNode,
-} from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { clsx } from 'clsx';
 import type { ITooltipPosition, TTooltipPlacement } from '@interfaces';
@@ -85,8 +78,7 @@ export const SmartTooltip = ({
     timerRef.current = window.setTimeout(() => {
       const trigger = triggerRef.current;
       if (!trigger) return;
-      if (onlyIfTruncated && trigger.scrollWidth <= trigger.clientWidth + 1)
-        return;
+      if (onlyIfTruncated && trigger.scrollWidth <= trigger.clientWidth + 1) return;
       setOpen(true);
     }, delay);
   };
@@ -139,14 +131,10 @@ export const SmartTooltip = ({
               style={arrowStyle}
               className={clsx(
                 'pointer-events-none absolute h-2 w-2 rotate-45 border border-black/[0.06] bg-white/95 ring-1 ring-emerald-500/10',
-                pos?.placement === 'top' &&
-                  '-bottom-[5px] -translate-x-1/2 border-t-0 border-l-0',
-                pos?.placement === 'bottom' &&
-                  '-top-[5px] -translate-x-1/2 border-r-0 border-b-0',
-                pos?.placement === 'left' &&
-                  '-right-[5px] -translate-y-1/2 border-b-0 border-l-0',
-                pos?.placement === 'right' &&
-                  '-left-[5px] -translate-y-1/2 border-t-0 border-r-0'
+                pos?.placement === 'top' && '-bottom-[5px] -translate-x-1/2 border-t-0 border-l-0',
+                pos?.placement === 'bottom' && '-top-[5px] -translate-x-1/2 border-r-0 border-b-0',
+                pos?.placement === 'left' && '-right-[5px] -translate-y-1/2 border-b-0 border-l-0',
+                pos?.placement === 'right' && '-left-[5px] -translate-y-1/2 border-t-0 border-r-0'
               )}
             />
           </div>,

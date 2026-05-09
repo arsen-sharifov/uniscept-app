@@ -6,7 +6,7 @@ import { clsx } from 'clsx';
 import type { TPopoverPlacement } from '@interfaces';
 import { useMounted } from '@hooks';
 
-interface IPopoverProps {
+export interface IPopoverProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   trigger: ReactNode;
@@ -83,11 +83,7 @@ export const Popover = ({
 
   return (
     <>
-      <div
-        ref={triggerRef}
-        className={triggerClassName}
-        onClick={() => onOpenChange(!open)}
-      >
+      <div ref={triggerRef} className={triggerClassName} onClick={() => onOpenChange(!open)}>
         {trigger}
       </div>
       {mounted &&

@@ -1,11 +1,6 @@
 'use client';
 
-import {
-  useCallback,
-  useState,
-  type KeyboardEvent,
-  type MouseEvent,
-} from 'react';
+import { useCallback, useState, type KeyboardEvent, type MouseEvent } from 'react';
 import {
   DndContext,
   type DragEndEvent,
@@ -16,10 +11,7 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
-import {
-  SortableContext,
-  verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import type { IWorkspaceItem, TWorkspaceDropZone } from '@interfaces';
 import { POINTER_ACTIVATION_DISTANCE } from '../consts';
 import { SortableWorkspaceItem } from './SortableWorkspaceItem';
@@ -66,17 +58,9 @@ export const WorkspaceItems = ({
   const [zone, setZone] = useState<TWorkspaceDropZone>('before');
 
   const computeFinalIndex = useCallback(
-    (
-      activeWorkspaceIdToMove: string,
-      overWorkspaceId: string,
-      dropZone: TWorkspaceDropZone
-    ): number => {
-      const without = workspaces.filter(
-        (workspace) => workspace.id !== activeWorkspaceIdToMove
-      );
-      const overIdx = without.findIndex(
-        (workspace) => workspace.id === overWorkspaceId
-      );
+    (activeWorkspaceIdToMove: string, overWorkspaceId: string, dropZone: TWorkspaceDropZone): number => {
+      const without = workspaces.filter((workspace) => workspace.id !== activeWorkspaceIdToMove);
+      const overIdx = without.findIndex((workspace) => workspace.id === overWorkspaceId);
       if (overIdx === -1) return -1;
       return dropZone === 'before' ? overIdx : overIdx + 1;
     },
@@ -107,15 +91,9 @@ export const WorkspaceItems = ({
       setActiveId(null);
       setOverId(null);
       if (!over || active.id === over.id) return;
-      const finalIdx = computeFinalIndex(
-        active.id as string,
-        over.id as string,
-        zone
-      );
+      const finalIdx = computeFinalIndex(active.id as string, over.id as string, zone);
       if (finalIdx === -1) return;
-      const oldIdx = workspaces.findIndex(
-        (workspace) => workspace.id === active.id
-      );
+      const oldIdx = workspaces.findIndex((workspace) => workspace.id === active.id);
       if (finalIdx === oldIdx) return;
       onMove(active.id as string, finalIdx);
     },
@@ -130,9 +108,7 @@ export const WorkspaceItems = ({
   const getDropIndicator = (id: string): TWorkspaceDropZone | null => {
     if (!activeId || !overId || id !== overId || id === activeId) return null;
     const finalIdx = computeFinalIndex(activeId, overId, zone);
-    const oldIdx = workspaces.findIndex(
-      (workspace) => workspace.id === activeId
-    );
+    const oldIdx = workspaces.findIndex((workspace) => workspace.id === activeId);
     if (finalIdx === -1 || finalIdx === oldIdx) return null;
     return zone;
   };
@@ -146,10 +122,7 @@ export const WorkspaceItems = ({
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
     >
-      <SortableContext
-        items={workspaces.map((workspace) => workspace.id)}
-        strategy={verticalListSortingStrategy}
-      >
+      <SortableContext items={workspaces.map((workspace) => workspace.id)} strategy={verticalListSortingStrategy}>
         {workspaces.map((workspace) => (
           <SortableWorkspaceItem
             key={workspace.id}

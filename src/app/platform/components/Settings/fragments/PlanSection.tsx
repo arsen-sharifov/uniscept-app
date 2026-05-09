@@ -19,9 +19,7 @@ export const PlanSection = ({ user }: IPlanSectionProps) => {
     <div className="space-y-6">
       <div className="grid grid-cols-2 gap-3">
         {PRICING_PLANS.map((plan) => {
-          const isCurrent =
-            (currentPlanId === 'beta' && plan.id === 'demo') ||
-            plan.id === currentPlanId;
+          const isCurrent = (currentPlanId === 'beta' && plan.id === 'demo') || plan.id === currentPlanId;
 
           return (
             <div
@@ -44,22 +42,13 @@ export const PlanSection = ({ user }: IPlanSectionProps) => {
                 <span className="text-xl font-bold text-black">
                   {plan.price === 'free' ? planLabels.free : `$${plan.price}`}
                 </span>
-                {plan.period && (
-                  <span className="text-xs text-black/40">/{plan.period}</span>
-                )}
+                {plan.period && <span className="text-xs text-black/40">/{plan.period}</span>}
               </div>
-              {plan.description && (
-                <p className="mt-0.5 text-xs text-black/40">
-                  {plan.description}
-                </p>
-              )}
+              {plan.description && <p className="mt-0.5 text-xs text-black/40">{plan.description}</p>}
 
               <ul className="mt-3 flex-1 space-y-1.5">
                 {plan.features.map((feature) => (
-                  <li
-                    key={feature}
-                    className="flex items-start gap-1.5 text-xs text-black/50"
-                  >
+                  <li key={feature} className="flex items-start gap-1.5 text-xs text-black/50">
                     <Check className="mt-0.5 h-3 w-3 shrink-0 text-emerald-500" />
                     {feature}
                   </li>
@@ -72,9 +61,7 @@ export const PlanSection = ({ user }: IPlanSectionProps) => {
 
       <div className="rounded-xl bg-black/[0.02] p-4">
         <p className="text-sm text-black/50">{planLabels.paidPlansNote}</p>
-        <p className="mt-1 text-sm text-emerald-600">
-          {planLabels.earlyBirdNote}
-        </p>
+        <p className="mt-1 text-sm text-emerald-600">{planLabels.earlyBirdNote}</p>
       </div>
     </div>
   );

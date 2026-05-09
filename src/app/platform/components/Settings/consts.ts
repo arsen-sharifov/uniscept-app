@@ -1,19 +1,5 @@
-import {
-  Bell,
-  CreditCard,
-  Monitor,
-  Moon,
-  Palette,
-  PenTool,
-  Shield,
-  Sun,
-  User,
-} from 'lucide-react';
-import type {
-  IPreferences,
-  ISettingsSidebarGroup,
-  IThemeOption,
-} from '@interfaces';
+import { Bell, CreditCard, Monitor, Moon, Palette, PenTool, Shield, Sun, User } from 'lucide-react';
+import type { IPreferences, ISettingsSidebarGroup, IThemeOption } from '@interfaces';
 
 export const SIDEBAR_GROUPS: ISettingsSidebarGroup[] = [
   {

@@ -14,12 +14,8 @@ export const ProductSection = () => {
           <h2 className="mb-8 text-6xl leading-[1.1] font-black tracking-tight text-black">
             {t.landing.product.title}
           </h2>
-          <p className="text-2xl leading-relaxed text-black/60">
-            {t.landing.product.subtitle1}
-          </p>
-          <p className="mt-4 text-2xl leading-relaxed font-bold text-black">
-            {t.landing.product.subtitle2}
-          </p>
+          <p className="text-2xl leading-relaxed text-black/60">{t.landing.product.subtitle1}</p>
+          <p className="mt-4 text-2xl leading-relaxed font-bold text-black">{t.landing.product.subtitle2}</p>
         </div>
 
         <div data-reveal className="scroll-reveal grid gap-5 md:grid-cols-3">
@@ -27,18 +23,13 @@ export const ProductSection = () => {
             <div className="mb-5 inline-flex rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-500 p-3">
               <Map className="h-8 w-8 text-white" />
             </div>
-            <h3 className="mb-3 text-2xl font-black text-black">
-              {t.landing.product.features.structured.title}
-            </h3>
+            <h3 className="mb-3 text-2xl font-black text-black">{t.landing.product.features.structured.title}</h3>
             <p className="mb-5 text-base leading-relaxed text-black/60">
               {t.landing.product.features.structured.description}
             </p>
             <div className="flex flex-wrap gap-2">
               {t.landing.product.features.structured.tags.map((tag: string) => (
-                <span
-                  key={tag}
-                  className="rounded-lg bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700"
-                >
+                <span key={tag} className="rounded-lg bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
                   {tag}
                 </span>
               ))}
@@ -51,9 +42,7 @@ export const ProductSection = () => {
               <div className="mb-5 inline-flex rounded-xl bg-emerald-500/10 p-2.5">
                 <CheckCircle className="h-7 w-7 text-emerald-600" />
               </div>
-              <h3 className="mb-2 text-xl font-black text-black">
-                {t.landing.product.features.validation.title}
-              </h3>
+              <h3 className="mb-2 text-xl font-black text-black">{t.landing.product.features.validation.title}</h3>
               <p className="text-sm leading-relaxed text-black/60">
                 {t.landing.product.features.validation.description}
               </p>
@@ -66,9 +55,7 @@ export const ProductSection = () => {
               <div className="mb-5 inline-flex rounded-xl bg-purple-500/10 p-2.5">
                 <Link2 className="h-7 w-7 text-purple-600" />
               </div>
-              <h3 className="mb-2 text-xl font-black text-black">
-                {t.landing.product.features.references.title}
-              </h3>
+              <h3 className="mb-2 text-xl font-black text-black">{t.landing.product.features.references.title}</h3>
               <p className="text-sm leading-relaxed text-black/60">
                 {t.landing.product.features.references.description}
               </p>
@@ -81,9 +68,7 @@ export const ProductSection = () => {
               <div className="mb-5 inline-flex rounded-xl bg-blue-500/10 p-2.5">
                 <Users className="h-7 w-7 text-blue-600" />
               </div>
-              <h3 className="mb-2 text-xl font-black text-black">
-                {t.landing.product.features.collaboration.title}
-              </h3>
+              <h3 className="mb-2 text-xl font-black text-black">{t.landing.product.features.collaboration.title}</h3>
               <p className="max-w-xl text-sm leading-relaxed text-black/60">
                 {t.landing.product.features.collaboration.description}
               </p>

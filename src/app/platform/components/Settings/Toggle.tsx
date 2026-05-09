@@ -12,14 +12,7 @@ export interface IToggleProps {
   disabled?: boolean;
 }
 
-export const Toggle = ({
-  icon: Icon,
-  label,
-  description,
-  checked,
-  onChange,
-  disabled,
-}: IToggleProps) => (
+export const Toggle = ({ icon: Icon, label, description, checked, onChange, disabled }: IToggleProps) => (
   <div className={clsx('flex items-center gap-3', disabled && 'opacity-50')}>
     <Icon className="h-4 w-4 shrink-0 text-black/30" />
     <div className="flex-1">

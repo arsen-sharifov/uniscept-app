@@ -16,17 +16,12 @@ export const Stepper = ({ steps, currentStep }: IStepperProps) => {
         const isLast = i === steps.length - 1;
 
         return (
-          <div
-            key={label}
-            className={clsx('flex items-center', !isLast && 'flex-1')}
-          >
+          <div key={label} className={clsx('flex items-center', !isLast && 'flex-1')}>
             <div className="flex items-center gap-2">
               <div
                 className={clsx(
                   'flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold transition-all duration-200',
-                  isActive
-                    ? 'bg-black text-white'
-                    : 'border-2 border-black/15 text-black/30'
+                  isActive ? 'bg-black text-white' : 'border-2 border-black/15 text-black/30'
                 )}
               >
                 {isDone ? <Check className="h-3.5 w-3.5" /> : num}

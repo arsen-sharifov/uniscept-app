@@ -8,8 +8,7 @@ const meta: Meta<typeof Avatar> = {
   parameters: {
     docs: {
       description: {
-        component:
-          'Gradient circle avatar displaying user initials (up to 2 characters).',
+        component: 'Gradient circle avatar displaying user initials (up to 2 characters).',
       },
     },
   },

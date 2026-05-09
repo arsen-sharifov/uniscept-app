@@ -1,37 +1,11 @@
 'use client';
 
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-  type MouseEvent,
-  type ReactNode,
-} from 'react';
-import {
-  Files,
-  FolderPlus,
-  LayoutGrid,
-  Plus,
-  SearchX,
-  Sparkles,
-} from 'lucide-react';
-import type {
-  TDeleteTarget,
-  TNavItem,
-  TNavItemType,
-  IWorkspaceItem,
-} from '@interfaces';
+import { useCallback, useEffect, useMemo, useState, type MouseEvent, type ReactNode } from 'react';
+import { Files, FolderPlus, LayoutGrid, Plus, SearchX, Sparkles } from 'lucide-react';
+import type { TDeleteTarget, TNavItem, TNavItemType, IWorkspaceItem } from '@interfaces';
 import { useTranslations } from '@hooks';
 import { ConfirmDialog, Logo } from '@/components';
-import {
-  BulkActionsBar,
-  EmptyState,
-  MoveDialog,
-  NavItems,
-  SearchInput,
-  WorkspaceSwitcher,
-} from './fragments';
+import { BulkActionsBar, EmptyState, MoveDialog, NavItems, SearchInput, WorkspaceSwitcher } from './fragments';
 import { useInlineEdit, useSelection } from './hooks';
 import { filterTree, getSingleDeleteTitleKey } from './utils';
 
@@ -54,12 +28,7 @@ export interface ISidebarProps {
   onRenameWorkspace?: (id: string, name: string) => void;
   onDeleteWorkspace?: (id: string) => void;
   onMoveWorkspace?: (id: string, position: number) => void;
-  onMoveItem?: (
-    id: string,
-    type: TNavItemType,
-    parentId: string | null,
-    position: number
-  ) => void;
+  onMoveItem?: (id: string, type: TNavItemType, parentId: string | null, position: number) => void;
   onBulkDelete?: (ids: Set<string>) => void;
   onBulkMove?: (ids: Set<string>, parentId: string | null) => void;
   onBulkDeleteWorkspaces?: (ids: Set<string>) => void;
@@ -93,15 +62,8 @@ export const Sidebar = ({
 }: ISidebarProps) => {
   const t = useTranslations();
 
-  const {
-    selectedIds,
-    setSelectedIds,
-    toggleSelection,
-    selectRange,
-    clearSelection,
-    clearAndSelect,
-    selectionCount,
-  } = useSelection();
+  const { selectedIds, setSelectedIds, toggleSelection, selectRange, clearSelection, clearAndSelect, selectionCount } =
+    useSelection();
 
   const {
     selectedIds: workspaceSelectedIds,
@@ -114,9 +76,7 @@ export const Sidebar = ({
 
   const allItemIds = useMemo(() => {
     const collect = (list: TNavItem[]): string[] =>
-      list.flatMap((item) =>
-        item.type === 'folder' ? [item.id, ...collect(item.items)] : [item.id]
-      );
+      list.flatMap((item) => (item.type === 'folder' ? [item.id, ...collect(item.items)] : [item.id]));
     return new Set(collect(items));
   }, [items]);
 
@@ -127,10 +87,7 @@ export const Sidebar = ({
     });
   }, [allItemIds, setSelectedIds]);
 
-  const allWorkspaceIds = useMemo(
-    () => new Set(workspaces.map((workspace) => workspace.id)),
-    [workspaces]
-  );
+  const allWorkspaceIds = useMemo(() => new Set(workspaces.map((workspace) => workspace.id)), [workspaces]);
 
   useEffect(() => {
     setWorkspaceSelectedIds((prev) => {
@@ -152,13 +109,7 @@ export const Sidebar = ({
       clearAndSelectWorkspace(id);
       onWorkspaceSelect?.(id);
     },
-    [
-      workspaces,
-      workspaceSelectRange,
-      toggleWorkspaceSelection,
-      clearAndSelectWorkspace,
-      onWorkspaceSelect,
-    ]
+    [workspaces, workspaceSelectRange, toggleWorkspaceSelection, clearAndSelectWorkspace, onWorkspaceSelect]
   );
 
   const {
@@ -180,10 +131,7 @@ export const Sidebar = ({
   const [showMoveDialog, setShowMoveDialog] = useState(false);
   const [query, setQuery] = useState('');
 
-  const filteredItems = useMemo(
-    () => filterTree(items, query.trim()),
-    [items, query]
-  );
+  const filteredItems = useMemo(() => filterTree(items, query.trim()), [items, query]);
 
   const handleWorkspaceBulkDelete = useCallback(() => {
     setDeleteTarget({
@@ -233,12 +181,9 @@ export const Sidebar = ({
     });
   }, [selectedIds, selectionCount]);
 
-  const handleRequestDelete = useCallback(
-    (id: string, name: string, type: TNavItemType) => {
-      setDeleteTarget({ mode: 'single', id, name, type });
-    },
-    []
-  );
+  const handleRequestDelete = useCallback((id: string, name: string, type: TNavItemType) => {
+    setDeleteTarget({ mode: 'single', id, name, type });
+  }, []);
 
   const handleBulkMoveConfirm = useCallback(
     (targetParentId: string | null) => {
@@ -260,8 +205,7 @@ export const Sidebar = ({
 
   const isSearching = query.trim().length > 0;
   const showSearchEmpty = isSearching && filteredItems.length === 0;
-  const showStructureEmpty =
-    !isSearching && activeWorkspaceId && items.length === 0;
+  const showStructureEmpty = !isSearching && activeWorkspaceId && items.length === 0;
 
   return (
     <>
@@ -300,11 +244,7 @@ export const Sidebar = ({
 
         {activeWorkspaceId && items.length > 0 && (
           <div className="px-3 pt-2">
-            <SearchInput
-              value={query}
-              onChange={setQuery}
-              placeholder={t.platform.sidebar.searchPlaceholder}
-            />
+            <SearchInput value={query} onChange={setQuery} placeholder={t.platform.sidebar.searchPlaceholder} />
           </div>
         )}
 
@@ -369,12 +309,8 @@ export const Sidebar = ({
                 <div className="mb-2 flex h-9 w-9 items-center justify-center rounded-xl bg-black/[0.04]">
                   <SearchX className="h-4 w-4 text-black/35" />
                 </div>
-                <p className="text-xs text-black/45">
-                  {t.platform.sidebar.noSearchResults}
-                </p>
-                <p className="mt-1 max-w-[180px] truncate text-[11px] text-black/30">
-                  &ldquo;{query}&rdquo;
-                </p>
+                <p className="text-xs text-black/45">{t.platform.sidebar.noSearchResults}</p>
+                <p className="mt-1 max-w-[180px] truncate text-[11px] text-black/30">&ldquo;{query}&rdquo;</p>
               </div>
             )}
 
@@ -398,14 +334,10 @@ export const Sidebar = ({
             <EmptyState
               icon={LayoutGrid}
               title={
-                workspaces.length === 0
-                  ? t.platform.sidebar.newWorkspaceTitle
-                  : t.platform.sidebar.noWorkspaceTitle
+                workspaces.length === 0 ? t.platform.sidebar.newWorkspaceTitle : t.platform.sidebar.noWorkspaceTitle
               }
               hint={
-                workspaces.length === 0
-                  ? t.platform.sidebar.newWorkspaceHint
-                  : t.platform.sidebar.noWorkspaceHintCta
+                workspaces.length === 0 ? t.platform.sidebar.newWorkspaceHint : t.platform.sidebar.noWorkspaceHintCta
               }
               ctaIcon={Plus}
               ctaLabel={t.platform.sidebar.newWorkspace}
@@ -427,9 +359,7 @@ export const Sidebar = ({
           </div>
         )}
 
-        {footer && (
-          <div className="border-t border-black/[0.06] px-2 py-2">{footer}</div>
-        )}
+        {footer && <div className="border-t border-black/[0.06] px-2 py-2">{footer}</div>}
       </aside>
 
       <ConfirmDialog

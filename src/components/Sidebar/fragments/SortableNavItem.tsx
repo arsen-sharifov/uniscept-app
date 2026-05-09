@@ -2,17 +2,7 @@
 
 import { type KeyboardEvent, type MouseEvent } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
-import {
-  Check,
-  ChevronRight,
-  FileText,
-  Folder,
-  FolderOpen,
-  GripVertical,
-  Pencil,
-  Plus,
-  Trash2,
-} from 'lucide-react';
+import { Check, ChevronRight, FileText, Folder, FolderOpen, GripVertical, Pencil, Plus, Trash2 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useTranslations } from '@hooks';
 import { SmartTooltip } from '@/components';
@@ -64,23 +54,17 @@ export const SortableNavItem = ({
   isDragActive,
 }: ISortableNavItemProps) => {
   const translations = useTranslations();
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    setActivatorNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: item.id, disabled: editingId === item.id });
+  const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({
+    id: item.id,
+    disabled: editingId === item.id,
+  });
 
   const isActive = item.id === activeItemId;
   const isEditing = editingId === item.id;
   const isFolder = item.type === 'folder';
   const isEmpty = isFolder && item.childCount === 0;
 
-  const isHiddenDuringBulkDrag =
-    isBulkDragActive && isSelected && !isActivelyDragged;
+  const isHiddenDuringBulkDrag = isBulkDragActive && isSelected && !isActivelyDragged;
 
   const handleClick = (event: MouseEvent) => {
     const hasModifier = event.ctrlKey || event.metaKey || event.shiftKey;
@@ -127,10 +111,7 @@ export const SortableNavItem = ({
         paddingLeft: item.depth * INDENTATION_WIDTH,
       }}
       data-item-id={item.id}
-      className={clsx(
-        'group/item relative',
-        isHiddenDuringBulkDrag && 'h-0 overflow-hidden opacity-0'
-      )}
+      className={clsx('group/item relative', isHiddenDuringBulkDrag && 'h-0 overflow-hidden opacity-0')}
     >
       {showLine && (
         <div
@@ -149,10 +130,7 @@ export const SortableNavItem = ({
       )}
 
       <div
-        className={clsx(
-          'relative flex min-h-7 min-w-0 items-stretch',
-          isDragging && 'pointer-events-none opacity-40'
-        )}
+        className={clsx('relative flex min-h-7 min-w-0 items-stretch', isDragging && 'pointer-events-none opacity-40')}
       >
         <button
           onClick={handleClick}
@@ -165,8 +143,7 @@ export const SortableNavItem = ({
               : 'text-black/65 group-hover/item:bg-black/[0.04] group-hover/item:text-black/90',
             isSelected && !isActive && '!bg-emerald-500/[0.07] !text-black/85',
             isSelected && 'ring-1 ring-emerald-500/45 ring-inset',
-            showFolderHighlight &&
-              'bg-emerald-500/10 !text-emerald-700 ring-1 ring-emerald-500/30 ring-inset'
+            showFolderHighlight && 'bg-emerald-500/10 !text-emerald-700 ring-1 ring-emerald-500/30 ring-inset'
           )}
         >
           <span className="relative h-4 w-4 shrink-0">
@@ -175,11 +152,7 @@ export const SortableNavItem = ({
                 <Folder
                   className={clsx(
                     'absolute inset-0 h-4 w-4 transition-opacity duration-150',
-                    isActive
-                      ? 'text-emerald-500'
-                      : showFolderHighlight
-                        ? 'text-emerald-500'
-                        : 'text-black/30',
+                    isActive ? 'text-emerald-500' : showFolderHighlight ? 'text-emerald-500' : 'text-black/30',
                     !isEditing && 'group-hover/item:opacity-0'
                   )}
                 />
@@ -187,11 +160,7 @@ export const SortableNavItem = ({
                 <FolderOpen
                   className={clsx(
                     'absolute inset-0 h-4 w-4 transition-opacity duration-150',
-                    isActive
-                      ? 'text-emerald-500'
-                      : showFolderHighlight
-                        ? 'text-emerald-500'
-                        : 'text-black/40',
+                    isActive ? 'text-emerald-500' : showFolderHighlight ? 'text-emerald-500' : 'text-black/40',
                     !isEditing && 'group-hover/item:opacity-0'
                   )}
                 />
@@ -217,9 +186,7 @@ export const SortableNavItem = ({
                 className={clsx(
                   'pointer-events-none absolute inset-0 flex cursor-grab touch-none items-center justify-center opacity-0 transition-opacity duration-150 select-none active:cursor-grabbing',
                   'group-hover/item:pointer-events-auto group-hover/item:opacity-100',
-                  isActive
-                    ? 'text-emerald-500/80'
-                    : 'text-black/40 hover:text-black/70'
+                  isActive ? 'text-emerald-500/80' : 'text-black/40 hover:text-black/70'
                 )}
               >
                 <GripVertical className="h-3 w-3" strokeWidth={2.5} />
@@ -243,11 +210,7 @@ export const SortableNavItem = ({
                 className={clsx(
                   'ml-auto h-3 w-3 shrink-0 transition-[transform,opacity,color] duration-150 group-hover/item:opacity-0',
                   !item.collapsed && 'rotate-90',
-                  isActive
-                    ? 'text-emerald-500/70'
-                    : showFolderHighlight
-                      ? 'text-emerald-600/70'
-                      : 'text-black/30'
+                  isActive ? 'text-emerald-500/70' : showFolderHighlight ? 'text-emerald-600/70' : 'text-black/30'
                 )}
               />
             )

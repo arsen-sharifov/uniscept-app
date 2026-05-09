@@ -1,26 +1,22 @@
 import type { IThread, IThreadRow } from '@interfaces';
-import { createClient } from '@/lib/supabase/client';
+import { createClient } from '@/lib/supabase';
 import { toThread } from './utils';
 
-export const getThreads = async (
-  workspaceId: string
-): Promise<Omit<IThread, 'canvasData'>[]> => {
+export const getThreads = async (workspaceId: string): Promise<IThread[]> => {
   const supabase = createClient();
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('threads')
     .select('id, workspace_id, folder_id, name, position')
     .eq('workspace_id', workspaceId)
-    .order('position');
+    .order('position')
+    .returns<IThreadRow[]>();
 
-  if (!data) return [];
+  if (error) throw error;
 
-  return data.map((thread) => toThread(thread as IThreadRow));
+  return (data ?? []).map(toThread);
 };
 
-export const createThread = async (
-  workspaceId: string,
-  folderId?: string
-): Promise<Omit<IThread, 'canvasData'> | null> => {
+export const createThread = async (workspaceId: string, folderId?: string): Promise<IThread | null> => {
   const supabase = createClient();
 
   let countQuery = supabase
@@ -34,9 +30,11 @@ export const createThread = async (
     countQuery = countQuery.is('folder_id', null);
   }
 
-  const { count } = await countQuery;
+  const { count, error: countError } = await countQuery;
 
-  const { data } = await supabase
+  if (countError) throw countError;
+
+  const { data, error: insertError } = await supabase
     .from('threads')
     .insert({
       workspace_id: workspaceId,
@@ -44,36 +42,37 @@ export const createThread = async (
       position: count ?? 0,
     })
     .select('id, workspace_id, folder_id, name, position')
-    .single();
+    .single<IThreadRow>();
 
-  if (!data) return null;
+  if (insertError) throw insertError;
 
-  return toThread(data as IThreadRow);
+  return data ? toThread(data) : null;
 };
 
-export const renameThread = async (id: string, name: string) => {
+export const updateThreadName = async (id: string, name: string): Promise<void> => {
   const supabase = createClient();
-  return supabase.from('threads').update({ name }).eq('id', id);
+  const { error } = await supabase.from('threads').update({ name }).eq('id', id);
+
+  if (error) throw error;
 };
 
-export const deleteThread = async (id: string) => {
+export const deleteThread = async (id: string): Promise<void> => {
   const supabase = createClient();
-  return supabase.from('threads').delete().eq('id', id);
+  const { error } = await supabase.from('threads').delete().eq('id', id);
+
+  if (error) throw error;
 };
 
-export const deleteThreads = async (ids: string[]) => {
+export const deleteThreads = async (ids: string[]): Promise<void> => {
   const supabase = createClient();
-  return supabase.from('threads').delete().in('id', ids);
+  const { error } = await supabase.from('threads').delete().in('id', ids);
+
+  if (error) throw error;
 };
 
-export const moveThread = async (
-  id: string,
-  folderId: string | null,
-  position: number
-) => {
+export const moveThread = async (id: string, folderId: string | null, position: number): Promise<void> => {
   const supabase = createClient();
-  return supabase
-    .from('threads')
-    .update({ folder_id: folderId, position })
-    .eq('id', id);
+  const { error } = await supabase.from('threads').update({ folder_id: folderId, position }).eq('id', id);
+
+  if (error) throw error;
 };

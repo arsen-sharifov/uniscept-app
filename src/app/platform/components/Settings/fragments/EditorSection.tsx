@@ -12,10 +12,7 @@ export interface IEditorSectionProps {
   onUpdate: TPreferenceUpdater;
 }
 
-export const EditorSection = ({
-  preferences,
-  onUpdate,
-}: IEditorSectionProps) => {
+export const EditorSection = ({ preferences, onUpdate }: IEditorSectionProps) => {
   const t = useTranslations();
   const { editor, comingSoon } = t.platform.settings;
 
@@ -23,9 +20,7 @@ export const EditorSection = ({
     <div className="space-y-6">
       <div>
         <div className="mb-3 flex items-center gap-2">
-          <h3 className="text-xs font-medium tracking-wider text-black/30 uppercase">
-            {editor.canvas}
-          </h3>
+          <h3 className="text-xs font-medium tracking-wider text-black/30 uppercase">{editor.canvas}</h3>
           <Tooltip text={comingSoon} />
         </div>
 
@@ -59,9 +54,7 @@ export const EditorSection = ({
 
       <div className="border-t border-black/5 pt-6">
         <div className="mb-3 flex items-center gap-2">
-          <label className="text-sm font-medium text-black/60">
-            {editor.defaultZoom}
-          </label>
+          <label className="text-sm font-medium text-black/60">{editor.defaultZoom}</label>
           <Tooltip text={comingSoon} />
         </div>
         <div className="flex gap-1 rounded-xl bg-black/[0.03] p-1 opacity-50">

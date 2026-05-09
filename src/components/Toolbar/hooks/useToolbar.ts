@@ -1,44 +1,59 @@
 'use client';
 
 import { useCallback, useMemo } from 'react';
-import { CANVAS_TOOL_GROUPS, ECanvasTool } from '@/components/tools';
+import { useStore } from 'zustand';
+import type { IToolGroup } from '@interfaces';
+import { useTranslations } from '@hooks';
+import { ECanvasTool, buildCanvasToolGroups, isCanvasTool } from '@/components/tools';
 import { useCanvasStore } from '@/lib/stores';
+import { isToolDisabled } from '../utils';
 
-export const useToolbar = () => {
-  const activeTool = useCanvasStore((s) => s.activeTool);
-  const setActiveTool = useCanvasStore((s) => s.setActiveTool);
+interface IUseToolbarResult {
+  groups: IToolGroup[];
+  activeTool: ECanvasTool;
+  handleToolClick: (id: string) => void;
+}
 
-  const canUndo = useCanvasStore((s) => s._past.length > 0);
-  const canRedo = useCanvasStore((s) => s._future.length > 0);
+export const useToolbar = (): IUseToolbarResult => {
+  const t = useTranslations();
+  const storedActiveTool = useCanvasStore((s) => s.activeTool);
+  const middlePan = useCanvasStore((s) => s.middlePan);
+
+  const activeTool = middlePan ? ECanvasTool.Pan : storedActiveTool;
+
+  const canUndo = useStore(useCanvasStore.temporal, (state) => state.pastStates.length > 0);
+  const canRedo = useStore(useCanvasStore.temporal, (state) => state.futureStates.length > 0);
+
+  const toolsTranslations = t.platform.canvas.tools;
+  const baseGroups = useMemo(() => buildCanvasToolGroups(toolsTranslations), [toolsTranslations]);
 
   const groups = useMemo(
     () =>
-      CANVAS_TOOL_GROUPS.map((group) =>
-        group.map((tool) => {
-          if (tool.id === ECanvasTool.Undo)
-            return { ...tool, disabled: !canUndo };
-          if (tool.id === ECanvasTool.Redo)
-            return { ...tool, disabled: !canRedo };
-          return tool;
-        })
-      ),
-    [canUndo, canRedo]
+      baseGroups.map((group) => ({
+        ...group,
+        tools: group.tools.map((tool) => ({
+          ...tool,
+          disabled: isToolDisabled(tool.id, { canUndo, canRedo }),
+        })),
+      })),
+    [baseGroups, canUndo, canRedo]
   );
 
-  const handleToolClick = useCallback(
-    (id: string) => {
-      if (id === ECanvasTool.Undo) {
-        useCanvasStore.getState().undo();
-        return;
-      }
-      if (id === ECanvasTool.Redo) {
-        useCanvasStore.getState().redo();
-        return;
-      }
-      setActiveTool(id as ECanvasTool);
-    },
-    [setActiveTool]
-  );
+  const handleToolClick = useCallback((id: string) => {
+    const store = useCanvasStore.getState();
+
+    if (id === ECanvasTool.Undo) {
+      store.undo();
+      return;
+    }
+    if (id === ECanvasTool.Redo) {
+      store.redo();
+      return;
+    }
+    if (!isCanvasTool(id)) return;
+
+    store.setActiveTool(id);
+  }, []);
 
   return { groups, activeTool, handleToolClick };
 };

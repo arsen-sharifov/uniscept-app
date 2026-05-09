@@ -10,24 +10,21 @@ export const useAsyncAction = () => {
 
   useEffect(() => () => clearTimeout(timerRef.current), []);
 
-  const run = useCallback(
-    async (action: () => Promise<void>, errorMessage: string) => {
-      setLoading(true);
-      setSuccess(false);
-      setError(null);
-      try {
-        await action();
-        setSuccess(true);
-        clearTimeout(timerRef.current);
-        timerRef.current = setTimeout(() => setSuccess(false), 2000);
-      } catch {
-        setError(errorMessage);
-      } finally {
-        setLoading(false);
-      }
-    },
-    []
-  );
+  const run = useCallback(async (action: () => Promise<void>, errorMessage: string) => {
+    setLoading(true);
+    setSuccess(false);
+    setError(null);
+    try {
+      await action();
+      setSuccess(true);
+      clearTimeout(timerRef.current);
+      timerRef.current = setTimeout(() => setSuccess(false), 2000);
+    } catch {
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   return { loading, success, error, run, setError };
 };

@@ -13,22 +13,19 @@ export const PROBLEM_CARDS = [
   {
     emoji: '🗺️',
     title: 'Mind maps are toys',
-    description:
-      'Pretty diagrams without logical rigor. No validation. No truth tracking.',
+    description: 'Pretty diagrams without logical rigor. No validation. No truth tracking.',
     tags: [{ label: 'Just Vibes', color: 'purple' }],
   },
   {
     emoji: '📝',
     title: "Docs don't scale",
-    description:
-      'Notion pages are write-only memory. Good luck finding that decision from 3 months ago.',
+    description: 'Notion pages are write-only memory. Good luck finding that decision from 3 months ago.',
     tags: [],
   },
   {
     emoji: '⚠️',
     title: 'The cost is real',
-    description:
-      'Billions lost to bad decisions. Hours wasted rehashing. Ideas forgotten forever.',
+    description: 'Billions lost to bad decisions. Hours wasted rehashing. Ideas forgotten forever.',
     tags: [],
   },
 ] as const;

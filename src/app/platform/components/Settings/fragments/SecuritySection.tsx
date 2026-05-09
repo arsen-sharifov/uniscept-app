@@ -9,10 +9,7 @@ export interface ISecuritySectionProps {
   onDeleteAccount: () => Promise<void>;
 }
 
-export const SecuritySection = ({
-  onChangePassword,
-  onDeleteAccount,
-}: ISecuritySectionProps) => {
+export const SecuritySection = ({ onChangePassword, onDeleteAccount }: ISecuritySectionProps) => {
   const router = useRouter();
   const t = useTranslations();
   const { security } = t.platform.settings;
@@ -46,9 +43,7 @@ export const SecuritySection = ({
   return (
     <div className="space-y-8">
       <div>
-        <h3 className="mb-3 text-xs font-medium tracking-wider text-black/30 uppercase">
-          {security.changePassword}
-        </h3>
+        <h3 className="mb-3 text-xs font-medium tracking-wider text-black/30 uppercase">{security.changePassword}</h3>
         <div className="max-w-sm space-y-3">
           <input
             type="password"
@@ -64,35 +59,23 @@ export const SecuritySection = ({
             onChange={(e) => setConfirmPassword(e.target.value)}
             className="w-full rounded-xl border border-black/10 bg-white px-4 py-2 text-sm text-black transition-colors focus:border-emerald-500 focus:outline-none"
           />
-          {passwordAction.error && (
-            <p className="text-sm text-red-500">{passwordAction.error}</p>
-          )}
+          {passwordAction.error && <p className="text-sm text-red-500">{passwordAction.error}</p>}
 
           <div className="flex items-center gap-3">
             <button
               onClick={handleChangePassword}
-              disabled={
-                passwordAction.loading || !newPassword || !confirmPassword
-              }
+              disabled={passwordAction.loading || !newPassword || !confirmPassword}
               className="cursor-pointer rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 px-5 py-2 text-sm font-medium text-white shadow-sm transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {passwordAction.loading
-                ? security.updatingPassword
-                : security.updatePassword}
+              {passwordAction.loading ? security.updatingPassword : security.updatePassword}
             </button>
-            {passwordAction.success && (
-              <span className="text-sm text-emerald-600">
-                {security.passwordUpdated}
-              </span>
-            )}
+            {passwordAction.success && <span className="text-sm text-emerald-600">{security.passwordUpdated}</span>}
           </div>
         </div>
       </div>
 
       <div className="border-t border-black/5 pt-6">
-        <h3 className="mb-3 text-xs font-medium tracking-wider text-red-500/70 uppercase">
-          {security.dangerZone}
-        </h3>
+        <h3 className="mb-3 text-xs font-medium tracking-wider text-red-500/70 uppercase">{security.dangerZone}</h3>
         {showDeleteConfirm ? (
           <div className="space-y-3">
             <p className="text-sm text-red-600">{security.deleteConfirm}</p>
@@ -102,9 +85,7 @@ export const SecuritySection = ({
                 disabled={deleteAction.loading}
                 className="cursor-pointer rounded-xl bg-red-500 px-5 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {deleteAction.loading
-                  ? security.deleting
-                  : security.deleteButton}
+                {deleteAction.loading ? security.deleting : security.deleteButton}
               </button>
               <button
                 onClick={() => setShowDeleteConfirm(false)}
@@ -113,9 +94,7 @@ export const SecuritySection = ({
                 {security.cancel}
               </button>
             </div>
-            {deleteAction.error && (
-              <p className="text-sm text-red-500">{deleteAction.error}</p>
-            )}
+            {deleteAction.error && <p className="text-sm text-red-500">{deleteAction.error}</p>}
           </div>
         ) : (
           <button

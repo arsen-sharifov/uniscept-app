@@ -1,23 +1,22 @@
 import type { IWorkspace, IWorkspaceRow } from '@interfaces';
-import { createClient } from '@/lib/supabase/client';
+import { createClient } from '@/lib/supabase';
 import { getUser } from './user';
 import { toWorkspace } from './utils';
 
 export const getWorkspaces = async (): Promise<IWorkspace[]> => {
   const supabase = createClient();
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('workspaces')
     .select('id, name, owner_id, created_at, position')
-    .order('position');
+    .order('position')
+    .returns<IWorkspaceRow[]>();
 
-  if (!data) return [];
+  if (error) throw error;
 
-  return data.map((workspace) => toWorkspace(workspace as IWorkspaceRow));
+  return (data ?? []).map(toWorkspace);
 };
 
-export const createWorkspace = async (
-  name: string
-): Promise<IWorkspace | null> => {
+export const createWorkspace = async (name: string): Promise<IWorkspace | null> => {
   const {
     data: { user },
   } = await getUser();
@@ -25,42 +24,55 @@ export const createWorkspace = async (
 
   const supabase = createClient();
 
-  const { count } = await supabase
+  const { count, error: countError } = await supabase
     .from('workspaces')
     .select('id', { count: 'exact', head: true })
     .eq('owner_id', user.id);
 
-  const { data } = await supabase
+  if (countError) throw countError;
+
+  const { data, error: insertError } = await supabase
     .from('workspaces')
     .insert({ name, owner_id: user.id, position: count ?? 0 })
     .select('id, name, owner_id, created_at, position')
-    .single();
+    .single<IWorkspaceRow>();
 
+  if (insertError) throw insertError;
   if (!data) return null;
 
-  await supabase
+  const { error: memberError } = await supabase
     .from('workspace_members')
     .insert({ workspace_id: data.id, user_id: user.id, role: 'owner' });
 
-  return toWorkspace(data as IWorkspaceRow);
+  if (memberError) throw memberError;
+
+  return toWorkspace(data);
 };
 
-export const renameWorkspace = async (id: string, name: string) => {
+export const updateWorkspaceName = async (id: string, name: string): Promise<void> => {
   const supabase = createClient();
-  return supabase.from('workspaces').update({ name }).eq('id', id);
+  const { error } = await supabase.from('workspaces').update({ name }).eq('id', id);
+
+  if (error) throw error;
 };
 
-export const deleteWorkspace = async (id: string) => {
+export const deleteWorkspace = async (id: string): Promise<void> => {
   const supabase = createClient();
-  return supabase.from('workspaces').delete().eq('id', id);
+  const { error } = await supabase.from('workspaces').delete().eq('id', id);
+
+  if (error) throw error;
 };
 
-export const deleteWorkspaces = async (ids: string[]) => {
+export const deleteWorkspaces = async (ids: string[]): Promise<void> => {
   const supabase = createClient();
-  return supabase.from('workspaces').delete().in('id', ids);
+  const { error } = await supabase.from('workspaces').delete().in('id', ids);
+
+  if (error) throw error;
 };
 
-export const moveWorkspace = async (id: string, position: number) => {
+export const moveWorkspace = async (id: string, position: number): Promise<void> => {
   const supabase = createClient();
-  return supabase.from('workspaces').update({ position }).eq('id', id);
+  const { error } = await supabase.from('workspaces').update({ position }).eq('id', id);
+
+  if (error) throw error;
 };

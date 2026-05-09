@@ -17,13 +17,7 @@ interface IMoveDialogProps {
   onCancel: () => void;
 }
 
-export const MoveDialog = ({
-  open,
-  items,
-  selectedIds,
-  onMove,
-  onCancel,
-}: IMoveDialogProps) => {
+export const MoveDialog = ({ open, items, selectedIds, onMove, onCancel }: IMoveDialogProps) => {
   const t = useTranslations();
   const [targetId, setTargetId] = useState<string | null>(null);
 
@@ -32,10 +26,7 @@ export const MoveDialog = ({
     return flat.filter((item) => item.type === 'folder');
   }, [items]);
 
-  const folders = useMemo(
-    () => allFolders.filter((folder) => !selectedIds.has(folder.id)),
-    [allFolders, selectedIds]
-  );
+  const folders = useMemo(() => allFolders.filter((folder) => !selectedIds.has(folder.id)), [allFolders, selectedIds]);
 
   const handleConfirm = () => {
     onMove(targetId);
@@ -50,9 +41,7 @@ export const MoveDialog = ({
   return (
     <Modal open={open} onClose={handleCancel}>
       <div className="p-6">
-        <h2 className="mb-4 text-lg font-semibold text-black/80">
-          {t.platform.sidebar.moveToFolder}
-        </h2>
+        <h2 className="mb-4 text-lg font-semibold text-black/80">{t.platform.sidebar.moveToFolder}</h2>
 
         <div className="mb-4 max-h-60 space-y-0.5 overflow-y-auto rounded-xl border border-black/5 p-1.5">
           <button
@@ -64,12 +53,7 @@ export const MoveDialog = ({
                 : 'text-black/60 hover:bg-black/5'
             )}
           >
-            <Home
-              className={clsx(
-                'h-4 w-4 shrink-0',
-                targetId === null ? 'text-emerald-500' : 'text-black/30'
-              )}
-            />
+            <Home className={clsx('h-4 w-4 shrink-0', targetId === null ? 'text-emerald-500' : 'text-black/30')} />
             <span>{t.platform.sidebar.rootLevel}</span>
           </button>
 

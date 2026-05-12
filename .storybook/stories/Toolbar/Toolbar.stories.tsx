@@ -1,27 +1,11 @@
-import { useMemo, useState } from 'react';
-import type { Decorator, Meta, StoryObj } from '@storybook/nextjs-vite';
-import { type IToolbarProps, ECanvasTool, Toolbar, buildCanvasToolGroups } from '@/components';
-import { useTranslations } from '@hooks';
+import type { Meta, StoryObj } from '@storybook/nextjs-vite';
+import { fn } from 'storybook/test';
+import type { IToolGroup } from '@interfaces';
+import { ECanvasTool, Toolbar, buildCanvasTools } from '@/components';
+
 import { ARG_CATEGORIES } from '../../consts';
-
-const WithFullscreen: Decorator = (Story) => (
-  <div className="relative h-screen w-screen bg-neutral-100/60">
-    <Story />
-  </div>
-);
-
-const ToolbarWithState = (args: IToolbarProps) => {
-  const [activeTool, setActiveTool] = useState(args.activeTool);
-
-  return <Toolbar {...args} activeTool={activeTool} onToolClick={setActiveTool} />;
-};
-
-const StaticToolbar = (args: IToolbarProps) => {
-  const t = useTranslations();
-  const groups = useMemo(() => buildCanvasToolGroups(t.platform.canvas.tools), [t.platform.canvas.tools]);
-
-  return <ToolbarWithState {...args} groups={args.groups ?? groups} />;
-};
+import { DENSE_DISABLED_TOOL_IDS } from './consts';
+import { ToolbarWithState } from './fragments';
 
 const meta: Meta<typeof Toolbar> = {
   title: 'Components/Toolbar',
@@ -31,26 +15,33 @@ const meta: Meta<typeof Toolbar> = {
     docs: {
       description: {
         component:
-          'Vertical toolbar anchored to the right edge of the viewport. Tool icons are organized into logical groups separated by dividers.',
+          'Vertical toolbar fixed to the right edge of the canvas. Tool icons are grouped into logical clusters separated by dividers. `activeTool` is bound to the Controls panel via `useArgs` — clicking a tool updates the live state and fires the `onToolClick` action.',
       },
     },
   },
+  args: {
+    activeTool: ECanvasTool.Select,
+    onToolClick: fn(),
+  },
   argTypes: {
     groups: {
-      description: 'Array of tool groups, each with a label and tools array.',
-      table: { category: ARG_CATEGORIES.CONTENT },
+      description:
+        'Array of tool groups rendered top-to-bottom. Each group has an `id`, optional `label`, and a `tools` array of `IToolItem` (id, icon, label, description, shortcut, kind, disabled). Groups are separated by dividers.',
+      table: {
+        category: ARG_CATEGORIES.CONTENT,
+        type: { summary: 'IToolGroup[]', detail: '{ id: string; label?: string; tools: IToolItem[] }[]' },
+      },
     },
     activeTool: {
-      control: { type: 'text' },
-      description: 'ID of the active tool',
+      control: 'text',
+      description: 'ID of the active tool. Bound to the Controls panel.',
       table: { category: ARG_CATEGORIES.BEHAVIOR },
     },
     onToolClick: {
-      description: 'Callback fired when a tool is clicked.',
+      description: 'Fired when a tool is clicked.',
       table: { category: ARG_CATEGORIES.BEHAVIOR },
     },
   },
-  decorators: [WithFullscreen],
 };
 
 export default meta;
@@ -58,31 +49,139 @@ export default meta;
 type Story = StoryObj<typeof Toolbar>;
 
 export const Default: Story = {
-  render: StaticToolbar,
-  args: {
-    activeTool: ECanvasTool.Select,
-  },
+  render: (args) => <ToolbarWithState {...args} />,
+};
+
+export const SelectActive: Story = {
+  args: { activeTool: ECanvasTool.Select },
+  render: (args) => <ToolbarWithState {...args} />,
+};
+
+export const ConnectActive: Story = {
+  args: { activeTool: ECanvasTool.Connect },
+  render: (args) => <ToolbarWithState {...args} />,
+};
+
+export const AddNodeActive: Story = {
+  args: { activeTool: ECanvasTool.AddNode },
+  render: (args) => <ToolbarWithState {...args} />,
 };
 
 export const WithDisabledTools: Story = {
-  render: (args) => {
-    const t = useTranslations();
-    const groups = buildCanvasToolGroups(t.platform.canvas.tools).map((group) => ({
-      ...group,
-      tools: group.tools.map((tool) =>
-        tool.id === ECanvasTool.Undo || tool.id === ECanvasTool.Redo ? { ...tool, disabled: true } : tool
-      ),
-    }));
-    return <ToolbarWithState {...args} groups={groups} />;
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Undo and Redo are disabled — matches the production empty-history state. Disabled tools cannot be activated, but the toolbar still renders them.',
+      },
+    },
   },
-  args: {
-    activeTool: ECanvasTool.Select,
-  },
+  render: (args) => (
+    <ToolbarWithState
+      {...args}
+      mapGroups={(groups) =>
+        groups.map((group) => ({
+          ...group,
+          tools: group.tools.map((tool) =>
+            tool.id === ECanvasTool.Undo || tool.id === ECanvasTool.Redo ? { ...tool, disabled: true } : tool
+          ),
+        }))
+      }
+    />
+  ),
 };
 
 export const Empty: Story = {
-  render: ToolbarWithState,
+  parameters: {
+    docs: {
+      description: {
+        story: 'No groups passed — only the floating help button remains.',
+      },
+    },
+  },
   args: {
     groups: [],
+    activeTool: undefined,
   },
+  render: (args) => <ToolbarWithState {...args} />,
+};
+
+export const InterleavedGroups: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Custom composition that bypasses `buildCanvasToolGroups`. Tools are regrouped into "primary" (Select, AddNode, Connect) and "secondary" (Comment, CrossReference, Delete) clusters to demonstrate that any `ECanvasTool` can become the active tool inside an arbitrary group layout.',
+      },
+    },
+  },
+  args: { activeTool: ECanvasTool.AddNode },
+  render: (args) => (
+    <ToolbarWithState
+      {...args}
+      buildGroups={(t) => {
+        const tools = buildCanvasTools(t.platform.canvas.tools);
+        return [
+          {
+            id: 'primary',
+            label: t.platform.canvas.tools.groups.build,
+            tools: [tools[ECanvasTool.Select], tools[ECanvasTool.AddNode], tools[ECanvasTool.Connect]],
+          },
+          {
+            id: 'secondary',
+            label: t.platform.canvas.tools.groups.annotate,
+            tools: [tools[ECanvasTool.Comment], tools[ECanvasTool.CrossReference], tools[ECanvasTool.Delete]],
+          },
+        ] satisfies IToolGroup[];
+      }}
+    />
+  ),
+};
+
+export const DenseGroups: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Full default group set with several tools marked `disabled` (Pan, ZoomOut, Delete, InvalidPath, Undo, Redo). Demonstrates how the toolbar stretches vertically to fill the viewport while preserving group dividers.',
+      },
+    },
+  },
+  render: (args) => (
+    <ToolbarWithState
+      {...args}
+      mapGroups={(groups) =>
+        groups.map((group) => ({
+          ...group,
+          tools: group.tools.map((tool) => (DENSE_DISABLED_TOOL_IDS.has(tool.id) ? { ...tool, disabled: true } : tool)),
+        }))
+      }
+    />
+  ),
+};
+
+export const MinimalSingleGroup: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story: 'A single group with three tools — no dividers are drawn because dividers only appear between groups.',
+      },
+    },
+  },
+  args: { activeTool: ECanvasTool.Select },
+  render: (args) => (
+    <ToolbarWithState
+      {...args}
+      buildGroups={(t) => {
+        const tools = buildCanvasTools(t.platform.canvas.tools);
+        return [
+          {
+            id: 'navigate',
+            label: t.platform.canvas.tools.groups.navigate,
+            tools: [tools[ECanvasTool.Select], tools[ECanvasTool.Pan], tools[ECanvasTool.ZoomIn]],
+          },
+        ] satisfies IToolGroup[];
+      }}
+    />
+  ),
 };

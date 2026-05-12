@@ -36,7 +36,7 @@ const WorkspaceLayout = ({ children }: { children: ReactNode }) => {
   } = useWorkspaceManager();
 
   return (
-    <div className="relative h-screen w-screen bg-neutral-100/60">
+    <div className="relative h-screen w-screen bg-[color:var(--app-bg-tint)] transition-colors duration-300 ease-out">
       <Sidebar
         items={navItems}
         workspaces={workspaces}

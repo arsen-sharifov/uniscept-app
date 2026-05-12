@@ -12,7 +12,7 @@ import { getCanvasEdges } from './canvasEdge';
 import { getNodeComments } from './nodeComment';
 import { getCanvasComments } from './canvasComment';
 import { REFERENCE_SEARCH_LIMIT, REFERENCE_TARGET_SELECT } from './consts';
-import { toNodeReference, toReferenceTargetMeta } from './utils';
+import { rowToEdge, rowToNode, toComment, toNodeReference, toReferenceTargetMeta } from './utils';
 
 const getReferenceTargetsByIds = async (nodeIds: string[]): Promise<Record<string, IReferenceTargetMeta>> => {
   if (nodeIds.length === 0) return {};
@@ -39,25 +39,31 @@ const groupCommentsByNode = (comments: INodeCommentRow[]): Record<string, INodeC
 export const getCanvasContent = async (threadId: string): Promise<ICanvasSnapshot> => {
   const canvasCommentsPromise = getCanvasComments(threadId);
 
-  const [nodes, edges] = await Promise.all([getCanvasNodes(threadId), getCanvasEdges(threadId)]);
+  const [nodeRows, edgeRows] = await Promise.all([getCanvasNodes(threadId), getCanvasEdges(threadId)]);
 
-  const nodeIds = nodes.map((node) => node.id);
-  const referenceTargetIds = nodes.flatMap((node) =>
+  const nodeIds = nodeRows.map((node) => node.id);
+  const referenceTargetIds = nodeRows.flatMap((node) =>
     node.type === ECanvasNodeType.Reference && node.source_node_id ? [node.source_node_id] : []
   );
 
-  const [comments, referenceTargets, canvasComments] = await Promise.all([
+  const [commentRows, referenceTargets, canvasCommentRows] = await Promise.all([
     getNodeComments(nodeIds),
     getReferenceTargetsByIds(referenceTargetIds),
     canvasCommentsPromise,
   ]);
 
+  const commentsByNode = groupCommentsByNode(commentRows);
+
   return {
-    nodes,
-    edges,
-    commentsByNode: groupCommentsByNode(comments),
-    canvasComments,
-    referenceTargets,
+    nodes: nodeRows.map((row) =>
+      rowToNode(
+        row,
+        commentsByNode[row.id] ?? [],
+        row.source_node_id ? referenceTargets[row.source_node_id] : undefined
+      )
+    ),
+    edges: edgeRows.map(rowToEdge),
+    canvasComments: canvasCommentRows.map(toComment),
   };
 };
 

@@ -1,13 +1,13 @@
+import type { TLocale } from './i18n';
+
+export type TTheme = 'daybreak' | 'eclipse' | 'graphite' | 'solstice' | 'aurora' | 'auto';
+
+export type TCanvasPattern = 'dots' | 'lines' | 'cross' | 'none';
+
 export interface IPreferences {
-  theme: 'light' | 'dark' | 'system';
-  snapToGrid: boolean;
-  showGrid: boolean;
-  showMinimap: boolean;
-  defaultZoom: number;
-  emailMentions: boolean;
-  emailComments: boolean;
-  emailInvites: boolean;
-  emailDigest: boolean;
+  theme: TTheme;
+  canvasPattern: TCanvasPattern;
+  language: TLocale;
 }
 
 export type TPreferenceUpdater = <Key extends keyof IPreferences>(key: Key, value: IPreferences[Key]) => void;

@@ -38,7 +38,7 @@ export const useSelection = () => {
     lastClickedIdRef.current = null;
   }, []);
 
-  const clearAndSelect = useCallback((id: string) => {
+  const clearAndSetAnchor = useCallback((id: string) => {
     setSelectedIds(new Set());
     lastClickedIdRef.current = id;
   }, []);
@@ -49,7 +49,7 @@ export const useSelection = () => {
     toggleSelection,
     selectRange,
     clearSelection,
-    clearAndSelect,
+    clearAndSetAnchor,
     selectionCount: selectedIds.size,
   };
 };

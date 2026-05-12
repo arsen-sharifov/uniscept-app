@@ -1,9 +1,11 @@
+import { useMemo } from 'react';
+import { useTranslations } from '@hooks';
+import { mergePlansWithTranslations } from '@/lib/pricing';
 import { PricingCard, Section } from './components';
-import { PRICING_PLANS } from '@/lib/constants/pricing';
-import { useTranslations } from '@/lib/hooks';
 
 export const PricingSection = () => {
   const t = useTranslations();
+  const plans = useMemo(() => mergePlansWithTranslations(t), [t]);
 
   return (
     <Section className="py-28">
@@ -16,7 +18,7 @@ export const PricingSection = () => {
         </div>
 
         <div data-reveal className="scroll-reveal grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {PRICING_PLANS.map((plan) => (
+          {plans.map((plan) => (
             <PricingCard key={plan.id} plan={plan} />
           ))}
         </div>

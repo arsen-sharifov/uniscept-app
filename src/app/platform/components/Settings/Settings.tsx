@@ -32,38 +32,61 @@ export const Settings = ({ onClose, defaultSection = 'profile' }: ISettingsProps
     onClose();
   }, [defaultSection, onClose]);
 
+  const renderSection = () => {
+    if (loading) {
+      return (
+        <div role="status" aria-label={t.common.loading} className="flex h-40 items-center justify-center">
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-[color:var(--accent)] border-t-transparent" />
+        </div>
+      );
+    }
+
+    if (activeSection === 'profile') {
+      return <ProfileSection user={user} onUpdateProfile={updateProfile} onUpdateEmail={changeEmail} />;
+    }
+
+    if (activeSection === 'security') {
+      return <SecuritySection onChangePassword={changePassword} onDeleteAccount={deleteAccount} />;
+    }
+
+    if (activeSection === 'notifications') {
+      return <NotificationsSection />;
+    }
+
+    if (activeSection === 'appearance') {
+      return <AppearanceSection preferences={preferences} onUpdate={updatePreference} />;
+    }
+
+    if (activeSection === 'editor') {
+      return <EditorSection />;
+    }
+
+    return <PlanSection user={user} />;
+  };
+
   return (
-    <Modal open onClose={handleClose} className="max-w-[1100px]" overflowHidden>
-      <div className="flex h-[80vh]">
+    <Modal open onClose={handleClose} width="max-w-[1100px]" overflowHidden>
+      <div
+        data-theme={preferences.theme}
+        className="flex h-[80vh] bg-[color:var(--surface)] text-[color:var(--text)] transition-[background-color,color] duration-300 ease-out"
+      >
         <SettingsSidebar activeSection={activeSection} onSectionChange={setActiveSection} />
 
-        <div className="relative flex-1 overflow-y-auto px-10 py-8">
+        <div className="relative flex-1 overflow-y-auto bg-[color:var(--surface)] px-10 py-8">
           <button
+            type="button"
             onClick={handleClose}
-            className="absolute top-4 right-4 cursor-pointer rounded-lg p-1.5 text-black/30 transition-colors hover:bg-black/5 hover:text-black/60"
+            aria-label={t.platform.settings.close}
+            className="absolute top-4 right-4 cursor-pointer rounded-lg p-1.5 text-[color:var(--text-subtle)] transition-colors hover:bg-[color:var(--surface-overlay)] hover:text-[color:var(--text)]"
           >
-            <X className="h-4 w-4" />
+            <X className="h-4 w-4" aria-hidden />
           </button>
 
-          <h2 className="mb-6 text-lg font-bold text-black">{t.platform.settings.sections[activeSection]}</h2>
+          <h2 className="mb-6 text-lg font-bold text-[color:var(--text-strong)]">
+            {t.platform.settings.sections[activeSection]}
+          </h2>
 
-          {loading ? (
-            <div className="flex h-40 items-center justify-center">
-              <div className="h-6 w-6 animate-spin rounded-full border-2 border-emerald-500 border-t-transparent" />
-            </div>
-          ) : activeSection === 'profile' ? (
-            <ProfileSection user={user} onUpdateProfile={updateProfile} onUpdateEmail={changeEmail} />
-          ) : activeSection === 'security' ? (
-            <SecuritySection onChangePassword={changePassword} onDeleteAccount={deleteAccount} />
-          ) : activeSection === 'notifications' ? (
-            <NotificationsSection preferences={preferences} onUpdate={updatePreference} />
-          ) : activeSection === 'appearance' ? (
-            <AppearanceSection />
-          ) : activeSection === 'editor' ? (
-            <EditorSection preferences={preferences} onUpdate={updatePreference} />
-          ) : (
-            <PlanSection user={user} />
-          )}
+          {renderSection()}
         </div>
       </div>
     </Modal>

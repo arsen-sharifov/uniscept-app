@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
-import type { IDragSelectRect } from '@interfaces';
+import type { IRect } from '@interfaces';
 import {
   AUTO_SCROLL_INTERVAL_MS,
   AUTO_SCROLL_STEP_PX,
@@ -15,11 +15,11 @@ interface IUseDragSelectOptions {
   enabled?: boolean;
 }
 
-const rectsOverlap = (a: DOMRect, b: IDragSelectRect): boolean =>
+const rectsOverlap = (a: DOMRect, b: IRect): boolean =>
   a.left < b.x + b.width && a.right > b.x && a.top < b.y + b.height && a.bottom > b.y;
 
 export const useDragSelect = ({ containerRef, onSelectionChange, enabled = true }: IUseDragSelectOptions) => {
-  const [rect, setRect] = useState<IDragSelectRect | null>(null);
+  const [rect, setRect] = useState<IRect | null>(null);
   const startPos = useRef<{ x: number; y: number } | null>(null);
   const isActive = useRef(false);
   const rafId = useRef<number | null>(null);
@@ -33,7 +33,7 @@ export const useDragSelect = ({ containerRef, onSelectionChange, enabled = true 
     }
   }, []);
 
-  const computeRect = useCallback((clientX: number, clientY: number): IDragSelectRect | null => {
+  const computeRect = useCallback((clientX: number, clientY: number): IRect | null => {
     const start = startPos.current;
     if (!start) return null;
 
@@ -46,7 +46,7 @@ export const useDragSelect = ({ containerRef, onSelectionChange, enabled = true 
   }, []);
 
   const findIntersectingIds = useCallback(
-    (selectionRect: IDragSelectRect): Set<string> => {
+    (selectionRect: IRect): Set<string> => {
       const container = containerRef.current;
       if (!container) return new Set();
 

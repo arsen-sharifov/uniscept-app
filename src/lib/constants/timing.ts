@@ -1,0 +1,1 @@
+export const SUCCESS_RESET_DELAY_MS = 2000;

@@ -51,6 +51,22 @@ export const resolveEdgeTone = (
   return 'default';
 };
 
+const TONE_SEVERITY: Record<TEdgeTone, number> = {
+  invalid: 3,
+  tainted: 2,
+  valid: 1,
+  default: 0,
+};
+
+export const resolveBidirectionalEdgeTone = (
+  statusA: TEffectiveStatus | undefined,
+  statusB: TEffectiveStatus | undefined
+): TEdgeTone => {
+  const ab = resolveEdgeTone(statusA, statusB);
+  const ba = resolveEdgeTone(statusB, statusA);
+  return TONE_SEVERITY[ab] >= TONE_SEVERITY[ba] ? ab : ba;
+};
+
 export const computeEffectiveStatuses = (nodes: Node[], edges: Edge[]): Map<string, TEffectiveStatus> => {
   const result = new Map<string, TEffectiveStatus>();
 

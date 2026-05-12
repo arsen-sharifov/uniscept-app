@@ -4,5 +4,5 @@ export const buildReferenceUrl = (workspaceId: string, threadId: string, nodeId?
   const params = new URLSearchParams({ focus: 'ref' });
   if (nodeId) params.set('node', nodeId);
 
-  return `/platform/${workspaceId}/${threadId}?${params.toString()}`;
+  return `/platform/${encodeURIComponent(workspaceId)}/${encodeURIComponent(threadId)}?${params.toString()}`;
 };

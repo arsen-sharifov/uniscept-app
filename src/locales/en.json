@@ -6,7 +6,7 @@
       "email": "Email",
       "password": "Password",
       "submit": "Sign In",
-      "submitting": "Signing in...",
+      "submitting": "Signing in…",
       "emailSent": "Check your email to confirm your account.",
       "noAccount": "Don't have an account?",
       "signUpLink": "Sign Up"
@@ -39,7 +39,7 @@
         "password": "Password",
         "back": "Back",
         "submit": "Sign Up",
-        "submitting": "Creating account..."
+        "submitting": "Creating account…"
       },
       "hasAccount": "Already have an account?",
       "signInLink": "Sign In"
@@ -56,7 +56,16 @@
       "heading": "Email Confirmed",
       "message": "Your email has been successfully verified. You can close this tab and return to the previous one.",
       "close": "Close Tab"
+    },
+    "aside": {
+      "quote": "Build knowledge. Not chaos.",
+      "tagline": "Structured reasoning for teams that ship."
     }
+  },
+  "common": {
+    "loading": "Loading",
+    "close": "Close",
+    "userAvatar": "User"
   },
   "platform": {
     "sidebar": {
@@ -78,13 +87,15 @@
       "delete": "Delete",
       "cancel": "Cancel",
       "move": "Move",
+      "treeAriaLabel": "Navigation",
+      "dragToReorder": "Drag to reorder",
       "itemsSelected": "items selected",
       "workspacesSelected": "workspaces selected",
       "moveToFolder": "Move to folder",
       "rootLevel": "Root level",
       "bulkDeleteTitle": "Delete items",
       "bulkDeleteConfirm": "Are you sure you want to delete these items? This action cannot be undone.",
-      "searchPlaceholder": "Search...",
+      "searchPlaceholder": "Search…",
       "noSearchResults": "No matches found",
       "emptyStructureTitle": "Nothing here yet",
       "emptyStructureHint": "Create a thread or folder to start organizing your work.",
@@ -95,7 +106,7 @@
     },
     "canvas": {
       "referenceSearch": {
-        "placeholder": "Search nodes...",
+        "placeholder": "Search nodes…",
         "noResults": "No nodes found",
         "noMatch": "Nothing matches \"{query}\"",
         "hint": "Try a different node label or keyword.",
@@ -192,7 +203,6 @@
       },
       "reference": {
         "badge": "Reference",
-        "openHint": "Double-click to open",
         "openLabel": "Open {name}",
         "workspaceFallback": "workspace"
       },
@@ -215,21 +225,13 @@
         "retryAttempt": "Attempt {n}",
         "saved": "Saved",
         "offline": "Offline",
-        "offlinePending": "{count} pending",
+        "offlinePending": "{count, plural, one {# change pending} other {# changes pending}}",
         "errorTitle": "Couldn't save",
-        "errorChange": "{count} change",
-        "errorChanges": "{count} changes",
+        "errorChanges": "{count, plural, one {# change} other {# changes}}",
         "retry": "Retry",
         "retryAriaLabel": "Retry failed changes",
         "discard": "Discard",
-        "discardAriaLabel": "Discard failed changes",
-        "relativeTime": {
-          "justNow": "just now",
-          "secondsAgo": "{n}s ago",
-          "minutesAgo": "{n}m ago",
-          "hoursAgo": "{n}h ago",
-          "daysAgo": "{n}d ago"
-        }
+        "discardAriaLabel": "Discard failed changes"
       },
       "context": {
         "ariaLabel": "Canvas actions",
@@ -259,7 +261,10 @@
     },
     "settings": {
       "title": "Settings",
+      "close": "Close settings",
       "comingSoon": "Coming soon",
+      "languageSaving": "Saving language…",
+      "languageSaveFailed": "Couldn't save language preference. Please try again.",
       "groups": {
         "account": "Account",
         "preferences": "Preferences",
@@ -277,27 +282,29 @@
         "email": "Email",
         "name": "Full Name",
         "save": "Save",
-        "saving": "Saving...",
+        "saving": "Saving…",
         "saved": "Saved",
         "changeEmail": "Change Email",
-        "changingEmail": "Sending...",
+        "changingEmail": "Sending…",
         "emailChangeRequested": "Confirmation email sent to the new address.",
         "saveFailed": "Failed to save. Please try again.",
-        "emailChangeFailed": "Failed to change email. Please try again."
+        "emailChangeFailed": "Failed to change email. Please try again.",
+        "emailInvalid": "Please enter a valid email address."
       },
       "security": {
         "changePassword": "Change Password",
         "newPassword": "New Password",
         "confirmPassword": "Confirm Password",
         "updatePassword": "Update Password",
-        "updatingPassword": "Updating...",
+        "updatingPassword": "Updating…",
         "passwordUpdated": "Password updated",
         "passwordMismatch": "Passwords do not match",
+        "passwordTooShort": "Password must be at least 8 characters",
         "dangerZone": "Danger Zone",
         "deleteAccount": "Delete Account",
         "deleteConfirm": "Are you sure? This action cannot be undone. All your data will be permanently deleted.",
         "deleteButton": "Delete My Account",
-        "deleting": "Deleting...",
+        "deleting": "Deleting…",
         "cancel": "Cancel",
         "updateFailed": "Failed to update password. Please try again.",
         "deleteFailed": "Failed to delete account. Please try again."
@@ -315,11 +322,42 @@
       },
       "appearance": {
         "theme": "Theme",
-        "themeLight": "Light",
-        "themeDark": "Dark",
-        "themeSystem": "System",
+        "themeIntro": "Six moods",
+        "themeBlurb": "Pick a palette that matches how you think. Each one repaints the workspace from the canvas to the toolbar.",
+        "themeDaybreak": "Daybreak",
+        "themeEclipse": "Eclipse",
+        "themeGraphite": "Graphite",
+        "themeSolstice": "Solstice",
+        "themeAurora": "Aurora",
+        "themeAuto": "Auto",
+        "daybreakDesc": "Crisp paper, soft daylight",
+        "eclipseDesc": "Inked midnight, cyan glow",
+        "graphiteDesc": "Pure monochrome",
+        "solsticeDesc": "Warm parchment, amber",
+        "auroraDesc": "Iridescent glass",
+        "autoDesc": "Follows your system",
+        "defaultBadge": "Default",
+        "adaptive": "Adaptive",
+        "canvas": "Canvas",
+        "canvasIntro": "Four textures",
+        "canvasBlurb": "Pick the surface your ideas live on. From quiet paper to a charted grid.",
+        "patternDots": "Constellation",
+        "patternLines": "Blueprint",
+        "patternCross": "Plotted",
+        "patternNone": "Void",
+        "patternDotsDesc": "Soft dots, gentle horizon",
+        "patternLinesDesc": "Grid paper, engineer's brief",
+        "patternCrossDesc": "Plus marks, surveyor's plot",
+        "patternNoneDesc": "Pure surface, no pattern",
         "language": "Language",
-        "english": "English"
+        "languages": {
+          "en": "English",
+          "uk": "Українська",
+          "ro": "Română",
+          "fr": "Français",
+          "es": "Español",
+          "pt": "Português (Portugal)"
+        }
       },
       "editor": {
         "canvas": "Canvas",
@@ -406,7 +444,38 @@
       "subtitle": "Simple. Transparent. Fair.",
       "footer": "Try free with Demo mode. No credit card required.",
       "tryDemo": "Try Demo",
-      "getStarted": "Get Started"
+      "getStarted": "Get Started",
+      "popular": "Popular",
+      "free": "Free",
+      "periods": {
+        "month": "month",
+        "year": "year"
+      },
+      "plans": {
+        "demo": {
+          "name": "Demo",
+          "description": "Session-based",
+          "features": ["Try the canvas", "No account needed", "Explore features", "Session storage"]
+        },
+        "lite": {
+          "name": "Lite",
+          "features": ["Unlimited canvases", "Single user", "Cloud storage", "Export options"]
+        },
+        "standard": {
+          "name": "Standard",
+          "features": ["Everything in Lite", "Up to 5 members", "Team collaboration", "Real-time sync"]
+        },
+        "pro": {
+          "name": "Pro",
+          "features": [
+            "Everything in Standard",
+            "Unlimited members",
+            "Advanced permissions",
+            "Priority support",
+            "API access"
+          ]
+        }
+      }
     },
     "howItWorks": {
       "title": "Three steps.",

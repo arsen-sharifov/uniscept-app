@@ -1,6 +1,6 @@
-import { Section } from './components';
-import { useTranslations } from '@/lib/hooks';
 import { CheckCircle, Link2, Map, Users } from 'lucide-react';
+import { useTranslations } from '@hooks';
+import { Section } from './components';
 
 export const ProductSection = () => {
   const t = useTranslations();

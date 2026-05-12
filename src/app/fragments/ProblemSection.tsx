@@ -1,7 +1,7 @@
-import clsx from 'clsx';
-import { Section } from './components';
+import { clsx } from 'clsx';
 import { PROBLEM_CARDS } from '@/lib/constants/content';
-import { useTranslations } from '@/lib/hooks';
+import { useTranslations } from '@hooks';
+import { Section } from './components';
 
 export const ProblemSection = () => {
   const t = useTranslations();

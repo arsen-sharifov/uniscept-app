@@ -1,6 +1,7 @@
 'use client';
 
 import { CircleCheck } from 'lucide-react';
+import { LANDING_THEME } from '@constants';
 import { Logo } from '@/components';
 import { useTranslations } from '@hooks';
 
@@ -8,7 +9,7 @@ const ConfirmedPage = () => {
   const { confirmed } = useTranslations().auth;
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-white px-6">
+    <div data-theme={LANDING_THEME} className="flex min-h-screen flex-col items-center justify-center bg-white px-6">
       <Logo className="mb-12 text-2xl" />
 
       <div className="w-full max-w-sm text-center">

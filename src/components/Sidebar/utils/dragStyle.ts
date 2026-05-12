@@ -1,6 +1,5 @@
 import type { CSSProperties } from 'react';
-import type { Transform } from '@dnd-kit/utilities';
-import { CSS } from '@dnd-kit/utilities';
+import { CSS, type Transform } from '@dnd-kit/utilities';
 
 export const getDragTransformStyle = (
   transform: Transform | null,

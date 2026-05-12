@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { useTranslations } from '@/lib/hooks';
+import { useTranslations } from '@hooks';
 
 export const Hero = () => {
   const t = useTranslations();

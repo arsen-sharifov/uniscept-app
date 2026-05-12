@@ -1,9 +1,13 @@
 import { type MeasuringConfiguration, MeasuringStrategy } from '@dnd-kit/core';
+import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 
 export const MAX_DEPTH = 2;
 export const INDENTATION_WIDTH = 20;
 
 export const POINTER_ACTIVATION_DISTANCE = 5;
+
+export const POINTER_SENSOR_OPTIONS = { activationConstraint: { distance: POINTER_ACTIVATION_DISTANCE } };
+export const KEYBOARD_SENSOR_OPTIONS = { coordinateGetter: sortableKeyboardCoordinates };
 
 export const FOLDER_INSIDE_THRESHOLD = 0.25;
 export const LEAF_SPLIT_THRESHOLD = 0.5;

@@ -1,5 +1,6 @@
 'use client';
 
+import { useId } from 'react';
 import { Modal } from './Modal';
 
 export interface IConfirmDialogProps {
@@ -20,25 +21,34 @@ export const ConfirmDialog = ({
   cancelLabel = 'Cancel',
   onConfirm,
   onCancel,
-}: IConfirmDialogProps) => (
-  <Modal open={open} onClose={onCancel} className="max-w-sm">
-    <div className="p-6">
-      <h3 className="text-base font-semibold text-black">{title}</h3>
-      <p className="mt-2 text-sm text-black/50">{message}</p>
-      <div className="mt-5 flex justify-end gap-2">
-        <button
-          onClick={onCancel}
-          className="cursor-pointer rounded-xl px-4 py-1.5 text-sm font-medium text-black/50 transition-colors hover:bg-black/5 hover:text-black"
-        >
-          {cancelLabel}
-        </button>
-        <button
-          onClick={onConfirm}
-          className="cursor-pointer rounded-xl bg-red-500 px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-red-600"
-        >
-          {confirmLabel}
-        </button>
+}: IConfirmDialogProps) => {
+  const messageId = useId();
+
+  return (
+    <Modal open={open} onClose={onCancel} width="max-w-sm">
+      <div role="alertdialog" aria-describedby={messageId} className="p-6">
+        <h3 className="text-base font-semibold text-[color:var(--text-strong)]">{title}</h3>
+        <p id={messageId} className="mt-2 text-sm text-[color:var(--text-muted)]">
+          {message}
+        </p>
+        <div className="mt-5 flex justify-end gap-2">
+          <button
+            type="button"
+            autoFocus
+            onClick={onCancel}
+            className="cursor-pointer rounded-xl px-4 py-1.5 text-sm font-medium text-[color:var(--text-muted)] transition-colors hover:bg-[color:var(--surface-overlay)] hover:text-[color:var(--text-strong)]"
+          >
+            {cancelLabel}
+          </button>
+          <button
+            type="button"
+            onClick={onConfirm}
+            className="cursor-pointer rounded-xl bg-[color:var(--status-error)] px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-[color:var(--status-error-border)]"
+          >
+            {confirmLabel}
+          </button>
+        </div>
       </div>
-    </div>
-  </Modal>
-);
+    </Modal>
+  );
+};

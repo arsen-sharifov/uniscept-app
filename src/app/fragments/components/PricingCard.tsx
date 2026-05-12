@@ -1,8 +1,9 @@
 import Link from 'next/link';
-import clsx from 'clsx';
-import type { IPricingPlan } from '@/lib/interfaces';
-import { useTranslations } from '@/lib/hooks';
+import { clsx } from 'clsx';
 import { CircleCheck } from 'lucide-react';
+import type { IPricingPlan } from '@interfaces';
+import { useTranslations } from '@hooks';
+import { formatPlanPrice } from '@/lib/pricing';
 
 interface IPricingCardProps {
   plan: IPricingPlan;
@@ -11,6 +12,7 @@ interface IPricingCardProps {
 export const PricingCard = ({ plan }: IPricingCardProps) => {
   const t = useTranslations();
   const isDark = plan.highlighted;
+  const periodLabel = plan.period ? t.landing.pricing.periods[plan.period] : null;
 
   return (
     <div
@@ -24,7 +26,7 @@ export const PricingCard = ({ plan }: IPricingCardProps) => {
       {isDark && (
         <>
           <div className="absolute top-3 right-3 rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 px-3 py-1.5 text-xs font-black tracking-wider text-white uppercase shadow-lg">
-            Popular
+            {t.landing.pricing.popular}
           </div>
           <div className="absolute -top-20 -right-20 h-64 w-64 rounded-full bg-gradient-to-br from-emerald-500/30 to-cyan-500/30 blur-3xl" />
           <div className="absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-gradient-to-br from-purple-500/20 to-pink-500/20 blur-3xl" />
@@ -35,10 +37,10 @@ export const PricingCard = ({ plan }: IPricingCardProps) => {
         <h3 className={clsx('mb-2 text-xl font-bold', isDark ? 'text-white' : 'text-black')}>{plan.name}</h3>
         <div className="flex items-baseline gap-2">
           <span className={clsx('text-5xl font-black', isDark ? 'text-white' : 'text-black')}>
-            {plan.price === 'free' ? 'Free' : `$${plan.price}`}
+            {formatPlanPrice(plan.price, t.landing.pricing.free)}
           </span>
-          {plan.period && (
-            <span className={clsx('text-lg', isDark ? 'text-white/60' : 'text-black/60')}>/{plan.period}</span>
+          {periodLabel && (
+            <span className={clsx('text-lg', isDark ? 'text-white/60' : 'text-black/60')}>/{periodLabel}</span>
           )}
         </div>
         {plan.description && (

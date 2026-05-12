@@ -23,9 +23,8 @@ import {
   type TNodeStatus,
   type TReferenceNode,
 } from '@interfaces';
-import { toComment } from '@api/client';
 import { ECanvasTool } from '@/components/tools';
-import { detectPositionChanges, emitCanvasOperation, isHandleId, rowToEdge, rowToNode } from '@/lib/canvas';
+import { detectPositionChanges, emitCanvasOperation, isHandleId } from '@/lib/canvas';
 import { isCanvasNodeData, isReferenceNodeData } from '@/components/Canvas/utils';
 
 const MAX_HISTORY = 100;
@@ -311,18 +310,13 @@ export const useCanvasStore = create<ICanvasStore>()(
         ...EMPTY_CANVAS_STATE,
 
         loadCanvas: (threadId, userId, snapshot) => {
-          const nodes = snapshot.nodes.map((row) => {
-            const referenceTarget = row.source_node_id ? snapshot.referenceTargets[row.source_node_id] : undefined;
-            return rowToNode(row, snapshot.commentsByNode[row.id] ?? [], referenceTarget);
-          });
-
           resetState({
             threadId,
             userId,
             hydrated: true,
-            nodes,
-            edges: snapshot.edges.map(rowToEdge),
-            canvasComments: snapshot.canvasComments.map(toComment),
+            nodes: snapshot.nodes,
+            edges: snapshot.edges,
+            canvasComments: snapshot.canvasComments,
           });
         },
 

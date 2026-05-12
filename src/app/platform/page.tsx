@@ -7,7 +7,7 @@ const PlatformPage = () => {
 
   return (
     <div className="flex h-screen w-screen items-center justify-center">
-      <p className="text-sm text-black/30">{t.platform.sidebar.emptyState}</p>
+      <p className="text-sm text-[color:var(--text-subtle)]">{t.platform.sidebar.emptyState}</p>
     </div>
   );
 };

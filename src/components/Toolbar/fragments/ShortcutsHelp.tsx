@@ -1,10 +1,11 @@
 'use client';
 
+import { useRef } from 'react';
 import { Keyboard, X } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { clsx } from 'clsx';
 import type { IToolGroup } from '@interfaces';
-import { useEscapeKey, useTranslations } from '@hooks';
+import { useEscapeKey, useFocusTrap, useTranslations } from '@hooks';
 import { renderShortcut } from '../utils';
 
 interface IShortcutsHelpProps {
@@ -16,45 +17,49 @@ interface IShortcutsHelpProps {
 
 export const ShortcutsHelp = ({ open, groups, activeTool, onClose }: IShortcutsHelpProps) => {
   const t = useTranslations();
+  const dialogRef = useRef<HTMLDivElement>(null);
 
   useEscapeKey(onClose, open);
+  useFocusTrap(dialogRef, open);
 
   if (!open || typeof window === 'undefined') return null;
 
   return createPortal(
     <div className="fixed inset-0 z-[60] flex items-center justify-center px-4" onClick={onClose}>
-      <div aria-hidden className="absolute inset-0 bg-neutral-950/40 backdrop-blur-sm" />
+      <div aria-hidden className="absolute inset-0 bg-black/55 backdrop-blur-sm" />
 
       <div
+        ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-label={t.platform.canvas.shortcuts.ariaLabel}
         onClick={(event) => event.stopPropagation()}
         className={clsx(
           'relative w-full max-w-[640px] overflow-hidden rounded-[20px]',
-          'border border-black/[0.06] bg-white/95 backdrop-blur-xl',
-          'shadow-[0_1px_0_0_rgba(255,255,255,0.7)_inset,0_30px_80px_-20px_rgba(15,23,42,0.4)]',
+          'border border-[color:var(--border)] bg-[color:var(--surface)]/95 backdrop-blur-xl',
+          'text-[color:var(--text)] shadow-[var(--shadow-modal)]',
           'animate-rise-up motion-reduce:animate-none'
         )}
       >
-        <div className="flex items-center justify-between border-b border-black/[0.05] px-5 py-3.5">
+        <div className="flex items-center justify-between border-b border-[color:var(--border)] px-5 py-3.5">
           <div className="flex items-center gap-2.5">
-            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-700">
+            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[color:var(--accent-soft)] text-[color:var(--accent-text)]">
               <Keyboard className="h-3.5 w-3.5" strokeWidth={2} />
             </span>
             <div className="flex flex-col leading-tight">
-              <span className="text-[14px] font-semibold tracking-tight text-neutral-900">
+              <span className="text-[14px] font-semibold tracking-tight text-[color:var(--text-strong)]">
                 {t.platform.canvas.shortcuts.title}
               </span>
-              <span className="text-[10.5px] tracking-[0.04em] text-neutral-500">
+              <span className="text-[10.5px] tracking-[0.04em] text-[color:var(--text-muted)]">
                 {t.platform.canvas.shortcuts.subtitle}
               </span>
             </div>
           </div>
           <button
             type="button"
+            autoFocus
             onClick={onClose}
-            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-neutral-400 transition-colors hover:bg-black/[0.05] hover:text-neutral-800"
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-[color:var(--text-subtle)] transition-colors hover:bg-[color:var(--surface-overlay)] hover:text-[color:var(--text-strong)]"
             aria-label={t.platform.canvas.shortcuts.closeAriaLabel}
           >
             <X className="h-3.5 w-3.5" />
@@ -66,10 +71,10 @@ export const ShortcutsHelp = ({ open, groups, activeTool, onClose }: IShortcutsH
             <section key={group.id} className="mb-4 break-inside-avoid">
               {group.label && (
                 <div className="mb-2 flex items-center gap-2">
-                  <span className="text-[9.5px] font-semibold tracking-[0.18em] text-neutral-400 uppercase">
+                  <span className="text-[9.5px] font-semibold tracking-[0.18em] text-[color:var(--text-subtle)] uppercase">
                     {group.label}
                   </span>
-                  <span className="h-px flex-1 bg-gradient-to-r from-black/[0.08] to-transparent" />
+                  <span className="h-px flex-1 bg-gradient-to-r from-[color:var(--border-strong)] to-transparent" />
                 </div>
               )}
               <ul className="space-y-1">
@@ -82,7 +87,7 @@ export const ShortcutsHelp = ({ open, groups, activeTool, onClose }: IShortcutsH
                       key={tool.id}
                       className={clsx(
                         'group/row flex items-start gap-3 rounded-lg px-2 py-1.5 transition-colors',
-                        isActive && 'bg-emerald-500/[0.06]',
+                        isActive && 'bg-[color:var(--accent-soft)]',
                         tool.disabled && 'opacity-45'
                       )}
                     >
@@ -90,8 +95,8 @@ export const ShortcutsHelp = ({ open, groups, activeTool, onClose }: IShortcutsH
                         className={clsx(
                           'mt-px flex h-7 w-7 shrink-0 items-center justify-center rounded-md',
                           isActive
-                            ? 'bg-emerald-500 text-white shadow-[0_2px_6px_-2px_rgba(16,185,129,0.6)]'
-                            : 'bg-neutral-100 text-neutral-600'
+                            ? 'bg-[color:var(--accent)] text-[color:var(--on-accent)] shadow-[0_2px_6px_-2px_var(--accent-glow)]'
+                            : 'bg-[color:var(--surface-overlay)] text-[color:var(--text-muted)]'
                         )}
                       >
                         <Icon className="h-[14px] w-[14px]" strokeWidth={isActive ? 2.25 : 1.85} />
@@ -102,20 +107,22 @@ export const ShortcutsHelp = ({ open, groups, activeTool, onClose }: IShortcutsH
                           <span
                             className={clsx(
                               'truncate text-[12.5px] font-medium tracking-tight',
-                              isActive ? 'text-emerald-800' : 'text-neutral-900'
+                              isActive ? 'text-[color:var(--accent-text)]' : 'text-[color:var(--text-strong)]'
                             )}
                           >
                             {tool.label}
                           </span>
                           {isActive && (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/12 px-1.5 py-px text-[9px] font-semibold tracking-[0.08em] text-emerald-700 uppercase">
-                              <span className="h-1 w-1 rounded-full bg-emerald-500" />
+                            <span className="inline-flex items-center gap-1 rounded-full bg-[color:var(--accent-soft)] px-1.5 py-px text-[9px] font-semibold tracking-[0.08em] text-[color:var(--accent-text)] uppercase">
+                              <span className="h-1 w-1 rounded-full bg-[color:var(--accent)]" />
                               {t.platform.canvas.shortcuts.activeBadge}
                             </span>
                           )}
                         </div>
                         {tool.description && (
-                          <span className="mt-0.5 text-[11px] leading-snug text-neutral-500">{tool.description}</span>
+                          <span className="mt-0.5 text-[11px] leading-snug text-[color:var(--text-muted)]">
+                            {tool.description}
+                          </span>
                         )}
                       </div>
 
@@ -127,8 +134,8 @@ export const ShortcutsHelp = ({ open, groups, activeTool, onClose }: IShortcutsH
                               className={clsx(
                                 'flex h-5 min-w-[20px] items-center justify-center rounded-[5px] border px-1 font-mono text-[10px] font-medium',
                                 isActive
-                                  ? 'border-emerald-500/25 bg-white text-emerald-800'
-                                  : 'border-black/[0.08] bg-neutral-50 text-neutral-700'
+                                  ? 'border-[color:var(--border-active)] bg-[color:var(--surface-elevated)] text-[color:var(--accent-text)]'
+                                  : 'border-[color:var(--border)] bg-[color:var(--surface-overlay)] text-[color:var(--text)]'
                               )}
                             >
                               {token}
@@ -144,10 +151,10 @@ export const ShortcutsHelp = ({ open, groups, activeTool, onClose }: IShortcutsH
           ))}
         </div>
 
-        <div className="flex items-center justify-between gap-3 border-t border-black/[0.05] bg-neutral-50/60 px-5 py-2.5">
-          <span className="text-[10.5px] text-neutral-500">{t.platform.canvas.shortcuts.footerHint}</span>
-          <span className="text-[10.5px] font-medium text-neutral-500">
-            <kbd className="mr-1 rounded border border-black/[0.08] bg-white px-1 font-mono text-[10px] text-neutral-700">
+        <div className="flex items-center justify-between gap-3 border-t border-[color:var(--border)] bg-[color:var(--surface-overlay)]/60 px-5 py-2.5">
+          <span className="text-[10.5px] text-[color:var(--text-muted)]">{t.platform.canvas.shortcuts.footerHint}</span>
+          <span className="text-[10.5px] font-medium text-[color:var(--text-muted)]">
+            <kbd className="mr-1 rounded border border-[color:var(--border)] bg-[color:var(--surface-elevated)] px-1 font-mono text-[10px] text-[color:var(--text)]">
               Esc
             </kbd>
             {t.platform.canvas.shortcuts.closeHint}

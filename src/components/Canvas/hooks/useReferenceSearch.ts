@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { searchReferenceTargets } from '@api/client';
 import type { INodeReference } from '@interfaces';
 import { useCanvasStore } from '@/lib/stores';
@@ -32,5 +32,5 @@ export const useReferenceSearch = ({ workspaceId, threadId }: IUseReferenceSearc
     };
   }, [workspaceId, threadId, isPanelOpen]);
 
-  return nodes;
+  return useMemo(() => (isPanelOpen ? nodes : []), [isPanelOpen, nodes]);
 };

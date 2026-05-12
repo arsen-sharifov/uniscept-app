@@ -1,10 +1,17 @@
+'use client';
+
 import type { ReactNode } from 'react';
 import Link from 'next/link';
+import { LANDING_THEME } from '@constants';
+import { useTranslations } from '@hooks';
 import { Logo } from '@/components';
 
 const AuthLayout = ({ children }: { children: ReactNode }) => {
+  const t = useTranslations();
+  const { aside } = t.auth;
+
   return (
-    <div className="flex min-h-screen">
+    <div data-theme={LANDING_THEME} className="flex min-h-screen">
       <div className="relative hidden flex-1 overflow-hidden bg-black lg:flex lg:flex-col lg:justify-between">
         <div className="noise-texture absolute inset-0 opacity-30" />
         <div className="dot-pattern absolute inset-0 opacity-20" />
@@ -19,10 +26,8 @@ const AuthLayout = ({ children }: { children: ReactNode }) => {
 
         <div className="relative z-10 p-10">
           <blockquote className="max-w-md">
-            <p className="text-lg leading-relaxed font-medium text-white/80">
-              {'\u201C'}Build knowledge. Not chaos.{'\u201D'}
-            </p>
-            <p className="mt-3 text-sm text-white/40">Structured reasoning for teams that ship.</p>
+            <p className="text-lg leading-relaxed font-medium text-white/80">{`“${aside.quote}”`}</p>
+            <p className="mt-3 text-sm text-white/40">{aside.tagline}</p>
           </blockquote>
         </div>
       </div>

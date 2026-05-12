@@ -1,6 +1,6 @@
 import Link from 'next/link';
+import { useTranslations } from '@hooks';
 import { Logo } from '@/components';
-import { useTranslations } from '@/lib/hooks';
 
 export const Header = () => {
   const t = useTranslations();

@@ -1,13 +1,13 @@
 import type { ReactNode } from 'react';
-import clsx from 'clsx';
+import { clsx } from 'clsx';
 
-interface SectionProps {
+interface ISectionProps {
   id?: string;
   children: ReactNode;
   className?: string;
 }
 
-export const Section = ({ id, children, className }: SectionProps) => {
+export const Section = ({ id, children, className }: ISectionProps) => {
   return (
     <section id={id} className={clsx('relative overflow-hidden border-t border-black/5 px-6 py-24', className)}>
       {children}

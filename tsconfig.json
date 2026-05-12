@@ -32,7 +32,9 @@
       "@hooks": ["./src/lib/hooks"],
       "@hooks/*": ["./src/lib/hooks/*"],
       "@api": ["./src/api"],
-      "@api/*": ["./src/api/*"]
+      "@api/*": ["./src/api/*"],
+      "@story-interfaces": ["./.storybook/interfaces"],
+      "@story-interfaces/*": ["./.storybook/interfaces/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", ".next/dev/types/**/*.ts", "**/*.mts"],

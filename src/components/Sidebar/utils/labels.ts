@@ -1,6 +1,4 @@
-import type { TNavItemType } from '@interfaces';
-
-export type TSingleDeleteTitleKey = 'deleteWorkspaceTitle' | 'deleteFolderTitle' | 'deleteThreadTitle';
+import type { TNavItemType, TSingleDeleteTitleKey } from '@interfaces';
 
 export const getSingleDeleteTitleKey = (type: 'workspace' | TNavItemType): TSingleDeleteTitleKey => {
   if (type === 'workspace') return 'deleteWorkspaceTitle';

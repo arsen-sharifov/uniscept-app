@@ -1,6 +1,6 @@
 import Link from 'next/link';
+import { useTranslations } from '@hooks';
 import { Section } from './components';
-import { useTranslations } from '@/lib/hooks';
 
 export const CTASection = () => {
   const t = useTranslations();

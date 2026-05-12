@@ -3,11 +3,11 @@
 import { useCallback, useEffect, useMemo, useState, type MouseEvent, type ReactNode } from 'react';
 import { Files, FolderPlus, LayoutGrid, Plus, SearchX, Sparkles } from 'lucide-react';
 import type { TDeleteTarget, TNavItem, TNavItemType, IWorkspaceItem } from '@interfaces';
-import { useTranslations } from '@hooks';
+import { useEscapeKey, useTranslations } from '@hooks';
 import { ConfirmDialog, Logo } from '@/components';
 import { BulkActionsBar, EmptyState, MoveDialog, NavItems, SearchInput, WorkspaceSwitcher } from './fragments';
 import { useInlineEdit, useSelection } from './hooks';
-import { filterTree, getSingleDeleteTitleKey } from './utils';
+import { filterTree, getSiblings, getSingleDeleteTitleKey } from './utils';
 
 export interface ISidebarProps {
   items?: TNavItem[];
@@ -30,7 +30,7 @@ export interface ISidebarProps {
   onMoveWorkspace?: (id: string, position: number) => void;
   onMoveItem?: (id: string, type: TNavItemType, parentId: string | null, position: number) => void;
   onBulkDelete?: (ids: Set<string>) => void;
-  onBulkMove?: (ids: Set<string>, parentId: string | null) => void;
+  onBulkMove?: (ids: Set<string>, parentId: string | null, position: number) => void;
   onBulkDeleteWorkspaces?: (ids: Set<string>) => void;
   footer?: ReactNode;
 }
@@ -62,8 +62,15 @@ export const Sidebar = ({
 }: ISidebarProps) => {
   const t = useTranslations();
 
-  const { selectedIds, setSelectedIds, toggleSelection, selectRange, clearSelection, clearAndSelect, selectionCount } =
-    useSelection();
+  const {
+    selectedIds,
+    setSelectedIds,
+    toggleSelection,
+    selectRange,
+    clearSelection,
+    clearAndSetAnchor,
+    selectionCount,
+  } = useSelection();
 
   const {
     selectedIds: workspaceSelectedIds,
@@ -71,7 +78,7 @@ export const Sidebar = ({
     toggleSelection: toggleWorkspaceSelection,
     selectRange: workspaceSelectRange,
     clearSelection: clearWorkspaceSelection,
-    clearAndSelect: clearAndSelectWorkspace,
+    clearAndSetAnchor: clearAndSetAnchorWorkspace,
   } = useSelection();
 
   const allItemIds = useMemo(() => {
@@ -83,6 +90,7 @@ export const Sidebar = ({
   useEffect(() => {
     setSelectedIds((prev) => {
       const next = new Set([...prev].filter((id) => allItemIds.has(id)));
+
       return next.size === prev.size ? prev : next;
     });
   }, [allItemIds, setSelectedIds]);
@@ -92,6 +100,7 @@ export const Sidebar = ({
   useEffect(() => {
     setWorkspaceSelectedIds((prev) => {
       const next = new Set([...prev].filter((id) => allWorkspaceIds.has(id)));
+
       return next.size === prev.size ? prev : next;
     });
   }, [allWorkspaceIds, setWorkspaceSelectedIds]);
@@ -106,10 +115,10 @@ export const Sidebar = ({
         toggleWorkspaceSelection(id);
         return;
       }
-      clearAndSelectWorkspace(id);
+      clearAndSetAnchorWorkspace(id);
       onWorkspaceSelect?.(id);
     },
-    [workspaces, workspaceSelectRange, toggleWorkspaceSelection, clearAndSelectWorkspace, onWorkspaceSelect]
+    [workspaces, workspaceSelectRange, toggleWorkspaceSelection, clearAndSetAnchorWorkspace, onWorkspaceSelect]
   );
 
   const {
@@ -119,6 +128,7 @@ export const Sidebar = ({
     inputRef: workspaceInputRef,
     startEditing: startWorkspaceEditing,
     commitRename: commitWorkspaceRename,
+    cancelEditing: cancelWorkspaceEditing,
     handleKeyDown: handleWorkspaceKeyDown,
   } = useInlineEdit({
     items: workspaces,
@@ -160,17 +170,20 @@ export const Sidebar = ({
     setDeleteTarget(null);
   };
 
-  const deleteTitle = !deleteTarget
-    ? ''
-    : deleteTarget.mode === 'bulk'
-      ? t.platform.sidebar.bulkDeleteTitle
-      : t.platform.sidebar[getSingleDeleteTitleKey(deleteTarget.type)];
+  const getDeleteTitle = () => {
+    if (!deleteTarget) return '';
+    if (deleteTarget.mode === 'bulk') return t.platform.sidebar.bulkDeleteTitle;
+    return t.platform.sidebar[getSingleDeleteTitleKey(deleteTarget.type)];
+  };
 
-  const deleteMessage = !deleteTarget
-    ? ''
-    : deleteTarget.mode === 'bulk'
-      ? t.platform.sidebar.bulkDeleteConfirm
-      : `${t.platform.sidebar.deleteConfirmPrefix} "${deleteTarget.name}"${t.platform.sidebar.deleteConfirmSuffix}`;
+  const getDeleteMessage = () => {
+    if (!deleteTarget) return '';
+    if (deleteTarget.mode === 'bulk') return t.platform.sidebar.bulkDeleteConfirm;
+    return `${t.platform.sidebar.deleteConfirmPrefix} "${deleteTarget.name}"${t.platform.sidebar.deleteConfirmSuffix}`;
+  };
+
+  const deleteTitle = getDeleteTitle();
+  const deleteMessage = getDeleteMessage();
 
   const handleBulkDelete = useCallback(() => {
     setDeleteTarget({
@@ -187,21 +200,16 @@ export const Sidebar = ({
 
   const handleBulkMoveConfirm = useCallback(
     (targetParentId: string | null) => {
-      onBulkMove?.(selectedIds, targetParentId);
+      const targetSiblings = getSiblings(items, targetParentId);
+      const position = targetSiblings.filter((sibling) => !selectedIds.has(sibling.id)).length;
+      onBulkMove?.(selectedIds, targetParentId, position);
       clearSelection();
       setShowMoveDialog(false);
     },
-    [selectedIds, onBulkMove, clearSelection]
+    [items, selectedIds, onBulkMove, clearSelection]
   );
 
-  useEffect(() => {
-    if (selectionCount === 0) return;
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') clearSelection();
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [selectionCount, clearSelection]);
+  useEscapeKey(clearSelection, selectionCount > 0);
 
   const isSearching = query.trim().length > 0;
   const showSearchEmpty = isSearching && filteredItems.length === 0;
@@ -209,7 +217,7 @@ export const Sidebar = ({
 
   return (
     <>
-      <aside className="fixed top-4 left-4 z-40 flex h-[calc(100vh-2rem)] w-64 flex-col rounded-2xl border border-black/[0.06] bg-white/85 shadow-[0_8px_32px_-8px_rgba(0,0,0,0.12)] backdrop-blur-2xl select-none">
+      <aside className="fixed top-4 left-4 z-40 flex h-[calc(100vh-2rem)] w-64 flex-col rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)]/85 shadow-[0_8px_32px_-8px_rgba(0,0,0,0.18)] backdrop-blur-2xl transition-[background-color,border-color] duration-300 ease-out select-none">
         <div className="px-3 py-3">
           <Logo className="text-base" />
         </div>
@@ -224,6 +232,7 @@ export const Sidebar = ({
             setEditValue={setWorkspaceEditValue}
             inputRef={workspaceInputRef}
             commitRename={commitWorkspaceRename}
+            cancelEditing={cancelWorkspaceEditing}
             handleKeyDown={handleWorkspaceKeyDown}
             onWorkspaceClick={handleWorkspaceClick}
             onCreateWorkspace={onCreateWorkspace}
@@ -255,11 +264,11 @@ export const Sidebar = ({
           >
             <div className="mb-1 flex items-center justify-between px-2">
               <div className="flex items-center gap-1.5">
-                <span className="text-[10px] font-semibold tracking-wider text-black/40 uppercase">
+                <span className="text-[10px] font-semibold tracking-wider text-[color:var(--text-muted)] uppercase">
                   {t.platform.sidebar.structure}
                 </span>
                 {items.length > 0 && (
-                  <span className="inline-flex h-4 min-w-4 items-center justify-center rounded-md bg-black/[0.06] px-1 text-[9px] font-semibold text-black/45">
+                  <span className="inline-flex h-4 min-w-4 items-center justify-center rounded-md bg-[color:var(--surface-overlay)] px-1 text-[9px] font-semibold text-[color:var(--text-muted)]">
                     {items.length}
                   </span>
                 )}
@@ -268,7 +277,7 @@ export const Sidebar = ({
                 <button
                   type="button"
                   onClick={onCreateFolder}
-                  className="rounded-md p-1 text-black/35 transition-colors hover:bg-black/5 hover:text-black/70"
+                  className="rounded-md p-1 text-[color:var(--text-subtle)] transition-colors hover:bg-[color:var(--surface-overlay)] hover:text-[color:var(--text)]"
                   title={t.platform.sidebar.newFolder}
                 >
                   <FolderPlus className="h-3.5 w-3.5" />
@@ -276,7 +285,7 @@ export const Sidebar = ({
                 <button
                   type="button"
                   onClick={() => onCreateThread?.()}
-                  className="rounded-md p-1 text-black/35 transition-colors hover:bg-black/5 hover:text-black/70"
+                  className="rounded-md p-1 text-[color:var(--text-subtle)] transition-colors hover:bg-[color:var(--surface-overlay)] hover:text-[color:var(--text)]"
                   title={t.platform.sidebar.newThread}
                 >
                   <Plus className="h-3.5 w-3.5" />
@@ -291,7 +300,7 @@ export const Sidebar = ({
                 selectedIds={selectedIds}
                 onToggleSelection={toggleSelection}
                 onSelectRange={selectRange}
-                onClearAndSelect={clearAndSelect}
+                onClearAndSetAnchor={clearAndSetAnchor}
                 setSelectedIds={setSelectedIds}
                 onItemClick={onItemClick}
                 onRequestDelete={handleRequestDelete}
@@ -306,11 +315,13 @@ export const Sidebar = ({
 
             {showSearchEmpty && (
               <div className="flex flex-1 flex-col items-center justify-center px-4 py-8 text-center">
-                <div className="mb-2 flex h-9 w-9 items-center justify-center rounded-xl bg-black/[0.04]">
-                  <SearchX className="h-4 w-4 text-black/35" />
+                <div className="mb-2 flex h-9 w-9 items-center justify-center rounded-xl bg-[color:var(--surface-overlay)]">
+                  <SearchX className="h-4 w-4 text-[color:var(--text-subtle)]" />
                 </div>
-                <p className="text-xs text-black/45">{t.platform.sidebar.noSearchResults}</p>
-                <p className="mt-1 max-w-[180px] truncate text-[11px] text-black/30">&ldquo;{query}&rdquo;</p>
+                <p className="text-xs text-[color:var(--text-muted)]">{t.platform.sidebar.noSearchResults}</p>
+                <p className="mt-1 max-w-[180px] truncate text-[11px] text-[color:var(--text-subtle)]">
+                  &ldquo;{query}&rdquo;
+                </p>
               </div>
             )}
 
@@ -347,7 +358,7 @@ export const Sidebar = ({
         )}
 
         {selectionCount > 0 && (
-          <div className="border-t border-black/[0.06] px-2 pt-2 pb-2">
+          <div className="border-t border-[color:var(--border)] px-2 pt-2 pb-2">
             <BulkActionsBar
               count={selectionCount}
               icon={Files}
@@ -359,7 +370,7 @@ export const Sidebar = ({
           </div>
         )}
 
-        {footer && <div className="border-t border-black/[0.06] px-2 py-2">{footer}</div>}
+        {footer && <div className="border-t border-[color:var(--border)] px-2 py-2">{footer}</div>}
       </aside>
 
       <ConfirmDialog

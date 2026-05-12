@@ -71,22 +71,22 @@ export const ToolButton = ({ tool, active, onClick, onPointerEnter, onPointerLea
         className={clsx(
           'relative flex h-9 w-9 items-center justify-center rounded-[10px] outline-none',
           'transition-[background,color,box-shadow,transform] duration-150 ease-out motion-reduce:transition-none',
-          'focus-visible:ring-2 focus-visible:ring-emerald-500/45 focus-visible:ring-offset-1 focus-visible:ring-offset-white',
-          tool.disabled && 'cursor-not-allowed text-black/20',
+          'focus-visible:ring-2 focus-visible:ring-[color:var(--ring-focus)] focus-visible:ring-offset-1 focus-visible:ring-offset-[color:var(--surface)]',
+          tool.disabled && 'cursor-not-allowed text-[color:var(--text-faint)]',
           !tool.disabled &&
             !active && [
-              'text-black/55 hover:text-black/90',
-              'hover:bg-black/[0.04] active:bg-black/[0.08]',
+              'text-[color:var(--text-muted)] hover:text-[color:var(--text-strong)]',
+              'hover:bg-[color:var(--surface-overlay)] active:bg-[color:var(--surface-overlay)]',
               'active:scale-[0.94]',
             ],
-          !tool.disabled && active && !isAction && 'bg-emerald-500/10 text-emerald-700',
-          flash && ['bg-emerald-500/10 text-emerald-700', 'scale-[1.08]']
+          !tool.disabled && active && !isAction && 'bg-[color:var(--accent-soft)] text-[color:var(--accent-text)]',
+          flash && ['bg-[color:var(--accent-soft)] text-[color:var(--accent-text)]', 'scale-[1.08]']
         )}
       >
         <span
           aria-hidden
           className={clsx(
-            'pointer-events-none absolute top-1/2 -right-px z-10 h-5 w-[3px] -translate-y-1/2 rounded-l-full bg-gradient-to-b from-emerald-500 to-cyan-500 transition-opacity duration-200 ease-out motion-reduce:transition-none',
+            'pointer-events-none absolute top-1/2 -right-px z-10 h-5 w-[3px] -translate-y-1/2 rounded-l-full bg-gradient-to-b from-[color:var(--accent)] to-[color:var(--accent-2)] transition-opacity duration-200 ease-out motion-reduce:transition-none',
             active && !isAction ? 'opacity-100' : 'opacity-0'
           )}
         />

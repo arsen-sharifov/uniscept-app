@@ -1,7 +1,6 @@
-import en from '@/locales/en.json';
+'use client';
 
-type Translations = typeof en;
+import { useMessages } from 'next-intl';
+import type { TTranslations } from '@interfaces';
 
-export const useTranslations = (): Translations => {
-  return en;
-};
+export const useTranslations = (): TTranslations => useMessages() as TTranslations;

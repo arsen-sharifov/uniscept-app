@@ -1,24 +1,18 @@
 'use client';
 
 import { Bell, MessageSquare, Mail, Users } from 'lucide-react';
-import type { IPreferences, TPreferenceUpdater } from '@interfaces';
 import { useTranslations } from '@hooks';
 import { Tooltip } from '@/components';
 import { Toggle } from '../Toggle';
 
-export interface INotificationsSectionProps {
-  preferences: IPreferences;
-  onUpdate: TPreferenceUpdater;
-}
-
-export const NotificationsSection = ({ preferences, onUpdate }: INotificationsSectionProps) => {
+export const NotificationsSection = () => {
   const t = useTranslations();
   const { notifications, comingSoon } = t.platform.settings;
 
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2">
-        <p className="text-sm text-black/40">{notifications.description}</p>
+        <p className="text-sm text-[color:var(--text-muted)]">{notifications.description}</p>
         <Tooltip text={comingSoon} />
       </div>
 
@@ -27,32 +21,32 @@ export const NotificationsSection = ({ preferences, onUpdate }: INotificationsSe
           icon={MessageSquare}
           label={notifications.mentions}
           description={notifications.mentionsDescription}
-          checked={preferences.emailMentions}
-          onChange={(v) => onUpdate('emailMentions', v)}
+          checked={true}
+          onChange={() => {}}
           disabled
         />
         <Toggle
           icon={Mail}
           label={notifications.comments}
           description={notifications.commentsDescription}
-          checked={preferences.emailComments}
-          onChange={(v) => onUpdate('emailComments', v)}
+          checked={true}
+          onChange={() => {}}
           disabled
         />
         <Toggle
           icon={Users}
           label={notifications.invites}
           description={notifications.invitesDescription}
-          checked={preferences.emailInvites}
-          onChange={(v) => onUpdate('emailInvites', v)}
+          checked={true}
+          onChange={() => {}}
           disabled
         />
         <Toggle
           icon={Bell}
           label={notifications.digest}
           description={notifications.digestDescription}
-          checked={preferences.emailDigest}
-          onChange={(v) => onUpdate('emailDigest', v)}
+          checked={true}
+          onChange={() => {}}
           disabled
         />
       </div>

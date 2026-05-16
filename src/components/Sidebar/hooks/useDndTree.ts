@@ -13,21 +13,21 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
-import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import type { IProjection, TDropZone, TNavItem, TNavItemType } from '@interfaces';
-import { flattenTree, getProjection, removeChildrenOf } from '../dnd';
+import { flattenTree, getProjection, removeChildrenOf } from '../utils';
 import {
   AUTO_EXPAND_DELAY_MS,
   DROP_ZONE_HYSTERESIS_PX,
   FOLDER_INSIDE_THRESHOLD,
+  KEYBOARD_SENSOR_OPTIONS,
   LEAF_SPLIT_THRESHOLD,
-  POINTER_ACTIVATION_DISTANCE,
+  POINTER_SENSOR_OPTIONS,
 } from '../consts';
 
 interface IUseDndTreeOptions {
   items: TNavItem[];
   onMoveItem?: (id: string, type: TNavItemType, parentId: string | null, position: number) => void;
-  onBulkMove?: (ids: Set<string>, parentId: string | null) => void;
+  onBulkMove?: (ids: Set<string>, parentId: string | null, position: number) => void;
   editingId?: string | null;
   selectedIds?: Set<string>;
 }
@@ -84,12 +84,8 @@ export const useDndTree = ({ items, onMoveItem, onBulkMove, editingId, selectedI
   }, []);
 
   const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: { distance: POINTER_ACTIVATION_DISTANCE },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
+    useSensor(PointerSensor, POINTER_SENSOR_OPTIONS),
+    useSensor(KeyboardSensor, KEYBOARD_SENSOR_OPTIONS)
   );
 
   const flattenedItems = useMemo(() => flattenTree(items, collapsedIds), [items, collapsedIds]);
@@ -298,7 +294,7 @@ export const useDndTree = ({ items, onMoveItem, onBulkMove, editingId, selectedI
       const position = getPosition();
 
       if (isBulkDragRef.current && selectedIds && selectedIds.size > 1) {
-        onBulkMove?.(selectedIds, projected.parentId);
+        onBulkMove?.(selectedIds, projected.parentId, position);
       } else {
         onMoveItem?.(draggedId, activeItem.type, projected.parentId, position);
       }
@@ -322,11 +318,14 @@ export const useDndTree = ({ items, onMoveItem, onBulkMove, editingId, selectedI
     resetDragState();
   }, [clearExpandTimer, resetDragState]);
 
-  useEffect(() => {
-    return () => {
-      if (expandTimerRef.current) clearTimeout(expandTimerRef.current);
-    };
-  }, []);
+  useEffect(
+    () => () => {
+      if (expandTimerRef.current) {
+        clearTimeout(expandTimerRef.current);
+      }
+    },
+    []
+  );
 
   return {
     flattenedItems: sortableItems,

@@ -14,7 +14,7 @@ import {
   ZoomIn,
   ZoomOut,
 } from 'lucide-react';
-import type { ICanvasToolsTranslations, IToolGroup, IToolItem } from '@interfaces';
+import type { TCanvasToolsTranslations, IToolGroup, IToolItem } from '@interfaces';
 
 export enum ECanvasTool {
   Select = 'select',
@@ -38,7 +38,7 @@ const CANVAS_TOOL_VALUES = new Set<string>(Object.values(ECanvasTool));
 
 export const isCanvasTool = (value: string): value is ECanvasTool => CANVAS_TOOL_VALUES.has(value);
 
-export const buildCanvasTools = (t: ICanvasToolsTranslations): Record<ECanvasTool, IToolItem> => ({
+export const buildCanvasTools = (t: TCanvasToolsTranslations): Record<ECanvasTool, IToolItem> => ({
   [ECanvasTool.Select]: {
     id: ECanvasTool.Select,
     icon: MousePointer2,
@@ -134,7 +134,7 @@ export const buildCanvasTools = (t: ICanvasToolsTranslations): Record<ECanvasToo
   },
 });
 
-export const buildCanvasToolGroups = (t: ICanvasToolsTranslations): IToolGroup[] => {
+export const buildCanvasToolGroups = (t: TCanvasToolsTranslations): IToolGroup[] => {
   const tools = buildCanvasTools(t);
 
   return [
@@ -166,7 +166,7 @@ export const buildCanvasToolGroups = (t: ICanvasToolsTranslations): IToolGroup[]
   ];
 };
 
-export const buildHelpTool = (t: ICanvasToolsTranslations): IToolItem => ({
+export const buildHelpTool = (t: TCanvasToolsTranslations): IToolItem => ({
   id: HELP_TOOL_ID,
   icon: HelpCircle,
   label: t.help,

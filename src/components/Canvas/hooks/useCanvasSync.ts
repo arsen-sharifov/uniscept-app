@@ -24,13 +24,22 @@ interface IUseCanvasSyncResult {
   loadError: Error | null;
 }
 
+const LOAD_TIMEOUT_MS = 15000;
+const TIMEOUT_ERROR_MESSAGE = 'Request timed out';
+
+const withTimeout = <T>(promise: Promise<T>, ms: number): Promise<T> =>
+  Promise.race([
+    promise,
+    new Promise<T>((_, reject) => setTimeout(() => reject(new Error(TIMEOUT_ERROR_MESSAGE)), ms)),
+  ]);
+
 const loadCanvasFromBackend = async (threadId: string): Promise<ICanvasLoad> => {
   const supabase = createClient();
 
-  const [{ data: userData, error: authError }, snapshot] = await Promise.all([
-    supabase.auth.getUser(),
-    getCanvasContent(threadId),
-  ]);
+  const [{ data: userData, error: authError }, snapshot] = await withTimeout(
+    Promise.all([supabase.auth.getUser(), getCanvasContent(threadId)]),
+    LOAD_TIMEOUT_MS
+  );
 
   if (authError) throw authError;
 
@@ -83,10 +92,14 @@ export const useCanvasSync = (threadId: string): IUseCanvasSyncResult => {
 
     return () => {
       cancelled = true;
+      const currentThreadId = threadId;
 
       flushNow().finally(() => {
-        useCanvasStore.getState().clearCanvas();
-        resetQueue();
+        const stillSameThread = useCanvasStore.getState().threadId === currentThreadId;
+        if (stillSameThread) {
+          useCanvasStore.getState().clearCanvas();
+          resetQueue();
+        }
       });
     };
   }, [threadId]);

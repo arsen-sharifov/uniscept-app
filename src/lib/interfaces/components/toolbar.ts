@@ -1,4 +1,5 @@
 import type { LucideIcon } from 'lucide-react';
+import type { TTranslations } from '@interfaces';
 
 export type TToolKind = 'mode' | 'action';
 
@@ -23,34 +24,4 @@ export interface IToolAvailability {
   canRedo: boolean;
 }
 
-interface IToolCopy {
-  label: string;
-  description: string;
-}
-
-export interface ICanvasToolsTranslations {
-  ariaLabel: string;
-  help: string;
-  groups: {
-    navigate: string;
-    history: string;
-    build: string;
-    annotate: string;
-    link: string;
-  };
-  items: {
-    select: IToolCopy;
-    pan: IToolCopy;
-    zoomIn: IToolCopy;
-    zoomOut: IToolCopy;
-    addNode: IToolCopy;
-    connect: IToolCopy;
-    delete: IToolCopy;
-    validPath: IToolCopy;
-    invalidPath: IToolCopy;
-    comment: IToolCopy;
-    crossReference: IToolCopy;
-    undo: IToolCopy;
-    redo: IToolCopy;
-  };
-}
+export type TCanvasToolsTranslations = TTranslations['platform']['canvas']['tools'];

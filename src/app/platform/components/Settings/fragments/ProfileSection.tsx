@@ -1,9 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import type { User } from '@supabase/supabase-js';
+import { EMAIL_PATTERN } from '@constants';
 import { useAsyncAction, useTranslations } from '@hooks';
 import { Avatar } from '@/components';
+import { SettingsInput } from '../SettingsInput';
+import { SettingsPrimaryButton } from '../SettingsPrimaryButton';
 
 export interface IProfileSectionProps {
   user: User | null;
@@ -14,68 +17,80 @@ export interface IProfileSectionProps {
 export const ProfileSection = ({ user, onUpdateProfile, onUpdateEmail }: IProfileSectionProps) => {
   const t = useTranslations();
   const { profile } = t.platform.settings;
+  const id = useId();
+  const nameId = `${id}-name`;
+  const emailId = `${id}-email`;
 
-  const [name, setName] = useState(user?.user_metadata?.name ?? '');
-  const [email, setEmail] = useState(user?.email ?? '');
+  const userName = user?.user_metadata?.name ?? '';
+  const userEmail = user?.email ?? '';
+
+  const [name, setName] = useState(userName);
+  const [email, setEmail] = useState(userEmail);
   const save = useAsyncAction();
   const emailChange = useAsyncAction();
 
-  const nameChanged = name !== (user?.user_metadata?.name ?? '');
-  const emailChanged = email !== (user?.email ?? '');
+  useEffect(() => {
+    setName(userName);
+  }, [userName]);
+
+  useEffect(() => {
+    setEmail(userEmail);
+  }, [userEmail]);
+
+  const nameChanged = name !== userName;
+  const emailChanged = email !== userEmail;
+  const emailIsValid = EMAIL_PATTERN.test(email.trim());
 
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
         <Avatar name={name} />
         <div className="min-w-0">
-          <p className="font-medium text-black">{name}</p>
-          <p className="truncate text-sm text-black/40">{email}</p>
+          <p className="font-medium text-[color:var(--text-strong)]">{name}</p>
+          <p className="truncate text-sm text-[color:var(--text-muted)]">{email}</p>
         </div>
       </div>
 
       <div className="max-w-sm space-y-4">
         <div>
-          <label className="mb-1 block text-sm font-medium text-black/60">{profile.name}</label>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="w-full rounded-xl border border-black/10 bg-white px-4 py-2 text-sm text-black transition-colors focus:border-emerald-500 focus:outline-none"
-          />
+          <label htmlFor={nameId} className="mb-1 block text-sm font-medium text-[color:var(--text)]">
+            {profile.name}
+          </label>
+          <SettingsInput id={nameId} type="text" value={name} onChange={(e) => setName(e.target.value)} />
         </div>
 
         <div className="flex items-center gap-3">
-          <button
+          <SettingsPrimaryButton
             onClick={() => save.run(() => onUpdateProfile(name), profile.saveFailed)}
             disabled={save.loading || !nameChanged || !name.trim()}
-            className="cursor-pointer rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 px-5 py-2 text-sm font-medium text-white shadow-sm transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {save.loading ? profile.saving : profile.save}
-          </button>
-          {save.success && <span className="text-sm text-emerald-600">{profile.saved}</span>}
-          {save.error && <span className="text-sm text-red-500">{save.error}</span>}
+          </SettingsPrimaryButton>
+          {save.success && <span className="text-sm text-[color:var(--accent-strong)]">{profile.saved}</span>}
+          {save.error && <span className="text-sm text-[color:var(--status-error)]">{save.error}</span>}
         </div>
 
-        <div className="border-t border-black/5 pt-6">
-          <label className="mb-1 block text-sm font-medium text-black/60">{profile.email}</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-xl border border-black/10 bg-white px-4 py-2 text-sm text-black transition-colors focus:border-emerald-500 focus:outline-none"
-          />
+        <div className="border-t border-[color:var(--border)] pt-6">
+          <label htmlFor={emailId} className="mb-1 block text-sm font-medium text-[color:var(--text)]">
+            {profile.email}
+          </label>
+          <SettingsInput id={emailId} type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
         </div>
 
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => emailChange.run(() => onUpdateEmail(email), profile.emailChangeFailed)}
-            disabled={emailChange.loading || !emailChanged || !email.trim()}
-            className="cursor-pointer rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 px-5 py-2 text-sm font-medium text-white shadow-sm transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+          <SettingsPrimaryButton
+            onClick={() => emailChange.run(() => onUpdateEmail(email.trim()), profile.emailChangeFailed)}
+            disabled={emailChange.loading || !emailChanged || !emailIsValid}
           >
             {emailChange.loading ? profile.changingEmail : profile.changeEmail}
-          </button>
-          {emailChange.success && <span className="text-sm text-emerald-600">{profile.emailChangeRequested}</span>}
-          {emailChange.error && <span className="text-sm text-red-500">{emailChange.error}</span>}
+          </SettingsPrimaryButton>
+          {emailChange.success && (
+            <span className="text-sm text-[color:var(--accent-strong)]">{profile.emailChangeRequested}</span>
+          )}
+          {emailChange.error && <span className="text-sm text-[color:var(--status-error)]">{emailChange.error}</span>}
+          {!emailChange.error && emailChanged && !emailIsValid && (
+            <span className="text-sm text-[color:var(--status-error)]">{profile.emailInvalid}</span>
+          )}
         </div>
       </div>
     </div>

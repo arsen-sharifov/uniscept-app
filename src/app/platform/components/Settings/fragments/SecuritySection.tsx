@@ -1,8 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { MIN_PASSWORD_LENGTH } from '@constants';
 import { useAsyncAction, useTranslations } from '@hooks';
+import { SettingsInput } from '../SettingsInput';
+import { SettingsPrimaryButton } from '../SettingsPrimaryButton';
 
 export interface ISecuritySectionProps {
   onChangePassword: (password: string) => Promise<void>;
@@ -13,6 +16,9 @@ export const SecuritySection = ({ onChangePassword, onDeleteAccount }: ISecurity
   const router = useRouter();
   const t = useTranslations();
   const { security } = t.platform.settings;
+  const id = useId();
+  const newPasswordId = `${id}-new`;
+  const confirmPasswordId = `${id}-confirm`;
 
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -22,10 +28,18 @@ export const SecuritySection = ({ onChangePassword, onDeleteAccount }: ISecurity
   const deleteAction = useAsyncAction();
 
   const handleChangePassword = () => {
-    if (newPassword !== confirmPassword) {
-      passwordAction.setError(security.passwordMismatch);
+    if (newPassword.length < MIN_PASSWORD_LENGTH) {
+      passwordAction.setError(security.passwordTooShort);
+
       return;
     }
+
+    if (newPassword !== confirmPassword) {
+      passwordAction.setError(security.passwordMismatch);
+
+      return;
+    }
+
     passwordAction.run(async () => {
       await onChangePassword(newPassword);
       setNewPassword('');
@@ -43,63 +57,85 @@ export const SecuritySection = ({ onChangePassword, onDeleteAccount }: ISecurity
   return (
     <div className="space-y-8">
       <div>
-        <h3 className="mb-3 text-xs font-medium tracking-wider text-black/30 uppercase">{security.changePassword}</h3>
+        <h3 className="mb-3 text-xs font-medium tracking-wider text-[color:var(--text-subtle)] uppercase">
+          {security.changePassword}
+        </h3>
         <div className="max-w-sm space-y-3">
-          <input
-            type="password"
-            placeholder={security.newPassword}
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            className="w-full rounded-xl border border-black/10 bg-white px-4 py-2 text-sm text-black transition-colors focus:border-emerald-500 focus:outline-none"
-          />
-          <input
-            type="password"
-            placeholder={security.confirmPassword}
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            className="w-full rounded-xl border border-black/10 bg-white px-4 py-2 text-sm text-black transition-colors focus:border-emerald-500 focus:outline-none"
-          />
-          {passwordAction.error && <p className="text-sm text-red-500">{passwordAction.error}</p>}
+          <div>
+            <label htmlFor={newPasswordId} className="sr-only">
+              {security.newPassword}
+            </label>
+            <SettingsInput
+              id={newPasswordId}
+              type="password"
+              autoComplete="new-password"
+              minLength={MIN_PASSWORD_LENGTH}
+              placeholder={security.newPassword}
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+            />
+          </div>
+          <div>
+            <label htmlFor={confirmPasswordId} className="sr-only">
+              {security.confirmPassword}
+            </label>
+            <SettingsInput
+              id={confirmPasswordId}
+              type="password"
+              autoComplete="new-password"
+              minLength={MIN_PASSWORD_LENGTH}
+              placeholder={security.confirmPassword}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+            />
+          </div>
+          {passwordAction.error && <p className="text-sm text-[color:var(--status-error)]">{passwordAction.error}</p>}
 
           <div className="flex items-center gap-3">
-            <button
+            <SettingsPrimaryButton
               onClick={handleChangePassword}
               disabled={passwordAction.loading || !newPassword || !confirmPassword}
-              className="cursor-pointer rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 px-5 py-2 text-sm font-medium text-white shadow-sm transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {passwordAction.loading ? security.updatingPassword : security.updatePassword}
-            </button>
-            {passwordAction.success && <span className="text-sm text-emerald-600">{security.passwordUpdated}</span>}
+            </SettingsPrimaryButton>
+            {passwordAction.success && (
+              <span className="text-sm text-[color:var(--accent-strong)]">{security.passwordUpdated}</span>
+            )}
           </div>
         </div>
       </div>
 
-      <div className="border-t border-black/5 pt-6">
-        <h3 className="mb-3 text-xs font-medium tracking-wider text-red-500/70 uppercase">{security.dangerZone}</h3>
+      <div className="border-t border-[color:var(--border)] pt-6">
+        <h3 className="mb-3 text-xs font-medium tracking-wider text-[color:var(--status-error)]/70 uppercase">
+          {security.dangerZone}
+        </h3>
         {showDeleteConfirm ? (
           <div className="space-y-3">
-            <p className="text-sm text-red-600">{security.deleteConfirm}</p>
+            <p className="text-sm text-[color:var(--status-error)]">{security.deleteConfirm}</p>
             <div className="flex gap-2">
               <button
+                type="button"
                 onClick={handleDelete}
                 disabled={deleteAction.loading}
-                className="cursor-pointer rounded-xl bg-red-500 px-5 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                className="cursor-pointer rounded-xl bg-[color:var(--status-error)] px-5 py-2 text-sm font-medium text-[color:var(--on-accent)] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {deleteAction.loading ? security.deleting : security.deleteButton}
               </button>
               <button
+                type="button"
                 onClick={() => setShowDeleteConfirm(false)}
-                className="cursor-pointer rounded-xl bg-black/5 px-5 py-2 text-sm font-medium text-black/70 transition-colors hover:bg-black/10"
+                className="cursor-pointer rounded-xl bg-[color:var(--surface-overlay)] px-5 py-2 text-sm font-medium text-[color:var(--text)] transition-colors hover:bg-[color:var(--border)]"
               >
                 {security.cancel}
               </button>
             </div>
-            {deleteAction.error && <p className="text-sm text-red-500">{deleteAction.error}</p>}
+            {deleteAction.error && <p className="text-sm text-[color:var(--status-error)]">{deleteAction.error}</p>}
           </div>
         ) : (
           <button
+            type="button"
             onClick={() => setShowDeleteConfirm(true)}
-            className="cursor-pointer rounded-xl border border-red-200 px-5 py-2 text-sm font-medium text-red-500 transition-colors hover:bg-red-50 hover:text-red-600"
+            className="cursor-pointer rounded-xl border border-[color:var(--status-error-border)] px-5 py-2 text-sm font-medium text-[color:var(--status-error)] transition-colors hover:bg-[color:var(--status-error-soft)] hover:text-[color:var(--status-error)]"
           >
             {security.deleteAccount}
           </button>

@@ -1,6 +1,7 @@
 'use client';
 
-import { Header, Footer } from './fragments/components';
+import { LANDING_THEME } from '@constants';
+import { useScrollReveal } from '@hooks';
 import {
   Hero,
   ProblemSection,
@@ -10,13 +11,13 @@ import {
   PricingSection,
   CTASection,
 } from './fragments';
-import { useScrollReveal } from '@/lib/hooks';
+import { Header, Footer } from './fragments/components';
 
-export default function LandingPage() {
+const LandingPage = () => {
   useScrollReveal();
 
   return (
-    <div className="min-h-screen bg-white">
+    <div data-theme={LANDING_THEME} className="min-h-screen bg-white">
       <Header />
       <Hero />
       <ProblemSection />
@@ -28,4 +29,6 @@ export default function LandingPage() {
       <Footer />
     </div>
   );
-}
+};
+
+export default LandingPage;

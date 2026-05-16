@@ -1,3 +1,4 @@
+export * from './modal';
 export * from './popover';
 export * from './pricing';
 export * from './settings';

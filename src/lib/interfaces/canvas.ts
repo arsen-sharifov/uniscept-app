@@ -1,12 +1,35 @@
 import type { Edge, Node } from '@xyflow/react';
-import type { ICanvasCommentRow, ICanvasEdgeRow, ICanvasNodeRow, INodeCommentRow, IReferenceTargetMeta } from './api';
+
+export enum ECanvasNodeType {
+  Canvas = 'canvas-node',
+  Reference = 'reference-node',
+}
 
 export type TNodeStatus = 'valid' | 'invalid' | null;
+
+export type THandleId = 'top' | 'right' | 'bottom' | 'left';
 
 export interface IComment {
   id: string;
   text: string;
   authorId: string;
+}
+
+export interface INodeReference {
+  id: string;
+  label: string;
+  threadId: string;
+  threadName: string;
+  workspaceId: string;
+  workspaceName: string;
+}
+
+export interface IReferenceTargetMeta {
+  nodeLabel: string;
+  threadId: string;
+  threadName: string;
+  workspaceId: string;
+  workspaceName: string;
 }
 
 export interface ICanvasNodeData {
@@ -32,8 +55,6 @@ export interface IReferenceNodeData {
 
 export type TReferenceNode = Node<IReferenceNodeData>;
 
-export type THandleId = 'top' | 'right' | 'bottom' | 'left';
-
 export interface IHandlePair {
   sourceHandle: THandleId;
   targetHandle: THandleId;
@@ -49,11 +70,9 @@ export type TCanvasContextMenu =
   | { type: 'edge'; x: number; y: number; edgeId: string };
 
 export interface ICanvasSnapshot {
-  nodes: ICanvasNodeRow[];
-  edges: ICanvasEdgeRow[];
-  commentsByNode: Record<string, INodeCommentRow[]>;
-  canvasComments: ICanvasCommentRow[];
-  referenceTargets: Record<string, IReferenceTargetMeta>;
+  nodes: Array<TCanvasNode | TReferenceNode>;
+  edges: Edge[];
+  canvasComments: IComment[];
 }
 
 export type TSaveStatus = 'idle' | 'saving' | 'retrying' | 'saved' | 'error' | 'offline';
@@ -82,22 +101,54 @@ export interface IEdgePaletteEntry {
   marker: string;
 }
 
-export interface IScreenPoint {
+export type TMenuItemAccent = 'emerald' | 'red' | 'cyan' | 'neutral';
+
+export interface ICreateCanvasNodeInput {
+  id: string;
+  threadId: string;
+  type: ECanvasNodeType;
+  x: number;
+  y: number;
+  label: string;
+  sourceNodeId: string | null;
+}
+
+export interface INodePositionUpdate {
+  id: string;
   x: number;
   y: number;
 }
 
-export type TMenuItemAccent = 'emerald' | 'red' | 'cyan' | 'neutral';
+export interface ICreateCanvasEdgeInput {
+  id: string;
+  threadId: string;
+  sourceNodeId: string;
+  targetNodeId: string;
+  sourceHandle: THandleId;
+  targetHandle: THandleId;
+}
 
-interface IIdScoped {
+export interface ICreateNodeCommentInput {
+  id: string;
+  nodeId: string;
+  text: string;
+}
+
+export interface ICreateCanvasCommentInput {
+  id: string;
+  threadId: string;
+  text: string;
+}
+
+export interface IIdScoped {
   id: string;
 }
 
-interface IThreadScoped extends IIdScoped {
+export interface IThreadScoped extends IIdScoped {
   threadId: string;
 }
 
-interface IPositioned extends IThreadScoped {
+export interface IPositioned extends IThreadScoped {
   x: number;
   y: number;
 }
@@ -180,3 +231,54 @@ export type TCommentOperation =
   | IDeleteCanvasCommentOperation;
 
 export type TCanvasOperation = TNodeOperation | TEdgeOperation | TCommentOperation;
+
+export interface ICanvasNodeRow {
+  id: string;
+  thread_id: string;
+  type: ECanvasNodeType;
+  position_x: number;
+  position_y: number;
+  label: string;
+  status: TNodeStatus;
+  source_node_id: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ICanvasNodeWithThreadRow {
+  id: string;
+  label: string;
+  thread_id: string;
+  threads: {
+    id: string;
+    name: string;
+    workspace_id: string;
+    workspaces: { name: string } | null;
+  } | null;
+}
+
+export interface ICanvasEdgeRow {
+  id: string;
+  thread_id: string;
+  source_node_id: string;
+  target_node_id: string;
+  source_handle: THandleId;
+  target_handle: THandleId;
+  created_at: string;
+}
+
+export interface INodeCommentRow {
+  id: string;
+  node_id: string;
+  author_id: string;
+  text: string;
+  created_at: string;
+}
+
+export interface ICanvasCommentRow {
+  id: string;
+  thread_id: string;
+  author_id: string;
+  text: string;
+  created_at: string;
+}

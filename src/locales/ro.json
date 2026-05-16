@@ -1,0 +1,499 @@
+{
+  "auth": {
+    "signIn": {
+      "heading": "Autentificare",
+      "subtitle": "Bine ai revenit",
+      "email": "Email",
+      "password": "Parolă",
+      "submit": "Autentificare",
+      "submitting": "Se autentifică…",
+      "emailSent": "Verifică emailul pentru a confirma contul.",
+      "noAccount": "Nu ai cont?",
+      "signUpLink": "Înregistrează-te"
+    },
+    "signUp": {
+      "heading": "Creează cont",
+      "subtitle": "Completează datele",
+      "steps": {
+        "plan": "Plan",
+        "account": "Cont"
+      },
+      "planStep": {
+        "heading": "Alege planul",
+        "subtitle": "Selectează cum vrei să începi",
+        "available": "Disponibil",
+        "betaPlan": "Beta",
+        "free": "Gratuit",
+        "betaDescription": "Acces complet în beta închis. Cod de invitație necesar.",
+        "comingSoon": "În curând",
+        "paidPlansNote": "Planurile plătite vor fi disponibile după perioada beta.",
+        "earlyBirdNote": "Utilizatorii beta vor beneficia de prețuri preferențiale.",
+        "continue": "Continuă"
+      },
+      "accountStep": {
+        "name": "Nume complet",
+        "inviteCode": "Cod de invitație",
+        "inviteCodeTooltip": "Necesar în perioada beta închisă. Cere echipei codul tău.",
+        "inviteCodePlaceholder": "Introdu codul de invitație",
+        "email": "Email",
+        "password": "Parolă",
+        "back": "Înapoi",
+        "submit": "Înregistrare",
+        "submitting": "Se creează contul…"
+      },
+      "hasAccount": "Ai deja cont?",
+      "signInLink": "Autentificare"
+    },
+    "placeholders": {
+      "name": "Ion Popescu",
+      "email": "tu@exemplu.com",
+      "password": "••••••••"
+    },
+    "errors": {
+      "invalidInviteCode": "Cod de invitație invalid"
+    },
+    "confirmed": {
+      "heading": "Email confirmat",
+      "message": "Emailul tău a fost verificat cu succes. Poți închide această filă și reveni la cea anterioară.",
+      "close": "Închide fila"
+    },
+    "aside": {
+      "quote": "Construiește cunoaștere. Nu haos.",
+      "tagline": "Raționament structurat pentru echipele care livrează."
+    }
+  },
+  "common": {
+    "loading": "Se încarcă",
+    "close": "Închide",
+    "userAvatar": "Utilizator"
+  },
+  "platform": {
+    "sidebar": {
+      "workspaces": "Spații de lucru",
+      "noWorkspaceSelected": "Niciun spațiu selectat",
+      "noWorkspaces": "Niciun spațiu de lucru. Creează unul pentru a începe.",
+      "newWorkspace": "Spațiu nou",
+      "structure": "Structură",
+      "newThread": "Fir nou",
+      "newFolder": "Folder nou",
+      "emptyState": "Selectează sau creează un fir pentru a începe",
+      "signOut": "Deconectare",
+      "deleteWorkspaceTitle": "Șterge spațiul",
+      "deleteFolderTitle": "Șterge folderul",
+      "deleteThreadTitle": "Șterge firul",
+      "deleteConfirmPrefix": "Sigur vrei să ștergi",
+      "deleteConfirmSuffix": "? Această acțiune nu poate fi anulată.",
+      "rename": "Redenumește",
+      "delete": "Șterge",
+      "cancel": "Anulează",
+      "move": "Mută",
+      "treeAriaLabel": "Navigare",
+      "dragToReorder": "Trage pentru a reordona",
+      "itemsSelected": "elemente selectate",
+      "workspacesSelected": "spații selectate",
+      "moveToFolder": "Mută în folder",
+      "rootLevel": "Nivel rădăcină",
+      "bulkDeleteTitle": "Șterge elementele",
+      "bulkDeleteConfirm": "Sigur vrei să ștergi aceste elemente? Acțiunea nu poate fi anulată.",
+      "searchPlaceholder": "Caută…",
+      "noSearchResults": "Nu s-au găsit potriviri",
+      "emptyStructureTitle": "Nimic aici încă",
+      "emptyStructureHint": "Creează un fir sau un folder pentru a începe organizarea.",
+      "newWorkspaceTitle": "Niciun spațiu de lucru",
+      "newWorkspaceHint": "Spațiile de lucru ajută să separi proiecte diferite.",
+      "noWorkspaceTitle": "Alege un spațiu",
+      "noWorkspaceHintCta": "Creează unul sau selectează unul existent pentru a începe."
+    },
+    "canvas": {
+      "referenceSearch": {
+        "placeholder": "Caută noduri…",
+        "noResults": "Niciun nod găsit",
+        "noMatch": "Nimic nu corespunde „{query}”",
+        "hint": "Încearcă altă etichetă sau alt cuvânt cheie.",
+        "actionLink": "leagă",
+        "actionNavigate": "deschide",
+        "actionClose": "închide"
+      },
+      "tools": {
+        "ariaLabel": "Instrumente canvas",
+        "help": "Scurtături tastatură",
+        "groups": {
+          "navigate": "Navigare",
+          "history": "Istoric",
+          "build": "Construire",
+          "annotate": "Adnotare",
+          "link": "Legături"
+        },
+        "items": {
+          "select": {
+            "label": "Selectează",
+            "description": "Selectează și mută noduri pe canvas."
+          },
+          "pan": {
+            "label": "Deplasare",
+            "description": "Ține apăsat și trage pentru a deplasa zona vizibilă."
+          },
+          "zoomIn": {
+            "label": "Mărește",
+            "description": "Click oriunde pentru a mări spre acel punct. Ține Shift pentru a micșora."
+          },
+          "zoomOut": {
+            "label": "Micșorează",
+            "description": "Click oriunde pentru a micșora din acel punct. Ține Shift pentru a mări."
+          },
+          "addNode": {
+            "label": "Adaugă nod",
+            "description": "Click oriunde pe canvas pentru a plasa un nod nou."
+          },
+          "connect": {
+            "label": "Conectează",
+            "description": "Click pe două noduri pentru a le lega."
+          },
+          "delete": {
+            "label": "Șterge",
+            "description": "Click pe un nod sau o muchie pentru a o elimina."
+          },
+          "validPath": {
+            "label": "Marchează valid",
+            "description": "Marchează nodurile selectate ca traseu valid."
+          },
+          "invalidPath": {
+            "label": "Marchează invalid",
+            "description": "Marchează nodurile selectate ca traseu invalid."
+          },
+          "comment": {
+            "label": "Comentariu",
+            "description": "Click pe un nod pentru a deschide panoul de comentarii."
+          },
+          "crossReference": {
+            "label": "Referință încrucișată",
+            "description": "Plasează o referință către un nod dintr-un alt canvas."
+          },
+          "undo": {
+            "label": "Anulează",
+            "description": "Întoarce-te la modificările anterioare."
+          },
+          "redo": {
+            "label": "Refă",
+            "description": "Reia modificarea pe care tocmai ai anulat-o."
+          }
+        }
+      },
+      "loadError": {
+        "title": "Backend canvas inaccesibil",
+        "hint": "Nu s-a putut conecta la Supabase pentru a încărca acest canvas. Verifică instanța locală Supabase și reîncearcă.",
+        "retry": "Reîncearcă"
+      },
+      "empty": {
+        "title": "Canvas gol",
+        "hint": "Apasă {key} și click oriunde pentru a plasa primul tău nod",
+        "contextHint": "sau click dreapta pe canvas pentru mai multe opțiuni"
+      },
+      "node": {
+        "defaultLabel": "Nod nou",
+        "showMore": "Afișează mai mult",
+        "showLess": "Afișează mai puțin",
+        "viewComments": "Vezi comentariile",
+        "addComment": "Adaugă comentariu",
+        "addCommentPlaceholder": "Adaugă un comentariu…",
+        "sendComment": "Trimite comentariul",
+        "closeComments": "Închide",
+        "commentsHeader": "Comentarii",
+        "noComments": "Niciun comentariu încă. Începe conversația."
+      },
+      "reference": {
+        "badge": "Referință",
+        "openLabel": "Deschide {name}",
+        "workspaceFallback": "spațiu de lucru"
+      },
+      "comments": {
+        "panelTitle": "Comentarii canvas",
+        "addPlaceholder": "Adaugă un comentariu…",
+        "addAriaLabel": "Adaugă un comentariu canvas",
+        "sendAriaLabel": "Trimite comentariu",
+        "sendTitle": "Trimite (Enter)",
+        "deleteAriaLabel": "Șterge comentariu",
+        "deleteTitle": "Șterge comentariu",
+        "closeAriaLabel": "Închide (Esc)",
+        "closeTitle": "Închide (Esc)",
+        "emptyTitle": "Niciun comentariu pe acest canvas.",
+        "emptyHint": "Începe discuția mai jos."
+      },
+      "save": {
+        "saving": "Se salvează…",
+        "retrying": "Se reîncearcă…",
+        "retryAttempt": "Încercarea {n}",
+        "saved": "Salvat",
+        "offline": "Fără conexiune",
+        "offlinePending": "{count, plural, one {# modificare în așteptare} few {# modificări în așteptare} other {# de modificări în așteptare}}",
+        "errorTitle": "Salvarea a eșuat",
+        "errorChanges": "{count, plural, one {# modificare} few {# modificări} other {# de modificări}}",
+        "retry": "Reîncearcă",
+        "retryAriaLabel": "Reîncearcă modificările eșuate",
+        "discard": "Renunță",
+        "discardAriaLabel": "Renunță la modificările eșuate"
+      },
+      "context": {
+        "ariaLabel": "Acțiuni canvas",
+        "addNode": "Adaugă nod",
+        "addReference": "Adaugă referință",
+        "openComments": "Deschide comentarii canvas",
+        "deleteEdge": "Șterge muchia",
+        "openReferenced": "Deschide canvas-ul referit",
+        "deleteReference": "Șterge referința",
+        "markValid": "Marchează valid",
+        "unmarkValid": "Demarchează valid",
+        "markInvalid": "Marchează invalid",
+        "unmarkInvalid": "Demarchează invalid",
+        "comment": "Comentariu",
+        "duplicate": "Duplică",
+        "delete": "Șterge"
+      },
+      "shortcuts": {
+        "title": "Scurtături tastatură",
+        "subtitle": "Apasă o tastă pentru a schimba instantaneu instrumentul.",
+        "footerHint": "Scurtăturile funcționează și când acest panou e deschis.",
+        "closeHint": "închide",
+        "ariaLabel": "Scurtături tastatură",
+        "closeAriaLabel": "Închide",
+        "activeBadge": "Activ"
+      }
+    },
+    "settings": {
+      "title": "Setări",
+      "close": "Închide setările",
+      "comingSoon": "În curând",
+      "languageSaving": "Se salvează limba…",
+      "languageSaveFailed": "Salvarea limbii a eșuat. Încearcă din nou.",
+      "groups": {
+        "account": "Cont",
+        "preferences": "Preferințe",
+        "subscription": "Abonament"
+      },
+      "sections": {
+        "profile": "Profil",
+        "security": "Securitate",
+        "notifications": "Notificări",
+        "appearance": "Aspect",
+        "editor": "Editor",
+        "plan": "Plan și facturare"
+      },
+      "profile": {
+        "email": "Email",
+        "name": "Nume complet",
+        "save": "Salvează",
+        "saving": "Se salvează…",
+        "saved": "Salvat",
+        "changeEmail": "Schimbă emailul",
+        "changingEmail": "Se trimite…",
+        "emailChangeRequested": "Email de confirmare trimis la noua adresă.",
+        "saveFailed": "Salvarea a eșuat. Încearcă din nou.",
+        "emailChangeFailed": "Schimbarea emailului a eșuat. Încearcă din nou.",
+        "emailInvalid": "Introdu o adresă de email validă."
+      },
+      "security": {
+        "changePassword": "Schimbă parola",
+        "newPassword": "Parolă nouă",
+        "confirmPassword": "Confirmă parola",
+        "updatePassword": "Actualizează parola",
+        "updatingPassword": "Se actualizează…",
+        "passwordUpdated": "Parolă actualizată",
+        "passwordMismatch": "Parolele nu coincid",
+        "passwordTooShort": "Parola trebuie să aibă cel puțin 8 caractere",
+        "dangerZone": "Zonă periculoasă",
+        "deleteAccount": "Șterge contul",
+        "deleteConfirm": "Ești sigur? Această acțiune nu poate fi anulată. Toate datele tale vor fi șterse permanent.",
+        "deleteButton": "Șterge contul meu",
+        "deleting": "Se șterge…",
+        "cancel": "Anulează",
+        "updateFailed": "Actualizarea parolei a eșuat. Încearcă din nou.",
+        "deleteFailed": "Ștergerea contului a eșuat. Încearcă din nou."
+      },
+      "notifications": {
+        "description": "Alege ce notificări primești",
+        "mentions": "Mențiuni",
+        "mentionsDescription": "Notifică-mă când cineva mă menționează",
+        "comments": "Comentarii",
+        "commentsDescription": "Notifică-mă când cineva comentează la nodurile mele",
+        "invites": "Invitații în spații",
+        "invitesDescription": "Notifică-mă despre invitațiile în spații de lucru",
+        "digest": "Sumar săptămânal",
+        "digestDescription": "Primește un sumar săptămânal al activității"
+      },
+      "appearance": {
+        "theme": "Temă",
+        "themeIntro": "Șase stări",
+        "themeBlurb": "Alege o paletă care se potrivește cu felul tău de a gândi. Fiecare repictează spațiul, de la pânză la bara de instrumente.",
+        "themeDaybreak": "Zori",
+        "themeEclipse": "Eclipsă",
+        "themeGraphite": "Grafit",
+        "themeSolstice": "Solstițiu",
+        "themeAurora": "Auroră",
+        "themeAuto": "Auto",
+        "daybreakDesc": "Hârtie clară, lumină blândă",
+        "eclipseDesc": "Cerneală de noapte, sclipire ciano",
+        "graphiteDesc": "Monocrom pur",
+        "solsticeDesc": "Pergament cald, chihlimbar",
+        "auroraDesc": "Sticlă iridescentă",
+        "autoDesc": "Urmează sistemul",
+        "defaultBadge": "Implicit",
+        "adaptive": "Adaptiv",
+        "canvas": "Pânză",
+        "canvasIntro": "Patru texturi",
+        "canvasBlurb": "Alege suprafața pe care trăiesc ideile tale — de la hârtie liniștită la o grilă inginerească.",
+        "patternDots": "Constelație",
+        "patternLines": "Schiță",
+        "patternCross": "Coordonate",
+        "patternNone": "Vid",
+        "patternDotsDesc": "Puncte fine, orizont calm",
+        "patternLinesDesc": "Hârtie milimetrică, mintea inginerului",
+        "patternCrossDesc": "Cruciulițe, harta unui topograf",
+        "patternNoneDesc": "Suprafață pură, fără model",
+        "language": "Limbă",
+        "languages": {
+          "en": "English",
+          "uk": "Українська",
+          "ro": "Română",
+          "fr": "Français",
+          "es": "Español",
+          "pt": "Português (Portugal)"
+        }
+      },
+      "editor": {
+        "canvas": "Pânză",
+        "snapToGrid": "Aliniere la grilă",
+        "snapToGridDescription": "Aliniază elementele la grilă când le muți",
+        "showGrid": "Afișează grila",
+        "showGridDescription": "Afișează liniile grilei pe canvas",
+        "showMinimap": "Afișează minimap",
+        "showMinimapDescription": "Afișează un minimap în colț",
+        "defaultZoom": "Nivel zoom implicit"
+      },
+      "plan": {
+        "current": "Curent",
+        "free": "Gratuit",
+        "paidPlansNote": "Planurile plătite vor fi disponibile după perioada beta.",
+        "earlyBirdNote": "Utilizatorii beta vor primi prețuri preferențiale."
+      }
+    }
+  },
+  "landing": {
+    "header": {
+      "logo": "Uniscept",
+      "signIn": "Autentificare",
+      "getStarted": "Începe acum"
+    },
+    "hero": {
+      "title": "Gândirea este",
+      "titleAccent": "structură.",
+      "subtitle1": "Fiecare fir Slack e un cimitir de idei.",
+      "subtitle2": "Fiecare ședință e amnezie structurată.",
+      "tagline": "Construiește cunoaștere. Nu haos.",
+      "ctaPrimary": "Începe acum",
+      "ctaSecondary": "Află mai multe"
+    },
+    "problem": {
+      "title": "Problema",
+      "subtitle": "Instrumentele superficiale produc gândire superficială."
+    },
+    "product": {
+      "title": "Acesta este un motor de raționament.",
+      "subtitle1": "Nu Notion. Nu un chatbot. Nu un wiki.",
+      "subtitle2": "Un sistem pentru gândire structurată.",
+      "features": {
+        "structured": {
+          "title": "Raționament structurat",
+          "description": "Descompune problemele complexe în noduri și conexiuni logice. Fă raționamentul implicit explicit. Vezi arhitectura gândirii tale.",
+          "tags": ["Mapare vizuală", "Flux logic", "Structură clară"]
+        },
+        "validation": {
+          "title": "Validare a căilor",
+          "description": "Marchează căile de raționament ca valide sau invalide. Urmărește ce funcționează. Construiește pe adevăr."
+        },
+        "references": {
+          "title": "Referințe încrucișate",
+          "description": "Leagă canvas-uri fără duplicare. Reutilizează concluzii. Lasă cunoașterea să crească exponențial."
+        },
+        "collaboration": {
+          "title": "Colaborare în echipă",
+          "description": "Acces bazat pe roluri. Comentarii contextuale. Actualizări în timp real. Gândiți împreună, decideți mai rapid, construiți mai puternic."
+        }
+      }
+    },
+    "builders": {
+      "title": "Construit pentru constructori.",
+      "subtitle": "Pentru cei care urăsc gândirea superficială.",
+      "founders": {
+        "title": "Fondatori",
+        "description": "Ia decizii mai bune. Documentează raționamentul. Nu mai relua aceleași argumente în fiecare trimestru.",
+        "useCases": ["Strategie de produs", "Analiză de piață", "Arhitectură tehnică"]
+      },
+      "researchers": {
+        "title": "Cercetători",
+        "description": "Mapează literatura. Construiește cadre. Transformă lucrările în grafuri structurate de cunoaștere care chiar au sens.",
+        "useCases": ["Sinteză literatură", "Mapare ipoteze", "Rețele de citări"]
+      },
+      "engineers": {
+        "title": "Ingineri",
+        "description": "Proiectează sisteme. Depanează logică. Documentează deciziile arhitecturale care contează cu adevărat.",
+        "useCases": ["Proiectare sisteme", "Fluxuri de debugging", "Decizii tehnice"]
+      }
+    },
+    "pricing": {
+      "title": "Prețuri",
+      "subtitle": "Simple. Transparente. Corecte.",
+      "footer": "Încearcă gratuit cu modul Demo. Fără card de credit.",
+      "tryDemo": "Încearcă demo",
+      "getStarted": "Începe acum",
+      "popular": "Popular",
+      "free": "Gratuit",
+      "periods": {
+        "month": "lună",
+        "year": "an"
+      },
+      "plans": {
+        "demo": {
+          "name": "Demo",
+          "description": "Pe durata sesiunii",
+          "features": ["Încearcă canvasul", "Fără cont", "Explorează funcțiile", "Stocare de sesiune"]
+        },
+        "lite": {
+          "name": "Lite",
+          "features": ["Canvasuri nelimitate", "Un singur utilizator", "Stocare în cloud", "Opțiuni de export"]
+        },
+        "standard": {
+          "name": "Standard",
+          "features": ["Tot ce e în Lite", "Până la 5 membri", "Colaborare în echipă", "Sincronizare în timp real"]
+        },
+        "pro": {
+          "name": "Pro",
+          "features": [
+            "Tot ce e în Standard",
+            "Membri nelimitați",
+            "Permisiuni avansate",
+            "Suport prioritar",
+            "Acces API"
+          ]
+        }
+      }
+    },
+    "howItWorks": {
+      "title": "Trei pași.",
+      "subtitle": "Atât."
+    },
+    "cta": {
+      "title1": "Nu mai vorbi.",
+      "title2": "Începe să construiești.",
+      "subtitle": "Alătură-te cercetătorilor, fondatorilor și inginerilor care chiar livrează.",
+      "button": "Începe gratuit"
+    },
+    "footer": {
+      "copyright": "© 2026 Uniscept",
+      "links": {
+        "twitter": "Twitter",
+        "github": "GitHub",
+        "docs": "Documentație"
+      }
+    }
+  }
+}

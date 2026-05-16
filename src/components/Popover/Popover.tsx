@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useLayoutEffect, useRef, type ReactNode } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, type KeyboardEvent, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { clsx } from 'clsx';
 import type { TPopoverPlacement } from '@interfaces';
-import { useMounted } from '@hooks';
+import { useEscapeKey, useMounted, useViewportChange } from '@hooks';
 
 export interface IPopoverProps {
   open: boolean;
@@ -12,7 +12,6 @@ export interface IPopoverProps {
   trigger: ReactNode;
   placement?: TPopoverPlacement;
   offset?: number;
-  className?: string;
   panelClassName?: string;
   triggerClassName?: string;
   children: ReactNode;
@@ -33,8 +32,7 @@ export const Popover = ({
 
   const mounted = useMounted();
 
-  useLayoutEffect(() => {
-    if (!open) return;
+  const place = useCallback(() => {
     const triggerEl = triggerRef.current;
     const panelEl = panelRef.current;
     if (!triggerEl || !panelEl) return;
@@ -57,7 +55,14 @@ export const Popover = ({
     } else {
       panelEl.style.left = `${Math.max(8, rect.right - panelWidth)}px`;
     }
-  });
+  }, [placement, offset]);
+
+  useLayoutEffect(() => {
+    if (!open) return;
+    place();
+  }, [open, place]);
+
+  const dismiss = useCallback(() => onOpenChange(false), [onOpenChange]);
 
   useEffect(() => {
     if (!open) return;
@@ -67,23 +72,37 @@ export const Popover = ({
       if (triggerRef.current?.contains(target)) return;
       onOpenChange(false);
     };
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onOpenChange(false);
-    };
-    const onResize = () => onOpenChange(false);
     document.addEventListener('mousedown', onDocClick);
-    document.addEventListener('keydown', onKey);
-    window.addEventListener('resize', onResize);
-    return () => {
-      document.removeEventListener('mousedown', onDocClick);
-      document.removeEventListener('keydown', onKey);
-      window.removeEventListener('resize', onResize);
-    };
+    return () => document.removeEventListener('mousedown', onDocClick);
   }, [open, onOpenChange]);
+
+  useEscapeKey(dismiss, open);
+  useViewportChange({ onScroll: place, onResize: dismiss, enabled: open, capture: true });
+
+  useEffect(() => {
+    if (!open) return;
+    panelRef.current?.focus();
+  }, [open]);
+
+  const handleTriggerKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      onOpenChange(!open);
+    }
+  };
 
   return (
     <>
-      <div ref={triggerRef} className={triggerClassName} onClick={() => onOpenChange(!open)}>
+      <div
+        ref={triggerRef}
+        role="button"
+        tabIndex={0}
+        aria-expanded={open}
+        aria-haspopup="dialog"
+        className={triggerClassName}
+        onClick={() => onOpenChange(!open)}
+        onKeyDown={handleTriggerKeyDown}
+      >
         {trigger}
       </div>
       {mounted &&
@@ -91,8 +110,11 @@ export const Popover = ({
         createPortal(
           <div
             ref={panelRef}
+            role="dialog"
+            aria-modal="false"
+            tabIndex={-1}
             className={clsx(
-              'overflow-hidden rounded-2xl border border-black/5 bg-white/95 shadow-2xl shadow-black/10 backdrop-blur-2xl',
+              'overflow-hidden rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-elevated)]/95 text-[color:var(--text)] shadow-2xl shadow-black/20 backdrop-blur-2xl outline-none',
               panelClassName
             )}
           >

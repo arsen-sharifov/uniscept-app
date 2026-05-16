@@ -1,7 +1,17 @@
 import type { LucideIcon } from 'lucide-react';
-import type { IPreferences } from '../preferences';
+import type { TCanvasPattern, TTheme } from '@interfaces';
 
 export type TSettingsSection = 'profile' | 'security' | 'notifications' | 'appearance' | 'editor' | 'plan';
+
+export type TSettingsGroupLabel = 'account' | 'preferences' | 'subscription';
+
+export type TThemeLabelKey = `theme${Capitalize<TTheme>}`;
+
+export type TThemeDescriptionKey = `${TTheme}Desc`;
+
+export type TCanvasPatternLabelKey = `pattern${Capitalize<TCanvasPattern>}`;
+
+export type TCanvasPatternDescriptionKey = `${TCanvasPatternLabelKey}Desc`;
 
 export interface ISettingsSidebarItem {
   id: TSettingsSection;
@@ -9,12 +19,20 @@ export interface ISettingsSidebarItem {
 }
 
 export interface ISettingsSidebarGroup {
-  labelKey: 'account' | 'preferences' | 'subscription';
+  labelKey: TSettingsGroupLabel;
   items: ISettingsSidebarItem[];
 }
 
 export interface IThemeOption {
-  value: IPreferences['theme'];
+  value: TTheme;
   icon: LucideIcon;
-  labelKey: 'themeLight' | 'themeDark' | 'themeSystem';
+  labelKey: TThemeLabelKey;
+  descriptionKey: TThemeDescriptionKey;
+}
+
+export interface ICanvasPatternOption {
+  value: TCanvasPattern;
+  icon: LucideIcon;
+  labelKey: TCanvasPatternLabelKey;
+  descriptionKey: TCanvasPatternDescriptionKey;
 }

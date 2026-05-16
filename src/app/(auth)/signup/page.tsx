@@ -1,18 +1,13 @@
 'use client';
 
-import { type SubmitEvent, useState } from 'react';
+import { type SubmitEvent, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowRight, ArrowLeft, Lock } from 'lucide-react';
-import { PRICING_PLANS } from '@constants/pricing';
 import { useTranslations } from '@hooks';
 import { signUp, verifyInviteCode } from '@api/client';
 import { Stepper, Tooltip } from '@/components';
-
-const LOCKED_PLANS = PRICING_PLANS.filter((p) => p.period).map((p) => ({
-  name: p.name,
-  price: `$${p.price}/mo`,
-}));
+import { formatPlanPrice, mergePlansWithTranslations } from '@/lib/pricing';
 
 const SignUpPage = () => {
   const [step, setStep] = useState(1);
@@ -26,8 +21,24 @@ const SignUpPage = () => {
   const router = useRouter();
 
   const t = useTranslations();
+  const plans = useMemo(() => mergePlansWithTranslations(t), [t]);
   const { signUp: signUpT, placeholders, errors: authErrors } = t.auth;
   const { planStep, accountStep } = signUpT;
+  const periods = t.landing.pricing.periods;
+
+  const lockedPlans = useMemo(
+    () =>
+      plans
+        .filter((p) => p.period !== undefined)
+        .map((p) => ({
+          id: p.id,
+          name: p.name,
+          price: p.period
+            ? `${formatPlanPrice(p.price, planStep.free)}/${periods[p.period]}`
+            : formatPlanPrice(p.price, planStep.free),
+        })),
+    [plans, periods, planStep.free]
+  );
 
   const handleSignUp = async (e: SubmitEvent) => {
     e.preventDefault();
@@ -87,9 +98,9 @@ const SignUpPage = () => {
           <div>
             <p className="mb-2 text-xs font-medium tracking-wider text-black/30 uppercase">{planStep.comingSoon}</p>
             <div className="space-y-2">
-              {LOCKED_PLANS.map((plan) => (
+              {lockedPlans.map((plan) => (
                 <div
-                  key={plan.name}
+                  key={plan.id}
                   className="flex items-center justify-between rounded-xl border border-black/5 bg-black/[0.02] px-4 py-3 opacity-50"
                 >
                   <div className="flex items-center gap-3">

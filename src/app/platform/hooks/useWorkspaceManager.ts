@@ -324,7 +324,10 @@ export const useWorkspaceManager = () => {
       try {
         await Promise.all(promises);
       } catch {
-        if (activeWorkspaceId) await loadWorkspaceContent(activeWorkspaceId);
+        if (activeWorkspaceId) {
+          await loadWorkspaceContent(activeWorkspaceId);
+        }
+
         return;
       }
 

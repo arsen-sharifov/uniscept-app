@@ -2,6 +2,8 @@ export type TNavItemType = 'folder' | 'thread';
 
 export type TWorkspaceDropZone = 'before' | 'after';
 
+export type TSingleDeleteTitleKey = 'deleteWorkspaceTitle' | 'deleteFolderTitle' | 'deleteThreadTitle';
+
 export interface IThreadItem {
   type: 'thread';
   id: string;
@@ -39,13 +41,6 @@ export interface IProjection {
   depth: number;
   parentId: string | null;
   zone: TDropZone;
-}
-
-export interface IDragSelectRect {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
 }
 
 export type TDeleteTarget =

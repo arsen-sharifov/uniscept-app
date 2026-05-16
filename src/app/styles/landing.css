@@ -68,10 +68,16 @@
 }
 
 @utility gradient-text-animated {
-  background: linear-gradient(135deg, #059669 0%, #06b6d4 50%, #059669 100%);
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 50%, var(--accent) 100%);
   background-size: 200% auto;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   animation: var(--animate-gradient-move);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gradient-text-animated {
+    animation: none !important;
+  }
 }

@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react';
-import { type DefaultEdgeOptions, Position } from '@xyflow/react';
-import type { IEdgePaletteEntry, TEdgeTone, THandleId } from '@interfaces';
+import { BackgroundVariant, type DefaultEdgeOptions, Position } from '@xyflow/react';
+import type { TCanvasPattern, TEdgeTone, THandleId, TSaveStatus } from '@interfaces';
 
 export const HANDLE_POSITIONS: { id: THandleId; position: Position }[] = [
   { id: 'top', position: Position.Top },
@@ -13,8 +13,6 @@ export const SAVE_STATUS_REFRESH_INTERVAL_MS = 15_000;
 
 export const INPUT_FOCUS_DELAY_MS = 60;
 
-const COLLAPSE_LINES = 10;
-
 export const ARROW_LENGTH = 10;
 
 export const ARRIVAL_FIT_DURATION_MS = 700;
@@ -22,11 +20,23 @@ export const ARRIVAL_FIT_PADDING = 0.25;
 export const ARRIVAL_CLEANUP_MS = 1600;
 
 export const BACKGROUND_DOT_GAP = 22;
-export const BACKGROUND_DOT_SIZE = 1.2;
-export const BACKGROUND_DOT_COLOR = 'rgb(15 23 42 / 0.10)';
+export const BACKGROUND_COLOR_FALLBACK = 'rgb(15 23 42 / 0.22)';
 
-export const RUBBER_LINE_STROKE = 'rgb(6 182 212 / 0.7)';
-export const RUBBER_LINE_DOT_FILL = 'rgb(6 182 212)';
+export const BACKGROUND_SIZE_BY_PATTERN: Record<Exclude<TCanvasPattern, 'none'>, number> = {
+  dots: 1.8,
+  lines: 1.1,
+  cross: 6,
+};
+
+export const BACKGROUND_VARIANT_BY_PATTERN: Record<Exclude<TCanvasPattern, 'none'>, BackgroundVariant> = {
+  dots: BackgroundVariant.Dots,
+  lines: BackgroundVariant.Lines,
+  cross: BackgroundVariant.Cross,
+};
+
+export const RUBBER_LINE_STROKE_FALLBACK = 'rgba(34, 211, 238, 0.7)';
+export const RUBBER_LINE_DOT_FILL_FALLBACK = 'rgb(34, 211, 238)';
+export const ACCENT_GLOW_FALLBACK = 'rgba(34, 211, 238, 0.45)';
 export const RUBBER_LINE_STROKE_WIDTH = 2;
 export const RUBBER_LINE_DASH_ARRAY = '6 4';
 export const RUBBER_LINE_DOT_RADIUS = 3.5;
@@ -45,24 +55,7 @@ export const PAN_BUTTONS_MIDDLE: number[] = [1];
 
 export const EDGE_DEFAULT_STROKE_WIDTH = 1.75;
 
-export const EDGE_PALETTE: Record<TEdgeTone, IEdgePaletteEntry> = {
-  default: {
-    stroke: 'rgb(100 116 139 / 0.6)',
-    marker: 'rgb(100 116 139 / 0.85)',
-  },
-  valid: {
-    stroke: 'rgb(16 185 129 / 0.7)',
-    marker: 'rgb(16 185 129 / 0.95)',
-  },
-  invalid: {
-    stroke: 'rgb(239 68 68 / 0.7)',
-    marker: 'rgb(239 68 68 / 0.95)',
-  },
-  tainted: {
-    stroke: 'rgb(245 158 11 / 0.7)',
-    marker: 'rgb(245 158 11 / 0.95)',
-  },
-};
+export const EDGE_TONES: readonly TEdgeTone[] = ['default', 'valid', 'invalid', 'tainted'];
 
 export const ARROW_MARKER_ATTRIBUTES = {
   viewBox: '0 0 12 9',
@@ -79,18 +72,21 @@ export const ARROW_PATH_D = 'M 0 0 L 12 4.5 L 0 9 L 2.4 4.5 Z';
 export const DEFAULT_EDGE_OPTIONS: DefaultEdgeOptions = {
   type: 'default',
   style: {
-    stroke: EDGE_PALETTE.default.stroke,
     strokeWidth: EDGE_DEFAULT_STROKE_WIDTH,
   },
 };
 
-export const PALETTE_ENTRIES = Object.entries(EDGE_PALETTE) as [TEdgeTone, IEdgePaletteEntry][];
-
 export const SELECT_DELETE_KEYS = ['Backspace', 'Delete'];
+
+export const ARIA_LABEL_KEY_BY_STATUS: Partial<Record<TSaveStatus, 'errorTitle' | 'offline' | 'saving' | 'saved'>> = {
+  error: 'errorTitle',
+  offline: 'offline',
+  saved: 'saved',
+};
 
 export const LABEL_CLAMP_STYLE: CSSProperties = {
   display: '-webkit-box',
-  WebkitLineClamp: COLLAPSE_LINES,
+  WebkitLineClamp: 10,
   WebkitBoxOrient: 'vertical',
   overflow: 'hidden',
 };

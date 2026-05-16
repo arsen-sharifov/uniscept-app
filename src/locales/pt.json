@@ -1,0 +1,504 @@
+{
+  "auth": {
+    "signIn": {
+      "heading": "Entrar",
+      "subtitle": "Bem-vindo de volta",
+      "email": "E-mail",
+      "password": "Palavra-passe",
+      "submit": "Entrar",
+      "submitting": "A entrar…",
+      "emailSent": "Verifique o seu e-mail para confirmar a conta.",
+      "noAccount": "Não tem conta?",
+      "signUpLink": "Criar conta"
+    },
+    "signUp": {
+      "heading": "Criar conta",
+      "subtitle": "Preencha os seus dados",
+      "steps": {
+        "plan": "Plano",
+        "account": "Conta"
+      },
+      "planStep": {
+        "heading": "Escolha o plano",
+        "subtitle": "Selecione como quer começar",
+        "available": "Disponível",
+        "betaPlan": "Beta",
+        "free": "Gratuito",
+        "betaDescription": "Acesso completo durante a beta fechada. É necessário código de convite.",
+        "comingSoon": "Em breve",
+        "paidPlansNote": "Os planos pagos ficarão disponíveis após o período beta.",
+        "earlyBirdNote": "Utilizadores beta terão preços preferenciais.",
+        "continue": "Continuar"
+      },
+      "accountStep": {
+        "name": "Nome completo",
+        "inviteCode": "Código de convite",
+        "inviteCodeTooltip": "Necessário durante a beta fechada. Peça o código à equipa.",
+        "inviteCodePlaceholder": "Introduza o código de convite",
+        "email": "E-mail",
+        "password": "Palavra-passe",
+        "back": "Voltar",
+        "submit": "Registar",
+        "submitting": "A criar conta…"
+      },
+      "hasAccount": "Já tem conta?",
+      "signInLink": "Entrar"
+    },
+    "placeholders": {
+      "name": "João Silva",
+      "email": "voce@exemplo.com",
+      "password": "••••••••"
+    },
+    "errors": {
+      "invalidInviteCode": "Código de convite inválido"
+    },
+    "confirmed": {
+      "heading": "E-mail confirmado",
+      "message": "O seu e-mail foi verificado com sucesso. Pode fechar este separador e voltar ao anterior.",
+      "close": "Fechar separador"
+    },
+    "aside": {
+      "quote": "Construa conhecimento. Não caos.",
+      "tagline": "Raciocínio estruturado para equipas que entregam."
+    }
+  },
+  "common": {
+    "loading": "A carregar",
+    "close": "Fechar",
+    "userAvatar": "Utilizador"
+  },
+  "platform": {
+    "sidebar": {
+      "workspaces": "Espaços de trabalho",
+      "noWorkspaceSelected": "Nenhum espaço selecionado",
+      "noWorkspaces": "Sem espaços de trabalho. Crie um para começar.",
+      "newWorkspace": "Novo espaço",
+      "structure": "Estrutura",
+      "newThread": "Novo tópico",
+      "newFolder": "Nova pasta",
+      "emptyState": "Selecione ou crie um tópico para começar",
+      "signOut": "Sair",
+      "deleteWorkspaceTitle": "Eliminar espaço",
+      "deleteFolderTitle": "Eliminar pasta",
+      "deleteThreadTitle": "Eliminar tópico",
+      "deleteConfirmPrefix": "Tem a certeza que quer eliminar",
+      "deleteConfirmSuffix": "? Esta ação não pode ser anulada.",
+      "rename": "Renomear",
+      "delete": "Eliminar",
+      "cancel": "Cancelar",
+      "move": "Mover",
+      "treeAriaLabel": "Navegação",
+      "dragToReorder": "Arraste para reordenar",
+      "itemsSelected": "elementos selecionados",
+      "workspacesSelected": "espaços selecionados",
+      "moveToFolder": "Mover para pasta",
+      "rootLevel": "Nível raiz",
+      "bulkDeleteTitle": "Eliminar elementos",
+      "bulkDeleteConfirm": "Tem a certeza que quer eliminar estes elementos? A ação não pode ser anulada.",
+      "searchPlaceholder": "Pesquisar…",
+      "noSearchResults": "Sem correspondências",
+      "emptyStructureTitle": "Ainda nada por aqui",
+      "emptyStructureHint": "Crie um tópico ou pasta para começar a organizar o trabalho.",
+      "newWorkspaceTitle": "Sem espaço de trabalho",
+      "newWorkspaceHint": "Os espaços de trabalho ajudam a separar projetos diferentes.",
+      "noWorkspaceTitle": "Escolha um espaço",
+      "noWorkspaceHintCta": "Crie ou selecione um espaço para começar."
+    },
+    "canvas": {
+      "referenceSearch": {
+        "placeholder": "Pesquisar nós…",
+        "noResults": "Nenhum nó encontrado",
+        "noMatch": "Nada corresponde a \"{query}\"",
+        "hint": "Tente outra etiqueta ou palavra-chave.",
+        "actionLink": "ligar",
+        "actionNavigate": "abrir",
+        "actionClose": "fechar"
+      },
+      "tools": {
+        "ariaLabel": "Ferramentas do canvas",
+        "help": "Atalhos de teclado",
+        "groups": {
+          "navigate": "Navegação",
+          "history": "Histórico",
+          "build": "Construção",
+          "annotate": "Anotação",
+          "link": "Ligações"
+        },
+        "items": {
+          "select": {
+            "label": "Selecionar",
+            "description": "Selecione e arraste nós pelo canvas."
+          },
+          "pan": {
+            "label": "Deslocar",
+            "description": "Mantenha pressionado e arraste para deslocar a vista."
+          },
+          "zoomIn": {
+            "label": "Aproximar",
+            "description": "Clique em qualquer ponto para aproximar nesse local. Mantenha Shift para afastar."
+          },
+          "zoomOut": {
+            "label": "Afastar",
+            "description": "Clique em qualquer ponto para afastar a partir desse local. Mantenha Shift para aproximar."
+          },
+          "addNode": {
+            "label": "Adicionar nó",
+            "description": "Clique em qualquer parte do canvas para colocar um novo nó."
+          },
+          "connect": {
+            "label": "Ligar",
+            "description": "Clique em dois nós para os ligar."
+          },
+          "delete": {
+            "label": "Eliminar",
+            "description": "Clique num nó ou aresta para o eliminar."
+          },
+          "validPath": {
+            "label": "Marcar válido",
+            "description": "Marque os nós selecionados como caminho válido."
+          },
+          "invalidPath": {
+            "label": "Marcar inválido",
+            "description": "Marque os nós selecionados como caminho inválido."
+          },
+          "comment": {
+            "label": "Comentar",
+            "description": "Clique num nó para abrir o painel de comentários."
+          },
+          "crossReference": {
+            "label": "Referência cruzada",
+            "description": "Coloque uma referência a um nó de outro canvas."
+          },
+          "undo": {
+            "label": "Anular",
+            "description": "Voltar atrás nas suas alterações."
+          },
+          "redo": {
+            "label": "Refazer",
+            "description": "Repita a alteração que acabou de anular."
+          }
+        }
+      },
+      "loadError": {
+        "title": "Backend do canvas inacessível",
+        "hint": "Não foi possível ligar ao Supabase para carregar este canvas. Verifique se a instância local do Supabase está em execução e tente novamente.",
+        "retry": "Tentar novamente"
+      },
+      "empty": {
+        "title": "Canvas vazio",
+        "hint": "Pressione {key} e clique em qualquer ponto para colocar o primeiro nó",
+        "contextHint": "ou clique com o botão direito para mais opções"
+      },
+      "node": {
+        "defaultLabel": "Novo nó",
+        "showMore": "Mostrar mais",
+        "showLess": "Mostrar menos",
+        "viewComments": "Ver comentários",
+        "addComment": "Adicionar comentário",
+        "addCommentPlaceholder": "Adicionar um comentário…",
+        "sendComment": "Enviar comentário",
+        "closeComments": "Fechar",
+        "commentsHeader": "Comentários",
+        "noComments": "Ainda sem comentários. Inicie a conversa."
+      },
+      "reference": {
+        "badge": "Referência",
+        "openLabel": "Abrir {name}",
+        "workspaceFallback": "espaço de trabalho"
+      },
+      "comments": {
+        "panelTitle": "Comentários do canvas",
+        "addPlaceholder": "Adicionar um comentário…",
+        "addAriaLabel": "Adicionar um comentário ao canvas",
+        "sendAriaLabel": "Enviar comentário",
+        "sendTitle": "Enviar (Enter)",
+        "deleteAriaLabel": "Eliminar comentário",
+        "deleteTitle": "Eliminar comentário",
+        "closeAriaLabel": "Fechar (Esc)",
+        "closeTitle": "Fechar (Esc)",
+        "emptyTitle": "Ainda sem comentários neste canvas.",
+        "emptyHint": "Comece a discussão abaixo."
+      },
+      "save": {
+        "saving": "A guardar…",
+        "retrying": "A tentar novamente…",
+        "retryAttempt": "Tentativa {n}",
+        "saved": "Guardado",
+        "offline": "Sem ligação",
+        "offlinePending": "{count, plural, one {# alteração pendente} other {# alterações pendentes}}",
+        "errorTitle": "Não foi possível guardar",
+        "errorChanges": "{count, plural, one {# alteração} other {# alterações}}",
+        "retry": "Tentar novamente",
+        "retryAriaLabel": "Tentar novamente as alterações falhadas",
+        "discard": "Descartar",
+        "discardAriaLabel": "Descartar alterações falhadas"
+      },
+      "context": {
+        "ariaLabel": "Ações do canvas",
+        "addNode": "Adicionar nó",
+        "addReference": "Adicionar referência",
+        "openComments": "Abrir comentários do canvas",
+        "deleteEdge": "Eliminar aresta",
+        "openReferenced": "Abrir canvas referenciado",
+        "deleteReference": "Eliminar referência",
+        "markValid": "Marcar válido",
+        "unmarkValid": "Remover válido",
+        "markInvalid": "Marcar inválido",
+        "unmarkInvalid": "Remover inválido",
+        "comment": "Comentar",
+        "duplicate": "Duplicar",
+        "delete": "Eliminar"
+      },
+      "shortcuts": {
+        "title": "Atalhos de teclado",
+        "subtitle": "Carregue numa tecla para mudar de ferramenta instantaneamente.",
+        "footerHint": "Os atalhos funcionam mesmo com este painel aberto.",
+        "closeHint": "fechar",
+        "ariaLabel": "Atalhos de teclado",
+        "closeAriaLabel": "Fechar",
+        "activeBadge": "Ativo"
+      }
+    },
+    "settings": {
+      "title": "Definições",
+      "close": "Fechar definições",
+      "comingSoon": "Em breve",
+      "languageSaving": "A guardar idioma…",
+      "languageSaveFailed": "Falha ao guardar o idioma. Tente novamente.",
+      "groups": {
+        "account": "Conta",
+        "preferences": "Preferências",
+        "subscription": "Subscrição"
+      },
+      "sections": {
+        "profile": "Perfil",
+        "security": "Segurança",
+        "notifications": "Notificações",
+        "appearance": "Aparência",
+        "editor": "Editor",
+        "plan": "Plano e faturação"
+      },
+      "profile": {
+        "email": "E-mail",
+        "name": "Nome completo",
+        "save": "Guardar",
+        "saving": "A guardar…",
+        "saved": "Guardado",
+        "changeEmail": "Alterar e-mail",
+        "changingEmail": "A enviar…",
+        "emailChangeRequested": "E-mail de confirmação enviado para a nova morada.",
+        "saveFailed": "Falha ao guardar. Tente novamente.",
+        "emailChangeFailed": "Falha ao alterar o e-mail. Tente novamente.",
+        "emailInvalid": "Introduza um endereço de e-mail válido."
+      },
+      "security": {
+        "changePassword": "Alterar palavra-passe",
+        "newPassword": "Nova palavra-passe",
+        "confirmPassword": "Confirmar palavra-passe",
+        "updatePassword": "Atualizar palavra-passe",
+        "updatingPassword": "A atualizar…",
+        "passwordUpdated": "Palavra-passe atualizada",
+        "passwordMismatch": "As palavras-passe não coincidem",
+        "passwordTooShort": "A palavra-passe deve ter pelo menos 8 caracteres",
+        "dangerZone": "Zona perigosa",
+        "deleteAccount": "Eliminar conta",
+        "deleteConfirm": "Tem a certeza? Esta ação não pode ser anulada. Todos os seus dados serão eliminados permanentemente.",
+        "deleteButton": "Eliminar a minha conta",
+        "deleting": "A eliminar…",
+        "cancel": "Cancelar",
+        "updateFailed": "Falha ao atualizar a palavra-passe. Tente novamente.",
+        "deleteFailed": "Falha ao eliminar a conta. Tente novamente."
+      },
+      "notifications": {
+        "description": "Escolha que notificações recebe",
+        "mentions": "Menções",
+        "mentionsDescription": "Notificar quando alguém me mencionar",
+        "comments": "Comentários",
+        "commentsDescription": "Notificar quando alguém comentar nos meus nós",
+        "invites": "Convites para espaços",
+        "invitesDescription": "Notificar sobre convites para espaços de trabalho",
+        "digest": "Resumo semanal",
+        "digestDescription": "Receber um resumo semanal da atividade"
+      },
+      "appearance": {
+        "theme": "Tema",
+        "themeIntro": "Seis ambientes",
+        "themeBlurb": "Escolha uma paleta que combine com a sua forma de pensar. Cada uma repinta o espaço, da tela à barra de ferramentas.",
+        "themeDaybreak": "Alvorada",
+        "themeEclipse": "Eclipse",
+        "themeGraphite": "Grafite",
+        "themeSolstice": "Solstício",
+        "themeAurora": "Aurora",
+        "themeAuto": "Auto",
+        "daybreakDesc": "Papel nítido, luz suave",
+        "eclipseDesc": "Tinta noturna, brilho ciano",
+        "graphiteDesc": "Monocromático puro",
+        "solsticeDesc": "Pergaminho cálido, âmbar",
+        "auroraDesc": "Vidro iridescente",
+        "autoDesc": "Segue o sistema",
+        "defaultBadge": "Padrão",
+        "adaptive": "Adaptável",
+        "canvas": "Tela",
+        "canvasIntro": "Quatro texturas",
+        "canvasBlurb": "Escolha a superfície onde as suas ideias vivem — do papel tranquilo a uma grelha traçada.",
+        "patternDots": "Constelação",
+        "patternLines": "Esquema",
+        "patternCross": "Traçado",
+        "patternNone": "Vazio",
+        "patternDotsDesc": "Pontos suaves, horizonte calmo",
+        "patternLinesDesc": "Papel milimétrico, mente de engenheiro",
+        "patternCrossDesc": "Cruzes, mapa de topógrafo",
+        "patternNoneDesc": "Superfície pura, sem padrão",
+        "language": "Idioma",
+        "languages": {
+          "en": "English",
+          "uk": "Українська",
+          "ro": "Română",
+          "fr": "Français",
+          "es": "Español",
+          "pt": "Português (Portugal)"
+        }
+      },
+      "editor": {
+        "canvas": "Tela",
+        "snapToGrid": "Ajustar à grelha",
+        "snapToGridDescription": "Alinhar elementos à grelha ao mover",
+        "showGrid": "Mostrar grelha",
+        "showGridDescription": "Mostrar as linhas da grelha no canvas",
+        "showMinimap": "Mostrar minimapa",
+        "showMinimapDescription": "Mostrar uma vista geral no canto",
+        "defaultZoom": "Nível de zoom por omissão"
+      },
+      "plan": {
+        "current": "Atual",
+        "free": "Gratuito",
+        "paidPlansNote": "Os planos pagos ficarão disponíveis após o período beta.",
+        "earlyBirdNote": "Utilizadores beta terão preços preferenciais."
+      }
+    }
+  },
+  "landing": {
+    "header": {
+      "logo": "Uniscept",
+      "signIn": "Entrar",
+      "getStarted": "Começar"
+    },
+    "hero": {
+      "title": "O pensamento é",
+      "titleAccent": "estrutura.",
+      "subtitle1": "Cada thread no Slack é um cemitério de ideias.",
+      "subtitle2": "Cada reunião é amnésia estruturada.",
+      "tagline": "Construa conhecimento. Não caos.",
+      "ctaPrimary": "Começar",
+      "ctaSecondary": "Saber mais"
+    },
+    "problem": {
+      "title": "O problema",
+      "subtitle": "Ferramentas superficiais geram pensamento superficial."
+    },
+    "product": {
+      "title": "Isto é um motor de raciocínio.",
+      "subtitle1": "Não é Notion. Não é um chatbot. Não é um wiki.",
+      "subtitle2": "Um sistema para o pensamento estruturado.",
+      "features": {
+        "structured": {
+          "title": "Raciocínio estruturado",
+          "description": "Decomponha problemas complexos em nós e ligações lógicas. Torne explícito o raciocínio implícito. Veja a arquitetura do seu pensamento.",
+          "tags": ["Mapeamento visual", "Fluxo lógico", "Estrutura clara"]
+        },
+        "validation": {
+          "title": "Validação de caminhos",
+          "description": "Marque caminhos de raciocínio como válidos ou inválidos. Acompanhe o que funciona. Construa sobre a verdade."
+        },
+        "references": {
+          "title": "Referências cruzadas",
+          "description": "Ligue canvases sem duplicar. Reutilize conclusões. Deixe o conhecimento acumular-se."
+        },
+        "collaboration": {
+          "title": "Colaboração em equipa",
+          "description": "Acesso por papéis. Comentários contextuais. Atualizações em tempo real. Pensem juntos, decidam mais rápido, construam mais sólido."
+        }
+      }
+    },
+    "builders": {
+      "title": "Feito para construtores.",
+      "subtitle": "Para quem detesta pensamento superficial.",
+      "founders": {
+        "title": "Fundadores",
+        "description": "Tome melhores decisões. Documente o seu raciocínio. Pare de revisitar os mesmos argumentos a cada trimestre.",
+        "useCases": ["Estratégia de produto", "Análise de mercado", "Arquitetura técnica"]
+      },
+      "researchers": {
+        "title": "Investigadores",
+        "description": "Mapeie literatura. Construa enquadramentos. Transforme artigos em grafos de conhecimento estruturados que fazem sentido.",
+        "useCases": ["Síntese de literatura", "Mapeamento de hipóteses", "Redes de citações"]
+      },
+      "engineers": {
+        "title": "Engenheiros",
+        "description": "Desenhe sistemas. Depure lógica. Documente as decisões arquiteturais que realmente importam.",
+        "useCases": ["Desenho de sistemas", "Fluxos de depuração", "Decisões técnicas"]
+      }
+    },
+    "pricing": {
+      "title": "Preços",
+      "subtitle": "Simples. Transparentes. Justos.",
+      "footer": "Experimente grátis no modo Demo. Sem cartão de crédito.",
+      "tryDemo": "Experimentar demo",
+      "getStarted": "Começar",
+      "popular": "Popular",
+      "free": "Grátis",
+      "periods": {
+        "month": "mês",
+        "year": "ano"
+      },
+      "plans": {
+        "demo": {
+          "name": "Demo",
+          "description": "Por sessão",
+          "features": [
+            "Experimente o canvas",
+            "Sem necessidade de conta",
+            "Explore funcionalidades",
+            "Armazenamento de sessão"
+          ]
+        },
+        "lite": {
+          "name": "Lite",
+          "features": ["Canvases ilimitados", "Utilizador único", "Armazenamento na nuvem", "Opções de exportação"]
+        },
+        "standard": {
+          "name": "Standard",
+          "features": ["Tudo do Lite", "Até 5 membros", "Colaboração em equipa", "Sincronização em tempo real"]
+        },
+        "pro": {
+          "name": "Pro",
+          "features": [
+            "Tudo do Standard",
+            "Membros ilimitados",
+            "Permissões avançadas",
+            "Suporte prioritário",
+            "Acesso à API"
+          ]
+        }
+      }
+    },
+    "howItWorks": {
+      "title": "Três passos.",
+      "subtitle": "É isso."
+    },
+    "cta": {
+      "title1": "Pare de falar.",
+      "title2": "Comece a construir.",
+      "subtitle": "Junte-se a investigadores, fundadores e engenheiros que de facto entregam.",
+      "button": "Começar gratuitamente"
+    },
+    "footer": {
+      "copyright": "© 2026 Uniscept",
+      "links": {
+        "twitter": "Twitter",
+        "github": "GitHub",
+        "docs": "Documentação"
+      }
+    }
+  }
+}

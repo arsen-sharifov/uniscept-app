@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { SUCCESS_RESET_DELAY_MS } from '@constants';
 
 export const useAsyncAction = () => {
   const [loading, setLoading] = useState(false);
@@ -18,7 +19,7 @@ export const useAsyncAction = () => {
       await action();
       setSuccess(true);
       clearTimeout(timerRef.current);
-      timerRef.current = setTimeout(() => setSuccess(false), 2000);
+      timerRef.current = setTimeout(() => setSuccess(false), SUCCESS_RESET_DELAY_MS);
     } catch {
       setError(errorMessage);
     } finally {
@@ -26,5 +27,11 @@ export const useAsyncAction = () => {
     }
   }, []);
 
-  return { loading, success, error, run, setError };
+  return {
+    loading,
+    success,
+    error,
+    run,
+    setError,
+  };
 };

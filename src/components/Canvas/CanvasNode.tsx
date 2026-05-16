@@ -101,16 +101,16 @@ export const CanvasNode = ({ id, data, selected }: NodeProps<TCanvasNode>) => {
     <div
       onAnimationEnd={isNew ? () => clearNewFlag(id) : undefined}
       className={clsx(
-        'group/node relative flex max-w-[260px] min-w-[180px] overflow-visible rounded-2xl bg-white/95 backdrop-blur-md transition-shadow duration-200',
-        'shadow-[0_1px_2px_-1px_rgba(15,23,42,0.08),0_8px_24px_-12px_rgba(15,23,42,0.18)]',
-        'hover:shadow-[0_2px_4px_-1px_rgba(15,23,42,0.10),0_14px_36px_-16px_rgba(15,23,42,0.24)]',
+        'group/node relative flex max-w-[260px] min-w-[180px] overflow-visible rounded-2xl bg-[color:var(--surface-elevated)]/95 backdrop-blur-md transition-shadow duration-200',
+        'shadow-[0_1px_2px_-1px_rgba(15,23,42,0.18),0_8px_24px_-12px_rgba(15,23,42,0.30)]',
+        'hover:shadow-[0_2px_4px_-1px_rgba(15,23,42,0.22),0_14px_36px_-16px_rgba(15,23,42,0.40)]',
         'ring-1 ring-inset',
         isNew && 'animate-node-drop motion-reduce:animate-none',
-        !selected && !isPending && !isValid && !isInvalid && 'ring-black/[0.07]',
-        isValid && 'ring-emerald-500/30',
-        isInvalid && 'ring-red-500/30',
-        selected && 'ring-2 ring-emerald-500/50',
-        isPending && 'animate-node-pulse ring-2 ring-cyan-500/55 motion-reduce:animate-none'
+        !selected && !isPending && !isValid && !isInvalid && 'ring-[color:var(--border)]',
+        isValid && 'ring-[color:var(--status-success-border)]',
+        isInvalid && 'ring-[color:var(--status-error-border)]',
+        selected && 'ring-2 ring-[color:var(--border-active)]',
+        isPending && 'animate-node-pulse ring-2 ring-[color:var(--ref-border)] motion-reduce:animate-none'
       )}
     >
       {(isValid || isInvalid) && (
@@ -118,8 +118,8 @@ export const CanvasNode = ({ id, data, selected }: NodeProps<TCanvasNode>) => {
           aria-hidden
           className={clsx(
             'absolute top-2 bottom-2 left-0 w-[3px] rounded-r-full',
-            isValid && 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]',
-            isInvalid && 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.4)]'
+            isValid && 'bg-[color:var(--status-success)] shadow-[0_0_8px_var(--status-success-soft)]',
+            isInvalid && 'bg-[color:var(--status-error)] shadow-[0_0_8px_var(--status-error-soft)]'
           )}
         />
       )}
@@ -130,7 +130,7 @@ export const CanvasNode = ({ id, data, selected }: NodeProps<TCanvasNode>) => {
           id={handleId}
           type="source"
           position={position}
-          className="!h-2.5 !w-2.5 !rounded-full !border !border-white !bg-emerald-500 !opacity-0 !shadow-[0_0_0_3px_rgba(16,185,129,0.18)] !transition-opacity group-hover/node:!opacity-100"
+          className="!h-2.5 !w-2.5 !rounded-full !border !border-[color:var(--surface)] !bg-[color:var(--accent)] !opacity-0 !shadow-[0_0_0_3px_var(--accent-soft)] !transition-opacity group-hover/node:!opacity-100"
         />
       ))}
 
@@ -146,13 +146,13 @@ export const CanvasNode = ({ id, data, selected }: NodeProps<TCanvasNode>) => {
               onMouseDown={(event) => event.stopPropagation()}
               rows={1}
               style={TEXTAREA_FIELD_SIZING_STYLE}
-              className="nodrag w-full resize-none overflow-hidden rounded-md bg-emerald-500/[0.04] px-1 py-0.5 text-[13.5px] leading-snug font-medium tracking-tight text-neutral-900 ring-1 ring-emerald-500/30 outline-none"
+              className="nodrag w-full resize-none overflow-hidden rounded-md bg-[color:var(--accent-soft)] px-1 py-0.5 text-[13.5px] leading-snug font-medium tracking-tight text-[color:var(--text-strong)] ring-1 ring-[color:var(--border-active)] outline-none"
             />
           ) : (
             <p
               ref={labelRefCallback}
               style={!expanded ? LABEL_CLAMP_STYLE : undefined}
-              className="min-w-0 flex-1 text-[13.5px] leading-snug font-medium tracking-tight break-words whitespace-pre-wrap text-neutral-900 select-none"
+              className="min-w-0 flex-1 text-[13.5px] leading-snug font-medium tracking-tight break-words whitespace-pre-wrap text-[color:var(--text-strong)] select-none"
             >
               {label}
             </p>
@@ -170,8 +170,8 @@ export const CanvasNode = ({ id, data, selected }: NodeProps<TCanvasNode>) => {
               className={clsx(
                 'nodrag mt-px inline-flex h-5 shrink-0 items-center gap-0.5 rounded-md transition-[opacity,colors,padding] duration-150',
                 hasComments
-                  ? 'bg-emerald-500/10 px-1.5 text-[10.5px] font-semibold text-emerald-700 hover:bg-emerald-500/[0.16]'
-                  : 'w-5 justify-center text-neutral-300 opacity-0 group-hover/node:opacity-100 hover:bg-black/[0.04] hover:text-neutral-700'
+                  ? 'bg-[color:var(--accent-soft)] px-1.5 text-[10.5px] font-semibold text-[color:var(--accent-text)] hover:bg-[color:var(--accent-soft)]'
+                  : 'w-5 justify-center text-[color:var(--text-faint)] opacity-0 group-hover/node:opacity-100 hover:bg-[color:var(--surface-overlay)] hover:text-[color:var(--text)]'
               )}
             >
               <MessageSquare className="h-2.5 w-2.5" strokeWidth={2.25} />
@@ -188,7 +188,7 @@ export const CanvasNode = ({ id, data, selected }: NodeProps<TCanvasNode>) => {
               setExpanded((prev) => !prev);
             }}
             onMouseDown={(event) => event.stopPropagation()}
-            className="nodrag inline-flex w-fit items-center gap-0.5 rounded-md text-[10.5px] font-medium tracking-tight text-emerald-700/80 transition-colors hover:text-emerald-700"
+            className="nodrag inline-flex w-fit items-center gap-0.5 rounded-md text-[10.5px] font-medium tracking-tight text-[color:var(--accent)] transition-colors hover:text-[color:var(--accent-strong)]"
           >
             <ChevronDown
               className={clsx('h-3 w-3 transition-transform duration-200', expanded && 'rotate-180')}
@@ -203,14 +203,14 @@ export const CanvasNode = ({ id, data, selected }: NodeProps<TCanvasNode>) => {
         <div
           onClick={(event) => event.stopPropagation()}
           onMouseDown={(event) => event.stopPropagation()}
-          className="nodrag absolute top-0 left-full z-50 ml-3 flex w-72 flex-col overflow-hidden rounded-xl border border-black/[0.06] bg-white/95 shadow-[0_18px_48px_-16px_rgba(15,23,42,0.28)] backdrop-blur-xl"
+          className="nodrag absolute top-0 left-full z-50 ml-3 flex w-72 flex-col overflow-hidden rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-elevated)]/95 text-[color:var(--text)] shadow-[0_18px_48px_-16px_rgba(15,23,42,0.40)] backdrop-blur-xl"
         >
-          <div className="flex items-center justify-between border-b border-black/[0.05] px-3.5 py-2.5">
-            <div className="flex items-center gap-2 text-[11px] font-semibold tracking-tight text-neutral-700">
-              <MessageSquare className="h-3 w-3 text-neutral-400" strokeWidth={2} />
+          <div className="flex items-center justify-between border-b border-[color:var(--border)] px-3.5 py-2.5">
+            <div className="flex items-center gap-2 text-[11px] font-semibold tracking-tight text-[color:var(--text-strong)]">
+              <MessageSquare className="h-3 w-3 text-[color:var(--text-muted)]" strokeWidth={2} />
               {t.platform.canvas.node.commentsHeader}
               {hasComments && (
-                <span className="rounded-full bg-black/[0.05] px-1.5 py-px text-[9px] font-semibold text-neutral-500">
+                <span className="rounded-full bg-[color:var(--surface-overlay)] px-1.5 py-px text-[9px] font-semibold text-[color:var(--text-muted)]">
                   {comments.length}
                 </span>
               )}
@@ -218,7 +218,7 @@ export const CanvasNode = ({ id, data, selected }: NodeProps<TCanvasNode>) => {
             <button
               type="button"
               onClick={() => setOpenCommentsNodeId(null)}
-              className="flex h-5 w-5 items-center justify-center rounded-md text-neutral-400 transition-colors hover:bg-black/[0.05] hover:text-neutral-700"
+              className="flex h-5 w-5 items-center justify-center rounded-md text-[color:var(--text-muted)] transition-colors hover:bg-[color:var(--surface-overlay)] hover:text-[color:var(--text-strong)]"
               aria-label={t.platform.canvas.node.closeComments}
             >
               <X className="h-3 w-3" />
@@ -227,7 +227,9 @@ export const CanvasNode = ({ id, data, selected }: NodeProps<TCanvasNode>) => {
 
           <div className="flex max-h-56 flex-col gap-1.5 overflow-y-auto px-3 py-2.5">
             {comments.length === 0 ? (
-              <p className="py-3 text-center text-[11px] text-neutral-400">{t.platform.canvas.node.noComments}</p>
+              <p className="py-3 text-center text-[11px] text-[color:var(--text-muted)]">
+                {t.platform.canvas.node.noComments}
+              </p>
             ) : (
               comments.map((comment) => (
                 <CommentItem
@@ -242,18 +244,18 @@ export const CanvasNode = ({ id, data, selected }: NodeProps<TCanvasNode>) => {
 
           <form
             onSubmit={handleCommentSubmit}
-            className="flex items-center gap-2 border-t border-black/[0.05] px-2.5 py-2"
+            className="flex items-center gap-2 border-t border-[color:var(--border)] px-2.5 py-2"
           >
             <input
               value={commentText}
               onChange={(event) => setCommentText(event.target.value)}
               placeholder={t.platform.canvas.node.addCommentPlaceholder}
-              className="min-w-0 flex-1 bg-transparent px-1 text-[12px] text-neutral-800 outline-none placeholder:text-neutral-400"
+              className="min-w-0 flex-1 bg-transparent px-1 text-[12px] text-[color:var(--text-strong)] outline-none placeholder:text-[color:var(--text-muted)]"
             />
             <button
               type="submit"
               disabled={!commentText.trim()}
-              className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-emerald-500 text-white transition-[opacity,transform] duration-150 hover:scale-105 active:scale-95 disabled:opacity-30"
+              className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-[color:var(--accent)] text-[color:var(--on-accent)] transition-[opacity,transform] duration-150 hover:scale-105 active:scale-95 disabled:opacity-30"
               aria-label={t.platform.canvas.node.sendComment}
             >
               <Send className="h-3 w-3" strokeWidth={2.25} />

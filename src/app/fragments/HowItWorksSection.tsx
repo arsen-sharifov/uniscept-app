@@ -1,7 +1,7 @@
-import clsx from 'clsx';
-import { Section } from './components';
+import { clsx } from 'clsx';
 import { STEPS } from '@/lib/constants/content';
-import { useTranslations } from '@/lib/hooks';
+import { useTranslations } from '@hooks';
+import { Section } from './components';
 
 export const HowItWorksSection = () => {
   const t = useTranslations();

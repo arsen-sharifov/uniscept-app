@@ -23,9 +23,17 @@ export const middleware = async (request: NextRequest) => {
   const code = request.nextUrl.searchParams.get('code');
 
   if (code) {
-    await supabase.auth.exchangeCodeForSession(code);
-
+    const { error } = await supabase.auth.exchangeCodeForSession(code);
     const url = request.nextUrl.clone();
+
+    if (error) {
+      url.pathname = '/login';
+      url.search = '';
+      url.searchParams.set('error', 'invalid_code');
+
+      return NextResponse.redirect(url);
+    }
+
     url.pathname = '/auth/confirmed';
     url.searchParams.delete('code');
 

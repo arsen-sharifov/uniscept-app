@@ -1,6 +1,6 @@
-import { Section } from './components';
-import { useTranslations } from '@/lib/hooks';
 import { Zap, Lightbulb, Braces } from 'lucide-react';
+import { useTranslations } from '@hooks';
+import { Section } from './components';
 
 export const BuildersSection = () => {
   const t = useTranslations();

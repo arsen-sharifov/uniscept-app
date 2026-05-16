@@ -101,7 +101,7 @@ export const Toolbar = ({ groups = [], activeTool, onToolClick }: IToolbarProps)
       <aside
         aria-label={t.platform.canvas.tools.ariaLabel}
         onMouseLeave={hideHover}
-        className="fixed top-4 right-4 z-40 flex h-[calc(100vh-2rem)] w-14 flex-col items-stretch rounded-2xl border border-black/[0.06] bg-white/85 shadow-[0_8px_32px_-8px_rgba(0,0,0,0.12)] backdrop-blur-2xl select-none"
+        className="fixed top-4 right-4 z-40 flex h-[calc(100vh-2rem)] w-14 flex-col items-stretch rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)]/85 shadow-[0_8px_32px_-8px_rgba(0,0,0,0.18)] backdrop-blur-2xl transition-[background-color,border-color] duration-300 ease-out select-none"
       >
         <div className="flex flex-1 flex-col items-stretch px-1.5 pt-3">
           {groups.map((group, index) => (
@@ -111,7 +111,7 @@ export const Toolbar = ({ groups = [], activeTool, onToolClick }: IToolbarProps)
               aria-label={group.label}
               className={clsx(
                 'flex flex-col items-stretch gap-0.5 py-1.5',
-                index > 0 && 'border-t border-black/[0.06]'
+                index > 0 && 'border-t border-[color:var(--border)]'
               )}
             >
               {group.tools.map((tool) => (
@@ -128,7 +128,7 @@ export const Toolbar = ({ groups = [], activeTool, onToolClick }: IToolbarProps)
           ))}
         </div>
 
-        <div className="flex justify-center border-t border-black/[0.06] px-1.5 py-2">
+        <div className="flex justify-center border-t border-[color:var(--border)] px-1.5 py-2">
           <button
             ref={helpButtonRef}
             type="button"
@@ -138,7 +138,7 @@ export const Toolbar = ({ groups = [], activeTool, onToolClick }: IToolbarProps)
             onFocus={handleHelpEnter}
             onBlur={hideHover}
             aria-label={t.platform.canvas.shortcuts.ariaLabel}
-            className="flex h-9 w-9 items-center justify-center rounded-[10px] text-black/40 transition-[background,color,transform] duration-150 ease-out outline-none hover:bg-black/[0.05] hover:text-black/70 focus-visible:ring-2 focus-visible:ring-emerald-500/45 active:scale-[0.94] motion-reduce:transition-none"
+            className="flex h-9 w-9 items-center justify-center rounded-[10px] text-[color:var(--text-muted)] transition-[background,color,transform] duration-150 ease-out outline-none hover:bg-[color:var(--surface-overlay)] hover:text-[color:var(--text-strong)] focus-visible:ring-2 focus-visible:ring-[color:var(--ring-focus)] active:scale-[0.94] motion-reduce:transition-none"
           >
             <HelpCircle className="h-[15px] w-[15px]" strokeWidth={1.85} />
           </button>

@@ -1,9 +1,11 @@
 'use client';
 
-import { type FormEvent, type KeyboardEvent, useEffect, useRef, useState } from 'react';
 import { MessageCircle, Send, X } from 'lucide-react';
+import { type FormEvent, type KeyboardEvent, useEffect, useRef, useState } from 'react';
+
 import { useTranslations } from '@hooks';
 import { useCanvasStore } from '@/lib/stores';
+
 import { INPUT_FOCUS_DELAY_MS } from '../consts';
 import { isOwnComment } from '../utils';
 import { CommentItem } from './CommentItem';
@@ -58,7 +60,7 @@ export const CanvasCommentsPanel = ({ open, onClose }: ICanvasCommentsPanelProps
     <div
       role="dialog"
       aria-label={t.platform.canvas.comments.panelTitle}
-      className="animate-rise-down absolute top-4 left-4 z-30 flex w-72 flex-col overflow-hidden rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-elevated)]/95 text-[color:var(--text)] shadow-[0_18px_48px_-16px_rgba(15,23,42,0.40)] backdrop-blur-xl motion-reduce:animate-none"
+      className="absolute top-4 left-4 z-30 flex w-72 animate-rise-down flex-col overflow-hidden rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-elevated)]/95 text-[color:var(--text)] shadow-[0_18px_48px_-16px_rgba(15,23,42,0.40)] backdrop-blur-xl motion-reduce:animate-none"
     >
       <div className="flex items-center justify-between border-b border-[color:var(--border)] px-3.5 py-2.5">
         <div className="flex items-center gap-2 text-[11px] font-semibold tracking-tight text-[color:var(--text-strong)]">

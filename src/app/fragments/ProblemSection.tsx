@@ -1,6 +1,8 @@
 import { clsx } from 'clsx';
-import { PROBLEM_CARDS } from '@/lib/constants/content';
+
+import { PROBLEM_CARDS } from '@constants';
 import { useTranslations } from '@hooks';
+
 import { Section } from './components';
 
 export const ProblemSection = () => {
@@ -10,13 +12,13 @@ export const ProblemSection = () => {
   return (
     <Section id="problem">
       <div className="mx-auto max-w-7xl">
-        <div data-reveal className="scroll-reveal mb-20 text-center">
+        <div data-reveal className="mb-20 scroll-reveal text-center">
           <h2 className="mb-6 text-5xl font-black tracking-tight text-black sm:text-6xl">{t.landing.problem.title}</h2>
           <p className="text-xl text-black/60">{t.landing.problem.subtitle}</p>
         </div>
 
-        <div data-reveal className="scroll-reveal grid gap-5 md:grid-cols-6 md:grid-rows-3">
-          <div className="card-3d group relative overflow-hidden rounded-2xl border border-black/5 bg-gradient-to-br from-white to-gray-50/50 p-8 shadow-xl transition-all duration-300 ease-in-out hover:border-emerald-500/30 hover:shadow-2xl md:col-span-4 md:row-span-2">
+        <div data-reveal className="grid scroll-reveal gap-5 md:grid-cols-6 md:grid-rows-3">
+          <div className="group relative card-3d overflow-hidden rounded-2xl border border-black/5 bg-gradient-to-br from-white to-gray-50/50 p-8 shadow-xl transition-all duration-300 ease-in-out hover:border-emerald-500/30 hover:shadow-2xl md:col-span-4 md:row-span-2">
             <div className="absolute top-0 right-0 h-64 w-64 rounded-full bg-gradient-to-br from-emerald-500/10 to-cyan-500/10 blur-3xl transition-all duration-500 ease-in-out group-hover:scale-150" />
             <div className="relative">
               <div className="mb-5 text-5xl">{chaos.emoji}</div>
@@ -30,7 +32,7 @@ export const ProblemSection = () => {
                       'rounded-full px-3 py-1.5 text-xs font-semibold',
                       tag.color === 'red' && 'bg-red-100 text-red-700',
                       tag.color === 'orange' && 'bg-orange-100 text-orange-700',
-                      tag.color === 'yellow' && 'bg-yellow-100 text-yellow-700'
+                      tag.color === 'yellow' && 'bg-yellow-100 text-yellow-700',
                     )}
                   >
                     {tag.label}
@@ -40,7 +42,7 @@ export const ProblemSection = () => {
             </div>
           </div>
 
-          <div className="card-3d group relative overflow-hidden rounded-2xl border border-black/5 bg-gradient-to-br from-white to-purple-50/30 p-7 shadow-xl transition-all duration-300 ease-in-out hover:border-purple-500/30 hover:shadow-2xl md:col-span-2 md:row-span-2">
+          <div className="group relative card-3d overflow-hidden rounded-2xl border border-black/5 bg-gradient-to-br from-white to-purple-50/30 p-7 shadow-xl transition-all duration-300 ease-in-out hover:border-purple-500/30 hover:shadow-2xl md:col-span-2 md:row-span-2">
             <div className="absolute right-0 bottom-0 h-48 w-48 rounded-full bg-gradient-to-br from-purple-500/10 to-pink-500/10 blur-3xl transition-all duration-500 ease-in-out group-hover:scale-150" />
             <div className="relative">
               <div className="mb-5 text-4xl">{mindmaps.emoji}</div>
@@ -56,7 +58,7 @@ export const ProblemSection = () => {
             </div>
           </div>
 
-          <div className="card-3d group relative overflow-hidden rounded-2xl border border-black/5 bg-gradient-to-br from-white to-blue-50/30 p-7 shadow-xl transition-all duration-300 ease-in-out hover:border-blue-500/30 hover:shadow-2xl md:col-span-3">
+          <div className="group relative card-3d overflow-hidden rounded-2xl border border-black/5 bg-gradient-to-br from-white to-blue-50/30 p-7 shadow-xl transition-all duration-300 ease-in-out hover:border-blue-500/30 hover:shadow-2xl md:col-span-3">
             <div className="absolute -top-10 -right-10 h-32 w-32 rounded-full bg-gradient-to-br from-blue-500/10 to-cyan-500/10 blur-2xl transition-all duration-500 ease-in-out group-hover:scale-150" />
             <div className="relative">
               <div className="mb-3 text-3xl">{docs.emoji}</div>
@@ -65,7 +67,7 @@ export const ProblemSection = () => {
             </div>
           </div>
 
-          <div className="card-3d group relative overflow-hidden rounded-2xl bg-gradient-to-br from-black to-gray-900 p-7 shadow-2xl transition-all duration-300 ease-in-out hover:scale-[1.02] md:col-span-3">
+          <div className="group relative card-3d overflow-hidden rounded-2xl bg-gradient-to-br from-black to-gray-900 p-7 shadow-2xl transition-all duration-300 ease-in-out hover:scale-[1.02] md:col-span-3">
             <div className="absolute top-0 -right-10 h-32 w-32 rounded-full bg-gradient-to-br from-emerald-500/30 to-cyan-500/30 blur-2xl" />
             <div className="relative">
               <div className="mb-3 text-3xl">{cost.emoji}</div>

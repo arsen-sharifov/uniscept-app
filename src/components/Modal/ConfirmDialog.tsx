@@ -1,6 +1,7 @@
 'use client';
 
 import { useId } from 'react';
+
 import { Modal } from './Modal';
 
 export interface IConfirmDialogProps {

@@ -1,6 +1,5 @@
 'use client';
 
-import { type MouseEvent as ReactMouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Background,
   ConnectionMode,
@@ -10,14 +9,17 @@ import {
   ReactFlow,
   useReactFlow,
 } from '@xyflow/react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { MessageCircle } from 'lucide-react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { type MouseEvent as ReactMouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
+
 import '@xyflow/react/dist/style.css';
 import './canvas.css';
 import { ECanvasNodeType, type IScreenPoint, type TCanvasContextMenu } from '@interfaces';
 import { useEscapeKey, useTranslations } from '@hooks';
-import { useCanvasStore } from '@/lib/stores';
 import { ECanvasTool } from '@/components/tools';
+import { useCanvasStore } from '@/lib/stores';
+
 import { CanvasEdge } from './CanvasEdge';
 import { CanvasNode } from './CanvasNode';
 import {
@@ -48,8 +50,6 @@ import {
   ZOOM_MAX,
   ZOOM_MIN,
 } from './consts';
-import { ReferenceNode } from './ReferenceNode';
-import { ReferenceSearchPanel } from '@/components';
 import { CanvasCommentsPanel, ContextMenu, SaveStatus } from './fragments';
 import {
   useCanvasPattern,
@@ -60,6 +60,8 @@ import {
   useReferenceSearch,
   useThemeToken,
 } from './hooks';
+import { ReferenceNode } from './ReferenceNode';
+import { ReferenceSearchPanel } from './ReferenceSearchPanel';
 import { computeEffectiveStatuses, resolveBidirectionalEdgeTone, resolveEdgeTone } from './utils';
 
 const NODE_TYPES = {
@@ -226,7 +228,7 @@ export const Canvas = ({ workspaceId, threadId }: ICanvasProps) => {
       setContextMenu(null);
       onPaneClick(event);
     },
-    [closeAllOverlays, onPaneClick]
+    [closeAllOverlays, onPaneClick],
   );
 
   const handlePaneContextMenu = useCallback(
@@ -247,7 +249,7 @@ export const Canvas = ({ workspaceId, threadId }: ICanvasProps) => {
         flowY: flow.y,
       });
     },
-    [closeAllOverlays, screenToFlowPosition]
+    [closeAllOverlays, screenToFlowPosition],
   );
 
   const handleNodeContextMenu: NodeMouseHandler = useCallback(
@@ -262,7 +264,7 @@ export const Canvas = ({ workspaceId, threadId }: ICanvasProps) => {
         nodeId: node.id,
       });
     },
-    [closeAllOverlays]
+    [closeAllOverlays],
   );
 
   const handleEdgeContextMenu: EdgeMouseHandler = useCallback(
@@ -277,7 +279,7 @@ export const Canvas = ({ workspaceId, threadId }: ICanvasProps) => {
         edgeId: edge.id,
       });
     },
-    [closeAllOverlays]
+    [closeAllOverlays],
   );
 
   return (
@@ -361,14 +363,14 @@ export const Canvas = ({ workspaceId, threadId }: ICanvasProps) => {
         <>
           <div
             aria-hidden
-            className="animate-ref-arrival-glow pointer-events-none absolute inset-0 z-30 motion-reduce:hidden"
+            className="pointer-events-none absolute inset-0 z-30 animate-ref-arrival-glow motion-reduce:hidden"
             style={{
               background: `radial-gradient(ellipse at center, ${accentGlow} 0%, transparent 70%)`,
             }}
           />
           <div
             aria-hidden
-            className="animate-ref-arrival-ring pointer-events-none absolute inset-0 z-30 motion-reduce:hidden"
+            className="pointer-events-none absolute inset-0 z-30 animate-ref-arrival-ring motion-reduce:hidden"
           />
         </>
       )}
@@ -402,7 +404,7 @@ export const Canvas = ({ workspaceId, threadId }: ICanvasProps) => {
           aria-hidden
           className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center motion-reduce:animate-none"
         >
-          <div className="animate-rise-up flex flex-col items-center gap-2 px-6 text-center motion-reduce:animate-none">
+          <div className="flex animate-rise-up flex-col items-center gap-2 px-6 text-center motion-reduce:animate-none">
             <span className="text-[12px] tracking-[0.18em] text-[color:var(--text-subtle)] uppercase">
               {t.platform.canvas.empty.title}
             </span>

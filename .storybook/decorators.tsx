@@ -1,7 +1,9 @@
-import { useEffect } from 'react';
 import type { Decorator } from '@storybook/nextjs-vite';
 import { ReactFlowProvider } from '@xyflow/react';
+import { useEffect } from 'react';
+
 import type { IMockCanvasState } from '@story-interfaces';
+
 import { mockCanvasStore, resetCanvasStore } from './utils';
 
 export const WithPad: Decorator = (Story) => (

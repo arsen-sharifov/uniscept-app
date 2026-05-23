@@ -1,5 +1,7 @@
 import type { IWorkspace, IWorkspaceRow } from '@interfaces';
+
 import { createClient } from '@/lib/supabase';
+
 import { getUser } from './user';
 import { toWorkspace } from './utils';
 

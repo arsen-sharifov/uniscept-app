@@ -1,8 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
+
 import { Logo } from '@/components';
+
+import { SIZES, THEMES } from './consts';
 import { ARG_CATEGORIES } from '../../consts';
 import { WithPad } from '../../decorators';
-import { SIZES, THEMES } from './consts';
 
 const meta: Meta<typeof Logo> = {
   title: 'Branding/Logo',

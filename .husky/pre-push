@@ -1,0 +1,9 @@
+branch=$(git symbolic-ref --short HEAD 2>/dev/null || echo "")
+
+if [ -n "$branch" ] && ! echo "$branch" | grep -qE '^(main|dev-[0-9]+)$'; then
+  echo "❌ Branch name '$branch' does not match the required format."
+  echo "   Allowed: 'main' or 'dev-<number>' (e.g., dev-19)."
+  exit 1
+fi
+
+pnpm validate

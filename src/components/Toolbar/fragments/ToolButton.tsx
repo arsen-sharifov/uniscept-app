@@ -1,8 +1,10 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
 import { clsx } from 'clsx';
+import { useCallback, useEffect, useRef, useState } from 'react';
+
 import type { IToolItem } from '@interfaces';
+
 import { FLASH_DURATION_MS } from '../consts';
 import { toAriaShortcut } from '../utils';
 
@@ -27,7 +29,7 @@ export const ToolButton = ({ tool, active, onClick, onPointerEnter, onPointerLea
         window.clearTimeout(flashTimerRef.current);
       }
     },
-    []
+    [],
   );
 
   const handleClick = useCallback(() => {
@@ -80,14 +82,14 @@ export const ToolButton = ({ tool, active, onClick, onPointerEnter, onPointerLea
               'active:scale-[0.94]',
             ],
           !tool.disabled && active && !isAction && 'bg-[color:var(--accent-soft)] text-[color:var(--accent-text)]',
-          flash && ['bg-[color:var(--accent-soft)] text-[color:var(--accent-text)]', 'scale-[1.08]']
+          flash && ['bg-[color:var(--accent-soft)] text-[color:var(--accent-text)]', 'scale-[1.08]'],
         )}
       >
         <span
           aria-hidden
           className={clsx(
             'pointer-events-none absolute top-1/2 -right-px z-10 h-5 w-[3px] -translate-y-1/2 rounded-l-full bg-gradient-to-b from-[color:var(--accent)] to-[color:var(--accent-2)] transition-opacity duration-200 ease-out motion-reduce:transition-none',
-            active && !isAction ? 'opacity-100' : 'opacity-0'
+            active && !isAction ? 'opacity-100' : 'opacity-0',
           )}
         />
         <Icon className="h-[17px] w-[17px]" strokeWidth={active && !isAction ? 2 : 1.85} />

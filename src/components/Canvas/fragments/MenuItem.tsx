@@ -1,7 +1,8 @@
 'use client';
 
-import type { ReactNode } from 'react';
 import { clsx } from 'clsx';
+import type { ReactNode } from 'react';
+
 import type { TMenuItemAccent } from '@interfaces';
 
 interface IMenuItemProps {
@@ -23,7 +24,7 @@ export const MenuItem = ({ icon, label, shortcut, onClick, accent = 'neutral' }:
       accent === 'emerald' && 'text-[color:var(--status-success)] hover:bg-[color:var(--status-success-soft)]',
       accent === 'red' && 'text-[color:var(--status-error)] hover:bg-[color:var(--status-error-soft)]',
       accent === 'cyan' && 'text-[color:var(--ref)] hover:bg-[color:var(--ref-soft)]',
-      accent === 'neutral' && 'text-[color:var(--text)] hover:bg-[color:var(--surface-overlay)]'
+      accent === 'neutral' && 'text-[color:var(--text)] hover:bg-[color:var(--surface-overlay)]',
     )}
   >
     <span className="flex h-3.5 w-3.5 shrink-0 items-center justify-center">{icon}</span>

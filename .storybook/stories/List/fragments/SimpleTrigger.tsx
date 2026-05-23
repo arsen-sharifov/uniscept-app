@@ -1,6 +1,6 @@
-import type { ReactNode } from 'react';
-import { ChevronRight } from 'lucide-react';
 import { clsx } from 'clsx';
+import { ChevronRight } from 'lucide-react';
+import type { ReactNode } from 'react';
 
 interface ISimpleTriggerOptions {
   onToggle?: (open: boolean) => void;
@@ -19,7 +19,7 @@ export const SimpleTrigger = (label: string, { onToggle }: ISimpleTriggerOptions
         'flex w-full items-center gap-2 rounded-md px-3 py-2 text-[13px] text-[color:var(--text)] transition-colors',
         open
           ? 'bg-[color:var(--surface-overlay)] text-[color:var(--text-strong)]'
-          : 'hover:bg-[color:var(--surface-overlay)] hover:text-[color:var(--text-strong)]'
+          : 'hover:bg-[color:var(--surface-overlay)] hover:text-[color:var(--text-strong)]',
       )}
     >
       <ChevronRight

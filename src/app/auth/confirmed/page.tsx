@@ -1,9 +1,10 @@
 'use client';
 
 import { CircleCheck } from 'lucide-react';
+
 import { LANDING_THEME } from '@constants';
-import { Logo } from '@/components';
 import { useTranslations } from '@hooks';
+import { Logo } from '@/components';
 
 const ConfirmedPage = () => {
   const { confirmed } = useTranslations().auth;

@@ -1,11 +1,12 @@
 'use client';
 
-import { type SubmitEvent, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { type SubmitEvent, useEffect, useState } from 'react';
+
 import { useTranslations } from '@hooks';
-import { createClient } from '@/lib/supabase/client';
 import { signIn } from '@api/client';
+import { createClient } from '@/lib/supabase/client';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -46,6 +47,7 @@ const LoginPage = () => {
     if (authError) {
       setError(authError.message);
       setLoading(false);
+
       return;
     }
 

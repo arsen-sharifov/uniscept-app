@@ -1,4 +1,5 @@
 import type { ICanvasEdgeRow, ICreateCanvasEdgeInput } from '@interfaces';
+
 import { createClient } from '@/lib/supabase';
 
 export const createCanvasEdge = async (input: ICreateCanvasEdgeInput): Promise<void> => {

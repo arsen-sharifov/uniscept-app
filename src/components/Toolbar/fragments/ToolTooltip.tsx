@@ -1,5 +1,7 @@
 import { clsx } from 'clsx';
+
 import type { IToolItem } from '@interfaces';
+
 import { renderShortcut } from '../utils';
 
 interface IToolTooltipProps {
@@ -15,7 +17,7 @@ export const ToolTooltip = ({ tool, top, visible }: IToolTooltipProps) => {
       aria-hidden={!visible}
       className={clsx(
         'pointer-events-none fixed right-[4.75rem] z-50 transition-[opacity,transform] duration-150 ease-out motion-reduce:transition-none',
-        visible ? 'translate-x-0 opacity-100' : 'translate-x-1 opacity-0'
+        visible ? 'translate-x-0 opacity-100' : 'translate-x-1 opacity-0',
       )}
       style={{ top }}
     >

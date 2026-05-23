@@ -1,7 +1,8 @@
 import { clsx } from 'clsx';
+
 import type { TTheme } from '@constants';
 import type { TPatternVariant } from '@story-interfaces';
-import { AtlasFrame, Cell, Copyable, Section, Table, TableRow, ThemedSurface } from '..';
+
 import {
   PATTERN_CAPTIONS,
   PATTERN_VARIANTS,
@@ -15,8 +16,9 @@ import {
   THEME_LIST,
 } from '../../consts';
 import { findActiveTheme } from '../../utils';
-import { PatternMiniStage } from './PatternMiniStage';
-import { PatternStage } from './PatternStage';
+import { AtlasFrame, Cell, Section, Table, TableRow, ThemedSurface } from '../layout';
+import { PatternMiniStage, PatternStage } from '../patterns';
+import { Copyable } from '../widgets';
 
 interface IPatternsAtlasProps {
   pattern: TPatternVariant;
@@ -68,12 +70,13 @@ export const PatternsAtlas = ({ pattern, activeTheme }: IPatternsAtlasProps) => 
           {PATTERN_VARIANTS.map((variant) => {
             const meta = PATTERN_CAPTIONS[variant];
             const isActive = variant === pattern;
+
             return (
               <div
                 key={variant}
                 className={clsx(
                   'overflow-hidden rounded-xl border bg-[color:var(--surface-elevated)] transition-colors',
-                  isActive ? 'border-[color:var(--accent)]' : 'border-[color:var(--border)]'
+                  isActive ? 'border-[color:var(--accent)]' : 'border-[color:var(--border)]',
                 )}
               >
                 <PatternMiniStage pattern={variant} />
@@ -134,7 +137,7 @@ export const PatternsAtlas = ({ pattern, activeTheme }: IPatternsAtlasProps) => 
                 <div
                   className={clsx(
                     'h-10 w-16 border border-[color:var(--border-strong)] bg-[color:var(--accent-soft)]',
-                    radius.className
+                    radius.className,
                   )}
                 />
               </Cell>

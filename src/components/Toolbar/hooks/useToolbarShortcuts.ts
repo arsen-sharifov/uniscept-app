@@ -1,7 +1,9 @@
 'use client';
 
 import { useEffect } from 'react';
+
 import { useCanvasStore } from '@/lib/stores';
+
 import { TOOL_KEY_MAP } from '../consts';
 import { isToolDisabled, isTypingTarget } from '../utils';
 
@@ -20,10 +22,12 @@ export const useToolbarShortcuts = (): void => {
 
         if (event.shiftKey) {
           if (temporal.futureStates.length > 0) store.redo();
+
           return;
         }
 
         if (temporal.pastStates.length > 0) store.undo();
+
         return;
       }
 

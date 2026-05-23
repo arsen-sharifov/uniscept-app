@@ -1,5 +1,7 @@
 import { useState } from 'react';
+
 import type { IWorkspaceItem, TNavItem } from '@interfaces';
+
 import {
   type ISidebarProps,
   Sidebar,
@@ -71,6 +73,7 @@ export const SidebarWithState = (args: ISidebarProps) => {
       if (activeWorkspaceId && ids.has(activeWorkspaceId)) {
         setActiveWorkspaceId(remaining[0]?.id);
       }
+
       return remaining;
     });
   };
@@ -80,6 +83,7 @@ export const SidebarWithState = (args: ISidebarProps) => {
     setItems((prev) => {
       const toMove = [...ids].map((id) => findInTree(prev, id)).filter((item): item is TNavItem => item !== null);
       const removed = [...ids].reduce((acc, id) => removeFromTree(acc, id), prev);
+
       return toMove.reduce((acc, item, index) => insertIntoTree(acc, item, parentId, position + index), removed);
     });
   };
@@ -90,6 +94,7 @@ export const SidebarWithState = (args: ISidebarProps) => {
       const item = findInTree(prev, id);
       if (!item) return prev;
       const without = removeFromTree(prev, id);
+
       return insertIntoTree(without, item, parentId, position);
     });
   };
@@ -114,6 +119,7 @@ export const SidebarWithState = (args: ISidebarProps) => {
       if (id === activeWorkspaceId && remaining.length > 0) {
         setActiveWorkspaceId(remaining[0].id);
       }
+
       return remaining;
     });
   };

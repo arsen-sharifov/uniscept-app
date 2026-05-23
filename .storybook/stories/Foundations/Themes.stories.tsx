@@ -1,5 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
+
 import type { TTheme } from '@constants';
+
 import { ThemesAtlas, TypographyOnTheme } from './fragments';
 
 const meta: Meta = {

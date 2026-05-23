@@ -1,9 +1,11 @@
 import type { Decorator, Meta, StoryObj } from '@storybook/nextjs-vite';
 import { fn } from 'storybook/test';
+
 import { Sidebar } from '@/components';
-import { ARG_CATEGORIES } from '../../consts';
+
 import { deepTree, defaultWorkspaceId, flatThreads, fullTree, manyItems, workspaces } from './consts';
 import { SidebarWithState } from './fragments';
+import { ARG_CATEGORIES } from '../../consts';
 
 const WithFullscreen: Decorator = (Story) => (
   <div className="relative h-screen w-screen bg-[color:var(--app-bg)]">

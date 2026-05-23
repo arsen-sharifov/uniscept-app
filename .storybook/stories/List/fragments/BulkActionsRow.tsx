@@ -1,6 +1,8 @@
-import { ChevronRight, MoreHorizontal } from 'lucide-react';
 import { clsx } from 'clsx';
+import { ChevronRight, MoreHorizontal } from 'lucide-react';
+
 import { List } from '@/components';
+
 import { ContentExample } from './ContentExample';
 
 interface IBulkActionsRowProps {
@@ -17,7 +19,7 @@ export const BulkActionsRow = ({ label, onSelect, onMenu }: IBulkActionsRowProps
           'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-[13px] text-[color:var(--text)] transition-colors',
           open
             ? 'bg-[color:var(--surface-overlay)] text-[color:var(--text-strong)]'
-            : 'hover:bg-[color:var(--surface-overlay)] hover:text-[color:var(--text-strong)]'
+            : 'hover:bg-[color:var(--surface-overlay)] hover:text-[color:var(--text-strong)]',
         )}
       >
         <input

@@ -1,7 +1,9 @@
 import type { Decorator, Meta, StoryObj } from '@storybook/nextjs-vite';
+
 import { Stepper } from '@/components';
-import { ARG_CATEGORIES } from '../../consts';
+
 import { StepperWithState } from './fragments';
+import { ARG_CATEGORIES } from '../../consts';
 
 const WithStage: Decorator = (Story) => (
   <div className="flex min-h-screen w-full items-center justify-center px-8 py-16">

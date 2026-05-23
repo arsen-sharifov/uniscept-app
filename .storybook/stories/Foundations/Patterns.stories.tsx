@@ -1,10 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
+
 import type { TTheme } from '@constants';
 import type { TPatternVariant } from '@story-interfaces';
+
 import '@xyflow/react/dist/style.css';
-import { ARG_CATEGORIES } from '../../consts';
 import { PATTERN_VARIANTS } from './consts';
 import { PatternsAtlas } from './fragments';
+import { ARG_CATEGORIES } from '../../consts';
 
 interface IPatternsStoryArgs {
   pattern: TPatternVariant;

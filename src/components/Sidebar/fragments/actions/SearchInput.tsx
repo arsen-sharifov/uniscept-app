@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
 import { Search, X } from 'lucide-react';
+import { useEffect, useRef } from 'react';
 
 interface ISearchInputProps {
   value: string;
@@ -24,6 +24,7 @@ export const SearchInput = ({ value, onChange, placeholder }: ISearchInputProps)
       }
     };
     window.addEventListener('keydown', handler);
+
     return () => window.removeEventListener('keydown', handler);
   }, []);
 

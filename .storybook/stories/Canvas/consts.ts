@@ -1,4 +1,5 @@
 import type { ICanvasFixture } from '@story-interfaces';
+
 import { buildDenseCanvas, createCanvasEdge, createCanvasNode, createComment } from '../../utils';
 
 export const emptyCanvas: ICanvasFixture = { nodes: [], edges: [] };

@@ -1,5 +1,6 @@
 import { useArgs } from 'storybook/preview-api';
 import { fn } from 'storybook/test';
+
 import { Stepper } from '@/components';
 
 export const StepperWithState = () => {

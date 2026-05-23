@@ -2,6 +2,7 @@
 
 import { LANDING_THEME } from '@constants';
 import { useScrollReveal } from '@hooks';
+
 import {
   Hero,
   ProblemSection,

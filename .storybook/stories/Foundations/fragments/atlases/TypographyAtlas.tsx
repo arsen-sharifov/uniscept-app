@@ -1,13 +1,13 @@
 'use client';
 
-import { useState } from 'react';
 import { clsx } from 'clsx';
-import { AtlasFrame, Cell, Copyable, FilterInput, Section, Table, TableRow } from '..';
+import { useState } from 'react';
+
 import { TYPE_SCALE, TYPOGRAPHY_SECTIONS, TYPOGRAPHY_TABLE_COLUMNS } from '../../consts';
 import { useFiltered } from '../../hooks';
-import { DecorationCard } from './DecorationCard';
-import { FamilyChip } from './FamilyChip';
-import { VoiceCard } from './VoiceCard';
+import { DecorationCard, FamilyChip, VoiceCard } from '../cards';
+import { AtlasFrame, Cell, Section, Table, TableRow } from '../layout';
+import { Copyable, FilterInput } from '../widgets';
 
 export const TypographyAtlas = () => {
   const [query, setQuery] = useState('');

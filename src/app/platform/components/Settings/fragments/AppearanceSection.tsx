@@ -1,12 +1,14 @@
 'use client';
 
-import { useState, useTransition } from 'react';
-import { useRouter } from 'next/navigation';
-import { Check, Loader2 } from 'lucide-react';
 import { clsx } from 'clsx';
+import { Check, Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useState, useTransition } from 'react';
+
 import type { IPreferences, TCanvasPattern, TLocale, TPreferenceUpdater, TTheme } from '@interfaces';
 import { useTranslations } from '@hooks';
 import { LOCALES, setLocale } from '@/i18n';
+
 import { CANVAS_PATTERNS, THEME_SWATCH_BADGE, THEMES } from '../consts';
 
 const resolveLocaleStatus = (pending: boolean, errored: boolean, saving: string, failed: string): string => {
@@ -77,7 +79,7 @@ export const AppearanceSection = ({ preferences, onUpdate }: IAppearanceSectionP
           <span
             className={clsx(
               'flex h-5 w-5 items-center justify-center text-[color:var(--accent)] transition-opacity duration-150',
-              pending ? 'opacity-100 delay-150' : 'opacity-0'
+              pending ? 'opacity-100 delay-150' : 'opacity-0',
             )}
             aria-hidden
           >
@@ -107,7 +109,7 @@ export const AppearanceSection = ({ preferences, onUpdate }: IAppearanceSectionP
                   'disabled:cursor-wait disabled:hover:translate-y-0',
                   isActive
                     ? 'border-[color:var(--border-active)] bg-[color:var(--accent-soft)]'
-                    : 'border-[color:var(--border)] bg-[color:var(--surface-elevated)] hover:border-[color:var(--border-strong)] hover:bg-[color:var(--surface-overlay)]'
+                    : 'border-[color:var(--border)] bg-[color:var(--surface-elevated)] hover:border-[color:var(--border-strong)] hover:bg-[color:var(--surface-overlay)]',
                 )}
               >
                 <span
@@ -116,7 +118,7 @@ export const AppearanceSection = ({ preferences, onUpdate }: IAppearanceSectionP
                     'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg font-mono text-[10.5px] font-semibold tracking-[0.06em] transition-colors',
                     isActive
                       ? 'bg-[color:var(--accent-soft)] text-[color:var(--accent-text)]'
-                      : 'bg-[color:var(--surface-overlay)] text-[color:var(--text-muted)]'
+                      : 'bg-[color:var(--surface-overlay)] text-[color:var(--text-muted)]',
                   )}
                 >
                   {value.toUpperCase()}
@@ -125,7 +127,7 @@ export const AppearanceSection = ({ preferences, onUpdate }: IAppearanceSectionP
                 <span
                   className={clsx(
                     'min-w-0 flex-1 truncate text-[13px] font-medium tracking-tight transition-colors',
-                    isActive ? 'text-[color:var(--accent-text)]' : 'text-[color:var(--text)]'
+                    isActive ? 'text-[color:var(--accent-text)]' : 'text-[color:var(--text)]',
                   )}
                 >
                   {appearance.languages[value]}
@@ -135,7 +137,7 @@ export const AppearanceSection = ({ preferences, onUpdate }: IAppearanceSectionP
                   aria-hidden={!isActive}
                   className={clsx(
                     'flex h-4 w-4 shrink-0 items-center justify-center text-[color:var(--accent)] transition-[opacity,transform] duration-300 ease-out',
-                    isActive ? 'scale-100 opacity-100' : 'scale-50 opacity-0'
+                    isActive ? 'scale-100 opacity-100' : 'scale-50 opacity-0',
                   )}
                 >
                   <Check className="h-3.5 w-3.5" strokeWidth={2.5} />
@@ -182,7 +184,7 @@ export const AppearanceSection = ({ preferences, onUpdate }: IAppearanceSectionP
                     'border-[color:var(--border-strong)] hover:border-[color:var(--text-subtle)] hover:shadow-[var(--shadow-card-hover)]',
                   !isActive &&
                     !isAuto &&
-                    'border-[color:var(--border)] hover:border-[color:var(--border-strong)] hover:shadow-[var(--shadow-card-hover)]'
+                    'border-[color:var(--border)] hover:border-[color:var(--border-strong)] hover:shadow-[var(--shadow-card-hover)]',
                 )}
               >
                 <div data-theme={value} aria-hidden className="theme-swatch w-full">
@@ -213,7 +215,7 @@ export const AppearanceSection = ({ preferences, onUpdate }: IAppearanceSectionP
                       aria-hidden={!isActive}
                       className={clsx(
                         'flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[color:var(--accent)] text-[color:var(--on-accent)] transition-[opacity,transform] duration-300 ease-out',
-                        isActive ? 'scale-100 opacity-100' : 'scale-50 opacity-0'
+                        isActive ? 'scale-100 opacity-100' : 'scale-50 opacity-0',
                       )}
                     >
                       <Check className="h-2.5 w-2.5" strokeWidth={3} />
@@ -231,7 +233,7 @@ export const AppearanceSection = ({ preferences, onUpdate }: IAppearanceSectionP
                     'pointer-events-none absolute inset-x-0 bottom-0 h-px transition-opacity duration-300',
                     isActive
                       ? 'bg-gradient-to-r from-transparent via-[color:var(--accent)] to-transparent opacity-90'
-                      : 'opacity-0'
+                      : 'opacity-0',
                   )}
                 />
               </button>
@@ -270,7 +272,7 @@ export const AppearanceSection = ({ preferences, onUpdate }: IAppearanceSectionP
                   'focus-visible:ring-2 focus-visible:ring-[color:var(--ring-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--surface)] focus-visible:outline-none',
                   isActive
                     ? 'border-[color:var(--border-active)] shadow-[0_18px_38px_-22px_var(--accent-glow)]'
-                    : 'border-[color:var(--border)] hover:border-[color:var(--border-strong)] hover:shadow-[var(--shadow-card-hover)]'
+                    : 'border-[color:var(--border)] hover:border-[color:var(--border-strong)] hover:shadow-[var(--shadow-card-hover)]',
                 )}
               >
                 <div data-pattern={value} aria-hidden className="pattern-swatch w-full">
@@ -290,7 +292,7 @@ export const AppearanceSection = ({ preferences, onUpdate }: IAppearanceSectionP
                       aria-hidden={!isActive}
                       className={clsx(
                         'flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[color:var(--accent)] text-[color:var(--on-accent)] transition-[opacity,transform] duration-300 ease-out',
-                        isActive ? 'scale-100 opacity-100' : 'scale-50 opacity-0'
+                        isActive ? 'scale-100 opacity-100' : 'scale-50 opacity-0',
                       )}
                     >
                       <Check className="h-2.5 w-2.5" strokeWidth={3} />
@@ -307,7 +309,7 @@ export const AppearanceSection = ({ preferences, onUpdate }: IAppearanceSectionP
                     'pointer-events-none absolute inset-x-0 bottom-0 h-px transition-opacity duration-300',
                     isActive
                       ? 'bg-gradient-to-r from-transparent via-[color:var(--accent)] to-transparent opacity-90'
-                      : 'opacity-0'
+                      : 'opacity-0',
                   )}
                 />
               </button>

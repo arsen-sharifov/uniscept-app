@@ -1,9 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
+
 import { SmartTooltip, Tooltip } from '@/components';
-import { ARG_CATEGORIES } from '../../consts';
-import { WithPad } from '../../decorators';
+
 import { SMART_PLACEMENTS } from './consts';
 import { TriggerExample } from './fragments';
+import { ARG_CATEGORIES } from '../../consts';
+import { WithPad } from '../../decorators';
 
 const meta: Meta<typeof Tooltip> = {
   title: 'Components/Tooltip',

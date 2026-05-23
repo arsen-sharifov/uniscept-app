@@ -1,5 +1,5 @@
-import type { ReactNode } from 'react';
 import { clsx } from 'clsx';
+import type { ReactNode } from 'react';
 
 interface ITableColumn {
   id: string;
@@ -30,7 +30,7 @@ export const Table = ({ columns, children }: ITableProps) => {
             key={col.id}
             className={clsx(
               'truncate font-mono text-[9.5px] font-semibold tracking-[0.22em] text-[color:var(--text-subtle)] uppercase',
-              col.align === 'right' && 'text-right'
+              col.align === 'right' && 'text-right',
             )}
           >
             {col.label}

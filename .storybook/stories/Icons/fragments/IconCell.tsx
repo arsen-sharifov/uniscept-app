@@ -1,5 +1,6 @@
+import { Check, Copy, type icons } from 'lucide-react';
 import { useState } from 'react';
-import { Check, Copy, icons } from 'lucide-react';
+
 import { COPY_FEEDBACK_DELAY_MS } from '../../../consts';
 
 interface IIconCellProps {

@@ -1,17 +1,19 @@
 'use client';
 
-import { type KeyboardEvent, type MouseEvent } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
-import { Check, LayoutGrid, Pencil, Trash2 } from 'lucide-react';
 import { clsx } from 'clsx';
+import { Check, LayoutGrid, Pencil, Trash2 } from 'lucide-react';
+import { type KeyboardEvent, type MouseEvent } from 'react';
+
 import type { IWorkspaceItem, TWorkspaceDropZone } from '@interfaces';
 import { useTranslations } from '@hooks';
-import { SmartTooltip } from '@/components';
-import { getDragTransformStyle } from '../../utils';
+import { SmartTooltip } from '@/components/Tooltip';
+
 import { DropLineIndicator } from './DropLineIndicator';
 import { GripActivator } from './GripActivator';
 import { InlineRenameInput } from './InlineRenameInput';
 import { ItemActionsToolbar } from './ItemActionsToolbar';
+import { getDragTransformStyle } from '../../utils';
 
 interface ISortableWorkspaceItemProps {
   workspace: IWorkspaceItem;
@@ -78,7 +80,7 @@ export const SortableWorkspaceItem = ({
               ? 'bg-[color:var(--accent-soft)] font-medium text-[color:var(--accent-text)]'
               : 'text-[color:var(--text)] group-hover/item:bg-[color:var(--surface-overlay)] group-hover/item:text-[color:var(--text-strong)]',
             isSelected && !isActive && '!bg-[color:var(--accent-soft)] !text-[color:var(--text-strong)]',
-            isSelected && 'ring-1 ring-[color:var(--border-active)] ring-inset'
+            isSelected && 'ring-1 ring-[color:var(--border-active)] ring-inset',
           )}
         >
           <span className="relative h-4 w-4 shrink-0">
@@ -86,7 +88,7 @@ export const SortableWorkspaceItem = ({
               className={clsx(
                 'absolute inset-0 h-4 w-4 transition-opacity duration-150',
                 isActive ? 'text-[color:var(--accent)]' : 'text-[color:var(--text-subtle)]',
-                !isEditing && 'group-hover/item:opacity-0'
+                !isEditing && 'group-hover/item:opacity-0',
               )}
             />
             {!isEditing && (

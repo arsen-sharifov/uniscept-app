@@ -1,11 +1,14 @@
 'use client';
 
 import { useState } from 'react';
+
 import type { TTheme } from '@constants';
-import { AtlasFrame, FilterInput } from '..';
+
 import { COLOR_GROUPS } from '../../consts';
 import { findActiveTheme } from '../../utils';
-import { ColorsGroup } from './ColorsGroup';
+import { ColorsGroup } from '../cards';
+import { AtlasFrame } from '../layout';
+import { FilterInput } from '../widgets';
 
 interface IColorsAtlasProps {
   activeTheme: TTheme;

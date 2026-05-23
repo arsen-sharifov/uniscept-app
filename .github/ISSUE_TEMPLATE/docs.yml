@@ -1,0 +1,18 @@
+name: Docs
+description: Documentation only (README, conventions, code docs)
+title: 'docs: '
+labels: [docs]
+body:
+  - type: textarea
+    id: scope
+    attributes:
+      label: What to document
+    validations:
+      required: true
+
+  - type: input
+    id: target
+    attributes:
+      label: Target
+      description: Optional
+      placeholder: README / docs/ / inline / etc.

@@ -1,6 +1,7 @@
 'use client';
 
 import { FileText, Folder } from 'lucide-react';
+
 import type { IFlattenedItem } from '@interfaces';
 
 interface IDragOverlayContentProps {

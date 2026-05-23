@@ -1,5 +1,7 @@
 import type { IThread, IThreadRow } from '@interfaces';
+
 import { createClient } from '@/lib/supabase';
+
 import { toThread } from './utils';
 
 export const getThreads = async (workspaceId: string): Promise<IThread[]> => {

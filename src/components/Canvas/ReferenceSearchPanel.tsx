@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect, useRef, useMemo, useCallback, useId } from 'react';
 import { useReactFlow, type XYPosition } from '@xyflow/react';
-import { useTranslations } from 'next-intl';
 import { clsx } from 'clsx';
 import { Link2, Search, SearchX } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useState, useEffect, useRef, useMemo, useCallback, useId } from 'react';
+
 import type { INodeReference, IReferenceNodeData, IScreenPoint } from '@interfaces';
 import { useClickOutside, useEscapeKey, useFocusTrap } from '@hooks';
 import { useCanvasStore } from '@/lib/stores';
@@ -43,7 +44,7 @@ const ReferenceSearchPanelContent = ({
       (node) =>
         node.label.toLowerCase().includes(term) ||
         node.threadName.toLowerCase().includes(term) ||
-        node.workspaceName.toLowerCase().includes(term)
+        node.workspaceName.toLowerCase().includes(term),
     );
   }, [nodes, query]);
 
@@ -61,7 +62,7 @@ const ReferenceSearchPanelContent = ({
         sourceWorkspaceName: node.workspaceName,
       });
     },
-    [onSelect, position]
+    [onSelect, position],
   );
 
   useEscapeKey(onClose);
@@ -73,11 +74,13 @@ const ReferenceSearchPanelContent = ({
       if (event.key === 'ArrowDown') {
         event.preventDefault();
         setRawCursorIndex((prev) => (filtered.length === 0 ? 0 : (prev + 1) % filtered.length));
+
         return;
       }
       if (event.key === 'ArrowUp') {
         event.preventDefault();
         setRawCursorIndex((prev) => (filtered.length === 0 ? 0 : (prev - 1 + filtered.length) % filtered.length));
+
         return;
       }
       if (event.key === 'Enter') {
@@ -101,7 +104,7 @@ const ReferenceSearchPanelContent = ({
       aria-modal="true"
       aria-label={t('placeholder')}
       style={{ left: screenPos.x, top: screenPos.y }}
-      className="animate-rise-up fixed z-50 flex w-80 flex-col overflow-hidden rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-elevated)]/95 text-[color:var(--text)] shadow-[0_24px_60px_-20px_rgba(15,23,42,0.42)] backdrop-blur-2xl motion-reduce:animate-none"
+      className="fixed z-50 flex w-80 animate-rise-up flex-col overflow-hidden rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-elevated)]/95 text-[color:var(--text)] shadow-[0_24px_60px_-20px_rgba(15,23,42,0.42)] backdrop-blur-2xl motion-reduce:animate-none"
     >
       <div className="flex items-center gap-2 border-b border-[color:var(--border)] px-3 py-2.5">
         <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-[color:var(--accent-soft)] text-[color:var(--accent-text)]">
@@ -148,7 +151,7 @@ const ReferenceSearchPanelContent = ({
                   onClick={() => handleSelect(node)}
                   className={clsx(
                     'group/item relative flex w-full flex-col items-stretch rounded-lg px-3 py-2 text-left transition-colors',
-                    index === cursorIndex ? 'bg-[color:var(--accent-soft)]' : 'hover:bg-[color:var(--surface-overlay)]'
+                    index === cursorIndex ? 'bg-[color:var(--accent-soft)]' : 'hover:bg-[color:var(--surface-overlay)]',
                   )}
                 >
                   <span className="truncate text-[12.5px] font-medium tracking-tight text-[color:var(--text-strong)]">

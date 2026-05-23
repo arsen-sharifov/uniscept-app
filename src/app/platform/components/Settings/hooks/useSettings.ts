@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import type { User } from '@supabase/supabase-js';
+import { useEffect, useState } from 'react';
+
 import { deleteAccount, getUser, updateUserMetadata, updateEmail, updatePassword } from '@api/client';
 
 export const useSettings = () => {

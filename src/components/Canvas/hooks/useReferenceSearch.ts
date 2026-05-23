@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { searchReferenceTargets } from '@api/client';
+
 import type { INodeReference } from '@interfaces';
+import { searchReferenceTargets } from '@api/client';
 import { useCanvasStore } from '@/lib/stores';
 
 interface IUseReferenceSearchInput {

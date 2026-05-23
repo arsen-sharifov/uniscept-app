@@ -2,10 +2,12 @@
 
 import { useCallback, useMemo } from 'react';
 import { useStore } from 'zustand';
+
 import type { IToolGroup } from '@interfaces';
 import { useTranslations } from '@hooks';
 import { ECanvasTool, buildCanvasToolGroups, isCanvasTool } from '@/components/tools';
 import { useCanvasStore } from '@/lib/stores';
+
 import { isToolDisabled } from '../utils';
 
 interface IUseToolbarResult {
@@ -36,7 +38,7 @@ export const useToolbar = (): IUseToolbarResult => {
           disabled: isToolDisabled(tool.id, { canUndo, canRedo }),
         })),
       })),
-    [baseGroups, canUndo, canRedo]
+    [baseGroups, canUndo, canRedo],
   );
 
   const handleToolClick = useCallback((id: string) => {
@@ -44,10 +46,12 @@ export const useToolbar = (): IUseToolbarResult => {
 
     if (id === ECanvasTool.Undo) {
       store.undo();
+
       return;
     }
     if (id === ECanvasTool.Redo) {
       store.redo();
+
       return;
     }
     if (!isCanvasTool(id)) return;

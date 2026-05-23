@@ -1,4 +1,5 @@
 import { Background, ReactFlow, ReactFlowProvider } from '@xyflow/react';
+
 import type { TPatternVariant } from '@story-interfaces';
 import {
   BACKGROUND_COLOR_FALLBACK,

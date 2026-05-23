@@ -1,8 +1,8 @@
 'use client';
 
-import { cloneElement, isValidElement, useId, type ReactElement, type ReactNode } from 'react';
-import { Info } from 'lucide-react';
 import { clsx } from 'clsx';
+import { Info } from 'lucide-react';
+import { cloneElement, isValidElement, useId, type ReactElement, type ReactNode } from 'react';
 
 export interface ITooltipProps {
   text: string;
@@ -28,14 +28,14 @@ export const Tooltip = ({ text, children, position = 'top' }: ITooltipProps) => 
         id={tooltipId}
         className={clsx(
           'pointer-events-none absolute left-1/2 -translate-x-1/2 rounded-lg bg-[color:var(--text-strong)] px-3 py-2 text-xs text-[color:var(--surface)] opacity-0 shadow-lg transition-opacity duration-200 group-focus-within:opacity-100 group-hover:opacity-100',
-          isTop ? 'bottom-full mb-1.5' : 'top-full mt-1.5'
+          isTop ? 'bottom-full mb-1.5' : 'top-full mt-1.5',
         )}
       >
         <div className="max-w-48">{text}</div>
         <div
           className={clsx(
             'absolute left-1/2 -translate-x-1/2 border-4 border-transparent',
-            isTop ? 'top-full border-t-[color:var(--text-strong)]' : 'bottom-full border-b-[color:var(--text-strong)]'
+            isTop ? 'top-full border-t-[color:var(--text-strong)]' : 'bottom-full border-b-[color:var(--text-strong)]',
           )}
         />
       </div>

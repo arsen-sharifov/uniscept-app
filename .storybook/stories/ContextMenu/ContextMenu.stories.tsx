@@ -1,8 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
+
 import { ContextMenu } from '@/components';
+
+import { ctxCanvasNode, ctxReferenceNode, edgeMenu, nodeMenu, paneMenu, referenceMenu } from './consts';
 import { ARG_CATEGORIES } from '../../consts';
 import { WithCanvasStage, withCanvasStore } from '../../decorators';
-import { ctxCanvasNode, ctxReferenceNode, edgeMenu, nodeMenu, paneMenu, referenceMenu } from './consts';
 
 const noop = () => {};
 

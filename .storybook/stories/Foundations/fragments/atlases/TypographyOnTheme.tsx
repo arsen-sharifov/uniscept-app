@@ -1,8 +1,10 @@
 import { clsx } from 'clsx';
+
 import type { TTheme } from '@constants';
-import { AtlasFrame, Section, ThemedSurface } from '..';
+
 import { THEME_LIST, TYPE_SCALE } from '../../consts';
 import { findActiveTheme } from '../../utils';
+import { AtlasFrame, Section, ThemedSurface } from '../layout';
 
 interface ITypographyOnThemeProps {
   activeTheme: TTheme;
@@ -10,7 +12,7 @@ interface ITypographyOnThemeProps {
 
 export const TypographyOnTheme = ({ activeTheme }: ITypographyOnThemeProps) => {
   const samples = TYPE_SCALE.filter((row) =>
-    ['display/serif', 'h1/serif', 'body/sans', 'eyebrow/sans-mono'].includes(row.token)
+    ['display/serif', 'h1/serif', 'body/sans', 'eyebrow/sans-mono'].includes(row.token),
   );
 
   return (
@@ -44,7 +46,7 @@ export const TypographyOnTheme = ({ activeTheme }: ITypographyOnThemeProps) => {
                   <p
                     className={clsx(
                       sample.classes,
-                      sample.uppercase ? 'text-[color:var(--text-subtle)]' : 'text-[color:var(--text-strong)]'
+                      sample.uppercase ? 'text-[color:var(--text-subtle)]' : 'text-[color:var(--text-strong)]',
                     )}
                   >
                     {sample.sample}

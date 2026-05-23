@@ -1,6 +1,5 @@
 'use client';
 
-import { useCallback, useState, type KeyboardEvent, type MouseEvent } from 'react';
 import {
   DndContext,
   type DragEndEvent,
@@ -13,7 +12,10 @@ import {
   useSensors,
 } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { useCallback, useState, type KeyboardEvent, type MouseEvent } from 'react';
+
 import type { IWorkspaceItem, TWorkspaceDropZone } from '@interfaces';
+
 import { KEYBOARD_SENSOR_OPTIONS, POINTER_SENSOR_OPTIONS } from '../../consts';
 import { SortableWorkspaceItem } from '../dnd/SortableWorkspaceItem';
 
@@ -50,7 +52,7 @@ export const WorkspaceItems = ({
 }: IWorkspaceItemsProps) => {
   const sensors = useSensors(
     useSensor(PointerSensor, POINTER_SENSOR_OPTIONS),
-    useSensor(KeyboardSensor, KEYBOARD_SENSOR_OPTIONS)
+    useSensor(KeyboardSensor, KEYBOARD_SENSOR_OPTIONS),
   );
 
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -62,9 +64,10 @@ export const WorkspaceItems = ({
       const without = workspaces.filter((workspace) => workspace.id !== activeWorkspaceIdToMove);
       const overIdx = without.findIndex((workspace) => workspace.id === overWorkspaceId);
       if (overIdx === -1) return -1;
+
       return dropZone === 'before' ? overIdx : overIdx + 1;
     },
-    [workspaces]
+    [workspaces],
   );
 
   const handleDragStart = useCallback((event: DragStartEvent) => {
@@ -76,6 +79,7 @@ export const WorkspaceItems = ({
     const { over, activatorEvent, delta } = event;
     if (!over) {
       setOverId(null);
+
       return;
     }
     setOverId(over.id as string);
@@ -97,7 +101,7 @@ export const WorkspaceItems = ({
       if (finalIdx === oldIdx) return;
       onMove(active.id as string, finalIdx);
     },
-    [workspaces, zone, computeFinalIndex, onMove]
+    [workspaces, zone, computeFinalIndex, onMove],
   );
 
   const handleDragCancel = useCallback(() => {
@@ -110,6 +114,7 @@ export const WorkspaceItems = ({
     const finalIdx = computeFinalIndex(activeId, overId, zone);
     const oldIdx = workspaces.findIndex((workspace) => workspace.id === activeId);
     if (finalIdx === -1 || finalIdx === oldIdx) return null;
+
     return zone;
   };
 

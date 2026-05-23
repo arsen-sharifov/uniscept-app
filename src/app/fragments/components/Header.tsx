@@ -1,4 +1,5 @@
 import Link from 'next/link';
+
 import { useTranslations } from '@hooks';
 import { Logo } from '@/components';
 

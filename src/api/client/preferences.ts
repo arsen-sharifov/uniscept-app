@@ -1,4 +1,5 @@
 import type { IPreferences } from '@interfaces';
+
 import { createClient } from '@/lib/supabase';
 
 const COLUMN_BY_KEY: Record<keyof IPreferences, string> = {
@@ -24,7 +25,7 @@ export const getPreferences = async (): Promise<IPreferences | null> => {
   if (!data) return null;
 
   return Object.fromEntries(
-    Object.entries(data).map(([column, value]) => [KEY_BY_COLUMN[column], value])
+    Object.entries(data).map(([column, value]) => [KEY_BY_COLUMN[column], value]),
   ) as IPreferences;
 };
 
@@ -43,7 +44,7 @@ export const upsertPreferences = async (prefs: IPreferences): Promise<void> => {
     ...Object.fromEntries(
       Object.entries(prefs)
         .filter(([key]) => isPreferenceKey(key))
-        .map(([key, value]) => [COLUMN_BY_KEY[key as keyof IPreferences], value])
+        .map(([key, value]) => [COLUMN_BY_KEY[key as keyof IPreferences], value]),
     ),
   });
 

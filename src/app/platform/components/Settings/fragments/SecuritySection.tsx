@@ -1,9 +1,11 @@
 'use client';
 
-import { useId, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useId, useState } from 'react';
+
 import { MIN_PASSWORD_LENGTH } from '@constants';
 import { useAsyncAction, useTranslations } from '@hooks';
+
 import { SettingsInput } from '../SettingsInput';
 import { SettingsPrimaryButton } from '../SettingsPrimaryButton';
 

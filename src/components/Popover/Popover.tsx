@@ -1,8 +1,9 @@
 'use client';
 
+import { clsx } from 'clsx';
 import { useCallback, useEffect, useLayoutEffect, useRef, type KeyboardEvent, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import { clsx } from 'clsx';
+
 import type { TPopoverPlacement } from '@interfaces';
 import { useEscapeKey, useMounted, useViewportChange } from '@hooks';
 
@@ -73,6 +74,7 @@ export const Popover = ({
       onOpenChange(false);
     };
     document.addEventListener('mousedown', onDocClick);
+
     return () => document.removeEventListener('mousedown', onDocClick);
   }, [open, onOpenChange]);
 
@@ -115,12 +117,12 @@ export const Popover = ({
             tabIndex={-1}
             className={clsx(
               'overflow-hidden rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-elevated)]/95 text-[color:var(--text)] shadow-2xl shadow-black/20 backdrop-blur-2xl outline-none',
-              panelClassName
+              panelClassName,
             )}
           >
             {children}
           </div>,
-          document.body
+          document.body,
         )}
     </>
   );

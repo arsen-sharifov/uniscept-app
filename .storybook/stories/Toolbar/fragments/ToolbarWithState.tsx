@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { useArgs } from 'storybook/preview-api';
+
 import type { IToolGroup } from '@interfaces';
 import { useTranslations } from '@hooks';
 import { type IToolbarProps, Toolbar, buildCanvasToolGroups } from '@/components';
@@ -18,6 +19,7 @@ export const ToolbarWithState = ({ buildGroups, mapGroups, ...args }: IToolbarWi
   const groups = useMemo(() => {
     if (buildGroups) return buildGroups(t);
     const base = args.groups ?? buildCanvasToolGroups(t.platform.canvas.tools);
+
     return mapGroups ? mapGroups(base) : base;
   }, [args.groups, buildGroups, mapGroups, t]);
 

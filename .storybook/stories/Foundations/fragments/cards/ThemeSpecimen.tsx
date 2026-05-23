@@ -1,9 +1,10 @@
 import { clsx } from 'clsx';
 import { ArrowUpRight, Check, MessageCircle, Sparkles } from 'lucide-react';
+
 import type { IThemeMeta } from '@story-interfaces';
-import { Copyable } from './Copyable';
-import { StatusPip } from './StatusPip';
-import { ThemedSurface } from './ThemedSurface';
+
+import { ThemedSurface } from '../layout';
+import { Copyable, StatusPip } from '../widgets';
 
 interface IThemeSpecimenProps {
   theme: IThemeMeta;
@@ -34,7 +35,7 @@ export const ThemeSpecimen = ({ theme, size }: IThemeSpecimenProps) => {
           <span
             className={clsx(
               'font-mono font-semibold tracking-[0.24em] text-[color:var(--text-subtle)] uppercase',
-              isHero ? 'text-[10.5px]' : 'text-[9.5px]'
+              isHero ? 'text-[10.5px]' : 'text-[9.5px]',
             )}
           >
             {theme.id}
@@ -42,7 +43,7 @@ export const ThemeSpecimen = ({ theme, size }: IThemeSpecimenProps) => {
           <span
             className={clsx(
               'font-mono tracking-[0.18em] text-[color:var(--text-faint)] uppercase',
-              isHero ? 'text-[10px]' : 'text-[9px]'
+              isHero ? 'text-[10px]' : 'text-[9px]',
             )}
           >
             · {theme.mode}
@@ -54,7 +55,7 @@ export const ThemeSpecimen = ({ theme, size }: IThemeSpecimenProps) => {
       <h3
         className={clsx(
           'relative mt-3 font-serif leading-[1] tracking-[-0.015em] text-[color:var(--text-strong)] italic',
-          isHero ? 'text-[44px]' : 'text-[28px]'
+          isHero ? 'text-[44px]' : 'text-[28px]',
         )}
       >
         {theme.name}
@@ -62,7 +63,7 @@ export const ThemeSpecimen = ({ theme, size }: IThemeSpecimenProps) => {
       <p
         className={clsx(
           'relative mt-2 leading-snug text-[color:var(--text-muted)]',
-          isHero ? 'max-w-[420px] text-[13px]' : 'text-[11.5px]'
+          isHero ? 'max-w-[420px] text-[13px]' : 'text-[11.5px]',
         )}
       >
         {theme.caption}.

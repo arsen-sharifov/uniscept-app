@@ -1,4 +1,5 @@
 import type { IToolAvailability } from '@interfaces';
+
 import { ECanvasTool } from '@/components/tools';
 
 export const isToolDisabled = (toolId: string, availability: IToolAvailability): boolean => {

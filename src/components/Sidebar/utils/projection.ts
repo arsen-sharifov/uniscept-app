@@ -1,4 +1,5 @@
 import type { IFlattenedItem, IProjection, TDropZone, TNavItem } from '@interfaces';
+
 import { MAX_DEPTH } from '../consts';
 
 const countDescendants = (items: TNavItem[]): number =>
@@ -8,7 +9,7 @@ export const flattenTree = (
   items: TNavItem[],
   collapsedIds: Set<string>,
   parentId: string | null = null,
-  depth = 0
+  depth = 0,
 ): IFlattenedItem[] =>
   items.flatMap((item, index) => {
     const isFolder = item.type === 'folder';
@@ -33,6 +34,7 @@ export const flattenTree = (
 const isDescendantOrSelf = (flatItems: IFlattenedItem[], itemId: string, potentialAncestorId: string): boolean => {
   if (itemId === potentialAncestorId) return true;
   const parentId = flatItems.find((item) => item.id === itemId)?.parentId;
+
   return !!parentId && isDescendantOrSelf(flatItems, parentId, potentialAncestorId);
 };
 
@@ -40,7 +42,7 @@ export const getProjection = (
   flatItems: IFlattenedItem[],
   activeId: string,
   overId: string,
-  zone: TDropZone
+  zone: TDropZone,
 ): IProjection | null => {
   if (activeId === overId) return null;
 
@@ -80,6 +82,7 @@ export const removeChildrenOf = (flatItems: IFlattenedItem[], ids: Set<string>):
     if (item.parentId && (ids.has(item.parentId) || acc.has(item.parentId))) {
       acc.add(item.id);
     }
+
     return acc;
   }, new Set<string>());
 

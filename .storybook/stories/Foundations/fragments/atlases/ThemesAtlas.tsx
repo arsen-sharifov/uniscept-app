@@ -1,9 +1,9 @@
 import type { TTheme } from '@constants';
-import { AtlasFrame, ColorChip, Section, ThemeSpecimen, ThemedSurface } from '..';
+
 import { COLOR_GROUPS, CONTRAST_PAIRS, THEME_LIST, THEMES_SECTIONS } from '../../consts';
 import { orderedSpecimens } from '../../utils';
-import { ContrastTile } from './ContrastTile';
-import { ReferenceCard } from './ReferenceCard';
+import { ColorChip, ContrastTile, ReferenceCard, ThemeSpecimen } from '../cards';
+import { AtlasFrame, Section, ThemedSurface } from '../layout';
 
 interface IThemesAtlasProps {
   activeTheme: TTheme;

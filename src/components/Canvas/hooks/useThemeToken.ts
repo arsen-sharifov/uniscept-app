@@ -11,6 +11,7 @@ const subscribe = (notify: () => void) => {
     observer = new MutationObserver(() => subscribers.forEach((cb) => cb()));
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
   }
+
   return () => {
     subscribers.delete(notify);
     if (subscribers.size === 0) {
@@ -29,5 +30,5 @@ export const useThemeToken = (token: string, fallback: string): string =>
   useSyncExternalStore(
     subscribe,
     () => read(token, fallback),
-    () => fallback
+    () => fallback,
   );

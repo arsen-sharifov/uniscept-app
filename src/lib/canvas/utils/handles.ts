@@ -1,4 +1,5 @@
 import type { Node, XYPosition } from '@xyflow/react';
+
 import type { IHandlePair, IHandlePairWithDistance, THandleId } from '@interfaces';
 
 const HANDLE_IDS = ['top', 'right', 'bottom', 'left'] as const;
@@ -30,7 +31,7 @@ const distance = (a: XYPosition, b: XYPosition) => Math.hypot(a.x - b.x, a.y - b
 
 export const findNearestHandlePair = (source: Node, target: Node): IHandlePair => {
   const candidates = HANDLE_IDS.flatMap((sourceHandle) =>
-    HANDLE_IDS.map((targetHandle): IHandlePair => ({ sourceHandle, targetHandle }))
+    HANDLE_IDS.map((targetHandle): IHandlePair => ({ sourceHandle, targetHandle })),
   );
 
   const best = candidates.reduce<IHandlePairWithDistance>(
@@ -39,7 +40,7 @@ export const findNearestHandlePair = (source: Node, target: Node): IHandlePair =
 
       return next < current.distance ? { ...pair, distance: next } : current;
     },
-    { sourceHandle: 'right', targetHandle: 'left', distance: Infinity }
+    { sourceHandle: 'right', targetHandle: 'left', distance: Infinity },
   );
 
   return { sourceHandle: best.sourceHandle, targetHandle: best.targetHandle };

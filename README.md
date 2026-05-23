@@ -1,71 +1,56 @@
 # Uniscept
 
-A web platform for structured discussions in the form of an argument graph.
-Instead of chaotic message threads, Uniscept helps users visualize reasoning, build logical connections between arguments, and move toward consensus.
+[![CI](https://github.com/arsen-sharifov/uniscept-app/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/arsen-sharifov/uniscept-app/actions/workflows/ci.yml)
 
-## Tech Stack
+A tool that structures complex thinking and discussions into a clear logical system instead of a chaotic flow of messages. Reasoning becomes a canvas of nodes and directional connections; teams mark logical paths as valid or invalid; conclusions are reusable across canvases through structured references.
 
-| Layer     | Technology               |
-| --------- | ------------------------ |
-| Framework | Next.js 15 (App Router)  |
-| Language  | TypeScript (strict mode) |
-| Styles    | Tailwind CSS             |
-| Linting   | ESLint                   |
+## Tech stack
 
-> Updated as new technologies are added to the project.
+| Layer     | Tooling                                                                                 |
+| --------- | --------------------------------------------------------------------------------------- |
+| Framework | Next.js 16 (App Router) · React 19 · TypeScript 5 (strict + `noUncheckedIndexedAccess`) |
+| UI        | Tailwind CSS 4 (CSS variable tokens) · Lucide icons · `@dnd-kit`                        |
+| Canvas    | React Flow (`@xyflow/react`) 12 · Zustand 5 + Zundo                                     |
+| i18n      | `next-intl` 4 — 6 locales (`en, uk, ro, fr, es, pt`)                                    |
+| Backend   | Supabase (Postgres + Auth + Realtime + Storage)                                         |
+| Docs      | Storybook 10                                                                            |
+| Hosting   | Vercel + Umami analytics                                                                |
+| Quality   | ESLint 9 · Prettier 3 · Husky 9 · commitlint · lint-staged                              |
 
-## Getting Started
+## Quick start
 
 ```bash
+corepack enable
 pnpm install
-pnpm dev
+cp .env.example .env.local   # fill in Supabase keys + INVITE_CODE
+pnpm db:start                # local Supabase (Docker required)
+pnpm dev                     # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to see the app.
+Node version is pinned in [`.nvmrc`](./.nvmrc). pnpm is pinned via the `packageManager` field in `package.json`.
 
-## Git Conventions
+## Path aliases
 
-### Branch Naming
+| Alias               | Resolves to               |
+| ------------------- | ------------------------- |
+| `@/*`               | `./src/*`                 |
+| `@interfaces`       | `./src/lib/interfaces`    |
+| `@constants`        | `./src/lib/constants`     |
+| `@hooks`            | `./src/lib/hooks`         |
+| `@api`              | `./src/api`               |
+| `@story-interfaces` | `./.storybook/interfaces` |
 
-All branches follow the format `dev-{issue_number}`, where the number matches the GitHub issue.
+Never reach into `src/lib/` via relative paths. ESLint enforces these via `no-restricted-imports`.
 
-```
-dev-1
-dev-2
-dev-15
-```
+## Conventions
 
-### Commit Messages
+Source of truth: Notion → **Uniscept Tech → Conventions** (internal). The toolchain enforces a large subset:
 
-Format: `type(prefix-number): description`
-
-Types:
-
-- `feat` — new feature
-- `fix` — bug fix
-- `chore` — maintenance, setup
-- `docs` — documentation changes
-- `refactor` — code restructuring without behavior change
-- `test` — adding or updating tests
-
-Examples:
-
-```
-feat(dev-3): add discussion creation page
-fix(dev-7): prevent duplicate edges between nodes
-docs(dev-1): add project description and conventions to README
-chore(dev-2): initialize Next.js project
-```
-
-### Issue Naming
-
-Format: `PREFIX: Description`
-
-- `DEV:` — development tasks
-
-### Labels
-
-`task`, `feature`, `bug`, `documentation`
+- **ESLint** (`eslint.config.mjs`) — arrow functions, 4-group import order, naming prefixes (`I`/`T`/`E`), banned deep imports past barrels.
+- **Prettier** (`.prettierrc`) — single quotes, semis, 2-space indent, 120-char width, Tailwind class sorting.
+- **commitlint** (`commitlint.config.mjs`) — `<type>(dev-<n>): <description>` enforced. Body and footer line lengths capped at 100.
+- **Husky** (`.husky/`) — `pre-commit` runs `lint-staged` + `type-check`; `commit-msg` runs commitlint; `pre-push` runs `pnpm validate` and validates branch name (`main` or `dev-<n>`).
+- **CI** (`.github/workflows/ci.yml`) — `validate`, `audit`, `build`, `build-storybook` jobs on every PR to `main`. `version-check.yml` enforces semver bump on `package.json` changes.
 
 ## License
 

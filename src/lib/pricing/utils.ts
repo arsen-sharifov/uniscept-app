@@ -1,4 +1,5 @@
 import type { IPricingPlan, TTranslations } from '@interfaces';
+
 import { PRICING_PLANS } from './constants';
 
 export const mergePlansWithTranslations = (t: TTranslations): readonly IPricingPlan[] => {

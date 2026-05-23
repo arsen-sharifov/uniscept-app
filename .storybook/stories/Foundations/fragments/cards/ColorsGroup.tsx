@@ -1,6 +1,8 @@
 import type { IColorToken } from '@story-interfaces';
-import { ColorChip, Section } from '..';
+
 import { useFiltered } from '../../hooks';
+import { Section } from '../layout';
+import { ColorChip } from './ColorChip';
 
 interface IColorsGroupProps {
   id: string;

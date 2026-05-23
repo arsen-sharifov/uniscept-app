@@ -14,6 +14,7 @@ import {
   ZoomIn,
   ZoomOut,
 } from 'lucide-react';
+
 import type { TCanvasToolsTranslations, IToolGroup, IToolItem } from '@interfaces';
 
 export enum ECanvasTool {

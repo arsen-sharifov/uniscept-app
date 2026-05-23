@@ -1,6 +1,5 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   type DragStartEvent,
   type DragMoveEvent,
@@ -13,8 +12,10 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+
 import type { IProjection, TDropZone, TNavItem, TNavItemType } from '@interfaces';
-import { flattenTree, getProjection, removeChildrenOf } from '../utils';
+
 import {
   AUTO_EXPAND_DELAY_MS,
   DROP_ZONE_HYSTERESIS_PX,
@@ -23,6 +24,7 @@ import {
   LEAF_SPLIT_THRESHOLD,
   POINTER_SENSOR_OPTIONS,
 } from '../consts';
+import { flattenTree, getProjection, removeChildrenOf } from '../utils';
 
 interface IUseDndTreeOptions {
   items: TNavItem[];
@@ -35,11 +37,12 @@ interface IUseDndTreeOptions {
 const findAnchorAtParent = <T extends { id: string; parentId: string | null }>(
   items: T[],
   id: string,
-  targetParentId: string | null
+  targetParentId: string | null,
 ): string | null => {
   const node = items.find((item) => item.id === id);
   if (!node) return null;
   if (node.parentId === targetParentId) return node.id;
+
   return node.parentId ? findAnchorAtParent(items, node.parentId, targetParentId) : null;
 };
 
@@ -47,12 +50,14 @@ const resolveFolderZone = (ratio: number, prev: TDropZone, sameTarget: boolean, 
   if (!sameTarget) return ratio < FOLDER_INSIDE_THRESHOLD ? 'before' : 'inside';
   if (prev === 'before') return ratio > FOLDER_INSIDE_THRESHOLD + buffer ? 'inside' : 'before';
   if (prev === 'inside') return ratio < FOLDER_INSIDE_THRESHOLD - buffer ? 'before' : 'inside';
+
   return ratio < FOLDER_INSIDE_THRESHOLD ? 'before' : 'inside';
 };
 
 const resolveLeafZone = (ratio: number, prev: TDropZone, sameTarget: boolean, buffer: number): TDropZone => {
   if (!sameTarget) return ratio < LEAF_SPLIT_THRESHOLD ? 'before' : 'after';
   if (prev === 'before') return ratio > LEAF_SPLIT_THRESHOLD + buffer ? 'after' : 'before';
+
   return ratio < LEAF_SPLIT_THRESHOLD - buffer ? 'before' : 'after';
 };
 
@@ -75,17 +80,19 @@ export const useDndTree = ({ items, onMoveItem, onBulkMove, editingId, selectedI
     const pw = pointerWithin(args);
     if (pw.length > 0) {
       stickyOverIdRef.current = pw[0]!.id;
+
       return pw;
     }
     if (stickyOverIdRef.current !== null && args.droppableRects.get(stickyOverIdRef.current)) {
       return [{ id: stickyOverIdRef.current }];
     }
+
     return closestCenter(args);
   }, []);
 
   const sensors = useSensors(
     useSensor(PointerSensor, POINTER_SENSOR_OPTIONS),
-    useSensor(KeyboardSensor, KEYBOARD_SENSOR_OPTIONS)
+    useSensor(KeyboardSensor, KEYBOARD_SENSOR_OPTIONS),
   );
 
   const flattenedItems = useMemo(() => flattenTree(items, collapsedIds), [items, collapsedIds]);
@@ -96,6 +103,7 @@ export const useDndTree = ({ items, onMoveItem, onBulkMove, editingId, selectedI
       selectedIds && selectedIds.size > 1 && selectedIds.has(activeId)
         ? new Set([activeId, ...selectedIds])
         : new Set([activeId]);
+
     return removeChildrenOf(flattenedItems, excludeIds);
   }, [flattenedItems, activeId, selectedIds]);
 
@@ -119,10 +127,12 @@ export const useDndTree = ({ items, onMoveItem, onBulkMove, editingId, selectedI
       const anchorId = findAnchorAtParent(sortableItems, overId, result.parentId);
       const siblingsSansActive = siblings.filter((item) => item.id !== activeId);
       const anchorIdx = anchorId ? siblingsSansActive.findIndex((item) => item.id === anchorId) : -1;
+
       return anchorIdx === -1 ? siblingsSansActive.length : anchorIdx + (result.zone === 'after' ? 1 : 0);
     })();
 
     if (targetIdx === activeIdx) return null;
+
     return result;
   }, [sortableItems, activeId, overId, dropZone, isPastLast]);
 
@@ -131,6 +141,7 @@ export const useDndTree = ({ items, onMoveItem, onBulkMove, editingId, selectedI
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
+
       return next;
     });
   }, []);
@@ -140,6 +151,7 @@ export const useDndTree = ({ items, onMoveItem, onBulkMove, editingId, selectedI
       if (!prev.has(id)) return prev;
       const next = new Set(prev);
       next.delete(id);
+
       return next;
     });
   }, []);
@@ -181,7 +193,7 @@ export const useDndTree = ({ items, onMoveItem, onBulkMove, editingId, selectedI
         setCollapsedIds((prev) => new Set(prev).add(id));
       }
     },
-    [flattenedItems, collapsedIds, editingId, selectedIds]
+    [flattenedItems, collapsedIds, editingId, selectedIds],
   );
 
   const handleDragMove = useCallback(
@@ -205,6 +217,7 @@ export const useDndTree = ({ items, onMoveItem, onBulkMove, editingId, selectedI
         }
         clearExpandTimer();
         expandTargetRef.current = null;
+
         return;
       }
 
@@ -247,7 +260,7 @@ export const useDndTree = ({ items, onMoveItem, onBulkMove, editingId, selectedI
         expandTargetRef.current = null;
       }
     },
-    [activeId, sortableItems, collapsedIds, clearExpandTimer, expandForDrop]
+    [activeId, sortableItems, collapsedIds, clearExpandTimer, expandForDrop],
   );
 
   const handleDragEnd = useCallback(
@@ -260,6 +273,7 @@ export const useDndTree = ({ items, onMoveItem, onBulkMove, editingId, selectedI
           prevCollapsedRef.current = null;
         }
         resetDragState();
+
         return;
       }
 
@@ -272,12 +286,14 @@ export const useDndTree = ({ items, onMoveItem, onBulkMove, editingId, selectedI
           prevCollapsedRef.current = null;
         }
         resetDragState();
+
         return;
       }
 
       const activeIndex = sortableItems.findIndex((item) => item.id === draggedId);
       if (activeIndex === -1) {
         resetDragState();
+
         return;
       }
 
@@ -289,6 +305,7 @@ export const useDndTree = ({ items, onMoveItem, onBulkMove, editingId, selectedI
         const anchorId = findAnchorAtParent(sortableItems, endOverId, projected.parentId);
         const anchor = anchorId ? siblings.findIndex((item) => item.id === anchorId) : -1;
         if (anchor === -1) return siblings.length;
+
         return anchor + (projected.zone === 'after' ? 1 : 0);
       };
       const position = getPosition();
@@ -306,7 +323,7 @@ export const useDndTree = ({ items, onMoveItem, onBulkMove, editingId, selectedI
 
       resetDragState();
     },
-    [sortableItems, projected, isPastLast, clearExpandTimer, resetDragState, onMoveItem, onBulkMove, selectedIds]
+    [sortableItems, projected, isPastLast, clearExpandTimer, resetDragState, onMoveItem, onBulkMove, selectedIds],
   );
 
   const handleDragCancel = useCallback(() => {
@@ -324,7 +341,7 @@ export const useDndTree = ({ items, onMoveItem, onBulkMove, editingId, selectedI
         clearTimeout(expandTimerRef.current);
       }
     },
-    []
+    [],
   );
 
   return {

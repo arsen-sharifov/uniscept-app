@@ -1,5 +1,7 @@
 import { ReactFlow } from '@xyflow/react';
+
 import type { TCanvasNode } from '@interfaces';
+
 import { FIT_VIEW_OPTIONS, LOCKED_GESTURES, PRO_OPTIONS } from '../../../consts';
 import { EDGE_TYPES, NODE_TYPES } from '../consts';
 

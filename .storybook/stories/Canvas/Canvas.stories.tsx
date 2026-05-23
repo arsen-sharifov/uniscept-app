@@ -1,8 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
+
 import { Canvas } from '@/components';
+
+import { denseCanvas, emptyCanvas, evaluatedCanvas, reasoningCanvas } from './consts';
 import { ARG_CATEGORIES } from '../../consts';
 import { WithCanvasStage, WithReactFlow, withCanvasStore } from '../../decorators';
-import { denseCanvas, emptyCanvas, evaluatedCanvas, reasoningCanvas } from './consts';
 
 const meta: Meta<typeof Canvas> = {
   title: 'Components/Canvas',

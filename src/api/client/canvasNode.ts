@@ -1,4 +1,5 @@
 import type { ICanvasNodeRow, ICreateCanvasNodeInput, INodePositionUpdate, TNodeStatus } from '@interfaces';
+
 import { createClient } from '@/lib/supabase';
 
 export const createCanvasNode = async (input: ICreateCanvasNodeInput): Promise<void> => {

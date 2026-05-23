@@ -1,5 +1,7 @@
 import type { Edge, Node } from '@xyflow/react';
+
 import type { IComment } from '@interfaces';
+
 import type { ECanvasTool } from '@/components';
 
 export interface IMockCanvasState {

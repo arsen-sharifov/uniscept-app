@@ -6,12 +6,14 @@ import {
   type INodeReference,
   type IReferenceTargetMeta,
 } from '@interfaces';
+
 import { createClient } from '@/lib/supabase';
-import { getCanvasNodes } from './canvasNode';
-import { getCanvasEdges } from './canvasEdge';
-import { getNodeComments } from './nodeComment';
+
 import { getCanvasComments } from './canvasComment';
+import { getCanvasEdges } from './canvasEdge';
+import { getCanvasNodes } from './canvasNode';
 import { REFERENCE_SEARCH_LIMIT, REFERENCE_TARGET_SELECT } from './consts';
+import { getNodeComments } from './nodeComment';
 import { rowToEdge, rowToNode, toComment, toNodeReference, toReferenceTargetMeta } from './utils';
 
 const getReferenceTargetsByIds = async (nodeIds: string[]): Promise<Record<string, IReferenceTargetMeta>> => {
@@ -33,6 +35,7 @@ const getReferenceTargetsByIds = async (nodeIds: string[]): Promise<Record<strin
 const groupCommentsByNode = (comments: INodeCommentRow[]): Record<string, INodeCommentRow[]> =>
   comments.reduce<Record<string, INodeCommentRow[]>>((acc, comment) => {
     (acc[comment.node_id] ??= []).push(comment);
+
     return acc;
   }, {});
 
@@ -43,7 +46,7 @@ export const getCanvasContent = async (threadId: string): Promise<ICanvasSnapsho
 
   const nodeIds = nodeRows.map((node) => node.id);
   const referenceTargetIds = nodeRows.flatMap((node) =>
-    node.type === ECanvasNodeType.Reference && node.source_node_id ? [node.source_node_id] : []
+    node.type === ECanvasNodeType.Reference && node.source_node_id ? [node.source_node_id] : [],
   );
 
   const [commentRows, referenceTargets, canvasCommentRows] = await Promise.all([
@@ -59,8 +62,8 @@ export const getCanvasContent = async (threadId: string): Promise<ICanvasSnapsho
       rowToNode(
         row,
         commentsByNode[row.id] ?? [],
-        row.source_node_id ? referenceTargets[row.source_node_id] : undefined
-      )
+        row.source_node_id ? referenceTargets[row.source_node_id] : undefined,
+      ),
     ),
     edges: edgeRows.map(rowToEdge),
     canvasComments: canvasCommentRows.map(toComment),
@@ -69,7 +72,7 @@ export const getCanvasContent = async (threadId: string): Promise<ICanvasSnapsho
 
 export const searchReferenceTargets = async (
   workspaceId: string,
-  excludeThreadId?: string
+  excludeThreadId?: string,
 ): Promise<INodeReference[]> => {
   const supabase = createClient();
 

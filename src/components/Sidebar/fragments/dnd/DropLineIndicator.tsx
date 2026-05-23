@@ -13,7 +13,7 @@ export const DropLineIndicator = ({ position, leftOffset }: IDropLineIndicatorPr
     className={clsx(
       'pointer-events-none absolute right-1 z-20 h-0.5 rounded-full bg-[color:var(--accent)]',
       leftOffset === undefined && 'left-5',
-      position === 'before' ? '-top-[1px]' : '-bottom-[1px]'
+      position === 'before' ? '-top-[1px]' : '-bottom-[1px]',
     )}
   >
     <div className="absolute top-1/2 left-0 h-1.5 w-1.5 -translate-y-1/2 rounded-full bg-[color:var(--accent)] shadow-[0_0_0_3px_var(--accent-soft)]" />

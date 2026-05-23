@@ -1,7 +1,5 @@
 'use client';
 
-import { create } from 'zustand';
-import { temporal } from 'zundo';
 import {
   type Connection,
   type Edge,
@@ -12,6 +10,9 @@ import {
   applyEdgeChanges,
   applyNodeChanges,
 } from '@xyflow/react';
+import { temporal } from 'zundo';
+import { create } from 'zustand';
+
 import {
   ECanvasNodeType,
   type ICanvasNodeData,
@@ -23,9 +24,10 @@ import {
   type TNodeStatus,
   type TReferenceNode,
 } from '@interfaces';
+
+import { isCanvasNodeData, isReferenceNodeData } from '@/components/Canvas/utils';
 import { ECanvasTool } from '@/components/tools';
 import { detectPositionChanges, emitCanvasOperation, isHandleId } from '@/lib/canvas';
-import { isCanvasNodeData, isReferenceNodeData } from '@/components/Canvas/utils';
 
 const MAX_HISTORY = 100;
 const DUPLICATE_OFFSET = 24;
@@ -107,7 +109,7 @@ const diffNodeAdditions = (
   ops: TCanvasOperation[],
   nextNodeMap: Map<string, Node>,
   prevNodeMap: Map<string, Node>,
-  threadId: string
+  threadId: string,
 ): void => {
   nextNodeMap.forEach((node, id) => {
     if (prevNodeMap.has(id)) return;
@@ -123,6 +125,7 @@ const diffNodeAdditions = (
         y: node.position.y,
         data: node.data,
       });
+
       return;
     }
 
@@ -147,7 +150,7 @@ const diffNodeAdditions = (
         id: comment.id,
         nodeId: id,
         text: comment.text,
-      })
+      }),
     );
   });
 };
@@ -155,7 +158,7 @@ const diffNodeAdditions = (
 const diffNodeUpdates = (
   ops: TCanvasOperation[],
   nextNodeMap: Map<string, Node>,
-  prevNodeMap: Map<string, Node>
+  prevNodeMap: Map<string, Node>,
 ): void => {
   nextNodeMap.forEach((nextNode, id) => {
     const prevNode = prevNodeMap.get(id);
@@ -210,7 +213,7 @@ const diffEdges = (
   ops: TCanvasOperation[],
   prev: IPersistedSnapshot,
   next: IPersistedSnapshot,
-  threadId: string
+  threadId: string,
 ): void => {
   const prevEdgeMap = new Map(prev.edges.map((edge) => [edge.id, edge]));
   const nextEdgeMap = new Map(next.edges.map((edge) => [edge.id, edge]));
@@ -241,7 +244,7 @@ const diffCanvasComments = (
   ops: TCanvasOperation[],
   prev: IPersistedSnapshot,
   next: IPersistedSnapshot,
-  threadId: string
+  threadId: string,
 ): void => {
   const prevMap = new Map(prev.canvasComments.map((c) => [c.id, c]));
   const nextMap = new Map(next.canvasComments.map((c) => [c.id, c]));
@@ -264,7 +267,7 @@ const diffCanvasComments = (
 const diffStates = (
   prev: IPersistedSnapshot,
   next: IPersistedSnapshot,
-  threadId: string | null
+  threadId: string | null,
 ): TCanvasOperation[] => {
   if (!threadId) return [];
 
@@ -384,7 +387,7 @@ export const useCanvasStore = create<ICanvasStore>()(
               id: change.id,
               x: change.x,
               y: change.y,
-            })
+            }),
           );
         },
 
@@ -534,6 +537,7 @@ export const useCanvasStore = create<ICanvasStore>()(
               if (!touchedSet.has(node.id)) return node;
               if (!isCanvasNodeData(node.data)) return node;
               const data: ICanvasNodeData = { ...node.data, status: nextStatus };
+
               return { ...node, data };
             }),
           });
@@ -543,7 +547,7 @@ export const useCanvasStore = create<ICanvasStore>()(
               type: 'updateNodeStatus',
               id,
               status: nextStatus,
-            })
+            }),
           );
         },
 
@@ -556,6 +560,7 @@ export const useCanvasStore = create<ICanvasStore>()(
               if (node.id !== id) return node;
               if (!isCanvasNodeData(node.data)) return node;
               const data: ICanvasNodeData = { ...node.data, label };
+
               return { ...node, data };
             }),
           });
@@ -622,6 +627,7 @@ export const useCanvasStore = create<ICanvasStore>()(
                 ...node.data,
                 comments: [...node.data.comments, comment],
               };
+
               return { ...node, data };
             }),
           });
@@ -638,6 +644,7 @@ export const useCanvasStore = create<ICanvasStore>()(
                 ...node.data,
                 comments: node.data.comments.filter((c) => c.id !== commentId),
               };
+
               return { ...node, data };
             }),
           });
@@ -678,6 +685,7 @@ export const useCanvasStore = create<ICanvasStore>()(
               if (node.id !== id) return node;
               const data = { ...node.data };
               delete data.isNew;
+
               return { ...node, data };
             }),
           });
@@ -711,6 +719,6 @@ export const useCanvasStore = create<ICanvasStore>()(
       }),
       limit: MAX_HISTORY,
       equality: (a, b) => a.nodes === b.nodes && a.edges === b.edges && a.canvasComments === b.canvasComments,
-    }
-  )
+    },
+  ),
 );

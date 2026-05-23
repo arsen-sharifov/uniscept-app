@@ -1,5 +1,7 @@
 import { type ReactNode, useState } from 'react';
+
 import type { TPopoverPlacement } from '@interfaces';
+
 import { Popover } from '@/components';
 
 interface IPlacementCellProps {

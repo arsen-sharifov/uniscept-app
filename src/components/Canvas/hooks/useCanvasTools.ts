@@ -1,12 +1,14 @@
 'use client';
 
-import { type MouseEvent, useCallback } from 'react';
 import { type EdgeMouseHandler, type IsValidConnection, type NodeMouseHandler, useReactFlow } from '@xyflow/react';
+import { type MouseEvent, useCallback } from 'react';
+
 import { ECanvasNodeType } from '@interfaces';
 import { useTranslations } from '@hooks';
+import { ECanvasTool } from '@/components/tools';
 import { findNearestHandlePair } from '@/lib/canvas';
 import { useCanvasStore } from '@/lib/stores';
-import { ECanvasTool } from '@/components/tools';
+
 import { ZOOM_DURATION_MS, ZOOM_MAX, ZOOM_MIN, ZOOM_STEP_FACTOR } from '../consts';
 import { collectStatusTargetIds } from '../utils';
 
@@ -48,26 +50,28 @@ export const useCanvasTools = (): IUseCanvasToolsResult => {
           y: vy + flow.y * (zoom - targetZoom),
           zoom: targetZoom,
         },
-        { duration: ZOOM_DURATION_MS }
+        { duration: ZOOM_DURATION_MS },
       );
     },
-    [getViewport, screenToFlowPosition, setViewport]
+    [getViewport, screenToFlowPosition, setViewport],
   );
 
   const handleZoomTool = useCallback(
     (event: MouseEvent): boolean => {
       if (activeTool === ECanvasTool.ZoomIn) {
         zoomToCursor(event, ZOOM_STEP_FACTOR);
+
         return true;
       }
       if (activeTool === ECanvasTool.ZoomOut) {
         zoomToCursor(event, 1 / ZOOM_STEP_FACTOR);
+
         return true;
       }
 
       return false;
     },
-    [activeTool, zoomToCursor]
+    [activeTool, zoomToCursor],
   );
 
   const onPaneClick = useCallback(
@@ -86,7 +90,7 @@ export const useCanvasTools = (): IUseCanvasToolsResult => {
         store.setReferenceSearchPosition(position);
       }
     },
-    [activeTool, handleZoomTool, screenToFlowPosition, t.platform.canvas.node.defaultLabel]
+    [activeTool, handleZoomTool, screenToFlowPosition, t.platform.canvas.node.defaultLabel],
   );
 
   const onNodeClick: NodeMouseHandler = useCallback(
@@ -140,7 +144,7 @@ export const useCanvasTools = (): IUseCanvasToolsResult => {
         }
       }
     },
-    [activeTool, handleZoomTool]
+    [activeTool, handleZoomTool],
   );
 
   const onNodeDoubleClick: NodeMouseHandler = useCallback(
@@ -150,7 +154,7 @@ export const useCanvasTools = (): IUseCanvasToolsResult => {
         useCanvasStore.getState().setEditingNodeId(node.id);
       }
     },
-    [activeTool]
+    [activeTool],
   );
 
   const onEdgeClick: EdgeMouseHandler = useCallback(
@@ -160,7 +164,7 @@ export const useCanvasTools = (): IUseCanvasToolsResult => {
 
       useCanvasStore.getState().deleteEdge(edge.id);
     },
-    [activeTool, handleZoomTool]
+    [activeTool, handleZoomTool],
   );
 
   return {

@@ -1,5 +1,6 @@
 import type { TTheme } from '@constants';
 import type { IThemeMeta } from '@story-interfaces';
+
 import { THEME_LIST } from '../consts';
 
 export const findThemeAncestor = (node: HTMLElement | null): HTMLElement | null => {

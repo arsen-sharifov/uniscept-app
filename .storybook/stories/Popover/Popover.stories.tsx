@@ -1,9 +1,9 @@
 import type { Decorator, Meta, StoryObj } from '@storybook/nextjs-vite';
 import { useArgs } from 'storybook/preview-api';
 import { fn } from 'storybook/test';
+
 import { type IPopoverProps, Popover } from '@/components';
-import { ARG_CATEGORIES } from '../../consts';
-import { WithPad } from '../../decorators';
+
 import { PLACEMENTS } from './consts';
 import {
   IconTriggerExample,
@@ -13,6 +13,8 @@ import {
   TriggerExample,
   SearchableReferencesExample,
 } from './fragments';
+import { ARG_CATEGORIES } from '../../consts';
+import { WithPad } from '../../decorators';
 
 const placementChangeHandler = fn();
 

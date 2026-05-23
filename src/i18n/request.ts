@@ -1,7 +1,10 @@
 import { cookies } from 'next/headers';
 import { getRequestConfig } from 'next-intl/server';
+
 import type { TLocale } from '@interfaces';
+
 import { createClient } from '@/lib/supabase/server';
+
 import { DEFAULT_LOCALE, LOCALE_COOKIE, LOCALES } from './consts';
 
 const resolveLocale = async (): Promise<TLocale> => {

@@ -1,11 +1,13 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { HelpCircle } from 'lucide-react';
 import { clsx } from 'clsx';
+import { HelpCircle } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+
 import type { IToolGroup, IToolItem } from '@interfaces';
 import { useTranslations } from '@hooks';
 import { buildHelpTool } from '@/components/tools';
+
 import { TOOLTIP_DELAY_MS } from './consts';
 import { ShortcutsHelp, ToolButton, ToolTooltip } from './fragments';
 import { useToolbarShortcuts } from './hooks';
@@ -51,6 +53,7 @@ export const Toolbar = ({ groups = [], activeTool, onToolClick }: IToolbarProps)
 
       if (visibleRef.current) {
         setHover(next);
+
         return;
       }
 
@@ -59,7 +62,7 @@ export const Toolbar = ({ groups = [], activeTool, onToolClick }: IToolbarProps)
         setHover(next);
       }, TOOLTIP_DELAY_MS);
     },
-    [clearShowTimer]
+    [clearShowTimer],
   );
 
   const hideHover = useCallback(() => {
@@ -72,7 +75,7 @@ export const Toolbar = ({ groups = [], activeTool, onToolClick }: IToolbarProps)
     (rect: DOMRect, tool: IToolItem) => {
       showHover({ tool, top: rect.top + rect.height / 2 });
     },
-    [showHover]
+    [showHover],
   );
 
   const handleHelpEnter = useCallback(() => {
@@ -111,7 +114,7 @@ export const Toolbar = ({ groups = [], activeTool, onToolClick }: IToolbarProps)
               aria-label={group.label}
               className={clsx(
                 'flex flex-col items-stretch gap-0.5 py-1.5',
-                index > 0 && 'border-t border-[color:var(--border)]'
+                index > 0 && 'border-t border-[color:var(--border)]',
               )}
             >
               {group.tools.map((tool) => (

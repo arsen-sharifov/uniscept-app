@@ -7,23 +7,33 @@ pnpm-lock.yaml
 out
 build
 dist
+storybook-static
+coverage
+
+# IDE
+.idea
+
+# Husky internals
+.husky/_
 
 # Misc
 .DS_Store
 *.pem
-
-# Debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
+*.log
 
 # Local env files
 .env*
+!.env.example
 
 # Vercel
 .vercel
 
-# TypeScript
+# TypeScript generated
 *.tsbuildinfo
 next-env.d.ts
+
+# Supabase generated
+src/lib/supabase/database.types.ts
+supabase/.branches
+supabase/.temp
+supabase/migrations

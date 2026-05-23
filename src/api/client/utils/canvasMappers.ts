@@ -1,4 +1,5 @@
 import type { Edge } from '@xyflow/react';
+
 import {
   ECanvasNodeType,
   type ICanvasEdgeRow,
@@ -10,12 +11,13 @@ import {
   type TCanvasNode,
   type TReferenceNode,
 } from '@interfaces';
+
 import { toComment } from './mappers';
 
 export const rowToNode = (
   row: ICanvasNodeRow,
   comments: INodeCommentRow[] = [],
-  referenceTarget?: IReferenceTargetMeta
+  referenceTarget?: IReferenceTargetMeta,
 ): TCanvasNode | TReferenceNode => {
   const position = { x: row.position_x, y: row.position_y };
 

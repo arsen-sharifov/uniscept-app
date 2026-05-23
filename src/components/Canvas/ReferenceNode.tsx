@@ -1,12 +1,14 @@
 'use client';
 
-import type { MouseEvent } from 'react';
 import { Handle, type NodeProps } from '@xyflow/react';
-import { useRouter } from 'next/navigation';
-import { useTranslations } from 'next-intl';
 import { clsx } from 'clsx';
 import { ArrowUpRight, Link2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import type { MouseEvent } from 'react';
+
 import type { TReferenceNode } from '@interfaces';
+
 import { HANDLE_POSITIONS } from './consts';
 import { buildReferenceUrl } from './utils';
 
@@ -38,7 +40,7 @@ export const ReferenceNode = ({ data, selected }: NodeProps<TReferenceNode>) => 
         'shadow-[0_1px_2px_-1px_rgba(15,23,42,0.10),0_8px_22px_-14px_var(--ref-soft)]',
         'hover:shadow-[0_2px_4px_-1px_rgba(15,23,42,0.16),0_14px_32px_-18px_var(--ref-border)]',
         'ring-1 ring-inset',
-        selected ? 'ring-2 ring-[color:var(--ref)]' : 'ring-[color:var(--ref-border)]'
+        selected ? 'ring-2 ring-[color:var(--ref)]' : 'ring-[color:var(--ref-border)]',
       )}
     >
       <span

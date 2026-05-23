@@ -1,6 +1,8 @@
 import type { Decorator, Preview } from '@storybook/nextjs-vite';
 import { NextIntlClientProvider } from 'next-intl';
+
 import type { TTheme } from '@constants';
+
 import en from '../src/locales/en.json';
 import '../src/app/globals.css';
 

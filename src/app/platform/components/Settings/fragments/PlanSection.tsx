@@ -1,9 +1,10 @@
 'use client';
 
-import { useMemo } from 'react';
-import { Check } from 'lucide-react';
-import { clsx } from 'clsx';
 import type { User } from '@supabase/supabase-js';
+import { clsx } from 'clsx';
+import { Check } from 'lucide-react';
+import { useMemo } from 'react';
+
 import { useTranslations } from '@hooks';
 import { formatPlanPrice, mergePlansWithTranslations } from '@/lib/pricing';
 
@@ -32,7 +33,7 @@ export const PlanSection = ({ user }: IPlanSectionProps) => {
                 'relative flex cursor-default flex-col rounded-xl border-2 p-4 transition-all',
                 isCurrent
                   ? 'border-[color:var(--border-active)] bg-[color:var(--accent-soft)]'
-                  : 'border-[color:var(--border)] hover:border-[color:var(--border-strong)] hover:shadow-sm'
+                  : 'border-[color:var(--border)] hover:border-[color:var(--border-strong)] hover:shadow-sm',
               )}
             >
               {isCurrent && (

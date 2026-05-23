@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+
 import { findThemeAncestor } from '../../utils';
-import { Copyable } from './Copyable';
+import { Copyable } from '../widgets';
 
 interface IColorChipProps {
   variable: string;
@@ -30,6 +31,7 @@ export const ColorChip = ({ variable, label, role }: IColorChipProps) => {
 
     const observer = new MutationObserver(measure);
     observer.observe(ancestor, { attributes: true, attributeFilter: ['data-theme'] });
+
     return () => observer.disconnect();
   }, [variable]);
 

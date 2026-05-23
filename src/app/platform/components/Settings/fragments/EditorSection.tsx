@@ -1,10 +1,12 @@
 'use client';
 
 import { Grid3X3, Map, Magnet } from 'lucide-react';
+
 import { useTranslations } from '@hooks';
 import { Tooltip } from '@/components';
-import { Toggle } from '../Toggle';
+
 import { ZOOM_OPTIONS } from '../consts';
+import { Toggle } from '../Toggle';
 
 export const EditorSection = () => {
   const t = useTranslations();

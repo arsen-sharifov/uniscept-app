@@ -14,7 +14,7 @@ export const useScrollReveal = () => {
           observer.unobserve(entry.target);
         });
       },
-      { threshold: 0.05, rootMargin: '50px' }
+      { threshold: 0.05, rootMargin: '50px' },
     );
 
     elements.forEach((el) => observer.observe(el));

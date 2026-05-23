@@ -1,5 +1,6 @@
-import { useMemo, useState } from 'react';
 import { ArrowUpRight, Search } from 'lucide-react';
+import { useMemo, useState } from 'react';
+
 import { SEARCHABLE_REFERENCES } from '../../consts';
 
 interface ISearchableReferencesExampleProps {
@@ -10,7 +11,7 @@ export const SearchableReferencesExample = ({ onSelect }: ISearchableReferencesE
   const [query, setQuery] = useState('');
   const filtered = useMemo(
     () => SEARCHABLE_REFERENCES.filter((label) => label.toLowerCase().includes(query.toLowerCase().trim())),
-    [query]
+    [query],
   );
 
   return (

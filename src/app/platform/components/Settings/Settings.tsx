@@ -1,12 +1,12 @@
 'use client';
 
-import { useCallback, useState } from 'react';
 import { X } from 'lucide-react';
+import { useCallback, useState } from 'react';
+
 import type { TSettingsSection } from '@interfaces';
 import { useTranslations } from '@hooks';
 import { Modal } from '@/components';
-import { usePreferences, useSettings } from './hooks';
-import { SettingsSidebar } from './SettingsSidebar';
+
 import {
   AppearanceSection,
   EditorSection,
@@ -15,6 +15,8 @@ import {
   ProfileSection,
   SecuritySection,
 } from './fragments';
+import { usePreferences, useSettings } from './hooks';
+import { SettingsSidebar } from './SettingsSidebar';
 
 export interface ISettingsProps {
   onClose: () => void;
@@ -42,7 +44,7 @@ export const Settings = ({ onClose, defaultSection = 'profile' }: ISettingsProps
     }
 
     if (activeSection === 'profile') {
-      return <ProfileSection user={user} onUpdateProfile={updateProfile} onUpdateEmail={changeEmail} />;
+      return <ProfileSection key={user?.id} user={user} onUpdateProfile={updateProfile} onUpdateEmail={changeEmail} />;
     }
 
     if (activeSection === 'security') {

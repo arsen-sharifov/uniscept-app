@@ -1,8 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
+
 import { Avatar, getInitials } from '@/components';
-import { Showcase } from '../../components';
-import { ARG_CATEGORIES } from '../../consts';
-import { WithPad } from '../../decorators';
+
 import { NAME_CASES, SCRIPT_CASES } from './consts';
 import {
   CommentThreadExample,
@@ -10,6 +9,9 @@ import {
   SidebarHeaderExample,
   WorkspaceMembersExample,
 } from './fragments';
+import { Showcase } from '../../components';
+import { ARG_CATEGORIES } from '../../consts';
+import { WithPad } from '../../decorators';
 
 const meta: Meta<typeof Avatar> = {
   title: 'Components/Avatar',

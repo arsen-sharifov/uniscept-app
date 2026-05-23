@@ -1,7 +1,9 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
+
 import type { IRect } from '@interfaces';
+
 import {
   AUTO_SCROLL_INTERVAL_MS,
   AUTO_SCROLL_STEP_PX,
@@ -58,12 +60,12 @@ export const useDragSelect = ({ containerRef, onSelectionChange, enabled = true 
           }))
           .filter(
             (entry): entry is { id: string; rect: DOMRect } =>
-              entry.id !== null && entry.rect.height > 0 && rectsOverlap(entry.rect, selectionRect)
+              entry.id !== null && entry.rect.height > 0 && rectsOverlap(entry.rect, selectionRect),
           )
-          .map((entry) => entry.id)
+          .map((entry) => entry.id),
       );
     },
-    [containerRef]
+    [containerRef],
   );
 
   const handleMouseDown = useCallback(
@@ -77,7 +79,7 @@ export const useDragSelect = ({ containerRef, onSelectionChange, enabled = true 
       startPos.current = { x: event.clientX, y: event.clientY };
       isActive.current = false;
     },
-    [enabled]
+    [enabled],
   );
 
   const handleMouseMove = useCallback(
@@ -131,7 +133,7 @@ export const useDragSelect = ({ containerRef, onSelectionChange, enabled = true 
         }, AUTO_SCROLL_INTERVAL_MS);
       }
     },
-    [computeRect, findIntersectingIds, onSelectionChange, containerRef, clearAutoScroll]
+    [computeRect, findIntersectingIds, onSelectionChange, containerRef, clearAutoScroll],
   );
 
   const handleMouseUp = useCallback(() => {

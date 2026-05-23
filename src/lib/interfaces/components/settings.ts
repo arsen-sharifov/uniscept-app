@@ -1,4 +1,5 @@
 import type { LucideIcon } from 'lucide-react';
+
 import type { TCanvasPattern, TTheme } from '@interfaces';
 
 export type TSettingsSection = 'profile' | 'security' | 'notifications' | 'appearance' | 'editor' | 'plan';

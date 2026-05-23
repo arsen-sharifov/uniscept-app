@@ -1,7 +1,8 @@
 'use client';
 
-import { useParams } from 'next/navigation';
 import { ReactFlowProvider } from '@xyflow/react';
+import { useParams } from 'next/navigation';
+
 import { Canvas } from '@/components';
 import { toParam } from '@/lib/utils';
 

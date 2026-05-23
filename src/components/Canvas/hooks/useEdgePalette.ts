@@ -1,7 +1,9 @@
 'use client';
 
 import { useMemo } from 'react';
+
 import type { IEdgePaletteEntry, TEdgeTone } from '@interfaces';
+
 import { useThemeToken } from './useThemeToken';
 
 const NEUTRAL_FALLBACK = 'rgba(100, 116, 139, 0.7)';
@@ -22,6 +24,6 @@ export const useEdgePalette = (): Record<TEdgeTone, IEdgePaletteEntry> => {
       invalid: { stroke: invalid, marker: invalid },
       tainted: { stroke: tainted, marker: tainted },
     }),
-    [borderStrong, valid, invalid, tainted]
+    [borderStrong, valid, invalid, tainted],
   );
 };

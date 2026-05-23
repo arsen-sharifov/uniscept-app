@@ -16,6 +16,7 @@ import {
   Sunset,
   User,
 } from 'lucide-react';
+
 import type { ICanvasPatternOption, ISettingsSidebarGroup, IThemeOption, TTheme } from '@interfaces';
 
 export const SIDEBAR_GROUPS = [

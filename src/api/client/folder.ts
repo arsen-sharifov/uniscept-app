@@ -1,5 +1,7 @@
 import type { IFolder, IFolderRow } from '@interfaces';
+
 import { createClient } from '@/lib/supabase';
+
 import { toFolder } from './utils';
 
 export const getFolders = async (workspaceId: string): Promise<IFolder[]> => {

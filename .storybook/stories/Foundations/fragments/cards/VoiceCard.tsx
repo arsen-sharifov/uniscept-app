@@ -1,6 +1,8 @@
 import { clsx } from 'clsx';
+
 import type { ITypeRow } from '@story-interfaces';
-import { Copyable } from '..';
+
+import { Copyable } from '../widgets';
 import { FamilyChip } from './FamilyChip';
 
 interface IVoiceCardProps {

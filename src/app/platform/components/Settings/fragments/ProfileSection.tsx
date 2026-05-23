@@ -1,10 +1,12 @@
 'use client';
 
-import { useEffect, useId, useState } from 'react';
 import type { User } from '@supabase/supabase-js';
+import { useId, useState } from 'react';
+
 import { EMAIL_PATTERN } from '@constants';
 import { useAsyncAction, useTranslations } from '@hooks';
 import { Avatar } from '@/components';
+
 import { SettingsInput } from '../SettingsInput';
 import { SettingsPrimaryButton } from '../SettingsPrimaryButton';
 
@@ -28,14 +30,6 @@ export const ProfileSection = ({ user, onUpdateProfile, onUpdateEmail }: IProfil
   const [email, setEmail] = useState(userEmail);
   const save = useAsyncAction();
   const emailChange = useAsyncAction();
-
-  useEffect(() => {
-    setName(userName);
-  }, [userName]);
-
-  useEffect(() => {
-    setEmail(userEmail);
-  }, [userEmail]);
 
   const nameChanged = name !== userName;
   const emailChanged = email !== userEmail;

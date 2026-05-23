@@ -5,7 +5,7 @@ export const createReferenceNode = (
   label: string,
   threadName: string,
   workspaceName: string,
-  selected: boolean = false
+  selected: boolean = false,
 ): TReferenceNode => ({
   id,
   type: ECanvasNodeType.Reference,
@@ -26,7 +26,7 @@ export const createNodeReference = (
   id: string,
   label: string,
   threadName: string,
-  workspaceName: string
+  workspaceName: string,
 ): INodeReference => ({
   id,
   label,

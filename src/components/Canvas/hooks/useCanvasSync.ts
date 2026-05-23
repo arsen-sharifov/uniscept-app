@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getCanvasContent } from '@api/client';
+
 import type { ICanvasSnapshot, ISaveState } from '@interfaces';
+import { getCanvasContent } from '@api/client';
 import {
   enqueueOperation,
   flushNow,
@@ -11,8 +12,8 @@ import {
   subscribeCanvasOperations,
   subscribeSaveState,
 } from '@/lib/canvas';
-import { createClient } from '@/lib/supabase';
 import { useCanvasStore } from '@/lib/stores';
+import { createClient } from '@/lib/supabase';
 
 interface ICanvasLoad {
   userId: string | null;
@@ -38,7 +39,7 @@ const loadCanvasFromBackend = async (threadId: string): Promise<ICanvasLoad> => 
 
   const [{ data: userData, error: authError }, snapshot] = await withTimeout(
     Promise.all([supabase.auth.getUser(), getCanvasContent(threadId)]),
-    LOAD_TIMEOUT_MS
+    LOAD_TIMEOUT_MS,
   );
 
   if (authError) throw authError;

@@ -1,5 +1,7 @@
 import { Zap, Lightbulb, Braces } from 'lucide-react';
+
 import { useTranslations } from '@hooks';
+
 import { Section } from './components';
 
 export const BuildersSection = () => {
@@ -10,13 +12,13 @@ export const BuildersSection = () => {
       <div className="absolute top-1/2 left-[10%] h-96 w-96 -translate-y-1/2 rounded-full bg-gradient-to-br from-purple-500/10 to-pink-500/10 blur-3xl" />
 
       <div className="mx-auto max-w-7xl">
-        <div data-reveal className="scroll-reveal mb-20 text-center">
+        <div data-reveal className="mb-20 scroll-reveal text-center">
           <h2 className="mb-6 text-5xl font-black tracking-tight text-black sm:text-6xl">{t.landing.builders.title}</h2>
           <p className="text-xl text-black/60">{t.landing.builders.subtitle}</p>
         </div>
 
-        <div data-reveal className="scroll-reveal grid gap-6 md:grid-cols-3">
-          <div className="card-3d group relative overflow-hidden rounded-2xl bg-gradient-to-br from-black to-gray-900 p-9 shadow-2xl transition-all duration-300 ease-in-out hover:scale-[1.02]">
+        <div data-reveal className="grid scroll-reveal gap-6 md:grid-cols-3">
+          <div className="group relative card-3d overflow-hidden rounded-2xl bg-gradient-to-br from-black to-gray-900 p-9 shadow-2xl transition-all duration-300 ease-in-out hover:scale-[1.02]">
             <div className="absolute -top-20 -right-20 h-64 w-64 rounded-full bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 blur-3xl" />
             <div className="relative">
               <div className="mb-6 inline-flex rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-500 p-4">
@@ -35,7 +37,7 @@ export const BuildersSection = () => {
             </div>
           </div>
 
-          <div className="card-3d group relative overflow-hidden rounded-2xl border border-black/5 bg-gradient-to-br from-white to-purple-50/50 p-9 shadow-xl transition-all duration-300 ease-in-out hover:scale-[1.02] hover:shadow-2xl">
+          <div className="group relative card-3d overflow-hidden rounded-2xl border border-black/5 bg-gradient-to-br from-white to-purple-50/50 p-9 shadow-xl transition-all duration-300 ease-in-out hover:scale-[1.02] hover:shadow-2xl">
             <div className="absolute bottom-0 -left-20 h-64 w-64 rounded-full bg-gradient-to-br from-purple-500/20 to-pink-500/20 blur-3xl" />
             <div className="relative">
               <div className="mb-6 inline-flex rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 p-4">
@@ -56,7 +58,7 @@ export const BuildersSection = () => {
             </div>
           </div>
 
-          <div className="card-3d group relative overflow-hidden rounded-2xl border border-black/5 bg-gradient-to-br from-white to-blue-50/50 p-9 shadow-xl transition-all duration-300 ease-in-out hover:scale-[1.02] hover:shadow-2xl">
+          <div className="group relative card-3d overflow-hidden rounded-2xl border border-black/5 bg-gradient-to-br from-white to-blue-50/50 p-9 shadow-xl transition-all duration-300 ease-in-out hover:scale-[1.02] hover:shadow-2xl">
             <div className="absolute -top-20 -right-20 h-64 w-64 rounded-full bg-gradient-to-br from-blue-500/20 to-cyan-500/20 blur-3xl" />
             <div className="relative">
               <div className="mb-6 inline-flex rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 p-4">

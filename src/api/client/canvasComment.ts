@@ -1,5 +1,7 @@
 import type { ICanvasCommentRow, ICreateCanvasCommentInput } from '@interfaces';
+
 import { createClient } from '@/lib/supabase';
+
 import { getCurrentUserId } from './utils';
 
 export const createCanvasComment = async (input: ICreateCanvasCommentInput): Promise<void> => {

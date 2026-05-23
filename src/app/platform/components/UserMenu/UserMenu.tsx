@@ -1,15 +1,16 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { ChevronsUpDown, LogOut, Settings } from 'lucide-react';
-import { clsx } from 'clsx';
 import type { User } from '@supabase/supabase-js';
+import { clsx } from 'clsx';
+import { ChevronsUpDown, LogOut, Settings } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+
+import { PREFERENCES_STORAGE_KEY } from '@constants';
 import { useTranslations } from '@hooks';
 import { getUser, signOut } from '@api/client';
 import { getInitials, Popover } from '@/components';
 import { clearLocale } from '@/i18n';
-import { PREFERENCES_STORAGE_KEY } from '@constants';
 
 export interface IUserMenuProps {
   onSettingsClick?: () => void;
@@ -63,7 +64,7 @@ export const UserMenu = ({ onSettingsClick }: IUserMenuProps) => {
           type="button"
           className={clsx(
             'group flex w-full min-w-0 items-center gap-2 rounded-xl px-2 py-1.5 text-left transition-colors',
-            open ? 'bg-[color:var(--surface-overlay)]' : 'hover:bg-[color:var(--surface-overlay)]'
+            open ? 'bg-[color:var(--surface-overlay)]' : 'hover:bg-[color:var(--surface-overlay)]',
           )}
         >
           <span className="relative flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[color:var(--accent)] to-[color:var(--accent-2)] text-[10px] font-bold text-[color:var(--on-accent)] shadow-sm">

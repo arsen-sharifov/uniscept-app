@@ -11,6 +11,7 @@ export const useSelection = () => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
+
       return next;
     });
     lastClickedIdRef.current = id;
@@ -21,6 +22,7 @@ export const useSelection = () => {
     if (!anchorId) {
       setSelectedIds(new Set([targetId]));
       lastClickedIdRef.current = targetId;
+
       return;
     }
 

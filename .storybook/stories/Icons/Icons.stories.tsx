@@ -1,9 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
-import { fn } from 'storybook/test';
 import { type LucideProps, icons } from 'lucide-react';
-import { ARG_CATEGORIES } from '../../consts';
+import { fn } from 'storybook/test';
+
 import { BENCHMARK_SIZES } from './consts';
 import { IconGallery, SampleCard } from './fragments';
+import { ARG_CATEGORIES } from '../../consts';
 
 const meta: Meta<LucideProps> = {
   title: 'Components/Icons',

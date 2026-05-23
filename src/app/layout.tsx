@@ -1,8 +1,10 @@
 import type { Metadata } from 'next';
-import type { ReactNode } from 'react';
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale } from 'next-intl/server';
+import type { ReactNode } from 'react';
+
 import { DEFAULT_PREFERENCES } from '@constants';
+
 import { THEME_BOOTSTRAP } from './themeBootstrap';
 import './globals.css';
 

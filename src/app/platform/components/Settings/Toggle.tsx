@@ -1,7 +1,7 @@
 'use client';
 
-import type { LucideIcon } from 'lucide-react';
 import { clsx } from 'clsx';
+import type { LucideIcon } from 'lucide-react';
 
 export interface IToggleProps {
   icon: LucideIcon;
@@ -30,13 +30,13 @@ export const Toggle = ({ icon: Icon, label, description, checked, onChange, disa
         'relative h-5 w-9 shrink-0 rounded-full transition-colors',
         'focus-visible:ring-2 focus-visible:ring-[color:var(--ring-focus)] focus-visible:outline-none',
         disabled ? 'cursor-not-allowed' : 'cursor-pointer',
-        checked ? 'bg-[color:var(--accent)]' : 'bg-[color:var(--surface-overlay)]'
+        checked ? 'bg-[color:var(--accent)]' : 'bg-[color:var(--surface-overlay)]',
       )}
     >
       <span
         className={clsx(
           'absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-[color:var(--on-accent)] shadow-sm transition-transform',
-          checked ? 'translate-x-4' : 'translate-x-0'
+          checked ? 'translate-x-4' : 'translate-x-0',
         )}
       />
     </button>

@@ -1,4 +1,5 @@
 import type { INodeReference } from '@interfaces';
+
 import { createNodeReference } from '../../utils';
 
 export const referenceNodes: INodeReference[] = [

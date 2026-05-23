@@ -1,7 +1,7 @@
 'use client';
 
-import { type ReactNode, useState } from 'react';
 import { clsx } from 'clsx';
+import { type ReactNode, useState } from 'react';
 
 interface IListProps {
   trigger: (open: boolean, toggle: () => void) => ReactNode;
@@ -19,7 +19,7 @@ export const List = ({ trigger, children, defaultOpen = false }: IListProps) => 
       <div
         className={clsx(
           'grid transition-[grid-template-rows] duration-200 ease-out',
-          open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
+          open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]',
         )}
       >
         <div className="overflow-hidden">{children}</div>

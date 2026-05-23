@@ -1,0 +1,17 @@
+name: Refactor
+description: Restructuring without behaviour change
+title: 'refactor: '
+labels: [refactor]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What to refactor
+    validations:
+      required: true
+
+  - type: textarea
+    id: why
+    attributes:
+      label: Why
+      description: What is wrong with the current state

@@ -1,9 +1,10 @@
 'use client';
 
-import { type SubmitEvent, useMemo, useState } from 'react';
+import { ArrowRight, ArrowLeft, Lock } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowRight, ArrowLeft, Lock } from 'lucide-react';
+import { type SubmitEvent, useMemo, useState } from 'react';
+
 import { useTranslations } from '@hooks';
 import { signUp, verifyInviteCode } from '@api/client';
 import { Stepper, Tooltip } from '@/components';
@@ -37,7 +38,7 @@ const SignUpPage = () => {
             ? `${formatPlanPrice(p.price, planStep.free)}/${periods[p.period]}`
             : formatPlanPrice(p.price, planStep.free),
         })),
-    [plans, periods, planStep.free]
+    [plans, periods, planStep.free],
   );
 
   const handleSignUp = async (e: SubmitEvent) => {
@@ -50,6 +51,7 @@ const SignUpPage = () => {
     if (!valid) {
       setError(authErrors.invalidInviteCode);
       setLoading(false);
+
       return;
     }
 
@@ -58,6 +60,7 @@ const SignUpPage = () => {
     if (authError) {
       setError(authError.message);
       setLoading(false);
+
       return;
     }
 

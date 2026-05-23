@@ -1,6 +1,7 @@
 'use client';
 
 import { Trash2 } from 'lucide-react';
+
 import type { IComment } from '@interfaces';
 import { useTranslations } from '@hooks';
 

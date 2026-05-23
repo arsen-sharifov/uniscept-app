@@ -1,12 +1,14 @@
 'use client';
 
-import { type FocusEvent, type FormEvent, type KeyboardEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { Handle, type NodeProps } from '@xyflow/react';
 import { clsx } from 'clsx';
 import { ChevronDown, MessageSquare, Send, X } from 'lucide-react';
+import { type FocusEvent, type FormEvent, type KeyboardEvent, useCallback, useEffect, useRef, useState } from 'react';
+
 import type { TCanvasNode } from '@interfaces';
 import { useTranslations } from '@hooks';
 import { useCanvasStore } from '@/lib/stores';
+
 import { HANDLE_POSITIONS, LABEL_CLAMP_STYLE, TEXTAREA_FIELD_SIZING_STYLE } from './consts';
 import { CommentItem } from './fragments';
 import { isOwnComment } from './utils';
@@ -52,7 +54,7 @@ export const CanvasNode = ({ id, data, selected }: NodeProps<TCanvasNode>) => {
       observerRef.current?.disconnect();
       observerRef.current = null;
     },
-    []
+    [],
   );
 
   const labelRefCallback = useCallback((node: HTMLParagraphElement | null) => {
@@ -78,6 +80,7 @@ export const CanvasNode = ({ id, data, selected }: NodeProps<TCanvasNode>) => {
       event.preventDefault();
       updateNodeLabel(id, event.currentTarget.value.trim() || label);
       setEditingNodeId(null);
+
       return;
     }
 
@@ -110,7 +113,7 @@ export const CanvasNode = ({ id, data, selected }: NodeProps<TCanvasNode>) => {
         isValid && 'ring-[color:var(--status-success-border)]',
         isInvalid && 'ring-[color:var(--status-error-border)]',
         selected && 'ring-2 ring-[color:var(--border-active)]',
-        isPending && 'animate-node-pulse ring-2 ring-[color:var(--ref-border)] motion-reduce:animate-none'
+        isPending && 'animate-node-pulse ring-2 ring-[color:var(--ref-border)] motion-reduce:animate-none',
       )}
     >
       {(isValid || isInvalid) && (
@@ -119,7 +122,7 @@ export const CanvasNode = ({ id, data, selected }: NodeProps<TCanvasNode>) => {
           className={clsx(
             'absolute top-2 bottom-2 left-0 w-[3px] rounded-r-full',
             isValid && 'bg-[color:var(--status-success)] shadow-[0_0_8px_var(--status-success-soft)]',
-            isInvalid && 'bg-[color:var(--status-error)] shadow-[0_0_8px_var(--status-error-soft)]'
+            isInvalid && 'bg-[color:var(--status-error)] shadow-[0_0_8px_var(--status-error-soft)]',
           )}
         />
       )}
@@ -171,7 +174,7 @@ export const CanvasNode = ({ id, data, selected }: NodeProps<TCanvasNode>) => {
                 'nodrag mt-px inline-flex h-5 shrink-0 items-center gap-0.5 rounded-md transition-[opacity,colors,padding] duration-150',
                 hasComments
                   ? 'bg-[color:var(--accent-soft)] px-1.5 text-[10.5px] font-semibold text-[color:var(--accent-text)] hover:bg-[color:var(--accent-soft)]'
-                  : 'w-5 justify-center text-[color:var(--text-faint)] opacity-0 group-hover/node:opacity-100 hover:bg-[color:var(--surface-overlay)] hover:text-[color:var(--text)]'
+                  : 'w-5 justify-center text-[color:var(--text-faint)] opacity-0 group-hover/node:opacity-100 hover:bg-[color:var(--surface-overlay)] hover:text-[color:var(--text)]',
               )}
             >
               <MessageSquare className="h-2.5 w-2.5" strokeWidth={2.25} />

@@ -1,8 +1,10 @@
 'use client';
 
 import { clsx } from 'clsx';
+
 import type { TSettingsSection } from '@interfaces';
 import { useTranslations } from '@hooks';
+
 import { SIDEBAR_GROUPS } from './consts';
 
 export interface ISettingsSidebarProps {
@@ -33,7 +35,7 @@ export const SettingsSidebar = ({ activeSection, onSectionChange }: ISettingsSid
                   'focus-visible:ring-2 focus-visible:ring-[color:var(--ring-focus)] focus-visible:outline-none',
                   activeSection === item.id
                     ? 'settings-sidebar__item--active font-medium shadow-sm'
-                    : 'text-[color:var(--text-muted)] hover:bg-[color:var(--surface-overlay)] hover:text-[color:var(--text-strong)]'
+                    : 'text-[color:var(--text-muted)] hover:bg-[color:var(--surface-overlay)] hover:text-[color:var(--text-strong)]',
                 )}
               >
                 <item.icon className="h-4 w-4 shrink-0" />

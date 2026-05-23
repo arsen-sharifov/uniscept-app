@@ -1,5 +1,5 @@
-import type { ReactNode } from 'react';
 import { Bell, LogOut, Settings, User } from 'lucide-react';
+import type { ReactNode } from 'react';
 
 interface IMenuExampleProps {
   onSelect?: (label: string) => void;

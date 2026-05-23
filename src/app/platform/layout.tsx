@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, type ReactNode } from 'react';
+
 import { Sidebar, Toolbar, useToolbar } from '@/components';
+
 import { Settings } from './components/Settings';
 import { UserMenu } from './components/UserMenu';
 import { useWorkspaceManager } from './hooks';

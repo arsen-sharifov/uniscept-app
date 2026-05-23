@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
 import { clsx } from 'clsx';
 import { Copy } from 'lucide-react';
-import { COPY_FEEDBACK_DELAY_MS } from '../../../consts';
+import { useState } from 'react';
+
+import { COPY_FEEDBACK_DELAY_MS } from '../../../../consts';
 
 interface ICopyableProps {
   value: string;
@@ -28,14 +29,14 @@ export const Copyable = ({ value, display, className }: ICopyableProps) => {
       className={clsx(
         'group inline-flex items-center gap-1.5 rounded-md bg-[color:var(--surface-overlay)] px-2 py-0.5 font-mono text-[10.5px] tracking-[0.04em] text-[color:var(--text-muted)] transition-colors hover:bg-[color:var(--surface-elevated)] hover:text-[color:var(--text-strong)]',
         copied && 'bg-[color:var(--accent-soft)] text-[color:var(--accent-text)]',
-        className
+        className,
       )}
     >
       <span className="truncate">{display ?? value}</span>
       <Copy
         className={clsx(
           'h-3 w-3 shrink-0 opacity-0 transition-opacity group-hover:opacity-100',
-          copied && 'opacity-100'
+          copied && 'opacity-100',
         )}
         strokeWidth={2}
       />

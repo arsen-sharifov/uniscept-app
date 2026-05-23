@@ -1,5 +1,7 @@
 import { clsx } from 'clsx';
+
 import type { IShowcaseItem } from '@story-interfaces';
+
 import { SHOWCASE_COLUMN_CLASS } from '../consts';
 
 interface IShowcaseProps {
@@ -29,7 +31,7 @@ export const Showcase = ({ title, caption, columns = 3, items }: IShowcaseProps)
           key={item.label}
           className={clsx(
             'flex flex-col gap-3 rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-elevated)] p-4',
-            item.span && 'sm:col-span-2'
+            item.span && 'sm:col-span-2',
           )}
         >
           <div className="flex items-baseline justify-between gap-2">

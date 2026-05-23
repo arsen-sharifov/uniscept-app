@@ -1,0 +1,11 @@
+name: Tests
+description: Tests only (unit, integration, e2e, Storybook)
+title: 'test: '
+labels: [test]
+body:
+  - type: textarea
+    id: scope
+    attributes:
+      label: What to test
+    validations:
+      required: true

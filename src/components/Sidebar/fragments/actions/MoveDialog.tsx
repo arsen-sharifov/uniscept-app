@@ -1,11 +1,13 @@
 'use client';
 
-import { useState, useMemo } from 'react';
-import { Folder, FolderOpen, Home } from 'lucide-react';
 import { clsx } from 'clsx';
+import { Folder, FolderOpen, Home } from 'lucide-react';
+import { useState, useMemo } from 'react';
+
 import type { TNavItem } from '@interfaces';
 import { useTranslations } from '@hooks';
-import { Modal } from '@/components';
+import { Modal } from '@/components/Modal';
+
 import { INDENTATION_WIDTH } from '../../consts';
 import { flattenTree } from '../../utils';
 
@@ -23,6 +25,7 @@ export const MoveDialog = ({ open, items, selectedIds, onMove, onCancel }: IMove
 
   const allFolders = useMemo(() => {
     const flat = flattenTree(items, new Set());
+
     return flat.filter((item) => item.type === 'folder');
   }, [items]);
 
@@ -53,13 +56,13 @@ export const MoveDialog = ({ open, items, selectedIds, onMove, onCancel }: IMove
               'flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors',
               targetId === null
                 ? 'bg-[color:var(--accent-soft)] text-[color:var(--accent-text)]'
-                : 'text-[color:var(--text-muted)] hover:bg-[color:var(--surface-overlay)]'
+                : 'text-[color:var(--text-muted)] hover:bg-[color:var(--surface-overlay)]',
             )}
           >
             <Home
               className={clsx(
                 'h-4 w-4 shrink-0',
-                targetId === null ? 'text-[color:var(--accent)]' : 'text-[color:var(--text-subtle)]'
+                targetId === null ? 'text-[color:var(--accent)]' : 'text-[color:var(--text-subtle)]',
               )}
             />
             <span>{t.platform.sidebar.rootLevel}</span>
@@ -75,7 +78,7 @@ export const MoveDialog = ({ open, items, selectedIds, onMove, onCancel }: IMove
                 'flex w-full items-center gap-2 rounded-lg py-2 pr-3 text-sm transition-colors',
                 targetId === folder.id
                   ? 'bg-[color:var(--accent-soft)] text-[color:var(--accent-text)]'
-                  : 'text-[color:var(--text-muted)] hover:bg-[color:var(--surface-overlay)]'
+                  : 'text-[color:var(--text-muted)] hover:bg-[color:var(--surface-overlay)]',
               )}
             >
               {targetId === folder.id ? (

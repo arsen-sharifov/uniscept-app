@@ -1,10 +1,13 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState, type MouseEvent, type ReactNode } from 'react';
 import { Files, FolderPlus, LayoutGrid, Plus, SearchX, Sparkles } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState, type MouseEvent, type ReactNode } from 'react';
+
 import type { TDeleteTarget, TNavItem, TNavItemType, IWorkspaceItem } from '@interfaces';
 import { useEscapeKey, useTranslations } from '@hooks';
-import { ConfirmDialog, Logo } from '@/components';
+import { Logo } from '@/components/Branding';
+import { ConfirmDialog } from '@/components/Modal';
+
 import { BulkActionsBar, EmptyState, MoveDialog, NavItems, SearchInput, WorkspaceSwitcher } from './fragments';
 import { useInlineEdit, useSelection } from './hooks';
 import { filterTree, getSiblings, getSingleDeleteTitleKey } from './utils';
@@ -84,6 +87,7 @@ export const Sidebar = ({
   const allItemIds = useMemo(() => {
     const collect = (list: TNavItem[]): string[] =>
       list.flatMap((item) => (item.type === 'folder' ? [item.id, ...collect(item.items)] : [item.id]));
+
     return new Set(collect(items));
   }, [items]);
 
@@ -109,16 +113,18 @@ export const Sidebar = ({
     (id: string, event: MouseEvent) => {
       if (event.shiftKey) {
         workspaceSelectRange(id, workspaces);
+
         return;
       }
       if (event.ctrlKey || event.metaKey) {
         toggleWorkspaceSelection(id);
+
         return;
       }
       clearAndSetAnchorWorkspace(id);
       onWorkspaceSelect?.(id);
     },
-    [workspaces, workspaceSelectRange, toggleWorkspaceSelection, clearAndSetAnchorWorkspace, onWorkspaceSelect]
+    [workspaces, workspaceSelectRange, toggleWorkspaceSelection, clearAndSetAnchorWorkspace, onWorkspaceSelect],
   );
 
   const {
@@ -173,12 +179,14 @@ export const Sidebar = ({
   const getDeleteTitle = () => {
     if (!deleteTarget) return '';
     if (deleteTarget.mode === 'bulk') return t.platform.sidebar.bulkDeleteTitle;
+
     return t.platform.sidebar[getSingleDeleteTitleKey(deleteTarget.type)];
   };
 
   const getDeleteMessage = () => {
     if (!deleteTarget) return '';
     if (deleteTarget.mode === 'bulk') return t.platform.sidebar.bulkDeleteConfirm;
+
     return `${t.platform.sidebar.deleteConfirmPrefix} "${deleteTarget.name}"${t.platform.sidebar.deleteConfirmSuffix}`;
   };
 
@@ -206,7 +214,7 @@ export const Sidebar = ({
       clearSelection();
       setShowMoveDialog(false);
     },
-    [items, selectedIds, onBulkMove, clearSelection]
+    [items, selectedIds, onBulkMove, clearSelection],
   );
 
   useEscapeKey(clearSelection, selectionCount > 0);
@@ -260,7 +268,7 @@ export const Sidebar = ({
         {activeWorkspaceId && (
           <div
             data-sidebar-scroll
-            className="flex flex-1 flex-col overflow-x-hidden overflow-y-auto scroll-smooth px-2 pt-3 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            className="flex flex-1 [scrollbar-width:none] flex-col overflow-x-hidden overflow-y-auto scroll-smooth px-2 pt-3 pb-2 [&::-webkit-scrollbar]:hidden"
           >
             <div className="mb-1 flex items-center justify-between px-2">
               <div className="flex items-center gap-1.5">

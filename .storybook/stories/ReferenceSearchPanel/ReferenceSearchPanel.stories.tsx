@@ -1,9 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
+
 import { ReferenceSearchPanel } from '@/components';
-import { ARG_CATEGORIES } from '../../consts';
-import { WithCanvasStage, WithReactFlow, withCanvasStore } from '../../decorators';
+
 import { emptyReferenceNodes, referenceNodes } from './consts';
 import { ReferenceSearchFlow } from './fragments';
+import { ARG_CATEGORIES } from '../../consts';
+import { WithCanvasStage, WithReactFlow, withCanvasStore } from '../../decorators';
 
 const OPEN_PANEL_STATE = { referenceSearchPosition: { x: 0, y: 0 } };
 

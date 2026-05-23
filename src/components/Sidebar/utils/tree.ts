@@ -9,7 +9,7 @@ export const findInTree = (items: TNavItem[], id: string): TNavItem | null =>
 export const findParentId = (
   items: TNavItem[],
   id: string,
-  parentId: string | null = null
+  parentId: string | null = null,
 ): string | null | undefined => {
   const matched = items.find((item) => item.id === id);
   if (matched) return parentId;
@@ -23,11 +23,13 @@ export const findParentId = (
 export const getSiblings = (items: TNavItem[], parentId: string | null): TNavItem[] => {
   if (!parentId) return items;
   const parent = findInTree(items, parentId);
+
   return parent?.type === 'folder' ? parent.items : [];
 };
 
 export const containsThread = (item: TNavItem, threadId: string): boolean => {
   if (item.type === 'thread') return item.id === threadId;
+
   return item.items.some((child) => containsThread(child, threadId));
 };
 
@@ -35,6 +37,7 @@ export const updateNavItemName = (items: TNavItem[], id: string, name: string): 
   items.map((item) => {
     if (item.id === id) return { ...item, name };
     if (item.type === 'folder') return { ...item, items: updateNavItemName(item.items, id, name) };
+
     return item;
   });
 
@@ -47,11 +50,12 @@ export const insertIntoTree = (
   items: TNavItem[],
   item: TNavItem,
   parentId: string | null,
-  position: number
+  position: number,
 ): TNavItem[] => {
   if (!parentId) {
     const result = [...items];
     result.splice(position, 0, item);
+
     return result;
   }
 
@@ -60,8 +64,10 @@ export const insertIntoTree = (
     if (node.id === parentId) {
       const newItems = [...node.items];
       newItems.splice(position, 0, item);
+
       return { ...node, items: newItems };
     }
+
     return {
       ...node,
       items: insertIntoTree(node.items, item, parentId, position),
@@ -95,7 +101,7 @@ export const filterTree = (items: TNavItem[], query: string): TNavItem[] => {
 
 export const buildNavTree = (folders: IFolder[], threads: IThread[]): TNavItem[] => {
   const folderMap = new Map<string, IFolderItem>(
-    folders.map((folder) => [folder.id, { type: 'folder', id: folder.id, name: folder.name, items: [] }])
+    folders.map((folder) => [folder.id, { type: 'folder', id: folder.id, name: folder.name, items: [] }]),
   );
 
   const entries: {
@@ -123,6 +129,7 @@ export const buildNavTree = (folders: IFolder[], threads: IThread[]): TNavItem[]
     const list = acc.get(parentId) ?? [];
     list.push({ item, position });
     acc.set(parentId, list);
+
     return acc;
   }, new Map<string | null, { item: TNavItem; position: number }[]>());
 

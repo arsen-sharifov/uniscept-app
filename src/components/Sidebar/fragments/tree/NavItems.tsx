@@ -1,11 +1,13 @@
 'use client';
 
-import { useCallback, useEffect, useRef, type MouseEvent } from 'react';
 import { DndContext, DragOverlay } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { useCallback, useEffect, useRef, type MouseEvent } from 'react';
 import { createPortal } from 'react-dom';
+
 import type { TDropZone, TNavItem, TNavItemType } from '@interfaces';
 import { useTranslations } from '@hooks';
+
 import { DND_MEASURING } from '../../consts';
 import { useDndTree, useDragSelect, useInlineEdit } from '../../hooks';
 import { findInTree, findParentId } from '../../utils';
@@ -86,16 +88,18 @@ export const NavItems = ({
     (id: string, event: MouseEvent) => {
       if (event.shiftKey) {
         onSelectRange(id, flattenedItems);
+
         return;
       }
       if (event.ctrlKey || event.metaKey) {
         onToggleSelection(id);
+
         return;
       }
       onClearAndSetAnchor(id);
       onItemClick?.(id);
     },
-    [flattenedItems, onSelectRange, onToggleSelection, onClearAndSetAnchor, onItemClick]
+    [flattenedItems, onSelectRange, onToggleSelection, onClearAndSetAnchor, onItemClick],
   );
 
   const prevAutoEditId = useRef(autoEditId);
@@ -122,12 +126,14 @@ export const NavItems = ({
   const getDropIndicator = (itemId: string): TDropZone | null => {
     if (!activeId || !visualOverId || itemId !== visualOverId) return null;
     if (itemId === activeId && !isPastLast) return null;
+
     return projected?.zone ?? null;
   };
 
   const getDropDepth = (itemId: string): number | null => {
     if (!activeId || !visualOverId || itemId !== visualOverId) return null;
     if (itemId === activeId && !isPastLast) return null;
+
     return projected?.depth ?? null;
   };
 
@@ -178,7 +184,7 @@ export const NavItems = ({
           <DragOverlay dropAnimation={null}>
             {activeItem ? <DragOverlayContent item={activeItem} bulkCount={bulkCount} /> : null}
           </DragOverlay>,
-          document.body
+          document.body,
         )}
     </DndContext>
   );

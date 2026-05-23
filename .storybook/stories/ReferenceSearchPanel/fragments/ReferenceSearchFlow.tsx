@@ -1,6 +1,9 @@
 import { ReactFlow } from '@xyflow/react';
+
 import type { INodeReference } from '@interfaces';
+
 import { ReferenceSearchPanel } from '@/components';
+
 import { LOCKED_GESTURES, PRO_OPTIONS } from '../../../consts';
 
 interface IReferenceSearchFlowProps {

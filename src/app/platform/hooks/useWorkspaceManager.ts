@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import { useEffect, useRef, useState, useCallback } from 'react';
+
 import type { TNavItem, TNavItemType, IWorkspaceItem } from '@interfaces';
 import {
   getWorkspaces,
@@ -23,7 +24,6 @@ import {
   moveFolder,
   moveThread,
 } from '@api/client';
-import { createClient } from '@/lib/supabase';
 import {
   buildNavTree,
   containsThread,
@@ -34,6 +34,7 @@ import {
   removeFromTree,
   updateNavItemName,
 } from '@/components/Sidebar/utils';
+import { createClient } from '@/lib/supabase';
 
 export const useWorkspaceManager = () => {
   const router = useRouter();
@@ -44,17 +45,12 @@ export const useWorkspaceManager = () => {
   const [workspaces, setWorkspaces] = useState<IWorkspaceItem[]>([]);
   const [activeWorkspaceId, setActiveWorkspaceId] = useState<string | null>(null);
   const [navItems, setNavItems] = useState<TNavItem[]>([]);
-  const [activeThreadId, setActiveThreadId] = useState<string | undefined>(threadIdParam);
   const [loading, setLoading] = useState(true);
 
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const [editingWorkspaceId, setEditingWorkspaceId] = useState<string | null>(null);
 
   const initialized = useRef(false);
-
-  useEffect(() => {
-    setActiveThreadId(threadIdParam);
-  }, [threadIdParam]);
 
   const loadWorkspaceContent = useCallback(async (workspaceId: string) => {
     const [folders, threads] = await Promise.all([getFolders(workspaceId), getThreads(workspaceId)]);
@@ -71,7 +67,7 @@ export const useWorkspaceManager = () => {
         workspaceList.map((workspace) => ({
           id: workspace.id,
           name: workspace.name,
-        }))
+        })),
       );
 
       const targetWorkspaceId = workspaceIdParam
@@ -99,7 +95,7 @@ export const useWorkspaceManager = () => {
       setLoading(false);
       router.push(`/platform`);
     },
-    [router, loadWorkspaceContent]
+    [router, loadWorkspaceContent],
   );
 
   const handleCreateWorkspace = useCallback(async () => {
@@ -123,7 +119,7 @@ export const useWorkspaceManager = () => {
       workspaceList.map((workspace) => ({
         id: workspace.id,
         name: workspace.name,
-      }))
+      })),
     );
   }, []);
 
@@ -136,7 +132,7 @@ export const useWorkspaceManager = () => {
         await reloadWorkspaces();
       }
     },
-    [reloadWorkspaces]
+    [reloadWorkspaces],
   );
 
   const handleDeleteWorkspace = useCallback(
@@ -159,12 +155,13 @@ export const useWorkspaceManager = () => {
             setNavItems([]);
           }
         }
+
         return remaining;
       });
 
       router.push('/platform');
     },
-    [activeWorkspaceId, router, loadWorkspaceContent]
+    [activeWorkspaceId, router, loadWorkspaceContent],
   );
 
   const handleCreateThread = useCallback(
@@ -183,7 +180,7 @@ export const useWorkspaceManager = () => {
       setEditingItemId(thread.id);
       router.push(`/platform/${activeWorkspaceId}/${thread.id}`);
     },
-    [activeWorkspaceId, router]
+    [activeWorkspaceId, router],
   );
 
   const handleCreateFolder = useCallback(async () => {
@@ -221,7 +218,7 @@ export const useWorkspaceManager = () => {
         router.push(`/platform`);
       }
     },
-    [activeWorkspaceId, navItems, threadIdParam, router]
+    [activeWorkspaceId, navItems, threadIdParam, router],
   );
 
   const handleRenameItem = useCallback(
@@ -241,7 +238,7 @@ export const useWorkspaceManager = () => {
         if (activeWorkspaceId) await loadWorkspaceContent(activeWorkspaceId);
       }
     },
-    [navItems, activeWorkspaceId, loadWorkspaceContent]
+    [navItems, activeWorkspaceId, loadWorkspaceContent],
   );
 
   const handleMoveItem = useCallback(
@@ -262,6 +259,7 @@ export const useWorkspaceManager = () => {
         const item = findInTree(prev, id);
         if (!item) return prev;
         const without = removeFromTree(prev, id);
+
         return insertIntoTree(without, item, parentId, position);
       });
 
@@ -298,14 +296,14 @@ export const useWorkspaceManager = () => {
           allUpdates.map((update) =>
             update.type === 'folder'
               ? moveFolder(update.id, update.targetParentId, update.newPos)
-              : moveThread(update.id, update.targetParentId, update.newPos)
-          )
+              : moveThread(update.id, update.targetParentId, update.newPos),
+          ),
         );
       } catch {
         if (activeWorkspaceId) await loadWorkspaceContent(activeWorkspaceId);
       }
     },
-    [activeWorkspaceId, navItems, loadWorkspaceContent]
+    [activeWorkspaceId, navItems, loadWorkspaceContent],
   );
 
   const handleBulkDelete = useCallback(
@@ -336,13 +334,14 @@ export const useWorkspaceManager = () => {
         (ids.has(threadIdParam) ||
           folderIds.some((folderId) => {
             const folder = findInTree(navItems, folderId);
+
             return !!folder && containsThread(folder, threadIdParam);
           }));
       if (shouldNavigate) {
         router.push('/platform');
       }
     },
-    [activeWorkspaceId, navItems, threadIdParam, router, loadWorkspaceContent]
+    [activeWorkspaceId, navItems, threadIdParam, router, loadWorkspaceContent],
   );
 
   const handleBulkDeleteWorkspaces = useCallback(
@@ -362,6 +361,7 @@ export const useWorkspaceManager = () => {
           }
           router.push('/platform');
         }
+
         return remaining;
       });
 
@@ -371,7 +371,7 @@ export const useWorkspaceManager = () => {
         await reloadWorkspaces();
       }
     },
-    [activeWorkspaceId, router, loadWorkspaceContent, reloadWorkspaces]
+    [activeWorkspaceId, router, loadWorkspaceContent, reloadWorkspaces],
   );
 
   const handleMoveWorkspace = useCallback(
@@ -399,7 +399,7 @@ export const useWorkspaceManager = () => {
         await reloadWorkspaces();
       }
     },
-    [workspaces, reloadWorkspaces]
+    [workspaces, reloadWorkspaces],
   );
 
   const handleBulkMove = useCallback(
@@ -416,16 +416,17 @@ export const useWorkspaceManager = () => {
 
       setNavItems((prev) => {
         const removed = [...ids].reduce((acc, id) => removeFromTree(acc, id), prev);
+
         return itemsToMove.reduce(
           (acc, { item }, index) => insertIntoTree(acc, item, targetParentId, existingCount + index),
-          removed
+          removed,
         );
       });
 
       const promises = itemsToMove.map(({ item, type }, index) =>
         type === 'folder'
           ? moveFolder(item.id, targetParentId, existingCount + index)
-          : moveThread(item.id, targetParentId, existingCount + index)
+          : moveThread(item.id, targetParentId, existingCount + index),
       );
       try {
         await Promise.all(promises);
@@ -433,25 +434,24 @@ export const useWorkspaceManager = () => {
         if (activeWorkspaceId) await loadWorkspaceContent(activeWorkspaceId);
       }
     },
-    [activeWorkspaceId, navItems, loadWorkspaceContent]
+    [activeWorkspaceId, navItems, loadWorkspaceContent],
   );
 
   const handleItemClick = useCallback(
     (id: string) => {
       const item = findInTree(navItems, id);
       if (item?.type === 'thread' && activeWorkspaceId) {
-        setActiveThreadId(id);
         router.push(`/platform/${activeWorkspaceId}/${id}`);
       }
     },
-    [navItems, activeWorkspaceId, router]
+    [navItems, activeWorkspaceId, router],
   );
 
   return {
     workspaces,
     activeWorkspaceId,
     navItems,
-    activeThreadId,
+    activeThreadId: threadIdParam,
     editingItemId,
     clearEditingItemId: useCallback(() => setEditingItemId(null), []),
     editingWorkspaceId,

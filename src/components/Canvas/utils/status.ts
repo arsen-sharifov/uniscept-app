@@ -1,4 +1,5 @@
 import type { Edge, Node } from '@xyflow/react';
+
 import {
   ECanvasNodeType,
   type ICanvasNodeData,
@@ -38,10 +39,11 @@ const isMarkedValid = (status: TEffectiveStatus | undefined): boolean =>
 
 export const resolveEdgeTone = (
   sourceStatus: TEffectiveStatus | undefined,
-  targetStatus: TEffectiveStatus | undefined
+  targetStatus: TEffectiveStatus | undefined,
 ): TEdgeTone => {
   if (sourceStatus === 'invalid') {
     if (targetStatus === 'valid' || targetStatus === 'tainted-valid') return 'tainted';
+
     return 'invalid';
   }
   if (sourceStatus === 'tainted' || sourceStatus === 'tainted-valid') return 'tainted';
@@ -60,10 +62,11 @@ const TONE_SEVERITY: Record<TEdgeTone, number> = {
 
 export const resolveBidirectionalEdgeTone = (
   statusA: TEffectiveStatus | undefined,
-  statusB: TEffectiveStatus | undefined
+  statusB: TEffectiveStatus | undefined,
 ): TEdgeTone => {
   const ab = resolveEdgeTone(statusA, statusB);
   const ba = resolveEdgeTone(statusB, statusA);
+
   return TONE_SEVERITY[ab] >= TONE_SEVERITY[ba] ? ab : ba;
 };
 

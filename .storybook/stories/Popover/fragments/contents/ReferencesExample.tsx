@@ -1,4 +1,5 @@
 import { ArrowUpRight } from 'lucide-react';
+
 import { SAMPLE_REFERENCES } from '../../consts';
 
 interface IReferencesExampleProps {

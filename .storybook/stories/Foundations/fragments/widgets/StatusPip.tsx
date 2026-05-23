@@ -1,4 +1,5 @@
 import { clsx } from 'clsx';
+
 import type { TStatusTone } from '@story-interfaces';
 
 interface IStatusPipProps {
@@ -15,7 +16,7 @@ export const StatusPip = ({ label, tone }: IStatusPipProps) => (
       tone === 'warning' &&
         'bg-[color:var(--status-warning-bg)] text-[color:var(--status-warning)] ring-[color:var(--status-warning-border)]',
       tone === 'error' &&
-        'bg-[color:var(--status-error-bg)] text-[color:var(--status-error)] ring-[color:var(--status-error-border)]'
+        'bg-[color:var(--status-error-bg)] text-[color:var(--status-error)] ring-[color:var(--status-error-border)]',
     )}
   >
     {label}

@@ -1,0 +1,21 @@
+name: Feature
+description: New functionality
+title: 'feat: '
+labels: [feat]
+body:
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope
+      description: One or two sentences on what this delivers
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Optional bullet list of what "done" looks like
+      placeholder: |
+        -
+        -

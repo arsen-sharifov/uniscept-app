@@ -1,10 +1,12 @@
 'use client';
 
+import { clsx } from 'clsx';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import { clsx } from 'clsx';
+
 import type { ITooltipPosition, TTooltipPlacement } from '@interfaces';
 import { useMounted, useViewportChange } from '@hooks';
+
 import { choosePlacement, computeTooltipPosition } from './utils';
 
 export interface ISmartTooltipProps {
@@ -51,6 +53,7 @@ export const SmartTooltip = ({
   useLayoutEffect(() => {
     if (!open) return;
     const id = requestAnimationFrame(place);
+
     return () => cancelAnimationFrame(id);
   }, [open, place]);
 
@@ -115,7 +118,7 @@ export const SmartTooltip = ({
             }}
             className={clsx(
               'pointer-events-none z-[60] max-w-xs rounded-lg border border-[color:var(--border)] bg-[color:var(--surface-elevated)]/95 px-2.5 py-1.5 text-xs font-medium text-[color:var(--text)] shadow-[0_8px_24px_-8px_rgba(0,0,0,0.18),0_2px_6px_-2px_rgba(0,0,0,0.08)] ring-1 ring-[color:var(--accent-soft)] backdrop-blur-md transition-opacity duration-150',
-              panelClassName
+              panelClassName,
             )}
           >
             {content}
@@ -127,11 +130,11 @@ export const SmartTooltip = ({
                 pos?.placement === 'top' && '-bottom-[5px] -translate-x-1/2 border-t-0 border-l-0',
                 pos?.placement === 'bottom' && '-top-[5px] -translate-x-1/2 border-r-0 border-b-0',
                 pos?.placement === 'left' && '-right-[5px] -translate-y-1/2 border-b-0 border-l-0',
-                pos?.placement === 'right' && '-left-[5px] -translate-y-1/2 border-t-0 border-r-0'
+                pos?.placement === 'right' && '-left-[5px] -translate-y-1/2 border-t-0 border-r-0',
               )}
             />
           </div>,
-          document.body
+          document.body,
         )}
     </>
   );

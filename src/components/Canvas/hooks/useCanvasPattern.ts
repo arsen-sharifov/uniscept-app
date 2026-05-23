@@ -1,8 +1,9 @@
 'use client';
 
 import { useSyncExternalStore } from 'react';
-import { CANVAS_PATTERN_VALUES, DEFAULT_PREFERENCES } from '@constants';
+
 import type { TCanvasPattern } from '@interfaces';
+import { CANVAS_PATTERN_VALUES, DEFAULT_PREFERENCES } from '@constants';
 
 const subscribers = new Set<() => void>();
 let observer: MutationObserver | null = null;

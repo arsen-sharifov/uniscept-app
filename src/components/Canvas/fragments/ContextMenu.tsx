@@ -1,7 +1,5 @@
 'use client';
 
-import { useCallback, useEffect, useRef, type KeyboardEvent, type ReactNode } from 'react';
-import { useRouter } from 'next/navigation';
 import {
   CheckCircle,
   Copy,
@@ -13,9 +11,13 @@ import {
   Trash2,
   XCircle,
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useCallback, useEffect, useRef, type KeyboardEvent, type ReactNode } from 'react';
+
 import { ECanvasNodeType, type TCanvasContextMenu } from '@interfaces';
 import { useClickOutside, useEscapeKey, useTranslations } from '@hooks';
 import { useCanvasStore } from '@/lib/stores';
+
 import { buildReferenceUrl, isCanvasNodeData } from '../utils';
 import { MenuDivider, MenuItem } from './MenuItem';
 
@@ -41,6 +43,7 @@ export const ContextMenu = ({ menu, onClose }: IContextMenuProps) => {
   const targetExists = useCanvasStore((s) => {
     if (menu.type === 'node') return s.nodes.some((n) => n.id === menu.nodeId);
     if (menu.type === 'edge') return s.edges.some((e) => e.id === menu.edgeId);
+
     return true;
   });
 
@@ -56,12 +59,13 @@ export const ContextMenu = ({ menu, onClose }: IContextMenuProps) => {
       action();
       onClose();
     },
-    [onClose]
+    [onClose],
   );
 
   const getMenuItems = useCallback((): HTMLButtonElement[] => {
     const container = containerRef.current;
     if (!container) return [];
+
     return Array.from(container.querySelectorAll<HTMLButtonElement>('[role="menuitem"]'));
   }, []);
 
@@ -89,21 +93,25 @@ export const ContextMenu = ({ menu, onClose }: IContextMenuProps) => {
       if (event.key === 'ArrowDown') {
         event.preventDefault();
         focusAt(((currentIndex < 0 ? -1 : currentIndex) + 1) % items.length);
+
         return;
       }
       if (event.key === 'ArrowUp') {
         event.preventDefault();
         focusAt(((currentIndex < 0 ? 0 : currentIndex) - 1 + items.length) % items.length);
+
         return;
       }
       if (event.key === 'Home') {
         event.preventDefault();
         focusAt(0);
+
         return;
       }
       if (event.key === 'End') {
         event.preventDefault();
         focusAt(items.length - 1);
+
         return;
       }
       if (event.key === 'Enter' || event.key === ' ') {
@@ -113,7 +121,7 @@ export const ContextMenu = ({ menu, onClose }: IContextMenuProps) => {
         }
       }
     },
-    [getMenuItems]
+    [getMenuItems],
   );
 
   const renderItems = (): ReactNode => {
@@ -252,7 +260,7 @@ export const ContextMenu = ({ menu, onClose }: IContextMenuProps) => {
       aria-label={t.platform.canvas.context.ariaLabel}
       onKeyDown={handleKeyDown}
       style={{ left: menu.x, top: menu.y }}
-      className="animate-rise-down fixed z-50 flex w-52 flex-col rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-elevated)]/95 p-1 text-[color:var(--text)] shadow-[0_18px_48px_-16px_rgba(15,23,42,0.42)] backdrop-blur-2xl motion-reduce:animate-none"
+      className="fixed z-50 flex w-52 animate-rise-down flex-col rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-elevated)]/95 p-1 text-[color:var(--text)] shadow-[0_18px_48px_-16px_rgba(15,23,42,0.42)] backdrop-blur-2xl motion-reduce:animate-none"
     >
       {renderItems()}
     </div>

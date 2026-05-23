@@ -1,11 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { fn } from 'storybook/test';
+
 import type { IToolGroup } from '@interfaces';
+
 import { ECanvasTool, Toolbar, buildCanvasTools } from '@/components';
 
-import { ARG_CATEGORIES } from '../../consts';
 import { DENSE_DISABLED_TOOL_IDS } from './consts';
 import { ToolbarWithState } from './fragments';
+import { ARG_CATEGORIES } from '../../consts';
 
 const meta: Meta<typeof Toolbar> = {
   title: 'Components/Toolbar',
@@ -83,7 +85,7 @@ export const WithDisabledTools: Story = {
         groups.map((group) => ({
           ...group,
           tools: group.tools.map((tool) =>
-            tool.id === ECanvasTool.Undo || tool.id === ECanvasTool.Redo ? { ...tool, disabled: true } : tool
+            tool.id === ECanvasTool.Undo || tool.id === ECanvasTool.Redo ? { ...tool, disabled: true } : tool,
           ),
         }))
       }
@@ -121,6 +123,7 @@ export const InterleavedGroups: Story = {
       {...args}
       buildGroups={(t) => {
         const tools = buildCanvasTools(t.platform.canvas.tools);
+
         return [
           {
             id: 'primary',
@@ -174,6 +177,7 @@ export const MinimalSingleGroup: Story = {
       {...args}
       buildGroups={(t) => {
         const tools = buildCanvasTools(t.platform.canvas.tools);
+
         return [
           {
             id: 'navigate',

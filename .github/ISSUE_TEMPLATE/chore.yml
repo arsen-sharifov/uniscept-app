@@ -1,0 +1,17 @@
+name: Chore
+description: Maintenance, setup, dependencies, infrastructure
+title: 'chore: '
+labels: [chore]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What needs to be done
+    validations:
+      required: true
+
+  - type: textarea
+    id: why
+    attributes:
+      label: Why
+      description: Optional motivation

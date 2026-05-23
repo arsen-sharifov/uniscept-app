@@ -1,13 +1,15 @@
 'use client';
 
-import { useState, type KeyboardEvent, type MouseEvent } from 'react';
-import { ChevronsUpDown, LayoutGrid, Plus } from 'lucide-react';
 import { clsx } from 'clsx';
+import { ChevronsUpDown, LayoutGrid, Plus } from 'lucide-react';
+import { useState, type KeyboardEvent, type MouseEvent } from 'react';
+
 import type { IWorkspaceItem } from '@interfaces';
 import { useTranslations } from '@hooks';
-import { Popover } from '@/components';
-import { BulkActionsBar } from '../actions/BulkActionsBar';
+import { Popover } from '@/components/Popover';
+
 import { WorkspaceItems } from './WorkspaceItems';
+import { BulkActionsBar } from '../actions/BulkActionsBar';
 
 interface IWorkspaceSwitcherProps {
   workspaces: IWorkspaceItem[];
@@ -58,6 +60,7 @@ export const WorkspaceSwitcher = ({
       onOpenChange={(nextOpen) => {
         if (nextOpen) {
           setOpen(true);
+
           return;
         }
         if (editingId !== null) cancelEditing();
@@ -72,7 +75,7 @@ export const WorkspaceSwitcher = ({
           type="button"
           className={clsx(
             'group flex w-full min-w-0 items-center gap-2 rounded-xl px-2 py-1.5 text-left transition-colors duration-150',
-            open ? 'bg-[color:var(--surface-overlay)]' : 'hover:bg-[color:var(--surface-overlay)]'
+            open ? 'bg-[color:var(--surface-overlay)]' : 'hover:bg-[color:var(--surface-overlay)]',
           )}
         >
           <span
@@ -80,7 +83,7 @@ export const WorkspaceSwitcher = ({
               'flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-colors',
               active
                 ? 'bg-gradient-to-br from-[color:var(--accent)] to-[color:var(--accent-2)] text-[color:var(--on-accent)] shadow-sm'
-                : 'bg-[color:var(--surface-overlay)] text-[color:var(--text-muted)]'
+                : 'bg-[color:var(--surface-overlay)] text-[color:var(--text-muted)]',
             )}
           >
             <LayoutGrid className="h-3.5 w-3.5" />
@@ -92,7 +95,7 @@ export const WorkspaceSwitcher = ({
             <span
               className={clsx(
                 'truncate text-sm',
-                active ? 'font-semibold text-[color:var(--text-strong)]' : 'font-medium text-[color:var(--text-muted)]'
+                active ? 'font-semibold text-[color:var(--text-strong)]' : 'font-medium text-[color:var(--text-muted)]',
               )}
               title={active?.name ?? t.platform.sidebar.noWorkspaceSelected}
             >

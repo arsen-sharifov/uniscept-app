@@ -1,14 +1,16 @@
-import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
+import { AlertTriangle } from 'lucide-react';
+import { useState } from 'react';
 import { useArgs } from 'storybook/preview-api';
 import { fn } from 'storybook/test';
-import { AlertTriangle } from 'lucide-react';
+
 import type { TModalTabId } from '@story-interfaces';
 import { ConfirmDialog, Modal } from '@/components';
-import { ARG_CATEGORIES } from '../../consts';
-import { WithPad } from '../../decorators';
+
 import { MODAL_TABS } from './consts';
 import { TriggerExample } from './fragments';
+import { ARG_CATEGORIES } from '../../consts';
+import { WithPad } from '../../decorators';
 
 const meta: Meta<typeof Modal> = {
   title: 'Components/Modal',
@@ -307,6 +309,7 @@ export const WithTabs: Story = {
           <nav role="tablist" className="flex gap-1 border-b border-[color:var(--border)] px-4">
             {MODAL_TABS.map((tab) => {
               const isActive = tab.id === activeTab;
+
               return (
                 <button
                   key={tab.id}

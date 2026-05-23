@@ -56,7 +56,7 @@ export const useInlineEdit = ({ items, autoEditId, onAutoEditHandled, onRename, 
       if (event.key === 'Enter') commitRename();
       if (event.key === 'Escape') cancelEditing();
     },
-    [commitRename, cancelEditing]
+    [commitRename, cancelEditing],
   );
 
   return {

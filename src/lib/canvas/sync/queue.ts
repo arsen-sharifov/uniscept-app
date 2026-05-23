@@ -1,6 +1,21 @@
 'use client';
 
 import { ECanvasNodeType, type INodePositionUpdate, type ISaveState, type TCanvasOperation } from '@interfaces';
+import {
+  createCanvasComment,
+  createCanvasEdge,
+  createCanvasNode,
+  createNodeComment,
+  deleteCanvasComment,
+  deleteCanvasEdge,
+  deleteCanvasNode,
+  deleteNodeComment,
+  updateCanvasNodeLabel,
+  updateCanvasNodePositions,
+  updateCanvasNodeStatus,
+} from '@api/client';
+
+import { FLUSH_DEBOUNCE_MS, INITIAL_SAVE_STATE, MAX_RETRIES, OFFLINE_POLL_INTERVAL_MS, RETRY_BASE_MS } from './consts';
 
 type TSaveStatusListener = (state: ISaveState) => void;
 
@@ -20,20 +35,6 @@ interface ICanvasQueueState {
   failedListeners: Set<TFailedOperationsListener<TCanvasOperation>>;
   windowListenersBound: boolean;
 }
-import {
-  createCanvasComment,
-  createCanvasEdge,
-  createCanvasNode,
-  createNodeComment,
-  deleteCanvasComment,
-  deleteCanvasEdge,
-  deleteCanvasNode,
-  deleteNodeComment,
-  updateCanvasNodeLabel,
-  updateCanvasNodePositions,
-  updateCanvasNodeStatus,
-} from '@api/client';
-import { FLUSH_DEBOUNCE_MS, INITIAL_SAVE_STATE, MAX_RETRIES, OFFLINE_POLL_INTERVAL_MS, RETRY_BASE_MS } from './consts';
 
 const createQueueState = (): ICanvasQueueState => ({
   pending: [],
@@ -108,7 +109,7 @@ const NODE_UPDATE_TYPES = [
 ] as const satisfies readonly TCanvasOperation['type'][];
 
 const isNodeUpdate = (
-  operation: TCanvasOperation
+  operation: TCanvasOperation,
 ): operation is TCanvasOperation & {
   type: (typeof NODE_UPDATE_TYPES)[number];
 } => NODE_UPDATE_TYPES.some((type) => type === operation.type);
@@ -141,6 +142,7 @@ const coalesce = (operations: TCanvasOperation[]): TCanvasOperation[] => {
     if (createIndex === -1) return false;
     result.splice(createIndex, 1);
     rebuildLastIndex(result, lastIndex);
+
     return true;
   };
 
@@ -185,6 +187,7 @@ const runOperation = async (operation: TCanvasOperation): Promise<void> => {
         label: operation.label,
         sourceNodeId: null,
       });
+
       return;
     case 'createReferenceNode':
       await createCanvasNode({
@@ -196,15 +199,19 @@ const runOperation = async (operation: TCanvasOperation): Promise<void> => {
         label: operation.data.label,
         sourceNodeId: operation.data.sourceNodeId,
       });
+
       return;
     case 'deleteNode':
       await deleteCanvasNode(operation.id);
+
       return;
     case 'updateNodeLabel':
       await updateCanvasNodeLabel(operation.id, operation.label);
+
       return;
     case 'updateNodeStatus':
       await updateCanvasNodeStatus(operation.id, operation.status);
+
       return;
     case 'createEdge':
       await createCanvasEdge({
@@ -215,9 +222,11 @@ const runOperation = async (operation: TCanvasOperation): Promise<void> => {
         sourceHandle: operation.sourceHandle,
         targetHandle: operation.targetHandle,
       });
+
       return;
     case 'deleteEdge':
       await deleteCanvasEdge(operation.id);
+
       return;
     case 'createComment':
       await createNodeComment({
@@ -225,9 +234,11 @@ const runOperation = async (operation: TCanvasOperation): Promise<void> => {
         nodeId: operation.nodeId,
         text: operation.text,
       });
+
       return;
     case 'deleteComment':
       await deleteNodeComment(operation.id);
+
       return;
     case 'createCanvasComment':
       await createCanvasComment({
@@ -235,9 +246,11 @@ const runOperation = async (operation: TCanvasOperation): Promise<void> => {
         threadId: operation.threadId,
         text: operation.text,
       });
+
       return;
     case 'deleteCanvasComment':
       await deleteCanvasComment(operation.id);
+
       return;
     case 'updateNodePosition':
       throw new Error('updateNodePosition must be batched via runOperations, not runOperation');
@@ -273,6 +286,7 @@ const runOperations = async (operations: TCanvasOperation[]): Promise<TCanvasOpe
 
   try {
     await updateCanvasNodePositions(positions);
+
     return [];
   } catch (error) {
     const remaining: TCanvasOperation[] = operations.filter((operation) => operation.type === 'updateNodePosition');
@@ -341,6 +355,7 @@ export const enqueueOperation = (operation: TCanvasOperation) => {
 
   if (!state.online) {
     setSaveState({ status: 'offline' });
+
     return;
   }
 
@@ -353,11 +368,13 @@ export const flushNow = async (): Promise<void> => {
 
   if (!state.online) {
     setSaveState({ status: 'offline' });
+
     return;
   }
 
   if (state.pending.length === 0) {
     if (state.saveState.status === 'saving') setSaveState({ status: 'saved' });
+
     return;
   }
 
@@ -388,6 +405,7 @@ export const flushNow = async (): Promise<void> => {
 
     if (typeof navigator !== 'undefined' && !navigator.onLine) {
       handleOffline();
+
       return;
     }
 

@@ -1,4 +1,4 @@
-import { Copyable } from '..';
+import { Copyable } from '../widgets';
 
 interface IReferenceCardProps {
   kicker: string;

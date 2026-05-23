@@ -1,6 +1,8 @@
 import { timingSafeEqual } from 'node:crypto';
+
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
+
 import { INVITE_RATE_LIMIT_MAX_ATTEMPTS, INVITE_RATE_LIMIT_WINDOW_MS } from '@constants';
 import { createClient as createServerClient } from '@/lib/supabase/server';
 
@@ -39,12 +41,14 @@ const checkInviteRateLimit = (ip: string): boolean => {
 
   if (!record || record.resetAt <= now) {
     inviteAttempts.set(ip, { count: 1, resetAt: now + INVITE_RATE_LIMIT_WINDOW_MS });
+
     return true;
   }
 
   if (record.count >= INVITE_RATE_LIMIT_MAX_ATTEMPTS) return false;
 
   record.count += 1;
+
   return true;
 };
 

@@ -1,6 +1,8 @@
 import type { Edge } from '@xyflow/react';
+
 import { ECanvasNodeType, type IComment, type TCanvasNode, type TNodeStatus } from '@interfaces';
 import type { ICanvasFixture } from '@story-interfaces';
+
 import { STORYBOOK_AUTHOR_ID } from '../consts';
 
 export const createCanvasNode = (
@@ -10,7 +12,7 @@ export const createCanvasNode = (
   label: string,
   status: TNodeStatus = null,
   comments: IComment[] = [],
-  selected: boolean = false
+  selected: boolean = false,
 ): TCanvasNode => ({
   id,
   type: ECanvasNodeType.Canvas,
@@ -41,8 +43,8 @@ export const buildDenseCanvas = (): ICanvasFixture => ({
       (i % 4) * 240 + 40,
       Math.floor(i / 4) * 170 + 40,
       `Reasoning node ${i + 1}`,
-      i % 5 === 0 ? 'valid' : i % 7 === 0 ? 'invalid' : null
-    )
+      i % 5 === 0 ? 'valid' : i % 7 === 0 ? 'invalid' : null,
+    ),
   ),
   edges: Array.from({ length: 8 }, (_, i) => createCanvasEdge(`de${i}`, `n${i}`, `n${i + 4}`)),
 });

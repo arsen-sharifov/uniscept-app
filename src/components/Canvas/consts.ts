@@ -1,5 +1,6 @@
-import type { CSSProperties } from 'react';
 import { BackgroundVariant, type DefaultEdgeOptions, Position } from '@xyflow/react';
+import type { CSSProperties } from 'react';
+
 import type { TCanvasPattern, TEdgeTone, THandleId, TSaveStatus } from '@interfaces';
 
 export const HANDLE_POSITIONS: { id: THandleId; position: Position }[] = [

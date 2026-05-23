@@ -1,9 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
+
 import { ReferenceNode } from '@/components';
-import { ARG_CATEGORIES } from '../../consts';
-import { WithCanvasStage, WithReactFlow, withCanvasStore } from '../../decorators';
+
 import { defaultReference, longPathReference, selectedReference } from './consts';
 import { SingleReferenceFlow } from './fragments';
+import { ARG_CATEGORIES } from '../../consts';
+import { WithCanvasStage, WithReactFlow, withCanvasStore } from '../../decorators';
 
 const meta: Meta<typeof ReferenceNode> = {
   title: 'Components/Canvas/ReferenceNode',

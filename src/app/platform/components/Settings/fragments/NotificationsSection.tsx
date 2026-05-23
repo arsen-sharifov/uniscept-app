@@ -1,8 +1,10 @@
 'use client';
 
 import { Bell, MessageSquare, Mail, Users } from 'lucide-react';
+
 import { useTranslations } from '@hooks';
 import { Tooltip } from '@/components';
+
 import { Toggle } from '../Toggle';
 
 export const NotificationsSection = () => {

@@ -1,5 +1,6 @@
-import { type CSSProperties, useMemo, useState } from 'react';
 import { type LucideProps, Search, icons } from 'lucide-react';
+import { type CSSProperties, useMemo, useState } from 'react';
+
 import { GALLERY_COLS, GALLERY_ROW_HEIGHT } from '../consts';
 import { IconCell } from './IconCell';
 
@@ -24,7 +25,7 @@ export const IconGallery = ({
 
   const filtered = useMemo(
     () => (search ? iconEntries.filter(([name]) => name.toLowerCase().includes(search.toLowerCase())) : iconEntries),
-    [search]
+    [search],
   );
 
   const totalRows = Math.ceil(filtered.length / GALLERY_COLS);
@@ -81,6 +82,7 @@ export const IconGallery = ({
           <div style={{ height: totalRows * GALLERY_ROW_HEIGHT, position: 'relative' } as CSSProperties}>
             {Array.from({ length: toRow - fromRow }, (_, i) => {
               const row = fromRow + i;
+
               return (
                 <div
                   key={row}

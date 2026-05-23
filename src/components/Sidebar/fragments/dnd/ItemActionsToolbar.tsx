@@ -1,7 +1,7 @@
 'use client';
 
-import type { ReactNode } from 'react';
 import { clsx } from 'clsx';
+import type { ReactNode } from 'react';
 
 interface IItemActionsToolbarProps {
   isActive: boolean;
@@ -19,7 +19,7 @@ export const ItemActionsToolbar = ({ isActive, isSelected, children }: IItemActi
       'group-hover/item:pointer-events-auto group-hover/item:translate-x-0 group-hover/item:opacity-100',
       isActive || isSelected
         ? 'bg-[color:var(--accent-soft)] ring-[color:var(--border-active)]'
-        : 'bg-[color:var(--surface-elevated)]/98 ring-[color:var(--border)]'
+        : 'bg-[color:var(--surface-elevated)]/98 ring-[color:var(--border)]',
     )}
   >
     {children}

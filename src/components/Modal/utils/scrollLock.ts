@@ -1,5 +1,5 @@
-import { MODAL_SCROLL_LOCK_KEY } from '@constants';
 import type { TWindowWithStack } from '@interfaces';
+import { MODAL_SCROLL_LOCK_KEY } from '@constants';
 
 export const adjustScrollLock = (delta: 1 | -1): void => {
   if (typeof window === 'undefined') {

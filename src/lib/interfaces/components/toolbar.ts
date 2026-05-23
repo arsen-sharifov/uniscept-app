@@ -1,4 +1,5 @@
 import type { LucideIcon } from 'lucide-react';
+
 import type { TTranslations } from '@interfaces';
 
 export type TToolKind = 'mode' | 'action';

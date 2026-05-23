@@ -1,5 +1,5 @@
-import type { ReactNode } from 'react';
 import { clsx } from 'clsx';
+import type { ReactNode } from 'react';
 
 interface ICellProps {
   children: ReactNode;
@@ -14,7 +14,7 @@ export const Cell = ({ children, align = 'left', truncate = false, className }: 
       'flex min-w-0 items-center',
       truncate && '[&>*]:truncate',
       align === 'right' && 'justify-end text-right',
-      className
+      className,
     )}
   >
     {children}

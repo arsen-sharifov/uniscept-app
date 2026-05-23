@@ -1,6 +1,7 @@
-import Link from 'next/link';
 import { clsx } from 'clsx';
 import { CircleCheck } from 'lucide-react';
+import Link from 'next/link';
+
 import type { IPricingPlan } from '@interfaces';
 import { useTranslations } from '@hooks';
 import { formatPlanPrice } from '@/lib/pricing';
@@ -20,7 +21,7 @@ export const PricingCard = ({ plan }: IPricingCardProps) => {
         'relative flex flex-col overflow-hidden rounded-2xl border-2 p-8 transition-all duration-300 ease-in-out hover:scale-[1.02]',
         isDark
           ? 'border-emerald-500/30 bg-gradient-to-br from-black via-gray-900 to-black shadow-2xl hover:border-emerald-500/50'
-          : 'group border-black/10 bg-white shadow-lg hover:border-black/20 hover:shadow-xl'
+          : 'group border-black/10 bg-white shadow-lg hover:border-black/20 hover:shadow-xl',
       )}
     >
       {isDark && (
@@ -70,7 +71,7 @@ export const PricingCard = ({ plan }: IPricingCardProps) => {
             'block w-full rounded-lg py-3.5 text-center text-sm font-bold transition-all duration-300 ease-in-out hover:scale-105',
             isDark
               ? 'bg-gradient-to-r from-emerald-600 to-cyan-500 text-white shadow-xl hover:from-emerald-500 hover:to-cyan-400 hover:shadow-2xl'
-              : 'border-2 border-black bg-black text-white hover:bg-black/90'
+              : 'border-2 border-black bg-black text-white hover:bg-black/90',
           )}
         >
           {t.landing.pricing.getStarted}

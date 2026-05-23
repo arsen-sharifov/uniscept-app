@@ -1,8 +1,9 @@
 'use client';
 
+import { clsx } from 'clsx';
 import type { LucideIcon } from 'lucide-react';
 import { FolderInput, Trash2, X } from 'lucide-react';
-import { clsx } from 'clsx';
+
 import { useTranslations } from '@hooks';
 
 interface IBulkActionsBarProps {
@@ -31,7 +32,7 @@ export const BulkActionsBar = ({
     <div
       className={clsx(
         'relative flex items-center gap-1.5 overflow-hidden rounded-xl border border-[color:var(--border-active)] bg-[color:var(--accent-soft)] px-2 py-1.5 shadow-[0_1px_3px_-1px_rgba(0,0,0,0.06)]',
-        className
+        className,
       )}
     >
       <span

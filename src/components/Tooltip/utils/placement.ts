@@ -1,10 +1,12 @@
 import type { ITooltipPosition, ITooltipSize, TTooltipPlacement } from '@interfaces';
+
 import { TRIGGER_GAP, VIEWPORT_MARGIN } from '../consts';
 
 export const getOppositePlacement = (placement: TTooltipPlacement): TTooltipPlacement => {
   if (placement === 'top') return 'bottom';
   if (placement === 'bottom') return 'top';
   if (placement === 'left') return 'right';
+
   return 'left';
 };
 
@@ -24,7 +26,7 @@ const PLACEMENT_FALLBACK_ORDER: TTooltipPlacement[] = ['right', 'left', 'top', '
 export const choosePlacement = (
   preferred: TTooltipPlacement,
   trigger: DOMRect,
-  tooltip: ITooltipSize
+  tooltip: ITooltipSize,
 ): TTooltipPlacement => {
   const candidates = [preferred, getOppositePlacement(preferred), ...PLACEMENT_FALLBACK_ORDER];
 
@@ -34,7 +36,7 @@ export const choosePlacement = (
 const computeBeforeClamp = (
   placement: TTooltipPlacement,
   trigger: DOMRect,
-  tooltip: ITooltipSize
+  tooltip: ITooltipSize,
 ): { top: number; left: number } => {
   if (placement === 'top') {
     return {
@@ -54,6 +56,7 @@ const computeBeforeClamp = (
       left: trigger.left - TRIGGER_GAP - tooltip.width,
     };
   }
+
   return {
     top: trigger.top + trigger.height / 2 - tooltip.height / 2,
     left: trigger.right + TRIGGER_GAP,
@@ -63,7 +66,7 @@ const computeBeforeClamp = (
 export const computeTooltipPosition = (
   placement: TTooltipPlacement,
   trigger: DOMRect,
-  tooltip: ITooltipSize
+  tooltip: ITooltipSize,
 ): ITooltipPosition => {
   const raw = computeBeforeClamp(placement, trigger, tooltip);
 

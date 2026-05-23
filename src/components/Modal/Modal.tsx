@@ -1,10 +1,12 @@
 'use client';
 
+import { clsx } from 'clsx';
+import { X } from 'lucide-react';
 import { type MouseEvent, type ReactNode, type TransitionEvent, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { X } from 'lucide-react';
-import { clsx } from 'clsx';
+
 import { useFocusTrap, useTranslations } from '@hooks';
+
 import { adjustScrollLock } from './utils';
 
 export interface IModalProps {
@@ -81,7 +83,7 @@ export const Modal = ({ open, onClose, children, className, width = 'max-w-lg', 
       onTransitionEnd={handleTransitionEnd}
       className={clsx(
         'fixed inset-0 z-50 flex items-center justify-center bg-black/55 backdrop-blur-sm transition-opacity duration-200 ease-out starting:opacity-0',
-        open ? 'opacity-100' : 'pointer-events-none opacity-0'
+        open ? 'opacity-100' : 'pointer-events-none opacity-0',
       )}
     >
       <div
@@ -94,7 +96,7 @@ export const Modal = ({ open, onClose, children, className, width = 'max-w-lg', 
           open ? 'translate-y-0 scale-100 opacity-100' : 'translate-y-2 scale-95 opacity-0',
           width,
           overflowHidden ? 'overflow-hidden' : 'overflow-y-auto',
-          className
+          className,
         )}
       >
         {!overflowHidden && (
@@ -110,6 +112,6 @@ export const Modal = ({ open, onClose, children, className, width = 'max-w-lg', 
         {children}
       </div>
     </div>,
-    document.body
+    document.body,
   );
 };

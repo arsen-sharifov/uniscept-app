@@ -1,9 +1,11 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+
 import type { IPreferences, TPreferenceUpdater } from '@interfaces';
 import { PREFERENCES_DEBOUNCE_MS } from '@constants';
 import { getPreferences, upsertPreferences } from '@api/client';
+
 import { readFromStorage, writeToStorage } from '../utils';
 
 export const usePreferences = () => {

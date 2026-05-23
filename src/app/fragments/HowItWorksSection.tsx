@@ -1,6 +1,8 @@
 import { clsx } from 'clsx';
-import { STEPS } from '@/lib/constants/content';
+
+import { STEPS } from '@constants';
 import { useTranslations } from '@hooks';
+
 import { Section } from './components';
 
 export const HowItWorksSection = () => {
@@ -9,7 +11,7 @@ export const HowItWorksSection = () => {
   return (
     <Section>
       <div className="mx-auto max-w-5xl">
-        <div data-reveal className="scroll-reveal mb-20 text-center">
+        <div data-reveal className="mb-20 scroll-reveal text-center">
           <h2 className="mb-6 text-5xl font-black tracking-tight text-black sm:text-6xl">
             {t.landing.howItWorks.title}
           </h2>
@@ -23,7 +25,7 @@ export const HowItWorksSection = () => {
                 <div
                   className={clsx(
                     'relative z-10 flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br text-2xl font-black text-white shadow-xl transition-all duration-300 ease-in-out group-hover:scale-110',
-                    step.color
+                    step.color,
                   )}
                 >
                   {step.number}

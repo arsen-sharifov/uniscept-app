@@ -1,4 +1,5 @@
 import type { Node } from '@xyflow/react';
+
 import type { INodePositionUpdate } from '@interfaces';
 
 export const detectPositionChanges = (prev: Node[], next: Node[]): INodePositionUpdate[] => {

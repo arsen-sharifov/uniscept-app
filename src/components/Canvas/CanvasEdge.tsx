@@ -1,5 +1,7 @@
 import { BaseEdge, type EdgeProps, getBezierPath, Position } from '@xyflow/react';
+
 import type { TCanvasEdge } from '@interfaces';
+
 import { ARROW_LENGTH } from './consts';
 
 const retractAlongPosition = (x: number, y: number, position: Position): { x: number; y: number } => {

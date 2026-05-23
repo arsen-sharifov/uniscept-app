@@ -1,18 +1,20 @@
 'use client';
 
-import { type KeyboardEvent, type MouseEvent } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
-import { Check, ChevronRight, FileText, Folder, FolderOpen, Pencil, Plus, Trash2 } from 'lucide-react';
 import { clsx } from 'clsx';
-import { useTranslations } from '@hooks';
-import { SmartTooltip } from '@/components';
+import { Check, ChevronRight, FileText, Folder, FolderOpen, Pencil, Plus, Trash2 } from 'lucide-react';
+import { type KeyboardEvent, type MouseEvent } from 'react';
+
 import type { IFlattenedItem, TDropZone, TNavItemType } from '@interfaces';
-import { INDENTATION_WIDTH } from '../../consts';
-import { getDragTransformStyle } from '../../utils';
+import { useTranslations } from '@hooks';
+import { SmartTooltip } from '@/components/Tooltip';
+
 import { DropLineIndicator } from './DropLineIndicator';
 import { GripActivator } from './GripActivator';
 import { InlineRenameInput } from './InlineRenameInput';
 import { ItemActionsToolbar } from './ItemActionsToolbar';
+import { INDENTATION_WIDTH } from '../../consts';
+import { getDragTransformStyle } from '../../utils';
 
 interface ISortableNavItemProps {
   item: IFlattenedItem;
@@ -74,6 +76,7 @@ export const SortableNavItem = ({
     const hasModifier = event.ctrlKey || event.metaKey || event.shiftKey;
     if (hasModifier) {
       onItemClick?.(item.id, event);
+
       return;
     }
     if (isFolder) {
@@ -128,7 +131,7 @@ export const SortableNavItem = ({
             isSelected && !isActive && '!bg-[color:var(--accent-soft)] !text-[color:var(--text-strong)]',
             isSelected && 'ring-1 ring-[color:var(--border-active)] ring-inset',
             showFolderHighlight &&
-              'bg-[color:var(--accent-soft)] !text-[color:var(--accent-text)] ring-1 ring-[color:var(--border-active)] ring-inset'
+              'bg-[color:var(--accent-soft)] !text-[color:var(--accent-text)] ring-1 ring-[color:var(--border-active)] ring-inset',
           )}
         >
           <span className="relative h-4 w-4 shrink-0">
@@ -138,7 +141,7 @@ export const SortableNavItem = ({
                   className={clsx(
                     'absolute inset-0 h-4 w-4 transition-opacity duration-150',
                     highlightIcon ? 'text-[color:var(--accent)]' : 'text-[color:var(--text-subtle)]',
-                    !isEditing && 'group-hover/item:opacity-0'
+                    !isEditing && 'group-hover/item:opacity-0',
                   )}
                 />
               ) : (
@@ -146,7 +149,7 @@ export const SortableNavItem = ({
                   className={clsx(
                     'absolute inset-0 h-4 w-4 transition-opacity duration-150',
                     highlightIcon ? 'text-[color:var(--accent)]' : 'text-[color:var(--text-muted)]',
-                    !isEditing && 'group-hover/item:opacity-0'
+                    !isEditing && 'group-hover/item:opacity-0',
                   )}
                 />
               )
@@ -155,7 +158,7 @@ export const SortableNavItem = ({
                 className={clsx(
                   'absolute inset-0 h-4 w-4 transition-opacity duration-150',
                   isActive ? 'text-[color:var(--accent)]' : 'text-[color:var(--text-subtle)]',
-                  !isEditing && 'group-hover/item:opacity-0'
+                  !isEditing && 'group-hover/item:opacity-0',
                 )}
               />
             )}
@@ -198,7 +201,7 @@ export const SortableNavItem = ({
                 className={clsx(
                   'ml-auto h-3 w-3 shrink-0 transition-[transform,opacity,color] duration-150 group-hover/item:opacity-0',
                   !item.collapsed && 'rotate-90',
-                  highlightIcon ? 'text-[color:var(--accent)]' : 'text-[color:var(--text-subtle)]'
+                  highlightIcon ? 'text-[color:var(--accent)]' : 'text-[color:var(--text-subtle)]',
                 )}
               />
             )

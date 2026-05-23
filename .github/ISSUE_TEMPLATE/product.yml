@@ -1,0 +1,36 @@
+name: Product
+description: Product feature or scope (PRD-style, may split into dev issues)
+title: 'product: '
+labels: [product]
+body:
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope
+      description: One paragraph on what this delivers and why it matters to the user
+    validations:
+      required: true
+
+  - type: textarea
+    id: stories
+    attributes:
+      label: User stories
+      description: Optional
+      placeholder: |
+        - As a user, I can ...
+        - As an owner, I can ...
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Optional bullet list of what "done" looks like
+
+  - type: textarea
+    id: linked
+    attributes:
+      label: Linked dev issues
+      description: Optional, populated as the work is split
+      placeholder: |
+        - #
+        - #

@@ -1,5 +1,6 @@
-import type { ReactNode } from 'react';
 import { clsx } from 'clsx';
+import type { ReactNode } from 'react';
+
 import type { TTheme } from '@constants';
 
 interface IThemedSurfaceProps {
@@ -13,7 +14,7 @@ export const ThemedSurface = ({ themeId, className, children }: IThemedSurfacePr
     data-theme={themeId}
     className={clsx(
       'relative isolate overflow-hidden rounded-2xl border border-[color:var(--border)] bg-[color:var(--app-bg)] text-[color:var(--text)]',
-      className
+      className,
     )}
   >
     {children}

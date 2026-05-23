@@ -1,9 +1,11 @@
 import type { Decorator, Meta, StoryObj } from '@storybook/nextjs-vite';
 import { fn } from 'storybook/test';
+
 import { List } from '@/components';
-import { ARG_CATEGORIES } from '../../consts';
+
 import { BULK_ACTION_LABELS } from './consts';
 import { BulkActionsRow, ContentExample, SimpleTrigger } from './fragments';
+import { ARG_CATEGORIES } from '../../consts';
 
 const WithStage: Decorator = (Story) => (
   <div className="flex min-h-screen w-full justify-center px-8 py-16">

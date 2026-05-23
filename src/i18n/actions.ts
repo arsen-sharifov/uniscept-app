@@ -1,7 +1,9 @@
 'use server';
 
 import { cookies } from 'next/headers';
+
 import type { TLocale } from '@interfaces';
+
 import { LOCALE_COOKIE, LOCALE_COOKIE_MAX_AGE } from './consts';
 
 export const setLocale = async (locale: TLocale): Promise<void> => {

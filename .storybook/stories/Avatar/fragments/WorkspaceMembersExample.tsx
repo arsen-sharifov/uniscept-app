@@ -1,5 +1,7 @@
 import { clsx } from 'clsx';
+
 import { Avatar } from '@/components';
+
 import { MEMBER_ROWS } from '../consts';
 
 export const WorkspaceMembersExample = () => (
@@ -16,7 +18,7 @@ export const WorkspaceMembersExample = () => (
             'shrink-0 rounded-full px-2 py-0.5 font-mono text-[9px] tracking-[0.08em] uppercase',
             m.tone === 'owner' && 'bg-[color:var(--accent-soft)] text-[color:var(--accent-strong)]',
             m.tone === 'editor' && 'bg-[color:var(--surface-overlay)] text-[color:var(--text-strong)]',
-            m.tone === 'viewer' && 'bg-[color:var(--surface-overlay)] text-[color:var(--text-muted)]'
+            m.tone === 'viewer' && 'bg-[color:var(--surface-overlay)] text-[color:var(--text-muted)]',
           )}
         >
           {m.role}

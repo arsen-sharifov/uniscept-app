@@ -1,5 +1,5 @@
-import { Check } from 'lucide-react';
 import { clsx } from 'clsx';
+import { Check } from 'lucide-react';
 
 export interface IStepperProps {
   steps: string[];
@@ -29,7 +29,7 @@ export const Stepper = ({ steps, currentStep }: IStepperProps) => {
                   'flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold transition-all duration-200',
                   isActive
                     ? 'bg-[color:var(--accent)] text-[color:var(--on-accent)]'
-                    : 'border-2 border-[color:var(--border-strong)] text-[color:var(--text-subtle)]'
+                    : 'border-2 border-[color:var(--border-strong)] text-[color:var(--text-subtle)]',
                 )}
               >
                 {isDone ? (
@@ -44,7 +44,7 @@ export const Stepper = ({ steps, currentStep }: IStepperProps) => {
               <span
                 className={clsx(
                   'text-sm font-medium transition-colors duration-200',
-                  isActive ? 'text-[color:var(--text-strong)]' : 'text-[color:var(--text-muted)]'
+                  isActive ? 'text-[color:var(--text-strong)]' : 'text-[color:var(--text-muted)]',
                 )}
               >
                 {label}
@@ -54,7 +54,7 @@ export const Stepper = ({ steps, currentStep }: IStepperProps) => {
               <div
                 className={clsx(
                   'mx-4 h-0.5 flex-1 rounded-full transition-colors duration-200',
-                  isDone ? 'bg-[color:var(--accent)]' : 'bg-[color:var(--border)]'
+                  isDone ? 'bg-[color:var(--accent)]' : 'bg-[color:var(--border)]',
                 )}
               />
             )}

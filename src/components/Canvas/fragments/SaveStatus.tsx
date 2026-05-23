@@ -1,11 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useFormatter, useTranslations } from 'next-intl';
 import { clsx } from 'clsx';
 import { AlertCircle, Check, CloudOff, Loader2, RotateCw } from 'lucide-react';
+import { useFormatter, useTranslations } from 'next-intl';
+import { useEffect, useState } from 'react';
+
 import type { ISaveState } from '@interfaces';
+
 import { discardFailed, retryFailed, subscribeFailedOperations } from '@/lib/canvas';
+
 import { ARIA_LABEL_KEY_BY_STATUS, SAVE_STATUS_REFRESH_INTERVAL_MS } from '../consts';
 
 interface ISaveStatusProps {
@@ -46,7 +49,7 @@ export const SaveStatus = ({ state }: ISaveStatusProps) => {
         state.status === 'offline' &&
           'pointer-events-none border-[color:var(--status-warning-border)] bg-[color:var(--status-warning-bg)] text-[color:var(--status-warning)] shadow-[0_4px_12px_-6px_var(--status-warning-soft)]',
         state.status === 'error' &&
-          'border-[color:var(--status-error-border)] bg-[color:var(--status-error-bg)] text-[color:var(--status-error)] shadow-[0_4px_14px_-6px_var(--status-error-soft)]'
+          'border-[color:var(--status-error-border)] bg-[color:var(--status-error-bg)] text-[color:var(--status-error)] shadow-[0_4px_14px_-6px_var(--status-error-soft)]',
       )}
     >
       {state.status === 'saving' && (

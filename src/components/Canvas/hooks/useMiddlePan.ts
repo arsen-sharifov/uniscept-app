@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+
 import { useCanvasStore } from '@/lib/stores';
 
 const MIDDLE_MOUSE_BUTTON = 1;

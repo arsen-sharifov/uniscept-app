@@ -1,11 +1,13 @@
 'use client';
 
-import { useRef } from 'react';
-import { Keyboard, X } from 'lucide-react';
-import { createPortal } from 'react-dom';
 import { clsx } from 'clsx';
+import { Keyboard, X } from 'lucide-react';
+import { useRef } from 'react';
+import { createPortal } from 'react-dom';
+
 import type { IToolGroup } from '@interfaces';
 import { useEscapeKey, useFocusTrap, useTranslations } from '@hooks';
+
 import { renderShortcut } from '../utils';
 
 interface IShortcutsHelpProps {
@@ -38,7 +40,7 @@ export const ShortcutsHelp = ({ open, groups, activeTool, onClose }: IShortcutsH
           'relative w-full max-w-[640px] overflow-hidden rounded-[20px]',
           'border border-[color:var(--border)] bg-[color:var(--surface)]/95 backdrop-blur-xl',
           'text-[color:var(--text)] shadow-[var(--shadow-modal)]',
-          'animate-rise-up motion-reduce:animate-none'
+          'animate-rise-up motion-reduce:animate-none',
         )}
       >
         <div className="flex items-center justify-between border-b border-[color:var(--border)] px-5 py-3.5">
@@ -88,7 +90,7 @@ export const ShortcutsHelp = ({ open, groups, activeTool, onClose }: IShortcutsH
                       className={clsx(
                         'group/row flex items-start gap-3 rounded-lg px-2 py-1.5 transition-colors',
                         isActive && 'bg-[color:var(--accent-soft)]',
-                        tool.disabled && 'opacity-45'
+                        tool.disabled && 'opacity-45',
                       )}
                     >
                       <span
@@ -96,7 +98,7 @@ export const ShortcutsHelp = ({ open, groups, activeTool, onClose }: IShortcutsH
                           'mt-px flex h-7 w-7 shrink-0 items-center justify-center rounded-md',
                           isActive
                             ? 'bg-[color:var(--accent)] text-[color:var(--on-accent)] shadow-[0_2px_6px_-2px_var(--accent-glow)]'
-                            : 'bg-[color:var(--surface-overlay)] text-[color:var(--text-muted)]'
+                            : 'bg-[color:var(--surface-overlay)] text-[color:var(--text-muted)]',
                         )}
                       >
                         <Icon className="h-[14px] w-[14px]" strokeWidth={isActive ? 2.25 : 1.85} />
@@ -107,7 +109,7 @@ export const ShortcutsHelp = ({ open, groups, activeTool, onClose }: IShortcutsH
                           <span
                             className={clsx(
                               'truncate text-[12.5px] font-medium tracking-tight',
-                              isActive ? 'text-[color:var(--accent-text)]' : 'text-[color:var(--text-strong)]'
+                              isActive ? 'text-[color:var(--accent-text)]' : 'text-[color:var(--text-strong)]',
                             )}
                           >
                             {tool.label}
@@ -135,7 +137,7 @@ export const ShortcutsHelp = ({ open, groups, activeTool, onClose }: IShortcutsH
                                 'flex h-5 min-w-[20px] items-center justify-center rounded-[5px] border px-1 font-mono text-[10px] font-medium',
                                 isActive
                                   ? 'border-[color:var(--border-active)] bg-[color:var(--surface-elevated)] text-[color:var(--accent-text)]'
-                                  : 'border-[color:var(--border)] bg-[color:var(--surface-overlay)] text-[color:var(--text)]'
+                                  : 'border-[color:var(--border)] bg-[color:var(--surface-overlay)] text-[color:var(--text)]',
                               )}
                             >
                               {token}
@@ -162,6 +164,6 @@ export const ShortcutsHelp = ({ open, groups, activeTool, onClose }: IShortcutsH
         </div>
       </div>
     </div>,
-    document.body
+    document.body,
   );
 };

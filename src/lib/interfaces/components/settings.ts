@@ -4,6 +4,11 @@ import type { TCanvasPattern, TTheme } from '@interfaces';
 
 export type TSettingsSection = 'profile' | 'security' | 'notifications' | 'appearance' | 'editor' | 'plan';
 
+export interface IChangePasswordPayload {
+  currentPassword: string;
+  newPassword: string;
+}
+
 export type TSettingsGroupLabel = 'account' | 'preferences' | 'subscription';
 
 export type TThemeLabelKey = `theme${Capitalize<TTheme>}`;

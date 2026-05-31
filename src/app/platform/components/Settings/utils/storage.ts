@@ -1,11 +1,20 @@
-'use client';
-
-import type { IPreferences } from '@interfaces';
-import { CANVAS_PATTERN_VALUES, DEFAULT_PREFERENCES, PREFERENCES_STORAGE_KEY, THEME_VALUES } from '@constants';
+import type { IPreferences, TDefaultZoom } from '@interfaces';
+import {
+  CANVAS_PATTERN_VALUES,
+  DEFAULT_PREFERENCES,
+  DEFAULT_ZOOM_VALUES,
+  PREFERENCES_STORAGE_KEY,
+  THEME_VALUES,
+} from '@constants';
 import { LOCALES } from '@/i18n';
 
 const isOneOf = <T extends string>(values: readonly T[], candidate: unknown): candidate is T =>
   typeof candidate === 'string' && values.some((value) => value === candidate);
+
+const isBoolean = (candidate: unknown): candidate is boolean => typeof candidate === 'boolean';
+
+const isDefaultZoom = (candidate: unknown): candidate is TDefaultZoom =>
+  typeof candidate === 'number' && (DEFAULT_ZOOM_VALUES as readonly number[]).includes(candidate);
 
 export const readFromStorage = (): IPreferences => {
   if (typeof window === 'undefined') {
@@ -31,6 +40,9 @@ export const readFromStorage = (): IPreferences => {
         ? candidate.canvasPattern
         : DEFAULT_PREFERENCES.canvasPattern,
       language: isOneOf(LOCALES, candidate.language) ? candidate.language : DEFAULT_PREFERENCES.language,
+      snapToGrid: isBoolean(candidate.snapToGrid) ? candidate.snapToGrid : DEFAULT_PREFERENCES.snapToGrid,
+      defaultZoom: isDefaultZoom(candidate.defaultZoom) ? candidate.defaultZoom : DEFAULT_PREFERENCES.defaultZoom,
+      smartGuides: isBoolean(candidate.smartGuides) ? candidate.smartGuides : DEFAULT_PREFERENCES.smartGuides,
     };
   } catch {
     return DEFAULT_PREFERENCES;

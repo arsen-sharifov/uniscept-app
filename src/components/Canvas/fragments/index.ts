@@ -1,3 +1,4 @@
+export * from './AlignmentGuides';
 export * from './CanvasCommentsPanel';
 export * from './CommentItem';
 export * from './ContextMenu';

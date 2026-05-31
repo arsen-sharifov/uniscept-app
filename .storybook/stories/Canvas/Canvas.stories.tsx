@@ -3,6 +3,7 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { Canvas } from '@/components';
 
 import { denseCanvas, emptyCanvas, evaluatedCanvas, reasoningCanvas } from './consts';
+import { CanvasWithEditorPreferences } from './fragments';
 import { ARG_CATEGORIES } from '../../consts';
 import { WithCanvasStage, WithReactFlow, withCanvasStore } from '../../decorators';
 
@@ -36,6 +37,8 @@ const meta: Meta<typeof Canvas> = {
 export default meta;
 
 type Story = StoryObj<typeof Canvas>;
+
+type EditorPrefsStory = StoryObj<typeof CanvasWithEditorPreferences>;
 
 export const Empty: Story = {
   parameters: {
@@ -82,12 +85,38 @@ export const Dense: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Twelve nodes — useful for checking pan/zoom performance and minimap behaviour.',
+        story: 'Twelve nodes — useful for checking pan/zoom performance on a denser canvas.',
       },
     },
   },
   args: { workspaceId: 'sb-workspace', threadId: 'sb-dense' },
   decorators: [withCanvasStore({ threadId: 'sb-dense', nodes: denseCanvas.nodes, edges: denseCanvas.edges })],
+};
+
+export const EditorPreferences: EditorPrefsStory = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Editor preferences wired to the Controls panel. Toggle `snapToGrid` and `smartGuides`, then drag a node: positions lock to a 16px lattice and dashed alignment lines flash when it lines up with its neighbours.',
+      },
+    },
+  },
+  args: { workspaceId: 'sb-workspace', threadId: 'sb-editor', snapToGrid: true, smartGuides: true },
+  argTypes: {
+    snapToGrid: {
+      control: 'boolean',
+      description: 'Lock node positions to a 16px grid while dragging.',
+      table: { category: ARG_CATEGORIES.BEHAVIOR },
+    },
+    smartGuides: {
+      control: 'boolean',
+      description: 'Flash alignment lines when a dragged node lines up with others.',
+      table: { category: ARG_CATEGORIES.BEHAVIOR },
+    },
+  },
+  decorators: [withCanvasStore({ threadId: 'sb-editor', nodes: reasoningCanvas.nodes, edges: reasoningCanvas.edges })],
+  render: (args) => <CanvasWithEditorPreferences {...args} />,
 };
 
 export const BackendError: Story = {

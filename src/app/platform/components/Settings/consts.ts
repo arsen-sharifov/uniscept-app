@@ -25,12 +25,12 @@ export const SIDEBAR_GROUPS = [
     items: [
       { id: 'profile', icon: User },
       { id: 'security', icon: Shield },
-      { id: 'notifications', icon: Bell },
     ],
   },
   {
     labelKey: 'preferences',
     items: [
+      { id: 'notifications', icon: Bell },
       { id: 'appearance', icon: Palette },
       { id: 'editor', icon: PenTool },
     ],
@@ -57,7 +57,7 @@ export const CANVAS_PATTERNS = [
   { value: 'none', icon: Minus, labelKey: 'patternNone', descriptionKey: 'patternNoneDesc' },
 ] as const satisfies readonly ICanvasPatternOption[];
 
-export const ZOOM_OPTIONS = [50, 75, 100, 125, 150] as const;
+export const AVAILABLE_PLAN_IDS: readonly string[] = ['demo'];
 
 export const THEME_SWATCH_BADGE: Record<TTheme, string> = {
   daybreak: 'bg-white text-neutral-900 ring-black/10',

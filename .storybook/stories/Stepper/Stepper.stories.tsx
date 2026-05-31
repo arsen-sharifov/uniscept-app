@@ -86,7 +86,7 @@ export const Interactive: Story = {
     },
   },
   args: { steps: ['Plan', 'Account', 'Confirm'], currentStep: 1 },
-  render: () => <StepperWithState />,
+  render: StepperWithState,
 };
 
 export const ManySteps: Story = {

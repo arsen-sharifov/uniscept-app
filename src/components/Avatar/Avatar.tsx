@@ -1,5 +1,16 @@
+import { clsx } from 'clsx';
+
+import type { TAvatarSize, TGlyphId } from '@interfaces';
+import { GLYPH_ICONS } from '@constants';
+
+import { GLYPH_SIZE_PX, PRESENCE_CLASS, SIZE_CLASS } from './consts';
+
 export interface IAvatarProps {
   name: string;
+  glyph?: TGlyphId | null;
+  size?: TAvatarSize;
+  showPresence?: boolean;
+  className?: string;
 }
 
 export const getInitials = (name: string, fallback = 'U') =>
@@ -10,12 +21,33 @@ export const getInitials = (name: string, fallback = 'U') =>
     .slice(0, 2)
     .toUpperCase();
 
-export const Avatar = ({ name }: IAvatarProps) => (
-  <span
-    role="img"
-    aria-label={name || 'User'}
-    className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-[color:var(--accent)] to-[color:var(--accent-2)] text-lg font-bold text-[color:var(--on-accent)] shadow-sm"
-  >
-    {getInitials(name)}
-  </span>
-);
+export const Avatar = ({ name, glyph, size = 'lg', showPresence = false, className }: IAvatarProps) => {
+  const GlyphIcon = glyph ? GLYPH_ICONS[glyph] : null;
+
+  return (
+    <span
+      role="img"
+      aria-label={name || 'User'}
+      className={clsx(
+        'relative flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-[color:var(--accent)] to-[color:var(--accent-2)] font-bold text-[color:var(--on-accent)] shadow-sm',
+        SIZE_CLASS[size],
+        className,
+      )}
+    >
+      {GlyphIcon ? (
+        <GlyphIcon size={GLYPH_SIZE_PX[size]} strokeWidth={1.75} className="shrink-0" aria-hidden />
+      ) : (
+        getInitials(name)
+      )}
+      {showPresence && (
+        <span
+          aria-hidden
+          className={clsx(
+            'absolute right-0 bottom-0 translate-x-px translate-y-px rounded-full border-[color:var(--surface)] bg-[color:var(--accent)]',
+            PRESENCE_CLASS[size],
+          )}
+        />
+      )}
+    </span>
+  );
+};

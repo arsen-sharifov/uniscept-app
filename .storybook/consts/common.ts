@@ -2,6 +2,8 @@ export const ARG_CATEGORIES = {
   CONTENT: 'Content',
   BEHAVIOR: 'Behavior',
   APPEARANCE: 'Appearance',
+  LAYOUT: 'Layout',
+  STATE: 'State',
   OTHER: 'Other',
 } as const;
 

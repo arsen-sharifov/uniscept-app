@@ -1,4 +1,6 @@
-import { createClient } from '@/lib/supabase/client';
+import type { IUserProfileUpdate } from '@interfaces';
+
+import { createClient } from '@/lib/supabase';
 
 import { signOut } from './auth';
 
@@ -8,16 +10,22 @@ export const getUser = async () => {
   return supabase.auth.getUser();
 };
 
-export const updateUserMetadata = async (name: string) => {
+export const updateUserMetadata = async (data: IUserProfileUpdate) => {
   const supabase = createClient();
 
-  return supabase.auth.updateUser({ data: { name } });
+  return supabase.auth.updateUser({ data });
 };
 
 export const updateEmail = async (email: string) => {
   const supabase = createClient();
 
   return supabase.auth.updateUser({ email });
+};
+
+export const verifyPassword = async (email: string, password: string) => {
+  const supabase = createClient();
+
+  return supabase.auth.signInWithPassword({ email, password });
 };
 
 export const updatePassword = async (password: string) => {

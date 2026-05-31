@@ -6,11 +6,13 @@ import { ChevronsUpDown, LogOut, Settings } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
+import type { IUserMetadata, TGlyphId } from '@interfaces';
 import { PREFERENCES_STORAGE_KEY } from '@constants';
 import { useTranslations } from '@hooks';
 import { getUser, signOut } from '@api/client';
-import { getInitials, Popover } from '@/components';
+import { Avatar, Popover } from '@/components';
 import { clearLocale } from '@/i18n';
+import { isGlyphId } from '@/lib/utils';
 
 export interface IUserMenuProps {
   onSettingsClick?: () => void;
@@ -37,10 +39,11 @@ export const UserMenu = ({ onSettingsClick }: IUserMenuProps) => {
     };
   }, []);
 
-  const displayName =
-    (user?.user_metadata?.name as string | undefined) || user?.email?.split('@')[0] || translations.common.userAvatar;
+  const metadata = user?.user_metadata as IUserMetadata | undefined;
+  const displayName = metadata?.name || user?.email?.split('@')[0] || translations.common.userAvatar;
   const email = user?.email ?? '';
-  const initials = getInitials(displayName, email);
+  const storedGlyph = metadata?.glyph;
+  const glyph: TGlyphId | null = isGlyphId(storedGlyph) ? storedGlyph : null;
 
   const handleSignOut = async () => {
     try {
@@ -67,10 +70,7 @@ export const UserMenu = ({ onSettingsClick }: IUserMenuProps) => {
             open ? 'bg-[color:var(--surface-overlay)]' : 'hover:bg-[color:var(--surface-overlay)]',
           )}
         >
-          <span className="relative flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[color:var(--accent)] to-[color:var(--accent-2)] text-[10px] font-bold text-[color:var(--on-accent)] shadow-sm">
-            {initials}
-            <span className="absolute -right-0.5 -bottom-0.5 h-2 w-2 rounded-full border-2 border-[color:var(--surface)] bg-[color:var(--accent)]" />
-          </span>
+          <Avatar name={displayName} glyph={glyph} size="sm" showPresence />
           <span className="flex min-w-0 flex-1 flex-col leading-tight">
             <span className="truncate text-xs font-semibold text-[color:var(--text-strong)]">{displayName}</span>
             <span className="truncate text-[10px] text-[color:var(--text-muted)]">{email}</span>
@@ -80,9 +80,7 @@ export const UserMenu = ({ onSettingsClick }: IUserMenuProps) => {
       }
     >
       <div className="flex items-center gap-3 border-b border-[color:var(--border)] px-3 py-3">
-        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-[color:var(--accent)] to-[color:var(--accent-2)] text-xs font-bold text-[color:var(--on-accent)] shadow-sm">
-          {initials}
-        </span>
+        <Avatar name={displayName} glyph={glyph} size="md" />
         <div className="flex min-w-0 flex-col leading-tight">
           <span className="truncate text-sm font-semibold text-[color:var(--text-strong)]">{displayName}</span>
           <span className="truncate text-[11px] text-[color:var(--text-muted)]">{email}</span>

@@ -6,6 +6,16 @@
 
 Closes #
 
+## Type of Change
+
+<!-- Mark all that apply -->
+
+- [ ] Feature (new functionality)
+- [ ] Bug fix (fixes an issue)
+- [ ] Refactor (code improvement without behavior change)
+- [ ] Documentation update
+- [ ] Chore (dependencies, config, etc.)
+
 ## Changes
 
 -

@@ -4,16 +4,16 @@ import { Handle, type NodeProps } from '@xyflow/react';
 import { clsx } from 'clsx';
 import { ArrowUpRight, Link2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useTranslations } from 'next-intl';
 import type { MouseEvent } from 'react';
 
 import type { TReferenceNode } from '@interfaces';
+import { useTranslations } from '@hooks';
 
 import { HANDLE_POSITIONS } from './consts';
 import { buildReferenceUrl } from './utils';
 
 export const ReferenceNode = ({ data, selected }: NodeProps<TReferenceNode>) => {
-  const t = useTranslations('platform.canvas.reference');
+  const t = useTranslations();
   const { sourceNodeId, sourceNodeLabel, sourceThreadId, sourceThreadName, sourceWorkspaceId, sourceWorkspaceName } =
     data;
 
@@ -61,14 +61,14 @@ export const ReferenceNode = ({ data, selected }: NodeProps<TReferenceNode>) => 
       <div className="relative flex items-center gap-1.5">
         <span className="inline-flex items-center gap-1 rounded-full bg-[color:var(--ref-bg)] px-1.5 py-px text-[9px] font-semibold tracking-[0.12em] text-[color:var(--ref)] uppercase">
           <Link2 className="h-2.5 w-2.5" strokeWidth={2.25} />
-          {t('badge')}
+          {t.platform.canvas.reference.badge}
         </span>
         {canNavigate && (
           <button
             type="button"
             onClick={navigate}
             onMouseDown={(event) => event.stopPropagation()}
-            aria-label={t('openLabel', { name: sourceNodeLabel })}
+            aria-label={t('platform.canvas.reference.openLabel', { name: sourceNodeLabel })}
             className="nodrag ml-auto flex h-5 w-5 items-center justify-center rounded-md text-[color:var(--ref)] transition-[background,color,transform] duration-150 group-hover/ref:translate-x-px group-hover/ref:-translate-y-px hover:bg-[color:var(--ref-bg)]"
           >
             <ArrowUpRight className="h-3 w-3" strokeWidth={2} />
@@ -82,7 +82,7 @@ export const ReferenceNode = ({ data, selected }: NodeProps<TReferenceNode>) => 
 
       <p className="relative flex items-center gap-1 truncate text-[10.5px] text-[color:var(--text-muted)]">
         <span className="truncate text-[color:var(--text-subtle)]">
-          {sourceWorkspaceName || t('workspaceFallback')}
+          {sourceWorkspaceName || t.platform.canvas.reference.workspaceFallback}
         </span>
         <span className="text-[color:var(--text-faint)]">/</span>
         <span className="truncate text-[color:var(--text-subtle)]">{sourceThreadName}</span>

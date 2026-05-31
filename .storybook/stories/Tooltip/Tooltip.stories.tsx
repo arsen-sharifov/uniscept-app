@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { SmartTooltip, Tooltip } from '@/components';
 
 import { SMART_PLACEMENTS } from './consts';
-import { TriggerExample } from './fragments';
+import { InviteCodeField, TriggerExample } from './fragments';
 import { ARG_CATEGORIES } from '../../consts';
 import { WithPad } from '../../decorators';
 
@@ -19,7 +19,7 @@ const meta: Meta<typeof Tooltip> = {
     },
   },
   args: {
-    text: 'Required during closed beta. Ask the team for your code.',
+    text: 'Short helper copy shown on hover.',
     position: 'top',
   },
   argTypes: {
@@ -49,12 +49,7 @@ type Story = StoryObj<typeof Tooltip>;
 export const Default: Story = {};
 
 export const WithLabel: Story = {
-  render: (args) => (
-    <div className="flex items-center gap-1.5 text-[color:var(--text)]">
-      <span className="text-[13px] font-medium">Invite Code</span>
-      <Tooltip {...args} />
-    </div>
-  ),
+  render: () => <InviteCodeField />,
 };
 
 export const CustomTrigger: Story = {
@@ -170,12 +165,7 @@ export const LongText: Story = {
       },
     },
   },
-  render: (args) => (
-    <div className="flex items-center gap-1.5 text-[color:var(--text)]">
-      <span className="text-[13px] font-medium">Invite Code</span>
-      <Tooltip {...args} />
-    </div>
-  ),
+  render: (args) => <InviteCodeField text={args.text} />,
 };
 
 export const OnDisabledButton: Story = {

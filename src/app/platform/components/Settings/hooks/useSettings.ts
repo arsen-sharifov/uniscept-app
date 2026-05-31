@@ -3,7 +3,8 @@
 import type { User } from '@supabase/supabase-js';
 import { useEffect, useState } from 'react';
 
-import { deleteAccount, getUser, updateUserMetadata, updateEmail, updatePassword } from '@api/client';
+import type { IChangePasswordPayload, IUserProfileUpdate, TChangePasswordResult } from '@interfaces';
+import { deleteAccount, getUser, updateEmail, updatePassword, updateUserMetadata, verifyPassword } from '@api/client';
 
 export const useSettings = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -34,8 +35,8 @@ export const useSettings = () => {
     };
   }, []);
 
-  const updateProfile = async (name: string) => {
-    const { data, error } = await updateUserMetadata(name);
+  const updateProfile = async (update: IUserProfileUpdate) => {
+    const { data, error } = await updateUserMetadata(update);
     if (error) {
       throw error;
     }
@@ -50,11 +51,30 @@ export const useSettings = () => {
     }
   };
 
-  const changePassword = async (password: string) => {
-    const { error } = await updatePassword(password);
+  const changePassword = async ({
+    currentPassword,
+    newPassword,
+  }: IChangePasswordPayload): Promise<TChangePasswordResult> => {
+    const email = user?.email;
+    if (!email) {
+      throw new Error('Missing user email');
+    }
+
+    const { error: verifyError } = await verifyPassword(email, currentPassword);
+    if (verifyError) {
+      if (verifyError.code === 'invalid_credentials' || verifyError.status === 400) {
+        return 'incorrectCurrentPassword';
+      }
+
+      throw verifyError;
+    }
+
+    const { error } = await updatePassword(newPassword);
     if (error) {
       throw error;
     }
+
+    return 'updated';
   };
 
   return {

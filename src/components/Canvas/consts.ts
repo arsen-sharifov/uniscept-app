@@ -51,6 +51,14 @@ export const ZOOM_MIN = 0.2;
 export const ZOOM_MAX = 4;
 export const ZOOM_DURATION_MS = 200;
 
+export const SNAP_GRID_PX = 16;
+export const SNAP_GRID: [number, number] = [SNAP_GRID_PX, SNAP_GRID_PX];
+
+export const ALIGN_GUIDE_THRESHOLD_PX = 4;
+export const ALIGN_GUIDE_FALLBACK_COLOR = 'rgba(34, 211, 238, 0.7)';
+export const ALIGN_GUIDE_STROKE_WIDTH = 1;
+export const ALIGN_GUIDE_DASH_ARRAY = '4 4';
+
 export const PAN_BUTTONS_ALL: number[] = [0, 1];
 export const PAN_BUTTONS_MIDDLE: number[] = [1];
 

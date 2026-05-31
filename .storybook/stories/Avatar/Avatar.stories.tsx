@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
+import { AVATAR_ICONS } from '@constants';
 import { Avatar, getInitials } from '@/components';
 
 import { NAME_CASES, SCRIPT_CASES } from './consts';
@@ -20,7 +21,7 @@ const meta: Meta<typeof Avatar> = {
     docs: {
       description: {
         component:
-          'Gradient circle showing user initials. `getInitials()` derives up to two characters; whitespace-only and empty names fall back to "U".',
+          'Gradient circle showing a chosen icon or derived initials. `getInitials()` derives up to two characters; whitespace-only and empty names fall back to "U".',
       },
     },
   },
@@ -84,14 +85,14 @@ export const CyrillicAndDiacritics: Story = {
     docs: {
       description: {
         story:
-          'Extended coverage for non-Latin scripts. Confirms initials, casing, and glyph fit inside the gradient circle across Cyrillic, Greek, CJK, and RTL inputs.',
+          'Extended coverage for non-Latin scripts. Confirms initials, casing, and fit inside the gradient circle across Cyrillic, Greek, CJK, and RTL inputs.',
       },
     },
   },
   render: () => (
     <Showcase
       title="Non-Latin scripts"
-      caption="locale glyphs"
+      caption="locale scripts"
       columns={3}
       items={SCRIPT_CASES.map((c) => ({
         label: c.label,
@@ -101,6 +102,87 @@ export const CyrillicAndDiacritics: Story = {
           <div className="flex items-center gap-3">
             <Avatar name={c.name} />
             <code className="font-mono text-[11px] text-[color:var(--text-muted)]">{`"${c.name}"`}</code>
+          </div>
+        ),
+      }))}
+    />
+  ),
+};
+
+export const Sizes: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story: 'The five sizes the Avatar ships: xs, sm, md, lg (default), xl. Sizes scale the initials uniformly.',
+      },
+    },
+  },
+  render: () => (
+    <Showcase
+      title="Sizes"
+      caption="initials"
+      columns={4}
+      items={(['xs', 'sm', 'md', 'lg', 'xl'] as const).map((size) => ({
+        label: size,
+        hint: `size=${size}`,
+        children: (
+          <div className="flex h-24 w-full items-center justify-center">
+            <Avatar name="Dana Park" size={size} />
+          </div>
+        ),
+      }))}
+    />
+  ),
+};
+
+export const WithIcon: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Avatar with a chosen icon instead of initials. This is what users see after picking an icon in Settings → Profile.',
+      },
+    },
+  },
+  render: () => (
+    <Showcase
+      title="Icon variants"
+      caption="20 marks"
+      columns={5}
+      items={AVATAR_ICONS.map(({ id }) => ({
+        label: id,
+        hint: 'lg',
+        children: (
+          <div className="flex h-24 w-full items-center justify-center">
+            <Avatar name="Dana Park" icon={id} size="lg" />
+          </div>
+        ),
+      }))}
+    />
+  ),
+};
+
+export const IconVsInitials: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Icon and initials side by side at every size. The icon is sized to sit with the same restraint as the letters rather than filling the circle.',
+      },
+    },
+  },
+  render: () => (
+    <Showcase
+      title="Icon vs initials"
+      caption="matched weight"
+      columns={5}
+      items={(['xs', 'sm', 'md', 'lg', 'xl'] as const).map((size) => ({
+        label: size,
+        hint: `size=${size}`,
+        children: (
+          <div className="flex h-24 w-full items-center justify-center gap-4">
+            <Avatar name="Dana Park" icon="cat" size={size} />
+            <Avatar name="Dana Park" size={size} />
           </div>
         ),
       }))}

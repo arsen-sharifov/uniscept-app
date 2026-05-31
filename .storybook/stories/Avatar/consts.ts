@@ -11,11 +11,11 @@ export const NAME_CASES: IInitialsCase[] = [
 
 export const SCRIPT_CASES: IInitialsCase[] = [
   { label: 'Ukrainian', name: 'Олександр Шарипов', description: 'Cyrillic letters uppercase via locale rules.' },
-  { label: 'French', name: 'Étienne Dubois', description: 'Latin diacritics preserved in the rendered glyph.' },
+  { label: 'French', name: 'Étienne Dubois', description: 'Latin diacritics preserved in the rendered initials.' },
   { label: 'German', name: 'Jürgen Müller', description: 'Umlauts survive the slice/toUpperCase pipeline.' },
   { label: 'Greek', name: 'Δημήτρης Παππάς', description: 'Greek capital letters render at full weight.' },
-  { label: 'Chinese', name: '张伟', description: 'Single CJK token yields one wide glyph; slice keeps it intact.' },
-  { label: 'Japanese', name: '佐藤 健', description: 'Two CJK tokens become two glyphs side by side.' },
+  { label: 'Chinese', name: '张伟', description: 'Single CJK token yields one wide initial; slice keeps it intact.' },
+  { label: 'Japanese', name: '佐藤 健', description: 'Two CJK tokens become two initials side by side.' },
   {
     label: 'Arabic',
     name: 'محمد علي',

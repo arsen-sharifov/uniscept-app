@@ -12,7 +12,7 @@ export const useAsyncAction = () => {
 
   useEffect(() => () => clearTimeout(timerRef.current), []);
 
-  const run = useCallback(async (action: () => Promise<void>, errorMessage: string) => {
+  const run = useCallback(async (action: () => Promise<void>, errorMessage: string | ((error: unknown) => string)) => {
     setLoading(true);
     setSuccess(false);
     setError(null);
@@ -21,8 +21,8 @@ export const useAsyncAction = () => {
       setSuccess(true);
       clearTimeout(timerRef.current);
       timerRef.current = setTimeout(() => setSuccess(false), SUCCESS_RESET_DELAY_MS);
-    } catch {
-      setError(errorMessage);
+    } catch (error) {
+      setError(typeof errorMessage === 'function' ? errorMessage(error) : errorMessage);
     } finally {
       setLoading(false);
     }

@@ -60,7 +60,7 @@ export const Settings = ({ onClose, defaultSection = 'profile' }: ISettingsProps
     }
 
     if (activeSection === 'editor') {
-      return <EditorSection />;
+      return <EditorSection preferences={preferences} onUpdate={updatePreference} />;
     }
 
     return <PlanSection user={user} />;

@@ -101,6 +101,13 @@ export interface IEdgePaletteEntry {
   marker: string;
 }
 
+export interface IAlignmentGuide {
+  direction: 'vertical' | 'horizontal';
+  position: number;
+  start: number;
+  end: number;
+}
+
 export type TMenuItemAccent = 'emerald' | 'red' | 'cyan' | 'neutral';
 
 export interface ICreateCanvasNodeInput {

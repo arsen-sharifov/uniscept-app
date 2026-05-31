@@ -32,20 +32,24 @@ export const usePreferences = () => {
   }, []);
 
   useEffect(() => {
-    if (typeof document === 'undefined') {
-      return;
-    }
-
     document.documentElement.setAttribute('data-theme', preferences.theme);
   }, [preferences.theme]);
 
   useEffect(() => {
-    if (typeof document === 'undefined') {
-      return;
-    }
-
     document.documentElement.setAttribute('data-canvas-pattern', preferences.canvasPattern);
   }, [preferences.canvasPattern]);
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-snap-to-grid', String(preferences.snapToGrid));
+  }, [preferences.snapToGrid]);
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-default-zoom', String(preferences.defaultZoom));
+  }, [preferences.defaultZoom]);
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-smart-guides', String(preferences.smartGuides));
+  }, [preferences.smartGuides]);
 
   useEffect(() => () => clearTimeout(debounceRef.current), []);
 
@@ -64,15 +68,15 @@ export const usePreferences = () => {
             lastSyncedRef.current = next;
           })
           .catch(() => {
-            const rollback = lastSyncedRef.current;
             setPreferences((current) => {
               if (current[key] !== value) {
                 return current;
               }
 
-              writeToStorage(rollback);
+              const reverted = { ...current, [key]: lastSyncedRef.current[key] };
+              writeToStorage(reverted);
 
-              return rollback;
+              return reverted;
             });
           });
       }, PREFERENCES_DEBOUNCE_MS);

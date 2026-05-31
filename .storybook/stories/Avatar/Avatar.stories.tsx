@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
+import { GLYPH_IDS } from '@constants';
 import { Avatar, getInitials } from '@/components';
 
 import { NAME_CASES, SCRIPT_CASES } from './consts';
@@ -20,7 +21,7 @@ const meta: Meta<typeof Avatar> = {
     docs: {
       description: {
         component:
-          'Gradient circle showing user initials. `getInitials()` derives up to two characters; whitespace-only and empty names fall back to "U".',
+          'Gradient circle showing a chosen glyph or derived initials. `getInitials()` derives up to two characters; whitespace-only and empty names fall back to "U".',
       },
     },
   },
@@ -101,6 +102,88 @@ export const CyrillicAndDiacritics: Story = {
           <div className="flex items-center gap-3">
             <Avatar name={c.name} />
             <code className="font-mono text-[11px] text-[color:var(--text-muted)]">{`"${c.name}"`}</code>
+          </div>
+        ),
+      }))}
+    />
+  ),
+};
+
+export const Sizes: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The five sizes the Avatar ships: xs, sm, md, lg (default), xl. Sizes scale the glyph and the presence dot uniformly.',
+      },
+    },
+  },
+  render: () => (
+    <Showcase
+      title="Sizes"
+      caption="initials + presence"
+      columns={4}
+      items={(['xs', 'sm', 'md', 'lg', 'xl'] as const).map((size) => ({
+        label: size,
+        hint: `size=${size}`,
+        children: (
+          <div className="flex h-24 w-full items-center justify-center">
+            <Avatar name="Dana Park" size={size} showPresence />
+          </div>
+        ),
+      }))}
+    />
+  ),
+};
+
+export const WithGlyph: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Avatar with a chosen reasoning glyph instead of initials. This is what users see after picking a glyph in Settings → Profile.',
+      },
+    },
+  },
+  render: () => (
+    <Showcase
+      title="Glyph variants"
+      caption="20 marks"
+      columns={5}
+      items={GLYPH_IDS.map((glyph) => ({
+        label: glyph,
+        hint: 'lg',
+        children: (
+          <div className="flex h-24 w-full items-center justify-center">
+            <Avatar name="Dana Park" glyph={glyph} size="lg" />
+          </div>
+        ),
+      }))}
+    />
+  ),
+};
+
+export const GlyphVsInitials: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Glyph and initials side by side at every size. The glyph is sized to sit with the same restraint as the letters rather than filling the circle.',
+      },
+    },
+  },
+  render: () => (
+    <Showcase
+      title="Glyph vs initials"
+      caption="matched weight"
+      columns={5}
+      items={(['xs', 'sm', 'md', 'lg', 'xl'] as const).map((size) => ({
+        label: size,
+        hint: `size=${size}`,
+        children: (
+          <div className="flex h-24 w-full items-center justify-center gap-4">
+            <Avatar name="Dana Park" glyph="cat" size={size} />
+            <Avatar name="Dana Park" size={size} />
           </div>
         ),
       }))}

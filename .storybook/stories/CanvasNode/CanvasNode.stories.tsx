@@ -3,19 +3,19 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { CanvasNode } from '@/components';
 
 import {
-  SB_NODE_ID,
   defaultNode,
   editingNode,
   invalidNode,
   longLabelNode,
   pendingNode,
+  SB_NODE_ID,
   selectedNode,
   validNode,
   withCommentsNode,
 } from './consts';
 import { SingleNodeFlow } from './fragments';
 import { ARG_CATEGORIES } from '../../consts';
-import { WithCanvasStage, WithReactFlow, withCanvasStore } from '../../decorators';
+import { WithCanvasStage, withCanvasStore, WithReactFlow } from '../../decorators';
 
 const meta: Meta<typeof CanvasNode> = {
   title: 'Components/Canvas/CanvasNode',

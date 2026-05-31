@@ -1,12 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
+import { useArgs } from 'storybook/preview-api';
 import { fn } from 'storybook/test';
 
 import type { IToolGroup } from '@interfaces';
 
-import { ECanvasTool, Toolbar, buildCanvasTools } from '@/components';
+import { ECanvasTool, type IToolbarProps, Toolbar, buildCanvasTools } from '@/components';
 
 import { DENSE_DISABLED_TOOL_IDS } from './consts';
-import { ToolbarWithState } from './fragments';
+import { ToolbarWithState, type IToolbarWithStateProps } from './fragments';
 import { ARG_CATEGORIES } from '../../consts';
 
 const meta: Meta<typeof Toolbar> = {
@@ -50,23 +51,42 @@ export default meta;
 
 type Story = StoryObj<typeof Toolbar>;
 
+const renderToolbar = (
+  options: Pick<IToolbarWithStateProps, 'buildGroups' | 'mapGroups'> = {},
+): NonNullable<Story['render']> =>
+  function Render(args) {
+    const [{ activeTool }, updateArgs] = useArgs<IToolbarProps>();
+
+    return (
+      <ToolbarWithState
+        {...args}
+        {...options}
+        activeTool={activeTool}
+        onToolClick={(id) => {
+          args.onToolClick?.(id);
+          updateArgs({ activeTool: id });
+        }}
+      />
+    );
+  };
+
 export const Default: Story = {
-  render: (args) => <ToolbarWithState {...args} />,
+  render: renderToolbar(),
 };
 
 export const SelectActive: Story = {
   args: { activeTool: ECanvasTool.Select },
-  render: (args) => <ToolbarWithState {...args} />,
+  render: renderToolbar(),
 };
 
 export const ConnectActive: Story = {
   args: { activeTool: ECanvasTool.Connect },
-  render: (args) => <ToolbarWithState {...args} />,
+  render: renderToolbar(),
 };
 
 export const AddNodeActive: Story = {
   args: { activeTool: ECanvasTool.AddNode },
-  render: (args) => <ToolbarWithState {...args} />,
+  render: renderToolbar(),
 };
 
 export const WithDisabledTools: Story = {
@@ -78,19 +98,15 @@ export const WithDisabledTools: Story = {
       },
     },
   },
-  render: (args) => (
-    <ToolbarWithState
-      {...args}
-      mapGroups={(groups) =>
-        groups.map((group) => ({
-          ...group,
-          tools: group.tools.map((tool) =>
-            tool.id === ECanvasTool.Undo || tool.id === ECanvasTool.Redo ? { ...tool, disabled: true } : tool,
-          ),
-        }))
-      }
-    />
-  ),
+  render: renderToolbar({
+    mapGroups: (groups) =>
+      groups.map((group) => ({
+        ...group,
+        tools: group.tools.map((tool) =>
+          tool.id === ECanvasTool.Undo || tool.id === ECanvasTool.Redo ? { ...tool, disabled: true } : tool,
+        ),
+      })),
+  }),
 };
 
 export const Empty: Story = {
@@ -105,7 +121,7 @@ export const Empty: Story = {
     groups: [],
     activeTool: undefined,
   },
-  render: (args) => <ToolbarWithState {...args} />,
+  render: renderToolbar(),
 };
 
 export const InterleavedGroups: Story = {
@@ -118,27 +134,24 @@ export const InterleavedGroups: Story = {
     },
   },
   args: { activeTool: ECanvasTool.AddNode },
-  render: (args) => (
-    <ToolbarWithState
-      {...args}
-      buildGroups={(t) => {
-        const tools = buildCanvasTools(t.platform.canvas.tools);
+  render: renderToolbar({
+    buildGroups: (t) => {
+      const tools = buildCanvasTools(t.platform.canvas.tools);
 
-        return [
-          {
-            id: 'primary',
-            label: t.platform.canvas.tools.groups.build,
-            tools: [tools[ECanvasTool.Select], tools[ECanvasTool.AddNode], tools[ECanvasTool.Connect]],
-          },
-          {
-            id: 'secondary',
-            label: t.platform.canvas.tools.groups.annotate,
-            tools: [tools[ECanvasTool.Comment], tools[ECanvasTool.CrossReference], tools[ECanvasTool.Delete]],
-          },
-        ] satisfies IToolGroup[];
-      }}
-    />
-  ),
+      return [
+        {
+          id: 'primary',
+          label: t.platform.canvas.tools.groups.build,
+          tools: [tools[ECanvasTool.Select], tools[ECanvasTool.AddNode], tools[ECanvasTool.Connect]],
+        },
+        {
+          id: 'secondary',
+          label: t.platform.canvas.tools.groups.annotate,
+          tools: [tools[ECanvasTool.Comment], tools[ECanvasTool.CrossReference], tools[ECanvasTool.Delete]],
+        },
+      ] satisfies IToolGroup[];
+    },
+  }),
 };
 
 export const DenseGroups: Story = {
@@ -150,17 +163,13 @@ export const DenseGroups: Story = {
       },
     },
   },
-  render: (args) => (
-    <ToolbarWithState
-      {...args}
-      mapGroups={(groups) =>
-        groups.map((group) => ({
-          ...group,
-          tools: group.tools.map((tool) => (DENSE_DISABLED_TOOL_IDS.has(tool.id) ? { ...tool, disabled: true } : tool)),
-        }))
-      }
-    />
-  ),
+  render: renderToolbar({
+    mapGroups: (groups) =>
+      groups.map((group) => ({
+        ...group,
+        tools: group.tools.map((tool) => (DENSE_DISABLED_TOOL_IDS.has(tool.id) ? { ...tool, disabled: true } : tool)),
+      })),
+  }),
 };
 
 export const MinimalSingleGroup: Story = {
@@ -172,20 +181,17 @@ export const MinimalSingleGroup: Story = {
     },
   },
   args: { activeTool: ECanvasTool.Select },
-  render: (args) => (
-    <ToolbarWithState
-      {...args}
-      buildGroups={(t) => {
-        const tools = buildCanvasTools(t.platform.canvas.tools);
+  render: renderToolbar({
+    buildGroups: (t) => {
+      const tools = buildCanvasTools(t.platform.canvas.tools);
 
-        return [
-          {
-            id: 'navigate',
-            label: t.platform.canvas.tools.groups.navigate,
-            tools: [tools[ECanvasTool.Select], tools[ECanvasTool.Pan], tools[ECanvasTool.ZoomIn]],
-          },
-        ] satisfies IToolGroup[];
-      }}
-    />
-  ),
+      return [
+        {
+          id: 'navigate',
+          label: t.platform.canvas.tools.groups.navigate,
+          tools: [tools[ECanvasTool.Select], tools[ECanvasTool.Pan], tools[ECanvasTool.ZoomIn]],
+        },
+      ] satisfies IToolGroup[];
+    },
+  }),
 };

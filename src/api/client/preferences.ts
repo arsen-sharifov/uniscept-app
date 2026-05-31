@@ -6,6 +6,9 @@ const COLUMN_BY_KEY: Record<keyof IPreferences, string> = {
   theme: 'theme',
   canvasPattern: 'canvas_pattern',
   language: 'language',
+  snapToGrid: 'snap_to_grid',
+  defaultZoom: 'default_zoom',
+  smartGuides: 'smart_guides',
 };
 
 const KEY_BY_COLUMN = Object.fromEntries(Object.entries(COLUMN_BY_KEY).map(([key, column]) => [column, key])) as Record<

@@ -1,5 +1,15 @@
+import { clsx } from 'clsx';
+
+import type { TAvatarIcon, TAvatarSize } from '@interfaces';
+import { AVATAR_ICON_BY_ID } from '@constants';
+
+import { ICON_SIZE_PX, SIZE_CLASS } from './consts';
+
 export interface IAvatarProps {
   name: string;
+  icon?: TAvatarIcon | null;
+  size?: TAvatarSize;
+  className?: string;
 }
 
 export const getInitials = (name: string, fallback = 'U') =>
@@ -10,12 +20,24 @@ export const getInitials = (name: string, fallback = 'U') =>
     .slice(0, 2)
     .toUpperCase();
 
-export const Avatar = ({ name }: IAvatarProps) => (
-  <span
-    role="img"
-    aria-label={name || 'User'}
-    className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-[color:var(--accent)] to-[color:var(--accent-2)] text-lg font-bold text-[color:var(--on-accent)] shadow-sm"
-  >
-    {getInitials(name)}
-  </span>
-);
+export const Avatar = ({ name, icon, size = 'lg', className }: IAvatarProps) => {
+  const AvatarIcon = icon ? AVATAR_ICON_BY_ID[icon] : null;
+
+  return (
+    <span
+      role="img"
+      aria-label={name || 'User'}
+      className={clsx(
+        'relative flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-[color:var(--accent)] to-[color:var(--accent-2)] font-bold text-[color:var(--on-accent)] shadow-sm',
+        SIZE_CLASS[size],
+        className,
+      )}
+    >
+      {AvatarIcon ? (
+        <AvatarIcon size={ICON_SIZE_PX[size]} strokeWidth={1.75} className="shrink-0" aria-hidden />
+      ) : (
+        getInitials(name)
+      )}
+    </span>
+  );
+};

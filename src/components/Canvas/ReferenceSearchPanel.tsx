@@ -3,11 +3,10 @@
 import { useReactFlow, type XYPosition } from '@xyflow/react';
 import { clsx } from 'clsx';
 import { Link2, Search, SearchX } from 'lucide-react';
-import { useTranslations } from 'next-intl';
 import { useState, useEffect, useRef, useMemo, useCallback, useId } from 'react';
 
 import type { INodeReference, IReferenceNodeData, IScreenPoint } from '@interfaces';
-import { useClickOutside, useEscapeKey, useFocusTrap } from '@hooks';
+import { useClickOutside, useEscapeKey, useFocusTrap, useTranslations } from '@hooks';
 import { useCanvasStore } from '@/lib/stores';
 
 interface IReferenceSearchPanelContentProps {
@@ -25,7 +24,7 @@ const ReferenceSearchPanelContent = ({
   onSelect,
   onClose,
 }: IReferenceSearchPanelContentProps) => {
-  const t = useTranslations('platform.canvas.referenceSearch');
+  const t = useTranslations();
   const [query, setQuery] = useState('');
   const [rawCursorIndex, setRawCursorIndex] = useState(0);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -102,7 +101,7 @@ const ReferenceSearchPanelContent = ({
       ref={panelRef}
       role="dialog"
       aria-modal="true"
-      aria-label={t('placeholder')}
+      aria-label={t.platform.canvas.referenceSearch.placeholder}
       style={{ left: screenPos.x, top: screenPos.y }}
       className="fixed z-50 flex w-80 animate-rise-up flex-col overflow-hidden rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-elevated)]/95 text-[color:var(--text)] shadow-[0_24px_60px_-20px_rgba(15,23,42,0.42)] backdrop-blur-2xl motion-reduce:animate-none"
     >
@@ -116,8 +115,8 @@ const ReferenceSearchPanelContent = ({
             ref={inputCallbackRef}
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder={t('placeholder')}
-            aria-label={t('placeholder')}
+            placeholder={t.platform.canvas.referenceSearch.placeholder}
+            aria-label={t.platform.canvas.referenceSearch.placeholder}
             role="combobox"
             aria-expanded={filtered.length > 0}
             aria-controls={listboxId}
@@ -135,14 +134,23 @@ const ReferenceSearchPanelContent = ({
               <SearchX className="h-3.5 w-3.5" strokeWidth={2} />
             </span>
             <p className="text-[11.5px] font-medium text-[color:var(--text-strong)]">
-              {query ? t('noMatch', { query }) : t('noResults')}
+              {query
+                ? t('platform.canvas.referenceSearch.noMatch', { query })
+                : t.platform.canvas.referenceSearch.noResults}
             </p>
             {query && (
-              <p className="max-w-[200px] text-[10.5px] leading-snug text-[color:var(--text-muted)]">{t('hint')}</p>
+              <p className="max-w-[200px] text-[10.5px] leading-snug text-[color:var(--text-muted)]">
+                {t.platform.canvas.referenceSearch.hint}
+              </p>
             )}
           </div>
         ) : (
-          <ul role="listbox" id={listboxId} aria-label={t('placeholder')} className="flex flex-col gap-px">
+          <ul
+            role="listbox"
+            id={listboxId}
+            aria-label={t.platform.canvas.referenceSearch.placeholder}
+            className="flex flex-col gap-px"
+          >
             {filtered.map((node, index) => (
               <li key={node.id} role="option" id={`${optionIdPrefix}-${index}`} aria-selected={index === cursorIndex}>
                 <button
@@ -175,19 +183,19 @@ const ReferenceSearchPanelContent = ({
             <kbd className="rounded border border-[color:var(--border-strong)] bg-[color:var(--surface)] px-1 font-mono text-[9px] text-[color:var(--text-strong)]">
               ↵
             </kbd>
-            {t('actionLink')}
+            {t.platform.canvas.referenceSearch.actionLink}
           </span>
           <span className="flex items-center gap-1">
             <kbd className="rounded border border-[color:var(--border-strong)] bg-[color:var(--surface)] px-1 font-mono text-[9px] text-[color:var(--text-strong)]">
               ↑↓
             </kbd>
-            {t('actionNavigate')}
+            {t.platform.canvas.referenceSearch.actionNavigate}
           </span>
           <span className="flex items-center gap-1">
             <kbd className="rounded border border-[color:var(--border-strong)] bg-[color:var(--surface)] px-1 font-mono text-[9px] text-[color:var(--text-strong)]">
               Esc
             </kbd>
-            {t('actionClose')}
+            {t.platform.canvas.referenceSearch.actionClose}
           </span>
         </div>
       )}

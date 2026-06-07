@@ -5,17 +5,25 @@ import {
   ConnectionMode,
   type Edge,
   type EdgeMouseHandler,
+  type Node,
   type NodeMouseHandler,
   ReactFlow,
   useReactFlow,
 } from '@xyflow/react';
 import { MessageCircle } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { type MouseEvent as ReactMouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { type MouseEvent as ReactMouseEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import '@xyflow/react/dist/style.css';
 import './canvas.css';
-import { ECanvasNodeType, type IScreenPoint, type TCanvasContextMenu } from '@interfaces';
+import {
+  ECanvasNodeType,
+  type IAlignmentGuide,
+  type IScreenPoint,
+  type TCanvasContextMenu,
+  type TDefaultZoom,
+} from '@interfaces';
+import { DEFAULT_PREFERENCES } from '@constants';
 import { useEscapeKey, useTranslations } from '@hooks';
 import { ECanvasTool } from '@/components/tools';
 import { useCanvasStore } from '@/lib/stores';
@@ -47,10 +55,11 @@ import {
   RUBBER_LINE_STROKE_FALLBACK,
   RUBBER_LINE_STROKE_WIDTH,
   SELECT_DELETE_KEYS,
+  SNAP_GRID,
   ZOOM_MAX,
   ZOOM_MIN,
 } from './consts';
-import { CanvasCommentsPanel, ContextMenu, SaveStatus } from './fragments';
+import { AlignmentGuides, CanvasCommentsPanel, ContextMenu, SaveStatus } from './fragments';
 import {
   useCanvasPattern,
   useCanvasSync,
@@ -62,7 +71,12 @@ import {
 } from './hooks';
 import { ReferenceNode } from './ReferenceNode';
 import { ReferenceSearchPanel } from './ReferenceSearchPanel';
-import { computeEffectiveStatuses, resolveBidirectionalEdgeTone, resolveEdgeTone } from './utils';
+import {
+  computeAlignmentGuides,
+  computeEffectiveStatuses,
+  resolveBidirectionalEdgeTone,
+  resolveEdgeTone,
+} from './utils';
 
 const NODE_TYPES = {
   [ECanvasNodeType.Canvas]: CanvasNode,
@@ -75,12 +89,23 @@ const EDGE_TYPES = {
 
 const PRO_OPTIONS = { hideAttribution: true } as const;
 
+const NO_GUIDES: readonly IAlignmentGuide[] = [];
+
 interface ICanvasProps {
   workspaceId: string;
   threadId: string;
+  snapToGrid?: boolean;
+  smartGuides?: boolean;
+  defaultZoom?: TDefaultZoom;
 }
 
-export const Canvas = ({ workspaceId, threadId }: ICanvasProps) => {
+export const Canvas = ({
+  workspaceId,
+  threadId,
+  snapToGrid = DEFAULT_PREFERENCES.snapToGrid,
+  smartGuides = DEFAULT_PREFERENCES.smartGuides,
+  defaultZoom = DEFAULT_PREFERENCES.defaultZoom,
+}: ICanvasProps) => {
   const t = useTranslations();
   const { saveState, loadError } = useCanvasSync(threadId);
   const referenceNodes = useReferenceSearch({ workspaceId, threadId });
@@ -94,7 +119,7 @@ export const Canvas = ({ workspaceId, threadId }: ICanvasProps) => {
   const edgePalette = useEdgePalette();
   const canvasPattern = useCanvasPattern();
 
-  const { fitView, screenToFlowPosition } = useReactFlow();
+  const { fitView, screenToFlowPosition, setViewport } = useReactFlow();
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -121,6 +146,9 @@ export const Canvas = ({ workspaceId, threadId }: ICanvasProps) => {
   const [contextMenu, setContextMenu] = useState<TCanvasContextMenu | null>(null);
   const [cursorScreen, setCursorScreen] = useState<IScreenPoint | null>(null);
   const [sourceScreen, setSourceScreen] = useState<IScreenPoint | null>(null);
+  const [alignmentGuides, setAlignmentGuides] = useState<readonly IAlignmentGuide[]>(NO_GUIDES);
+
+  const defaultViewport = useMemo(() => ({ x: 0, y: 0, zoom: defaultZoom / 100 }), [defaultZoom]);
 
   useEffect(() => {
     if (!middlePan) return;
@@ -176,6 +204,16 @@ export const Canvas = ({ workspaceId, threadId }: ICanvasProps) => {
       window.clearTimeout(cleanupTimer);
     };
   }, [arriving, arrivalNodeId, fitView, pathname, router]);
+
+  const didInitViewport = useRef(false);
+
+  useEffect(() => {
+    if (didInitViewport.current || !hydrated) return;
+    didInitViewport.current = true;
+    if (arriving) return;
+
+    void setViewport({ x: 0, y: 0, zoom: defaultZoom / 100 });
+  }, [hydrated, arriving, defaultZoom, setViewport]);
 
   const effectiveStatusById = useMemo(() => computeEffectiveStatuses(nodes, edges), [nodes, edges]);
 
@@ -282,6 +320,19 @@ export const Canvas = ({ workspaceId, threadId }: ICanvasProps) => {
     [closeAllOverlays],
   );
 
+  const handleNodeDrag = useCallback(
+    (_event: ReactMouseEvent, node: Node) => {
+      if (!smartGuides) return;
+
+      setAlignmentGuides(computeAlignmentGuides(node, nodes));
+    },
+    [smartGuides, nodes],
+  );
+
+  const handleNodeDragStop = useCallback(() => {
+    setAlignmentGuides(NO_GUIDES);
+  }, []);
+
   return (
     <div data-canvas-tool={activeTool} className="relative h-full w-full">
       <svg aria-hidden width="0" height="0" style={{ position: 'absolute', overflow: 'hidden' }}>
@@ -300,6 +351,7 @@ export const Canvas = ({ workspaceId, threadId }: ICanvasProps) => {
         nodeTypes={NODE_TYPES}
         edgeTypes={EDGE_TYPES}
         defaultEdgeOptions={DEFAULT_EDGE_OPTIONS}
+        defaultViewport={defaultViewport}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onPaneClick={handlePaneClick}
@@ -308,6 +360,8 @@ export const Canvas = ({ workspaceId, threadId }: ICanvasProps) => {
         onEdgeContextMenu={handleEdgeContextMenu}
         onNodeClick={onNodeClick}
         onNodeDoubleClick={onNodeDoubleClick}
+        onNodeDrag={handleNodeDrag}
+        onNodeDragStop={handleNodeDragStop}
         onEdgeClick={onEdgeClick}
         onConnect={onConnect}
         isValidConnection={isValidConnection}
@@ -315,6 +369,8 @@ export const Canvas = ({ workspaceId, threadId }: ICanvasProps) => {
         connectionRadius={CONNECTION_RADIUS}
         minZoom={ZOOM_MIN}
         maxZoom={ZOOM_MAX}
+        snapToGrid={snapToGrid}
+        snapGrid={SNAP_GRID}
         panOnDrag={activeTool === ECanvasTool.Pan || middlePan ? PAN_BUTTONS_ALL : PAN_BUTTONS_MIDDLE}
         selectionOnDrag={activeTool === ECanvasTool.Select}
         elementsSelectable={activeTool === ECanvasTool.Select}
@@ -333,6 +389,8 @@ export const Canvas = ({ workspaceId, threadId }: ICanvasProps) => {
         )}
         <ReferenceSearchPanel nodes={referenceNodes} />
       </ReactFlow>
+
+      {smartGuides && <AlignmentGuides guides={alignmentGuides} />}
 
       {showRubberLine && (
         <svg aria-hidden className="pointer-events-none fixed inset-0 z-40" width="100%" height="100%">

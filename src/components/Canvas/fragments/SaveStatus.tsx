@@ -2,11 +2,11 @@
 
 import { clsx } from 'clsx';
 import { AlertCircle, Check, CloudOff, Loader2, RotateCw } from 'lucide-react';
-import { useFormatter, useTranslations } from 'next-intl';
+import { useFormatter } from 'next-intl';
 import { useEffect, useState } from 'react';
 
 import type { ISaveState } from '@interfaces';
-
+import { useTranslations } from '@hooks';
 import { discardFailed, retryFailed, subscribeFailedOperations } from '@/lib/canvas';
 
 import { ARIA_LABEL_KEY_BY_STATUS, SAVE_STATUS_REFRESH_INTERVAL_MS } from '../consts';
@@ -16,7 +16,7 @@ interface ISaveStatusProps {
 }
 
 export const SaveStatus = ({ state }: ISaveStatusProps) => {
-  const t = useTranslations('platform.canvas.save');
+  const t = useTranslations();
   const formatter = useFormatter();
   const [now, setNow] = useState(() => Date.now());
   const [failedCount, setFailedCount] = useState(0);
@@ -39,7 +39,7 @@ export const SaveStatus = ({ state }: ISaveStatusProps) => {
     <div
       role={state.status === 'error' ? 'alert' : 'status'}
       aria-live={state.status === 'error' ? 'assertive' : 'polite'}
-      aria-label={t(ARIA_LABEL_KEY_BY_STATUS[state.status] ?? 'saving')}
+      aria-label={t.platform.canvas.save[ARIA_LABEL_KEY_BY_STATUS[state.status] ?? 'saving']}
       className={clsx(
         'absolute bottom-4 left-4 z-30 flex max-w-[calc(100vw-8rem)] flex-wrap items-center gap-x-2 gap-y-1 rounded-2xl border px-3 py-1.5 text-[11px] font-medium tracking-tight backdrop-blur-md transition-colors duration-200',
         (state.status === 'saving' || state.status === 'retrying') &&
@@ -55,7 +55,7 @@ export const SaveStatus = ({ state }: ISaveStatusProps) => {
       {state.status === 'saving' && (
         <>
           <Loader2 className="h-3 w-3 animate-spin motion-reduce:animate-none" strokeWidth={2.25} />
-          <span>{t('saving')}</span>
+          <span>{t.platform.canvas.save.saving}</span>
         </>
       )}
 
@@ -63,9 +63,9 @@ export const SaveStatus = ({ state }: ISaveStatusProps) => {
         <>
           <Loader2 className="h-3 w-3 animate-spin motion-reduce:animate-none" strokeWidth={2.25} />
           <span>
-            {t('retrying')}
+            {t.platform.canvas.save.retrying}
             {state.retryAttempt > 0 && (
-              <span className="ml-1 text-[color:var(--text-muted)]">{`· ${t('retryAttempt', { n: state.retryAttempt })}`}</span>
+              <span className="ml-1 text-[color:var(--text-muted)]">{`· ${t('platform.canvas.save.retryAttempt', { n: state.retryAttempt })}`}</span>
             )}
           </span>
         </>
@@ -75,7 +75,7 @@ export const SaveStatus = ({ state }: ISaveStatusProps) => {
         <>
           <Check className="h-3 w-3" strokeWidth={2.5} />
           <span>
-            {t('saved')}
+            {t.platform.canvas.save.saved}
             {state.lastSavedAt && (
               <span className="ml-1 opacity-70">
                 {`· ${formatter.relativeTime(state.lastSavedAt, { now, style: 'narrow' })}`}
@@ -89,9 +89,9 @@ export const SaveStatus = ({ state }: ISaveStatusProps) => {
         <>
           <CloudOff className="h-3 w-3" strokeWidth={2.25} />
           <span>
-            {t('offline')}
+            {t.platform.canvas.save.offline}
             {state.pendingCount > 0 && (
-              <span className="ml-1 opacity-75">{`· ${t('offlinePending', { count: state.pendingCount })}`}</span>
+              <span className="ml-1 opacity-75">{`· ${t('platform.canvas.save.offlinePending', { count: state.pendingCount })}`}</span>
             )}
           </span>
         </>
@@ -102,9 +102,9 @@ export const SaveStatus = ({ state }: ISaveStatusProps) => {
           <span className="flex items-center gap-1.5">
             <AlertCircle className="h-3 w-3" strokeWidth={2.25} />
             <span>
-              {t('errorTitle')}
+              {t.platform.canvas.save.errorTitle}
               {failedCount > 0 && (
-                <span className="ml-1 opacity-70">{`· ${t('errorChanges', { count: failedCount })}`}</span>
+                <span className="ml-1 opacity-70">{`· ${t('platform.canvas.save.errorChanges', { count: failedCount })}`}</span>
               )}
             </span>
           </span>
@@ -114,19 +114,19 @@ export const SaveStatus = ({ state }: ISaveStatusProps) => {
               type="button"
               onClick={retryFailed}
               className="inline-flex items-center gap-1 rounded-full bg-[color:var(--status-error-soft)] px-2 py-0.5 transition-colors hover:bg-[color:var(--status-error-border)]"
-              aria-label={t('retryAriaLabel')}
+              aria-label={t.platform.canvas.save.retryAriaLabel}
             >
               <RotateCw className="h-2.5 w-2.5" strokeWidth={2.25} />
-              {t('retry')}
+              {t.platform.canvas.save.retry}
             </button>
 
             <button
               type="button"
               onClick={discardFailed}
               className="inline-flex items-center rounded-full px-2 py-0.5 opacity-70 transition-[background-color,opacity] hover:bg-[color:var(--status-error-soft)] hover:opacity-100"
-              aria-label={t('discardAriaLabel')}
+              aria-label={t.platform.canvas.save.discardAriaLabel}
             >
-              {t('discard')}
+              {t.platform.canvas.save.discard}
             </button>
           </span>
         </>

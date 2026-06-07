@@ -1,5 +1,6 @@
 export * from './useAsyncAction';
 export * from './useClickOutside';
+export * from './useEditorPreferences';
 export * from './useEscapeKey';
 export * from './useFocusTrap';
 export * from './useMounted';

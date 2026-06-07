@@ -1,4 +1,5 @@
 export * from './Avatar';
+export * from './Badge';
 export * from './Branding';
 export * from './Canvas';
 export * from './List';

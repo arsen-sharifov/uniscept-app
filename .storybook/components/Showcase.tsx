@@ -7,7 +7,7 @@ import { SHOWCASE_COLUMN_CLASS } from '../consts';
 interface IShowcaseProps {
   title?: string;
   caption?: string;
-  columns?: 2 | 3 | 4;
+  columns?: keyof typeof SHOWCASE_COLUMN_CLASS;
   items: IShowcaseItem[];
 }
 

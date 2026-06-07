@@ -1,73 +1,70 @@
 'use client';
 
-import { Grid3X3, Map, Magnet } from 'lucide-react';
-
+import type { IPreferences, TPreferenceUpdater } from '@interfaces';
 import { useTranslations } from '@hooks';
-import { Tooltip } from '@/components';
 
-import { ZOOM_OPTIONS } from '../consts';
-import { Toggle } from '../Toggle';
+import { BehaviorCard } from './BehaviorCard';
+import { GuidesDiorama } from './GuidesDiorama';
+import { SnapDiorama } from './SnapDiorama';
+import { ZoomStack } from './ZoomStack';
 
-export const EditorSection = () => {
+export interface IEditorSectionProps {
+  preferences: IPreferences;
+  onUpdate: TPreferenceUpdater;
+}
+
+export const EditorSection = ({ preferences, onUpdate }: IEditorSectionProps) => {
   const t = useTranslations();
-  const { editor, comingSoon } = t.platform.settings;
+  const { editor } = t.platform.settings;
 
   return (
-    <div className="space-y-6">
-      <div>
-        <div className="mb-3 flex items-center gap-2">
-          <h3 className="text-xs font-medium tracking-wider text-[color:var(--text-subtle)] uppercase">
-            {editor.canvas}
+    <div className="space-y-8">
+      <section>
+        <header className="mb-1 flex items-baseline justify-between">
+          <h3 className="text-[11px] font-semibold tracking-[0.18em] text-[color:var(--text-subtle)] uppercase">
+            {editor.behaviors}
           </h3>
-          <Tooltip text={comingSoon} />
-        </div>
+          <span className="text-[10.5px] tracking-[0.16em] text-[color:var(--text-faint)] uppercase">
+            {editor.behaviorsCaption}
+          </span>
+        </header>
+        <p className="mb-4 max-w-md text-[12.5px] leading-relaxed text-[color:var(--text-muted)]">{editor.blurb}</p>
 
-        <div className="space-y-4">
-          <Toggle
-            icon={Magnet}
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <BehaviorCard
+            diorama={<SnapDiorama active={preferences.snapToGrid} />}
             label={editor.snapToGrid}
             description={editor.snapToGridDescription}
-            checked={false}
-            onChange={() => {}}
-            disabled
+            checked={preferences.snapToGrid}
+            onChange={(next) => onUpdate('snapToGrid', next)}
           />
-          <Toggle
-            icon={Grid3X3}
-            label={editor.showGrid}
-            description={editor.showGridDescription}
-            checked={true}
-            onChange={() => {}}
-            disabled
-          />
-          <Toggle
-            icon={Map}
-            label={editor.showMinimap}
-            description={editor.showMinimapDescription}
-            checked={false}
-            onChange={() => {}}
-            disabled
+          <BehaviorCard
+            diorama={<GuidesDiorama active={preferences.smartGuides} />}
+            label={editor.smartGuides}
+            description={editor.smartGuidesDescription}
+            checked={preferences.smartGuides}
+            onChange={(next) => onUpdate('smartGuides', next)}
           />
         </div>
-      </div>
+      </section>
 
-      <div className="border-t border-[color:var(--border)] pt-6">
-        <div className="mb-3 flex items-center gap-2">
-          <label className="text-sm font-medium text-[color:var(--text)]">{editor.defaultZoom}</label>
-          <Tooltip text={comingSoon} />
-        </div>
-        <div className="flex gap-1 rounded-xl bg-[color:var(--surface-overlay)] p-1 opacity-50">
-          {ZOOM_OPTIONS.map((zoom) => (
-            <button
-              key={zoom}
-              type="button"
-              disabled
-              className="flex-1 cursor-not-allowed rounded-lg py-1.5 text-sm font-medium text-[color:var(--text-muted)]"
-            >
-              {zoom}%
-            </button>
-          ))}
-        </div>
-      </div>
+      <section className="border-t border-[color:var(--border)] pt-6">
+        <header className="mb-1 flex items-baseline justify-between">
+          <h3 className="text-[11px] font-semibold tracking-[0.18em] text-[color:var(--text-subtle)] uppercase">
+            {editor.zoom}
+          </h3>
+          <span className="text-[10.5px] tracking-[0.16em] text-[color:var(--text-faint)] uppercase">
+            {editor.zoomCaption}
+          </span>
+        </header>
+        <p className="mb-4 max-w-md text-[12.5px] leading-relaxed text-[color:var(--text-muted)]">{editor.zoomBlurb}</p>
+
+        <ZoomStack
+          label={editor.defaultZoom}
+          value={preferences.defaultZoom}
+          onChange={(next) => onUpdate('defaultZoom', next)}
+        />
+      </section>
     </div>
   );
 };

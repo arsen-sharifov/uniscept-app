@@ -5,17 +5,17 @@ import { clsx } from 'clsx';
 import { ChevronDown, MessageSquare, Send, X } from 'lucide-react';
 import { type FocusEvent, type FormEvent, type KeyboardEvent, useCallback, useEffect, useRef, useState } from 'react';
 
-import type { TCanvasNode } from '@interfaces';
+import type { TCanvasNode, TNodeBandTone } from '@interfaces';
 import { useTranslations } from '@hooks';
 import { useCanvasStore } from '@/lib/stores';
 
-import { HANDLE_POSITIONS, LABEL_CLAMP_STYLE, TEXTAREA_FIELD_SIZING_STYLE } from './consts';
-import { CommentItem } from './fragments';
+import { HANDLE_POSITIONS } from './consts';
+import { CommentItem, NodeBand } from './fragments';
 import { isOwnComment } from './utils';
 
 export const CanvasNode = ({ id, data, selected }: NodeProps<TCanvasNode>) => {
   const t = useTranslations();
-  const { label, status, comments, isNew } = data;
+  const { label, status, comments, isNew, isAnswer, eligibleHint } = data;
 
   const pendingConnection = useCanvasStore((s) => s.pendingConnection);
   const editingNodeId = useCanvasStore((s) => s.editingNodeId);
@@ -100,30 +100,27 @@ export const CanvasNode = ({ id, data, selected }: NodeProps<TCanvasNode>) => {
   const isInvalid = status === 'invalid';
   const hasComments = comments.length > 0;
 
+  const stateBands: { active: boolean; tone: TNodeBandTone; label: string }[] = [
+    { active: isAnswer, tone: 'answer', label: t.platform.canvas.node.answerBadge },
+    { active: isValid, tone: 'valid', label: t.platform.canvas.node.validBadge },
+    { active: isInvalid, tone: 'invalid', label: t.platform.canvas.node.invalidBadge },
+  ];
+  const stateBand = stateBands.find((band) => band.active);
+
   return (
     <div
       onAnimationEnd={isNew ? () => clearNewFlag(id) : undefined}
       className={clsx(
-        'group/node relative flex max-w-[260px] min-w-[180px] overflow-visible rounded-2xl bg-[color:var(--surface-elevated)]/95 backdrop-blur-md transition-shadow duration-200',
-        'shadow-[0_1px_2px_-1px_rgba(15,23,42,0.18),0_8px_24px_-12px_rgba(15,23,42,0.30)]',
-        'hover:shadow-[0_2px_4px_-1px_rgba(15,23,42,0.22),0_14px_36px_-16px_rgba(15,23,42,0.40)]',
-        'ring-1 ring-inset',
+        'group/node relative flex max-w-[260px] min-w-[180px] flex-col overflow-visible rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-elevated)] shadow-[0_2px_10px_-5px_rgba(15,23,42,0.18)] transition-shadow duration-200 hover:shadow-[0_5px_16px_-6px_rgba(15,23,42,0.28)]',
         isNew && 'animate-node-drop motion-reduce:animate-none',
-        !selected && !isPending && !isValid && !isInvalid && 'ring-[color:var(--border)]',
-        isValid && 'ring-[color:var(--status-success-border)]',
-        isInvalid && 'ring-[color:var(--status-error-border)]',
         selected && 'ring-2 ring-[color:var(--border-active)]',
         isPending && 'animate-node-pulse ring-2 ring-[color:var(--ref-border)] motion-reduce:animate-none',
       )}
     >
-      {(isValid || isInvalid) && (
+      {eligibleHint && (
         <span
           aria-hidden
-          className={clsx(
-            'absolute top-2 bottom-2 left-0 w-[3px] rounded-r-full',
-            isValid && 'bg-[color:var(--status-success)] shadow-[0_0_8px_var(--status-success-soft)]',
-            isInvalid && 'bg-[color:var(--status-error)] shadow-[0_0_8px_var(--status-error-soft)]',
-          )}
+          className="pointer-events-none absolute -inset-[5px] animate-node-pulse rounded-[20px] border-2 border-dashed border-[color:var(--accent)]/55 motion-reduce:animate-none"
         />
       )}
 
@@ -137,6 +134,8 @@ export const CanvasNode = ({ id, data, selected }: NodeProps<TCanvasNode>) => {
         />
       ))}
 
+      {stateBand && <NodeBand tone={stateBand.tone} label={stateBand.label} />}
+
       <div className="flex min-w-0 flex-1 flex-col gap-1 px-4 py-3">
         <div className="flex min-w-0 items-start gap-2">
           {isEditing ? (
@@ -148,14 +147,15 @@ export const CanvasNode = ({ id, data, selected }: NodeProps<TCanvasNode>) => {
               onClick={(event) => event.stopPropagation()}
               onMouseDown={(event) => event.stopPropagation()}
               rows={1}
-              style={TEXTAREA_FIELD_SIZING_STYLE}
-              className="nodrag w-full resize-none overflow-hidden rounded-md bg-[color:var(--accent-soft)] px-1 py-0.5 text-[13.5px] leading-snug font-medium tracking-tight text-[color:var(--text-strong)] ring-1 ring-[color:var(--border-active)] outline-none"
+              className="nodrag field-sizing-content w-full resize-none overflow-hidden rounded-md bg-[color:var(--accent-soft)] px-1 py-0.5 text-[13.5px] leading-snug font-medium tracking-tight text-[color:var(--text-strong)] ring-1 ring-[color:var(--border-active)] outline-none"
             />
           ) : (
             <p
               ref={labelRefCallback}
-              style={!expanded ? LABEL_CLAMP_STYLE : undefined}
-              className="min-w-0 flex-1 text-[13.5px] leading-snug font-medium tracking-tight break-words whitespace-pre-wrap text-[color:var(--text-strong)] select-none"
+              className={clsx(
+                'min-w-0 flex-1 text-[13.5px] leading-snug font-medium tracking-tight break-words whitespace-pre-wrap text-[color:var(--text-strong)] select-none',
+                !expanded && 'line-clamp-10',
+              )}
             >
               {label}
             </p>

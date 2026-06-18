@@ -89,6 +89,7 @@
       "move": "Mută",
       "treeAriaLabel": "Navigare",
       "dragToReorder": "Trage pentru a reordona",
+      "resolved": "Rezolvat",
       "itemsSelected": "elemente selectate",
       "workspacesSelected": "spații selectate",
       "moveToFolder": "Mută în folder",
@@ -121,7 +122,7 @@
           "navigate": "Navigare",
           "history": "Istoric",
           "build": "Construire",
-          "annotate": "Adnotare",
+          "decide": "Decizie",
           "link": "Legături"
         },
         "items": {
@@ -161,9 +162,9 @@
             "label": "Marchează invalid",
             "description": "Marchează nodurile selectate ca traseu invalid."
           },
-          "comment": {
-            "label": "Comentariu",
-            "description": "Click pe un nod pentru a deschide panoul de comentarii."
+          "answer": {
+            "label": "Răspuns",
+            "description": "Marchează un nod ca răspuns final al discuției."
           },
           "crossReference": {
             "label": "Referință încrucișată",
@@ -184,12 +185,10 @@
         "hint": "Nu s-a putut conecta la Supabase pentru a încărca acest canvas. Verifică instanța locală Supabase și reîncearcă.",
         "retry": "Reîncearcă"
       },
-      "empty": {
-        "title": "Canvas gol",
-        "hint": "Apasă {key} și click oriunde pentru a plasa primul tău nod",
-        "contextHint": "sau click dreapta pe canvas pentru mai multe opțiuni"
-      },
       "node": {
+        "answerBadge": "Răspuns",
+        "validBadge": "Valid",
+        "invalidBadge": "Invalid",
         "defaultLabel": "Nod nou",
         "showMore": "Afișează mai mult",
         "showLess": "Afișează mai puțin",
@@ -201,23 +200,23 @@
         "commentsHeader": "Comentarii",
         "noComments": "Niciun comentariu încă. Începe conversația."
       },
+      "question": {
+        "badge": "Întrebare",
+        "placeholder": "Despre ce este această discuție?",
+        "ariaLabel": "Întrebarea centrală",
+        "editLabel": "Editează întrebarea"
+      },
+      "resolution": {
+        "resolved": "Rezolvat"
+      },
       "reference": {
         "badge": "Referință",
         "openLabel": "Deschide {name}",
         "workspaceFallback": "spațiu de lucru"
       },
       "comments": {
-        "panelTitle": "Comentarii canvas",
-        "addPlaceholder": "Adaugă un comentariu…",
-        "addAriaLabel": "Adaugă un comentariu canvas",
-        "sendAriaLabel": "Trimite comentariu",
-        "sendTitle": "Trimite (Enter)",
         "deleteAriaLabel": "Șterge comentariu",
-        "deleteTitle": "Șterge comentariu",
-        "closeAriaLabel": "Închide (Esc)",
-        "closeTitle": "Închide (Esc)",
-        "emptyTitle": "Niciun comentariu pe acest canvas.",
-        "emptyHint": "Începe discuția mai jos."
+        "deleteTitle": "Șterge comentariu"
       },
       "save": {
         "saving": "Se salvează…",
@@ -237,7 +236,6 @@
         "ariaLabel": "Acțiuni canvas",
         "addNode": "Adaugă nod",
         "addReference": "Adaugă referință",
-        "openComments": "Deschide comentarii canvas",
         "deleteEdge": "Șterge muchia",
         "openReferenced": "Deschide canvas-ul referit",
         "deleteReference": "Șterge referința",
@@ -245,6 +243,9 @@
         "unmarkValid": "Demarchează valid",
         "markInvalid": "Marchează invalid",
         "unmarkInvalid": "Demarchează invalid",
+        "markAnswer": "Marchează ca răspuns",
+        "unmarkAnswer": "Demarchează răspunsul",
+        "needsValidParent": "Necesită întrebarea sau un pas valid înainte",
         "comment": "Comentariu",
         "duplicate": "Duplică",
         "delete": "Șterge"

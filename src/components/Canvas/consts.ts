@@ -1,7 +1,7 @@
 import { BackgroundVariant, type DefaultEdgeOptions, Position } from '@xyflow/react';
-import type { CSSProperties } from 'react';
+import { CheckCircle2, Flag, HelpCircle, Link2, type LucideIcon, XCircle } from 'lucide-react';
 
-import type { TCanvasPattern, TEdgeTone, THandleId, TSaveStatus } from '@interfaces';
+import type { TCanvasPattern, TEdgeTone, THandleId, TNodeBandTone, TSaveStatus } from '@interfaces';
 
 export const HANDLE_POSITIONS: { id: THandleId; position: Position }[] = [
   { id: 'top', position: Position.Top },
@@ -93,13 +93,12 @@ export const ARIA_LABEL_KEY_BY_STATUS: Partial<Record<TSaveStatus, 'errorTitle' 
   saved: 'saved',
 };
 
-export const LABEL_CLAMP_STYLE: CSSProperties = {
-  display: '-webkit-box',
-  WebkitLineClamp: 10,
-  WebkitBoxOrient: 'vertical',
-  overflow: 'hidden',
-};
+export const FRESH_FIT_PADDING = 0.22;
 
-export const TEXTAREA_FIELD_SIZING_STYLE = {
-  fieldSizing: 'content',
-} as CSSProperties;
+export const NODE_BAND_TONES: Record<TNodeBandTone, { icon: LucideIcon; color: string }> = {
+  question: { icon: HelpCircle, color: 'var(--question)' },
+  reference: { icon: Link2, color: 'var(--ref)' },
+  answer: { icon: Flag, color: 'var(--decision)' },
+  valid: { icon: CheckCircle2, color: 'var(--status-success)' },
+  invalid: { icon: XCircle, color: 'var(--status-error)' },
+};

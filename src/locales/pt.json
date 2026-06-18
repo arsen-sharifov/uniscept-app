@@ -89,6 +89,7 @@
       "move": "Mover",
       "treeAriaLabel": "Navegação",
       "dragToReorder": "Arraste para reordenar",
+      "resolved": "Resolvido",
       "itemsSelected": "elementos selecionados",
       "workspacesSelected": "espaços selecionados",
       "moveToFolder": "Mover para pasta",
@@ -121,7 +122,7 @@
           "navigate": "Navegação",
           "history": "Histórico",
           "build": "Construção",
-          "annotate": "Anotação",
+          "decide": "Decidir",
           "link": "Ligações"
         },
         "items": {
@@ -161,9 +162,9 @@
             "label": "Marcar inválido",
             "description": "Marque os nós selecionados como caminho inválido."
           },
-          "comment": {
-            "label": "Comentar",
-            "description": "Clique num nó para abrir o painel de comentários."
+          "answer": {
+            "label": "Resposta",
+            "description": "Marca um nó como a resposta final da discussão."
           },
           "crossReference": {
             "label": "Referência cruzada",
@@ -184,12 +185,10 @@
         "hint": "Não foi possível ligar ao Supabase para carregar este canvas. Verifique se a instância local do Supabase está em execução e tente novamente.",
         "retry": "Tentar novamente"
       },
-      "empty": {
-        "title": "Canvas vazio",
-        "hint": "Pressione {key} e clique em qualquer ponto para colocar o primeiro nó",
-        "contextHint": "ou clique com o botão direito para mais opções"
-      },
       "node": {
+        "answerBadge": "Resposta",
+        "validBadge": "Válido",
+        "invalidBadge": "Inválido",
         "defaultLabel": "Novo nó",
         "showMore": "Mostrar mais",
         "showLess": "Mostrar menos",
@@ -201,23 +200,23 @@
         "commentsHeader": "Comentários",
         "noComments": "Ainda sem comentários. Inicie a conversa."
       },
+      "question": {
+        "badge": "Pergunta",
+        "placeholder": "Sobre o que é esta discussão?",
+        "ariaLabel": "Pergunta central",
+        "editLabel": "Editar a pergunta"
+      },
+      "resolution": {
+        "resolved": "Resolvido"
+      },
       "reference": {
         "badge": "Referência",
         "openLabel": "Abrir {name}",
         "workspaceFallback": "espaço de trabalho"
       },
       "comments": {
-        "panelTitle": "Comentários do canvas",
-        "addPlaceholder": "Adicionar um comentário…",
-        "addAriaLabel": "Adicionar um comentário ao canvas",
-        "sendAriaLabel": "Enviar comentário",
-        "sendTitle": "Enviar (Enter)",
         "deleteAriaLabel": "Eliminar comentário",
-        "deleteTitle": "Eliminar comentário",
-        "closeAriaLabel": "Fechar (Esc)",
-        "closeTitle": "Fechar (Esc)",
-        "emptyTitle": "Ainda sem comentários neste canvas.",
-        "emptyHint": "Comece a discussão abaixo."
+        "deleteTitle": "Eliminar comentário"
       },
       "save": {
         "saving": "A guardar…",
@@ -237,7 +236,6 @@
         "ariaLabel": "Ações do canvas",
         "addNode": "Adicionar nó",
         "addReference": "Adicionar referência",
-        "openComments": "Abrir comentários do canvas",
         "deleteEdge": "Eliminar aresta",
         "openReferenced": "Abrir canvas referenciado",
         "deleteReference": "Eliminar referência",
@@ -245,6 +243,9 @@
         "unmarkValid": "Remover válido",
         "markInvalid": "Marcar inválido",
         "unmarkInvalid": "Remover inválido",
+        "markAnswer": "Marcar como resposta",
+        "unmarkAnswer": "Remover resposta",
+        "needsValidParent": "Requer a pergunta ou um passo válido antes",
         "comment": "Comentar",
         "duplicate": "Duplicar",
         "delete": "Eliminar"

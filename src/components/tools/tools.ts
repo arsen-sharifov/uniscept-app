@@ -1,10 +1,10 @@
 import {
   CheckCircle,
   ExternalLink,
+  Flag,
   Hand,
   HelpCircle,
   Link2,
-  MessageSquare,
   MousePointer2,
   PlusCircle,
   Redo2,
@@ -27,7 +27,7 @@ export enum ECanvasTool {
   Delete = 'delete',
   ValidPath = 'valid-path',
   InvalidPath = 'invalid-path',
-  Comment = 'comment',
+  Answer = 'answer',
   CrossReference = 'cross-reference',
   Undo = 'undo',
   Redo = 'redo',
@@ -103,12 +103,12 @@ export const buildCanvasTools = (t: TCanvasToolsTranslations): Record<ECanvasToo
     description: t.items.invalidPath.description,
     shortcut: 'X',
   },
-  [ECanvasTool.Comment]: {
-    id: ECanvasTool.Comment,
-    icon: MessageSquare,
-    label: t.items.comment.label,
-    description: t.items.comment.description,
-    shortcut: 'M',
+  [ECanvasTool.Answer]: {
+    id: ECanvasTool.Answer,
+    icon: Flag,
+    label: t.items.answer.label,
+    description: t.items.answer.description,
+    shortcut: 'A',
   },
   [ECanvasTool.CrossReference]: {
     id: ECanvasTool.CrossReference,
@@ -155,9 +155,9 @@ export const buildCanvasToolGroups = (t: TCanvasToolsTranslations): IToolGroup[]
       tools: [tools[ECanvasTool.AddNode], tools[ECanvasTool.Connect], tools[ECanvasTool.Delete]],
     },
     {
-      id: 'annotate',
-      label: t.groups.annotate,
-      tools: [tools[ECanvasTool.ValidPath], tools[ECanvasTool.InvalidPath], tools[ECanvasTool.Comment]],
+      id: 'decide',
+      label: t.groups.decide,
+      tools: [tools[ECanvasTool.ValidPath], tools[ECanvasTool.InvalidPath], tools[ECanvasTool.Answer]],
     },
     {
       id: 'link',

@@ -3,6 +3,7 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { CanvasNode } from '@/components';
 
 import {
+  answerNode,
   defaultNode,
   editingNode,
   invalidNode,
@@ -112,6 +113,19 @@ export const Invalid: Story = {
   },
   decorators: [withCanvasStore({ nodes: [invalidNode] })],
   render: () => <SingleNodeFlow node={invalidNode} />,
+};
+
+export const Answer: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Marked as the discussion final answer — gold ring, accent bar, and the ANSWER badge. Deliberately distinct from valid (green).',
+      },
+    },
+  },
+  decorators: [withCanvasStore({ nodes: [answerNode] })],
+  render: () => <SingleNodeFlow node={answerNode} />,
 };
 
 export const Editing: Story = {

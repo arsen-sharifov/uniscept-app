@@ -1,5 +1,4 @@
 import type {
-  ICanvasCommentRow,
   ICanvasNodeWithThreadRow,
   IComment,
   IFolder,
@@ -35,9 +34,10 @@ export const toThread = (row: IThreadRow): IThread => ({
   folderId: row.folder_id ?? null,
   name: row.name,
   position: row.position,
+  hasAnswer: false,
 });
 
-export const toComment = (row: INodeCommentRow | ICanvasCommentRow): IComment => ({
+export const toComment = (row: INodeCommentRow): IComment => ({
   id: row.id,
   text: row.text,
   authorId: row.author_id,

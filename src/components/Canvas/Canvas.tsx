@@ -10,7 +10,6 @@ import {
   ReactFlow,
   useReactFlow,
 } from '@xyflow/react';
-import { MessageCircle } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { type MouseEvent as ReactMouseEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
@@ -45,6 +44,7 @@ import {
   DEFAULT_EDGE_OPTIONS,
   EDGE_DEFAULT_STROKE_WIDTH,
   EDGE_TONES,
+  FRESH_FIT_PADDING,
   NODE_DRAG_THRESHOLD,
   PAN_BUTTONS_ALL,
   PAN_BUTTONS_MIDDLE,
@@ -59,7 +59,7 @@ import {
   ZOOM_MAX,
   ZOOM_MIN,
 } from './consts';
-import { AlignmentGuides, CanvasCommentsPanel, ContextMenu, SaveStatus } from './fragments';
+import { AlignmentGuides, ContextMenu, ResolutionBar, SaveStatus } from './fragments';
 import {
   useCanvasPattern,
   useCanvasSync,
@@ -69,11 +69,14 @@ import {
   useReferenceSearch,
   useThemeToken,
 } from './hooks';
+import { QuestionNode } from './QuestionNode';
 import { ReferenceNode } from './ReferenceNode';
 import { ReferenceSearchPanel } from './ReferenceSearchPanel';
 import {
   computeAlignmentGuides,
   computeEffectiveStatuses,
+  computeEligibleIds,
+  isCanvasNodeData,
   resolveBidirectionalEdgeTone,
   resolveEdgeTone,
 } from './utils';
@@ -81,6 +84,7 @@ import {
 const NODE_TYPES = {
   [ECanvasNodeType.Canvas]: CanvasNode,
   [ECanvasNodeType.Reference]: ReferenceNode,
+  [ECanvasNodeType.Question]: QuestionNode,
 };
 
 const EDGE_TYPES = {
@@ -90,6 +94,8 @@ const EDGE_TYPES = {
 const PRO_OPTIONS = { hideAttribution: true } as const;
 
 const NO_GUIDES: readonly IAlignmentGuide[] = [];
+
+const NO_ELIGIBLE_IDS: ReadonlySet<string> = new Set();
 
 interface ICanvasProps {
   workspaceId: string;
@@ -124,9 +130,8 @@ export const Canvas = ({
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const [emptyHintBefore = '', emptyHintAfter = ''] = t.platform.canvas.empty.hint.split('{key}');
-
   const hydrated = useCanvasStore((s) => s.hydrated);
+  const storeThreadId = useCanvasStore((s) => s.threadId);
   const arriving = hydrated && searchParams.get('focus') === 'ref';
   const arrivalNodeId = searchParams.get('node');
   const activeTool = useCanvasStore((s) => s.activeTool);
@@ -137,9 +142,6 @@ export const Canvas = ({
   const middlePan = useCanvasStore((s) => s.middlePan);
   const onNodesChange = useCanvasStore((s) => s.onNodesChange);
   const onEdgesChange = useCanvasStore((s) => s.onEdgesChange);
-  const canvasCommentsCount = useCanvasStore((s) => s.canvasComments.length);
-  const canvasCommentsOpen = useCanvasStore((s) => s.canvasCommentsOpen);
-  const setCanvasCommentsOpen = useCanvasStore((s) => s.setCanvasCommentsOpen);
 
   const { onPaneClick, onNodeClick, onNodeDoubleClick, onEdgeClick, onConnect, isValidConnection } = useCanvasTools();
 
@@ -215,7 +217,47 @@ export const Canvas = ({
     void setViewport({ x: 0, y: 0, zoom: defaultZoom / 100 });
   }, [hydrated, arriving, defaultZoom, setViewport]);
 
+  const focusedQuestionThreadId = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!hydrated || arriving) return;
+    if (storeThreadId !== threadId) return;
+    if (focusedQuestionThreadId.current === threadId) return;
+    focusedQuestionThreadId.current = threadId;
+
+    const { nodes: loadedNodes, setEditingNodeId } = useCanvasStore.getState();
+    const onlyNode = loadedNodes.length === 1 ? loadedNodes[0] : null;
+    const freshQuestion = onlyNode?.type === ECanvasNodeType.Question ? onlyNode : null;
+    if (!freshQuestion) return;
+
+    requestAnimationFrame(() => {
+      void fitView({ duration: 0, padding: FRESH_FIT_PADDING, maxZoom: defaultZoom / 100 });
+    });
+
+    if (isCanvasNodeData(freshQuestion.data) && freshQuestion.data.label.trim().length === 0) {
+      setEditingNodeId(freshQuestion.id);
+    }
+  }, [hydrated, threadId, storeThreadId, arriving, fitView, defaultZoom]);
+
   const effectiveStatusById = useMemo(() => computeEffectiveStatuses(nodes, edges), [nodes, edges]);
+
+  const eligibleAction =
+    activeTool === ECanvasTool.ValidPath ? 'valid' : activeTool === ECanvasTool.Answer ? 'answer' : null;
+
+  const eligibleIds = useMemo(
+    () => (eligibleAction ? computeEligibleIds(nodes, edges, eligibleAction) : NO_ELIGIBLE_IDS),
+    [nodes, edges, eligibleAction],
+  );
+
+  const displayNodes = useMemo(
+    () =>
+      eligibleIds.size === 0
+        ? nodes
+        : nodes.map((node) =>
+            eligibleIds.has(node.id) ? { ...node, data: { ...node.data, eligibleHint: true } } : node,
+          ),
+    [nodes, eligibleIds],
+  );
 
   const styledEdges = useMemo(() => {
     const directionsByPair = new Map<string, Set<string>>();
@@ -346,7 +388,7 @@ export const Canvas = ({
       </svg>
 
       <ReactFlow
-        nodes={nodes}
+        nodes={displayNodes}
         edges={styledEdges}
         nodeTypes={NODE_TYPES}
         edgeTypes={EDGE_TYPES}
@@ -457,50 +499,9 @@ export const Canvas = ({
         </div>
       )}
 
-      {hydrated && nodes.length === 0 && !arriving && (
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center motion-reduce:animate-none"
-        >
-          <div className="flex animate-rise-up flex-col items-center gap-2 px-6 text-center motion-reduce:animate-none">
-            <span className="text-[12px] tracking-[0.18em] text-[color:var(--text-subtle)] uppercase">
-              {t.platform.canvas.empty.title}
-            </span>
-            <span className="text-[15px] font-medium tracking-tight text-[color:var(--text)]">
-              {emptyHintBefore}
-              <kbd className="rounded-md border border-[color:var(--border-strong)] bg-[color:var(--surface-elevated)]/80 px-1.5 py-0.5 font-mono text-[11px] text-[color:var(--text-strong)] shadow-[0_1px_2px_-1px_rgba(15,23,42,0.08)]">
-                N
-              </kbd>
-              {emptyHintAfter}
-            </span>
-            <span className="text-[10.5px] text-[color:var(--text-subtle)]">{t.platform.canvas.empty.contextHint}</span>
-          </div>
-        </div>
-      )}
+      {hydrated && <ResolutionBar />}
 
       {hydrated && <SaveStatus state={saveState} />}
-
-      {hydrated && !canvasCommentsOpen && (
-        <button
-          type="button"
-          onClick={() => setCanvasCommentsOpen(true)}
-          aria-label={t.platform.canvas.context.openComments}
-          className="group/cc absolute top-4 left-4 z-30 flex h-9 items-center gap-1.5 rounded-full border border-[color:var(--border)] bg-[color:var(--surface)]/85 px-3 text-[11px] font-medium tracking-tight text-[color:var(--text)] shadow-[0_4px_12px_-6px_rgba(15,23,42,0.18)] backdrop-blur-md transition-colors duration-150 hover:bg-[color:var(--surface-elevated)]"
-        >
-          <MessageCircle
-            className="h-3.5 w-3.5 text-[color:var(--text-muted)] transition-colors duration-150 group-hover/cc:text-[color:var(--accent)]"
-            strokeWidth={2}
-          />
-          <span>{t.platform.canvas.comments.panelTitle}</span>
-          {canvasCommentsCount > 0 && (
-            <span className="rounded-full bg-[color:var(--accent-soft)] px-1.5 py-px text-[9px] font-semibold text-[color:var(--accent-text)]">
-              {canvasCommentsCount}
-            </span>
-          )}
-        </button>
-      )}
-
-      {hydrated && <CanvasCommentsPanel open={canvasCommentsOpen} onClose={() => setCanvasCommentsOpen(false)} />}
     </div>
   );
 };

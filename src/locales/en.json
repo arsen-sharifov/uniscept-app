@@ -89,6 +89,7 @@
       "move": "Move",
       "treeAriaLabel": "Navigation",
       "dragToReorder": "Drag to reorder",
+      "resolved": "Resolved",
       "itemsSelected": "items selected",
       "workspacesSelected": "workspaces selected",
       "moveToFolder": "Move to folder",
@@ -121,7 +122,7 @@
           "navigate": "Navigate",
           "history": "History",
           "build": "Build",
-          "annotate": "Annotate",
+          "decide": "Decide",
           "link": "Link"
         },
         "items": {
@@ -161,9 +162,9 @@
             "label": "Mark invalid",
             "description": "Tag clicked nodes as an invalid path."
           },
-          "comment": {
-            "label": "Comment",
-            "description": "Click a node to open its comments panel."
+          "answer": {
+            "label": "Answer",
+            "description": "Mark a node as the discussion's final answer."
           },
           "crossReference": {
             "label": "Cross-reference",
@@ -184,12 +185,10 @@
         "hint": "Couldn't reach Supabase to load this canvas. Check that the local Supabase instance is running, then retry.",
         "retry": "Retry"
       },
-      "empty": {
-        "title": "Empty canvas",
-        "hint": "Press {key} and click anywhere to drop your first node",
-        "contextHint": "or right-click the canvas for more options"
-      },
       "node": {
+        "answerBadge": "Answer",
+        "validBadge": "Valid",
+        "invalidBadge": "Invalid",
         "defaultLabel": "New node",
         "showMore": "Show more",
         "showLess": "Show less",
@@ -201,23 +200,23 @@
         "commentsHeader": "Comments",
         "noComments": "No comments yet. Start the conversation."
       },
+      "question": {
+        "badge": "Question",
+        "placeholder": "What's this discussion about?",
+        "ariaLabel": "Central question",
+        "editLabel": "Edit question"
+      },
+      "resolution": {
+        "resolved": "Resolved"
+      },
       "reference": {
         "badge": "Reference",
         "openLabel": "Open {name}",
         "workspaceFallback": "workspace"
       },
       "comments": {
-        "panelTitle": "Canvas comments",
-        "addPlaceholder": "Add a canvas comment…",
-        "addAriaLabel": "Add a canvas comment",
-        "sendAriaLabel": "Send comment",
-        "sendTitle": "Send (Enter)",
         "deleteAriaLabel": "Delete comment",
-        "deleteTitle": "Delete comment",
-        "closeAriaLabel": "Close (Esc)",
-        "closeTitle": "Close (Esc)",
-        "emptyTitle": "No comments on this canvas yet.",
-        "emptyHint": "Start the discussion below."
+        "deleteTitle": "Delete comment"
       },
       "save": {
         "saving": "Saving…",
@@ -237,7 +236,6 @@
         "ariaLabel": "Canvas actions",
         "addNode": "Add node",
         "addReference": "Add reference",
-        "openComments": "Open canvas comments",
         "deleteEdge": "Delete edge",
         "openReferenced": "Open referenced canvas",
         "deleteReference": "Delete reference",
@@ -245,6 +243,9 @@
         "unmarkValid": "Unmark valid",
         "markInvalid": "Mark invalid",
         "unmarkInvalid": "Unmark invalid",
+        "markAnswer": "Mark as answer",
+        "unmarkAnswer": "Unmark answer",
+        "needsValidParent": "Needs the question or a valid step before it",
         "comment": "Comment",
         "duplicate": "Duplicate",
         "delete": "Delete"

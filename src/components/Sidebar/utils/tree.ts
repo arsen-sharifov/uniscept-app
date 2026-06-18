@@ -6,6 +6,9 @@ const flattenTreeAll = (items: TNavItem[]): TNavItem[] =>
 export const findInTree = (items: TNavItem[], id: string): TNavItem | null =>
   flattenTreeAll(items).find((item) => item.id === id) ?? null;
 
+export const findFirstThread = (items: TNavItem[]): string | null =>
+  flattenTreeAll(items).find((item) => item.type === 'thread')?.id ?? null;
+
 export const findParentId = (
   items: TNavItem[],
   id: string,
@@ -37,6 +40,14 @@ export const updateNavItemName = (items: TNavItem[], id: string, name: string): 
   items.map((item) => {
     if (item.id === id) return { ...item, name };
     if (item.type === 'folder') return { ...item, items: updateNavItemName(item.items, id, name) };
+
+    return item;
+  });
+
+export const setThreadAnswered = (items: TNavItem[], threadId: string, answered: boolean): TNavItem[] =>
+  items.map((item) => {
+    if (item.type === 'folder') return { ...item, items: setThreadAnswered(item.items, threadId, answered) };
+    if (item.id === threadId) return { ...item, answered };
 
     return item;
   });
@@ -120,6 +131,7 @@ export const buildNavTree = (folders: IFolder[], threads: IThread[]): TNavItem[]
         type: 'thread',
         id: thread.id,
         name: thread.name,
+        answered: thread.hasAnswer,
       } as TNavItem,
       position: thread.position,
     })),

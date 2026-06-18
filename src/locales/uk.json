@@ -89,6 +89,7 @@
       "move": "Перемістити",
       "treeAriaLabel": "Навігація",
       "dragToReorder": "Перетягніть для перевпорядкування",
+      "resolved": "Вирішено",
       "itemsSelected": "елементів обрано",
       "workspacesSelected": "просторів обрано",
       "moveToFolder": "Перемістити в теку",
@@ -121,7 +122,7 @@
           "navigate": "Навігація",
           "history": "Історія",
           "build": "Побудова",
-          "annotate": "Анотації",
+          "decide": "Рішення",
           "link": "Звʼязки"
         },
         "items": {
@@ -161,9 +162,9 @@
             "label": "Позначити некоректним",
             "description": "Позначте обрані вузли як некоректний шлях."
           },
-          "comment": {
-            "label": "Коментар",
-            "description": "Клікніть на вузол, щоб відкрити панель коментарів."
+          "answer": {
+            "label": "Відповідь",
+            "description": "Позначити вузол як фінальну відповідь дискусії."
           },
           "crossReference": {
             "label": "Перехресне посилання",
@@ -184,12 +185,10 @@
         "hint": "Не вдалося звʼязатися з Supabase, щоб завантажити полотно. Перевірте, чи запущений локальний Supabase, і спробуйте знову.",
         "retry": "Повторити"
       },
-      "empty": {
-        "title": "Порожнє полотно",
-        "hint": "Натисніть {key} і клікніть будь-де, щоб створити перший вузол",
-        "contextHint": "або клацніть правою кнопкою для інших опцій"
-      },
       "node": {
+        "answerBadge": "Відповідь",
+        "validBadge": "Вірний",
+        "invalidBadge": "Хибний",
         "defaultLabel": "Новий вузол",
         "showMore": "Показати більше",
         "showLess": "Показати менше",
@@ -201,23 +200,23 @@
         "commentsHeader": "Коментарі",
         "noComments": "Коментарів ще немає. Розпочніть розмову."
       },
+      "question": {
+        "badge": "Питання",
+        "placeholder": "Про що ця дискусія?",
+        "ariaLabel": "Центральне питання",
+        "editLabel": "Редагувати питання"
+      },
+      "resolution": {
+        "resolved": "Вирішено"
+      },
       "reference": {
         "badge": "Посилання",
         "openLabel": "Відкрити {name}",
         "workspaceFallback": "робочий простір"
       },
       "comments": {
-        "panelTitle": "Коментарі полотна",
-        "addPlaceholder": "Додати коментар…",
-        "addAriaLabel": "Додати коментар до полотна",
-        "sendAriaLabel": "Надіслати коментар",
-        "sendTitle": "Надіслати (Enter)",
         "deleteAriaLabel": "Видалити коментар",
-        "deleteTitle": "Видалити коментар",
-        "closeAriaLabel": "Закрити (Esc)",
-        "closeTitle": "Закрити (Esc)",
-        "emptyTitle": "Поки що жодних коментарів.",
-        "emptyHint": "Розпочніть обговорення нижче."
+        "deleteTitle": "Видалити коментар"
       },
       "save": {
         "saving": "Збереження…",
@@ -237,7 +236,6 @@
         "ariaLabel": "Дії полотна",
         "addNode": "Додати вузол",
         "addReference": "Додати посилання",
-        "openComments": "Відкрити коментарі полотна",
         "deleteEdge": "Видалити ребро",
         "openReferenced": "Відкрити повʼязане полотно",
         "deleteReference": "Видалити посилання",
@@ -245,6 +243,9 @@
         "unmarkValid": "Зняти позначку «вірний»",
         "markInvalid": "Позначити хибним",
         "unmarkInvalid": "Зняти позначку «хибний»",
+        "markAnswer": "Позначити відповіддю",
+        "unmarkAnswer": "Зняти відповідь",
+        "needsValidParent": "Потрібне питання або валідний крок перед ним",
         "comment": "Коментар",
         "duplicate": "Дублювати",
         "delete": "Видалити"

@@ -1,9 +1,16 @@
 'use client';
 
+import type { Node } from '@xyflow/react';
 import { useRouter, useParams } from 'next/navigation';
 import { useEffect, useRef, useState, useCallback } from 'react';
 
-import type { TNavItem, TNavItemType, IWorkspaceItem } from '@interfaces';
+import {
+  ECanvasNodeType,
+  type ICanvasNodeData,
+  type TNavItem,
+  type TNavItemType,
+  type IWorkspaceItem,
+} from '@interfaces';
 import {
   getWorkspaces,
   createWorkspace,
@@ -27,13 +34,16 @@ import {
 import {
   buildNavTree,
   containsThread,
+  findFirstThread,
   findInTree,
   findParentId,
   getSiblings,
   insertIntoTree,
   removeFromTree,
+  setThreadAnswered,
   updateNavItemName,
 } from '@/components/Sidebar/utils';
+import { useCanvasStore } from '@/lib/stores';
 import { createClient } from '@/lib/supabase';
 
 export const useWorkspaceManager = () => {
@@ -52,9 +62,12 @@ export const useWorkspaceManager = () => {
 
   const initialized = useRef(false);
 
-  const loadWorkspaceContent = useCallback(async (workspaceId: string) => {
+  const loadWorkspaceContent = useCallback(async (workspaceId: string): Promise<TNavItem[]> => {
     const [folders, threads] = await Promise.all([getFolders(workspaceId), getThreads(workspaceId)]);
-    setNavItems(buildNavTree(folders, threads));
+    const tree = buildNavTree(folders, threads);
+    setNavItems(tree);
+
+    return tree;
   }, []);
 
   useEffect(() => {
@@ -72,18 +85,43 @@ export const useWorkspaceManager = () => {
 
       const targetWorkspaceId = workspaceIdParam
         ? workspaceList.find((workspace) => workspace.id === workspaceIdParam)?.id
-        : undefined;
+        : workspaceList[0]?.id;
 
       if (targetWorkspaceId) {
         setActiveWorkspaceId(targetWorkspaceId);
-        await loadWorkspaceContent(targetWorkspaceId);
+        const tree = await loadWorkspaceContent(targetWorkspaceId);
+
+        if (!threadIdParam) {
+          const firstThreadId = findFirstThread(tree);
+          if (firstThreadId) router.replace(`/platform/${targetWorkspaceId}/${firstThreadId}`);
+        }
       }
 
       setLoading(false);
     };
 
     init().catch(() => setLoading(false));
-  }, [workspaceIdParam, loadWorkspaceContent]);
+  }, [workspaceIdParam, threadIdParam, loadWorkspaceContent, router]);
+
+  useEffect(() => {
+    const hasAnswerOf = (nodes: Node[]) =>
+      nodes.some((node) => node.type === ECanvasNodeType.Canvas && (node.data as ICanvasNodeData).isAnswer);
+
+    let lastThreadId = useCanvasStore.getState().threadId;
+    let lastHasAnswer = hasAnswerOf(useCanvasStore.getState().nodes);
+
+    return useCanvasStore.subscribe((state) => {
+      const { threadId, nodes } = state;
+      if (!threadId) return;
+
+      const hasAnswer = hasAnswerOf(nodes);
+      if (threadId === lastThreadId && hasAnswer === lastHasAnswer) return;
+
+      lastThreadId = threadId;
+      lastHasAnswer = hasAnswer;
+      setNavItems((prev) => setThreadAnswered(prev, threadId, hasAnswer));
+    });
+  }, []);
 
   const handleWorkspaceSelect = useCallback(
     async (id: string) => {
@@ -91,9 +129,10 @@ export const useWorkspaceManager = () => {
       setEditingItemId(null);
       setEditingWorkspaceId(null);
       setLoading(true);
-      await loadWorkspaceContent(id);
+      const tree = await loadWorkspaceContent(id);
       setLoading(false);
-      router.push(`/platform`);
+      const firstThreadId = findFirstThread(tree);
+      router.push(firstThreadId ? `/platform/${id}/${firstThreadId}` : '/platform');
     },
     [router, loadWorkspaceContent],
   );

@@ -26,6 +26,7 @@ export const flattenTree = (
       index,
       collapsed,
       childCount,
+      answered: item.type === 'thread' ? item.answered : undefined,
     };
 
     return [flatItem, ...children];

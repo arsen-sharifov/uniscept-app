@@ -1,6 +1,6 @@
 import type { ICanvasFixture } from '@story-interfaces';
 
-import { buildDenseCanvas, createCanvasEdge, createCanvasNode, createComment } from '../../utils';
+import { buildDenseCanvas, createCanvasEdge, createCanvasNode, createComment, createQuestionNode } from '../../utils';
 
 export const emptyCanvas: ICanvasFixture = { nodes: [], edges: [] };
 
@@ -38,3 +38,13 @@ export const evaluatedCanvas: ICanvasFixture = {
 };
 
 export const denseCanvas: ICanvasFixture = buildDenseCanvas();
+
+export const resolvedCanvas: ICanvasFixture = {
+  nodes: [
+    createQuestionNode('q', 'Should we adopt qualified-majority voting for canvas evaluation?'),
+    createCanvasNode('a1', 40, 250, 'Qualified majority balances authority and speed', 'valid'),
+    createCanvasNode('a2', 40, 430, 'Adopt qualified-majority voting', null, [], false, true),
+    createCanvasNode('b1', 360, 250, 'Simple majority is faster but riskier'),
+  ],
+  edges: [createCanvasEdge('e1', 'q', 'a1'), createCanvasEdge('e2', 'a1', 'a2'), createCanvasEdge('e3', 'q', 'b1')],
+};

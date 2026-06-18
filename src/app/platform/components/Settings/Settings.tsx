@@ -3,7 +3,7 @@
 import { X } from 'lucide-react';
 import { useCallback, useState } from 'react';
 
-import type { TSettingsSection } from '@interfaces';
+import type { IPreferences, TPreferenceUpdater, TSettingsSection } from '@interfaces';
 import { useTranslations } from '@hooks';
 import { Modal } from '@/components';
 
@@ -15,19 +15,20 @@ import {
   ProfileSection,
   SecuritySection,
 } from './fragments';
-import { usePreferences, useSettings } from './hooks';
+import { useSettings } from './hooks';
 import { SettingsSidebar } from './SettingsSidebar';
 
 export interface ISettingsProps {
   onClose: () => void;
+  preferences: IPreferences;
+  updatePreference: TPreferenceUpdater;
   defaultSection?: TSettingsSection;
 }
 
-export const Settings = ({ onClose, defaultSection = 'profile' }: ISettingsProps) => {
+export const Settings = ({ onClose, preferences, updatePreference, defaultSection = 'profile' }: ISettingsProps) => {
   const t = useTranslations();
   const [activeSection, setActiveSection] = useState<TSettingsSection>(defaultSection);
   const { user, loading, updateProfile, changeEmail, changePassword, deleteAccount } = useSettings();
-  const { preferences, updatePreference } = usePreferences();
 
   const handleClose = useCallback(() => {
     setActiveSection(defaultSection);

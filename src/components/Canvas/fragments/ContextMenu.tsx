@@ -4,9 +4,10 @@ import {
   CheckCircle,
   Copy,
   ExternalLink,
+  Flag,
   Link2,
-  MessageCircle,
   MessageSquare,
+  Pencil,
   Plus,
   Trash2,
   XCircle,
@@ -18,7 +19,7 @@ import { ECanvasNodeType, type TCanvasContextMenu } from '@interfaces';
 import { useClickOutside, useEscapeKey, useTranslations } from '@hooks';
 import { useCanvasStore } from '@/lib/stores';
 
-import { buildReferenceUrl, isCanvasNodeData } from '../utils';
+import { buildReferenceUrl, hasValidatedParent, isCanvasNodeData } from '../utils';
 import { MenuDivider, MenuItem } from './MenuItem';
 
 interface IContextMenuProps {
@@ -38,7 +39,8 @@ export const ContextMenu = ({ menu, onClose }: IContextMenuProps) => {
   const deleteNode = useCanvasStore((s) => s.deleteNode);
   const deleteEdge = useCanvasStore((s) => s.deleteEdge);
   const setOpenCommentsNodeId = useCanvasStore((s) => s.setOpenCommentsNodeId);
-  const setCanvasCommentsOpen = useCanvasStore((s) => s.setCanvasCommentsOpen);
+  const setEditingNodeId = useCanvasStore((s) => s.setEditingNodeId);
+  const setNodeAnswer = useCanvasStore((s) => s.setNodeAnswer);
 
   const targetExists = useCanvasStore((s) => {
     if (menu.type === 'node') return s.nodes.some((n) => n.id === menu.nodeId);
@@ -143,14 +145,6 @@ export const ContextMenu = ({ menu, onClose }: IContextMenuProps) => {
             onClick={close(() => setReferenceSearchPosition({ x: menu.flowX, y: menu.flowY }))}
             accent="cyan"
           />
-
-          <MenuDivider />
-
-          <MenuItem
-            icon={<MessageCircle className="h-3 w-3" strokeWidth={2.25} />}
-            label={t.platform.canvas.context.openComments}
-            onClick={close(() => setCanvasCommentsOpen(true))}
-          />
         </>
       );
     }
@@ -166,7 +160,8 @@ export const ContextMenu = ({ menu, onClose }: IContextMenuProps) => {
       );
     }
 
-    const node = useCanvasStore.getState().nodes.find((n) => n.id === menu.nodeId);
+    const state = useCanvasStore.getState();
+    const node = state.nodes.find((n) => n.id === menu.nodeId);
     if (!node) return null;
 
     if (node.type === ECanvasNodeType.Reference) {
@@ -203,9 +198,22 @@ export const ContextMenu = ({ menu, onClose }: IContextMenuProps) => {
       );
     }
 
+    if (node.type === ECanvasNodeType.Question) {
+      return (
+        <MenuItem
+          icon={<Pencil className="h-3 w-3" strokeWidth={2.25} />}
+          label={t.platform.canvas.question.editLabel}
+          onClick={close(() => setEditingNodeId(menu.nodeId))}
+        />
+      );
+    }
+
     if (!isCanvasNodeData(node.data)) return null;
 
-    const { status } = node.data;
+    const { status, isAnswer } = node.data;
+    const validatedParent = hasValidatedParent(menu.nodeId, state.nodes, state.edges);
+    const validDisabled = status !== 'valid' && !validatedParent;
+    const answerDisabled = !isAnswer && !validatedParent;
 
     return (
       <>
@@ -215,6 +223,8 @@ export const ContextMenu = ({ menu, onClose }: IContextMenuProps) => {
           shortcut="Y"
           onClick={close(() => setNodesStatus([menu.nodeId], 'valid'))}
           accent="emerald"
+          disabled={validDisabled}
+          hint={t.platform.canvas.context.needsValidParent}
         />
 
         <MenuItem
@@ -223,6 +233,15 @@ export const ContextMenu = ({ menu, onClose }: IContextMenuProps) => {
           shortcut="X"
           onClick={close(() => setNodesStatus([menu.nodeId], 'invalid'))}
           accent="red"
+        />
+
+        <MenuItem
+          icon={<Flag className="h-3 w-3" strokeWidth={2.25} />}
+          label={isAnswer ? t.platform.canvas.context.unmarkAnswer : t.platform.canvas.context.markAnswer}
+          shortcut="A"
+          onClick={close(() => setNodeAnswer(menu.nodeId))}
+          disabled={answerDisabled}
+          hint={t.platform.canvas.context.needsValidParent}
         />
 
         <MenuItem

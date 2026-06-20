@@ -1,6 +1,5 @@
 export * from './auth';
 export * from './canvas';
-export * from './canvasComment';
 export * from './canvasEdge';
 export * from './canvasNode';
 export * from './consts';

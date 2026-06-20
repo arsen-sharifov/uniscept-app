@@ -20,6 +20,7 @@ export interface IThread {
   folderId: string | null;
   name: string;
   position: number;
+  hasAnswer: boolean;
 }
 
 export interface IWorkspaceRow {

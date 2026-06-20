@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
 import { Canvas } from '@/components';
 
-import { denseCanvas, emptyCanvas, evaluatedCanvas, reasoningCanvas } from './consts';
+import { denseCanvas, emptyCanvas, evaluatedCanvas, reasoningCanvas, resolvedCanvas } from './consts';
 import { ARG_CATEGORIES } from '../../consts';
 import { WithCanvasStage, WithReactFlow, withCanvasStore } from '../../decorators';
 
@@ -76,6 +76,19 @@ export const EvaluatedPaths: Story = {
   decorators: [
     withCanvasStore({ threadId: 'sb-evaluated', nodes: evaluatedCanvas.nodes, edges: evaluatedCanvas.edges }),
   ],
+};
+
+export const ResolvedDiscussion: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A resolved discussion: a validated reasoning chain (each step marked valid) runs from the question to the node marked as the final answer (purple). Edge tones reflect those statuses, so the validated route reads green while the unrelated branch stays neutral. Validity is set manually and gated, never auto-derived from the answer.',
+      },
+    },
+  },
+  args: { workspaceId: 'sb-workspace', threadId: 'sb-resolved' },
+  decorators: [withCanvasStore({ threadId: 'sb-resolved', nodes: resolvedCanvas.nodes, edges: resolvedCanvas.edges })],
 };
 
 export const Dense: Story = {

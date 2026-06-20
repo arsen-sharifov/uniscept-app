@@ -5,12 +5,14 @@ import { useState, type ReactNode } from 'react';
 import { Sidebar, Toolbar, useToolbar } from '@/components';
 
 import { Settings } from './components/Settings';
+import { usePreferences } from './components/Settings/hooks';
 import { UserMenu } from './components/UserMenu';
 import { useWorkspaceManager } from './hooks';
 
 const WorkspaceLayout = ({ children }: { children: ReactNode }) => {
   const { groups, activeTool, handleToolClick } = useToolbar();
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const { preferences, updatePreference } = usePreferences();
 
   const {
     workspaces,
@@ -66,7 +68,13 @@ const WorkspaceLayout = ({ children }: { children: ReactNode }) => {
       />
       <Toolbar groups={groups} activeTool={activeTool} onToolClick={handleToolClick} />
       {children}
-      {settingsOpen && <Settings onClose={() => setSettingsOpen(false)} />}
+      {settingsOpen && (
+        <Settings
+          onClose={() => setSettingsOpen(false)}
+          preferences={preferences}
+          updatePreference={updatePreference}
+        />
+      )}
     </div>
   );
 };

@@ -129,7 +129,7 @@ export const InterleavedGroups: Story = {
     docs: {
       description: {
         story:
-          'Custom composition that bypasses `buildCanvasToolGroups`. Tools are regrouped into "primary" (Select, AddNode, Connect) and "secondary" (Comment, CrossReference, Delete) clusters to demonstrate that any `ECanvasTool` can become the active tool inside an arbitrary group layout.',
+          'Custom composition that bypasses `buildCanvasToolGroups`. Tools are regrouped into "primary" (Select, AddNode, Connect) and "secondary" (Valid path, CrossReference, Delete) clusters to demonstrate that any `ECanvasTool` can become the active tool inside an arbitrary group layout.',
       },
     },
   },
@@ -146,8 +146,8 @@ export const InterleavedGroups: Story = {
         },
         {
           id: 'secondary',
-          label: t.platform.canvas.tools.groups.annotate,
-          tools: [tools[ECanvasTool.Comment], tools[ECanvasTool.CrossReference], tools[ECanvasTool.Delete]],
+          label: t.platform.canvas.tools.groups.decide,
+          tools: [tools[ECanvasTool.ValidPath], tools[ECanvasTool.CrossReference], tools[ECanvasTool.Delete]],
         },
       ] satisfies IToolGroup[];
     },

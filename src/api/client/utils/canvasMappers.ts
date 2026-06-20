@@ -42,6 +42,21 @@ export const rowToNode = (
 
   const mappedComments: IComment[] = comments.map(toComment);
 
+  if (row.type === ECanvasNodeType.Question) {
+    return {
+      id: row.id,
+      type: ECanvasNodeType.Question,
+      position,
+      deletable: false,
+      data: {
+        label: row.label,
+        status: null,
+        isAnswer: false,
+        comments: mappedComments,
+      },
+    } satisfies TCanvasNode;
+  }
+
   return {
     id: row.id,
     type: ECanvasNodeType.Canvas,
@@ -49,6 +64,7 @@ export const rowToNode = (
     data: {
       label: row.label,
       status: row.status ?? null,
+      isAnswer: row.is_answer,
       comments: mappedComments,
     },
   } satisfies TCanvasNode;

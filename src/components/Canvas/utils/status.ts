@@ -74,9 +74,14 @@ export const computeEffectiveStatuses = (nodes: Node[], edges: Edge[]): Map<stri
   const result = new Map<string, TEffectiveStatus>();
 
   nodes.forEach((node) => {
+    if (node.type === ECanvasNodeType.Question) {
+      result.set(node.id, 'valid');
+
+      return;
+    }
     if (node.type !== ECanvasNodeType.Canvas) return;
     if (!isCanvasNodeData(node.data)) return;
-    result.set(node.id, node.data.status);
+    result.set(node.id, node.data.isAnswer ? 'valid' : node.data.status);
   });
 
   const adjacency = new Map<string, string[]>();

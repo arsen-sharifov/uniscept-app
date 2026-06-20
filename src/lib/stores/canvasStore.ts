@@ -25,7 +25,7 @@ import {
   type TReferenceNode,
 } from '@interfaces';
 
-import { isCanvasNodeData, isReferenceNodeData } from '@/components/Canvas/utils';
+import { hasValidatedParent, isCanvasNodeData, isReferenceNodeData } from '@/components/Canvas/utils';
 import { ECanvasTool } from '@/components/tools';
 import { detectPositionChanges, emitCanvasOperation, isHandleId } from '@/lib/canvas';
 
@@ -42,20 +42,17 @@ const CLEARED_OVERLAYS = {
 const EMPTY_CANVAS_STATE = {
   nodes: [] as Node[],
   edges: [] as Edge[],
-  canvasComments: [] as IComment[],
   activeTool: ECanvasTool.Select,
   pendingConnection: null,
   referenceSearchPosition: null,
   editingNodeId: null,
   openCommentsNodeId: null,
-  canvasCommentsOpen: false,
   middlePan: false,
 } as const;
 
 interface IPersistedSnapshot {
   nodes: Node[];
   edges: Edge[];
-  canvasComments: IComment[];
 }
 
 interface ICanvasStore extends IPersistedSnapshot {
@@ -67,7 +64,6 @@ interface ICanvasStore extends IPersistedSnapshot {
   referenceSearchPosition: XYPosition | null;
   editingNodeId: string | null;
   openCommentsNodeId: string | null;
-  canvasCommentsOpen: boolean;
   middlePan: boolean;
 
   loadCanvas: (threadId: string, userId: string | null, snapshot: ICanvasSnapshot) => void;
@@ -75,7 +71,6 @@ interface ICanvasStore extends IPersistedSnapshot {
   setActiveTool: (tool: ECanvasTool) => void;
   closeAllOverlays: () => void;
   setOpenCommentsNodeId: (id: string | null) => void;
-  setCanvasCommentsOpen: (open: boolean) => void;
   setMiddlePan: (active: boolean) => void;
   onNodesChange: OnNodesChange;
   onEdgesChange: OnEdgesChange;
@@ -87,11 +82,10 @@ interface ICanvasStore extends IPersistedSnapshot {
   connectNodes: (connection: Connection) => void;
   setPendingConnection: (nodeId: string | null) => void;
   setNodesStatus: (ids: string[], status: TNodeStatus) => void;
+  setNodeAnswer: (id: string) => void;
   updateNodeLabel: (id: string, label: string) => void;
   addComment: (nodeId: string, text: string) => void;
   deleteComment: (nodeId: string, commentId: string) => void;
-  addCanvasComment: (text: string) => void;
-  deleteCanvasComment: (commentId: string) => void;
   duplicateNode: (id: string) => void;
   setEditingNodeId: (id: string | null) => void;
   clearNewFlag: (id: string) => void;
@@ -102,7 +96,6 @@ interface ICanvasStore extends IPersistedSnapshot {
 const snapshotOf = (state: IPersistedSnapshot): IPersistedSnapshot => ({
   nodes: state.nodes,
   edges: state.edges,
-  canvasComments: state.canvasComments,
 });
 
 const diffNodeAdditions = (
@@ -113,6 +106,7 @@ const diffNodeAdditions = (
 ): void => {
   nextNodeMap.forEach((node, id) => {
     if (prevNodeMap.has(id)) return;
+    if (node.type === ECanvasNodeType.Question) return;
 
     if (node.type === ECanvasNodeType.Reference) {
       if (!isReferenceNodeData(node.data)) return;
@@ -142,6 +136,10 @@ const diffNodeAdditions = (
 
     if (node.data.status !== null) {
       ops.push({ type: 'updateNodeStatus', id, status: node.data.status });
+    }
+
+    if (node.data.isAnswer) {
+      ops.push({ type: 'updateNodeAnswer', id, isAnswer: true });
     }
 
     node.data.comments.forEach((comment) =>
@@ -187,6 +185,10 @@ const diffNodeUpdates = (
         id,
         status: nextNode.data.status,
       });
+    }
+
+    if (prevNode.data.isAnswer !== nextNode.data.isAnswer) {
+      ops.push({ type: 'updateNodeAnswer', id, isAnswer: nextNode.data.isAnswer });
     }
 
     const prevCommentIds = new Set(prevNode.data.comments.map((c) => c.id));
@@ -240,30 +242,6 @@ const diffEdges = (
   });
 };
 
-const diffCanvasComments = (
-  ops: TCanvasOperation[],
-  prev: IPersistedSnapshot,
-  next: IPersistedSnapshot,
-  threadId: string,
-): void => {
-  const prevMap = new Map(prev.canvasComments.map((c) => [c.id, c]));
-  const nextMap = new Map(next.canvasComments.map((c) => [c.id, c]));
-
-  prevMap.forEach((_, id) => {
-    if (!nextMap.has(id)) ops.push({ type: 'deleteCanvasComment', id });
-  });
-
-  nextMap.forEach((comment, id) => {
-    if (prevMap.has(id)) return;
-    ops.push({
-      type: 'createCanvasComment',
-      id,
-      threadId,
-      text: comment.text,
-    });
-  });
-};
-
 const diffStates = (
   prev: IPersistedSnapshot,
   next: IPersistedSnapshot,
@@ -282,14 +260,61 @@ const diffStates = (
   diffNodeAdditions(ops, nextNodeMap, prevNodeMap, threadId);
   diffNodeUpdates(ops, nextNodeMap, prevNodeMap);
   diffEdges(ops, prev, next, threadId);
-  diffCanvasComments(ops, prev, next, threadId);
 
   return ops;
 };
 
+const sameComments = (a: IComment[], b: IComment[]): boolean =>
+  a.length === b.length &&
+  a.every((comment, index) => {
+    const other = b[index];
+
+    return other !== undefined && comment.id === other.id && comment.text === other.text;
+  });
+
+const sameNodeContent = (a: Node, b: Node): boolean => {
+  if (a.position.x !== b.position.x || a.position.y !== b.position.y) return false;
+
+  if (isCanvasNodeData(a.data) && isCanvasNodeData(b.data)) {
+    return (
+      a.data.label === b.data.label &&
+      a.data.status === b.data.status &&
+      a.data.isAnswer === b.data.isAnswer &&
+      sameComments(a.data.comments, b.data.comments)
+    );
+  }
+
+  return a.data === b.data;
+};
+
+const sameNodes = (a: Node[], b: Node[]): boolean =>
+  a.length === b.length &&
+  a.every((node, index) => {
+    const other = b[index];
+
+    return other !== undefined && node.id === other.id && sameNodeContent(node, other);
+  });
+
+const sameEdges = (a: Edge[], b: Edge[]): boolean =>
+  a.length === b.length &&
+  a.every((edge, index) => {
+    const other = b[index];
+
+    return (
+      other !== undefined &&
+      edge.id === other.id &&
+      edge.source === other.source &&
+      edge.target === other.target &&
+      edge.sourceHandle === other.sourceHandle &&
+      edge.targetHandle === other.targetHandle
+    );
+  });
+
 export const useCanvasStore = create<ICanvasStore>()(
   temporal(
     (set, get) => {
+      let dragOrigin: Node[] | null = null;
+
       const appendNode = (node: TCanvasNode | TReferenceNode, extra?: Partial<{ referenceSearchPosition: null }>) => {
         set({ nodes: [...get().nodes, node], ...(extra ?? {}) });
       };
@@ -299,6 +324,7 @@ export const useCanvasStore = create<ICanvasStore>()(
       };
 
       const resetState = (overrides: Partial<ICanvasStore>) => {
+        dragOrigin = null;
         const temporalApi = useCanvasStore.temporal.getState();
         temporalApi.pause();
         set({ ...EMPTY_CANVAS_STATE, ...overrides });
@@ -319,7 +345,6 @@ export const useCanvasStore = create<ICanvasStore>()(
             hydrated: true,
             nodes: snapshot.nodes,
             edges: snapshot.edges,
-            canvasComments: snapshot.canvasComments,
           });
         },
 
@@ -358,8 +383,6 @@ export const useCanvasStore = create<ICanvasStore>()(
         setOpenCommentsNodeId: (id) =>
           set(id === null ? { openCommentsNodeId: null } : { openCommentsNodeId: id, editingNodeId: null }),
 
-        setCanvasCommentsOpen: (open) => set({ canvasCommentsOpen: open }),
-
         setMiddlePan: (active) => set({ middlePan: active }),
 
         onNodesChange: (changes) => {
@@ -370,25 +393,44 @@ export const useCanvasStore = create<ICanvasStore>()(
           const positionEnd = changes.some((change) => change.type === 'position' && change.dragging === false);
 
           const temporalApi = useCanvasStore.temporal.getState();
-          if (isDragging) temporalApi.pause();
-          if (positionEnd) temporalApi.resume();
+
+          if (isDragging) {
+            if (dragOrigin === null) dragOrigin = prev;
+            temporalApi.pause();
+            set({ nodes: next });
+
+            return;
+          }
+
+          if (positionEnd) {
+            const origin = dragOrigin ?? prev;
+            dragOrigin = null;
+
+            temporalApi.pause();
+            set({ nodes: origin });
+            temporalApi.resume();
+            set({ nodes: next });
+
+            detectPositionChanges(origin, next).forEach((change) =>
+              emitCanvasOperation({
+                type: 'updateNodePosition',
+                id: change.id,
+                x: change.x,
+                y: change.y,
+              }),
+            );
+
+            return;
+          }
 
           set({ nodes: next });
 
           changes
             .filter((change) => change.type === 'remove')
-            .forEach((change) => emitCanvasOperation({ type: 'deleteNode', id: change.id }));
-
-          if (!positionEnd) return;
-
-          detectPositionChanges(prev, next).forEach((change) =>
-            emitCanvasOperation({
-              type: 'updateNodePosition',
-              id: change.id,
-              x: change.x,
-              y: change.y,
-            }),
-          );
+            .forEach((change) => {
+              if (prev.find((node) => node.id === change.id)?.type === ECanvasNodeType.Question) return;
+              emitCanvasOperation({ type: 'deleteNode', id: change.id });
+            });
         },
 
         onEdgesChange: (changes) => {
@@ -408,7 +450,7 @@ export const useCanvasStore = create<ICanvasStore>()(
             id,
             type: ECanvasNodeType.Canvas,
             position,
-            data: { label, status: null, comments: [], isNew: true },
+            data: { label, status: null, isAnswer: false, comments: [], isNew: true },
           };
 
           appendNode(newNode);
@@ -449,6 +491,7 @@ export const useCanvasStore = create<ICanvasStore>()(
 
         deleteNode: (id) => {
           const state = get();
+          if (state.nodes.find((n) => n.id === id)?.type === ECanvasNodeType.Question) return;
 
           set({
             nodes: state.nodes.filter((n) => n.id !== id),
@@ -515,11 +558,12 @@ export const useCanvasStore = create<ICanvasStore>()(
         setPendingConnection: (nodeId) => set({ pendingConnection: nodeId }),
 
         setNodesStatus: (ids, status) => {
+          const currentNodes = get().nodes;
           const idSet = new Set(ids);
           const touchedIds: string[] = [];
           let allMatch = true;
 
-          get().nodes.forEach((node) => {
+          currentNodes.forEach((node) => {
             if (!idSet.has(node.id)) return;
             if (node.type !== ECanvasNodeType.Canvas) return;
             if (!isCanvasNodeData(node.data)) return;
@@ -530,11 +574,18 @@ export const useCanvasStore = create<ICanvasStore>()(
           if (touchedIds.length === 0) return;
 
           const nextStatus: TNodeStatus = allMatch ? null : status;
-          const touchedSet = new Set(touchedIds);
+
+          const applyIds =
+            nextStatus === 'valid'
+              ? touchedIds.filter((id) => hasValidatedParent(id, currentNodes, get().edges))
+              : touchedIds;
+          if (applyIds.length === 0) return;
+
+          const applySet = new Set(applyIds);
 
           set({
-            nodes: get().nodes.map((node) => {
-              if (!touchedSet.has(node.id)) return node;
+            nodes: currentNodes.map((node) => {
+              if (!applySet.has(node.id)) return node;
               if (!isCanvasNodeData(node.data)) return node;
               const data: ICanvasNodeData = { ...node.data, status: nextStatus };
 
@@ -542,11 +593,51 @@ export const useCanvasStore = create<ICanvasStore>()(
             }),
           });
 
-          touchedIds.forEach((id) =>
+          applyIds.forEach((id) =>
             emitCanvasOperation({
               type: 'updateNodeStatus',
               id,
               status: nextStatus,
+            }),
+          );
+        },
+
+        setNodeAnswer: (id) => {
+          const currentNodes = get().nodes;
+          const target = currentNodes.find((node) => node.id === id);
+          if (!target || target.type !== ECanvasNodeType.Canvas || !isCanvasNodeData(target.data)) return;
+
+          const nextValue = !target.data.isAnswer;
+          if (nextValue && !hasValidatedParent(id, currentNodes, get().edges)) return;
+
+          const changed: string[] = [];
+
+          const nodes = currentNodes.map((node) => {
+            if (!isCanvasNodeData(node.data)) return node;
+
+            if (node.id === id) {
+              changed.push(node.id);
+
+              return { ...node, data: { ...node.data, isAnswer: nextValue } };
+            }
+
+            if (nextValue && node.data.isAnswer) {
+              changed.push(node.id);
+
+              return { ...node, data: { ...node.data, isAnswer: false } };
+            }
+
+            return node;
+          });
+
+          if (changed.length === 0) return;
+
+          set({ nodes });
+          changed.forEach((changedId) =>
+            emitCanvasOperation({
+              type: 'updateNodeAnswer',
+              id: changedId,
+              isAnswer: changedId === id ? nextValue : false,
             }),
           );
         },
@@ -583,6 +674,7 @@ export const useCanvasStore = create<ICanvasStore>()(
           const data: ICanvasNodeData = {
             label: source.data.label,
             status: source.data.status,
+            isAnswer: false,
             comments: [],
             isNew: true,
           };
@@ -651,29 +743,6 @@ export const useCanvasStore = create<ICanvasStore>()(
           emitCanvasOperation({ type: 'deleteComment', id: commentId });
         },
 
-        addCanvasComment: (text) => {
-          const { threadId, userId } = get();
-          if (!threadId || !userId) return;
-
-          const id = crypto.randomUUID();
-          const comment: IComment = { id, text, authorId: userId };
-
-          set({ canvasComments: [...get().canvasComments, comment] });
-          emitCanvasOperation({
-            type: 'createCanvasComment',
-            id,
-            threadId,
-            text,
-          });
-        },
-
-        deleteCanvasComment: (commentId) => {
-          set({
-            canvasComments: get().canvasComments.filter((c) => c.id !== commentId),
-          });
-          emitCanvasOperation({ type: 'deleteCanvasComment', id: commentId });
-        },
-
         clearNewFlag: (id) => {
           const target = get().nodes.find((node) => node.id === id);
           if (!target || !('isNew' in target.data)) return;
@@ -715,10 +784,9 @@ export const useCanvasStore = create<ICanvasStore>()(
       partialize: (state) => ({
         nodes: state.nodes,
         edges: state.edges,
-        canvasComments: state.canvasComments,
       }),
       limit: MAX_HISTORY,
-      equality: (a, b) => a.nodes === b.nodes && a.edges === b.edges && a.canvasComments === b.canvasComments,
+      equality: (a, b) => sameNodes(a.nodes, b.nodes) && sameEdges(a.edges, b.edges),
     },
   ),
 );

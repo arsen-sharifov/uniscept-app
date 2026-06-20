@@ -13,12 +13,22 @@ export const createCanvasNode = (
   status: TNodeStatus = null,
   comments: IComment[] = [],
   selected: boolean = false,
+  isAnswer: boolean = false,
 ): TCanvasNode => ({
   id,
   type: ECanvasNodeType.Canvas,
   position: { x, y },
   selected,
-  data: { label, status, comments },
+  data: { label, status, isAnswer, comments },
+});
+
+export const createQuestionNode = (id: string, label: string, selected: boolean = false): TCanvasNode => ({
+  id,
+  type: ECanvasNodeType.Question,
+  position: { x: 0, y: 0 },
+  selected,
+  deletable: false,
+  data: { label, status: null, isAnswer: false, comments: [] },
 });
 
 export const createCanvasEdge = (id: string, source: string, target: string): Edge => ({

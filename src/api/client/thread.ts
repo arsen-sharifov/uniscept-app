@@ -1,8 +1,25 @@
-import type { IThread, IThreadRow } from '@interfaces';
+import { ECanvasNodeType, type IThread, type IThreadRow } from '@interfaces';
 
 import { createClient } from '@/lib/supabase';
 
+import { createCanvasNode } from './canvasNode';
 import { toThread } from './utils';
+
+const getAnsweredThreadIds = async (threadIds: string[]): Promise<Set<string>> => {
+  if (threadIds.length === 0) return new Set();
+
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from('canvas_nodes')
+    .select('thread_id')
+    .eq('is_answer', true)
+    .in('thread_id', threadIds)
+    .returns<{ thread_id: string }[]>();
+
+  if (error) throw error;
+
+  return new Set((data ?? []).map((row) => row.thread_id));
+};
 
 export const getThreads = async (workspaceId: string): Promise<IThread[]> => {
   const supabase = createClient();
@@ -15,7 +32,10 @@ export const getThreads = async (workspaceId: string): Promise<IThread[]> => {
 
   if (error) throw error;
 
-  return (data ?? []).map(toThread);
+  const rows = data ?? [];
+  const answered = await getAnsweredThreadIds(rows.map((row) => row.id));
+
+  return rows.map((row) => ({ ...toThread(row), hasAnswer: answered.has(row.id) }));
 };
 
 export const createThread = async (workspaceId: string, folderId?: string): Promise<IThread | null> => {
@@ -47,8 +67,21 @@ export const createThread = async (workspaceId: string, folderId?: string): Prom
     .single<IThreadRow>();
 
   if (insertError) throw insertError;
+  if (!data) return null;
 
-  return data ? toThread(data) : null;
+  const thread = toThread(data);
+
+  await createCanvasNode({
+    id: crypto.randomUUID(),
+    threadId: thread.id,
+    type: ECanvasNodeType.Question,
+    x: 0,
+    y: 0,
+    label: '',
+    sourceNodeId: null,
+  }).catch((error: unknown) => console.error('Failed to create question node for thread', thread.id, error));
+
+  return thread;
 };
 
 export const updateThreadName = async (id: string, name: string): Promise<void> => {

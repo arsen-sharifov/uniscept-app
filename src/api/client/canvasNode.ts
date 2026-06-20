@@ -56,6 +56,14 @@ export const updateCanvasNodeStatus = async (id: string, status: TNodeStatus): P
   if (error) throw error;
 };
 
+export const updateCanvasNodeAnswer = async (id: string, isAnswer: boolean): Promise<void> => {
+  const supabase = createClient();
+
+  const { error } = await supabase.from('canvas_nodes').update({ is_answer: isAnswer }).eq('id', id);
+
+  if (error) throw error;
+};
+
 export const deleteCanvasNode = async (id: string): Promise<void> => {
   const supabase = createClient();
 
@@ -69,7 +77,9 @@ export const getCanvasNodes = async (threadId: string): Promise<ICanvasNodeRow[]
 
   const { data, error } = await supabase
     .from('canvas_nodes')
-    .select('id, thread_id, type, position_x, position_y, label, status, source_node_id, created_at, updated_at')
+    .select(
+      'id, thread_id, type, position_x, position_y, label, status, is_answer, source_node_id, created_at, updated_at',
+    )
     .eq('thread_id', threadId)
     .order('created_at')
     .returns<ICanvasNodeRow[]>();

@@ -104,18 +104,16 @@ export const useCanvasTools = (): IUseCanvasToolsResult => {
           store.deleteNode(node.id);
           break;
 
-        case ECanvasTool.Comment:
-          if (node.type === ECanvasNodeType.Canvas) {
-            store.setOpenCommentsNodeId(node.id);
-          }
-          break;
-
         case ECanvasTool.ValidPath:
           store.setNodesStatus(collectStatusTargetIds(store.nodes, node.id), 'valid');
           break;
 
         case ECanvasTool.InvalidPath:
           store.setNodesStatus(collectStatusTargetIds(store.nodes, node.id), 'invalid');
+          break;
+
+        case ECanvasTool.Answer:
+          if (node.type === ECanvasNodeType.Canvas) store.setNodeAnswer(node.id);
           break;
 
         case ECanvasTool.Connect: {
@@ -150,7 +148,7 @@ export const useCanvasTools = (): IUseCanvasToolsResult => {
   const onNodeDoubleClick: NodeMouseHandler = useCallback(
     (_event, node) => {
       if (activeTool !== ECanvasTool.Select) return;
-      if (node.type === ECanvasNodeType.Canvas) {
+      if (node.type === ECanvasNodeType.Canvas || node.type === ECanvasNodeType.Question) {
         useCanvasStore.getState().setEditingNodeId(node.id);
       }
     },

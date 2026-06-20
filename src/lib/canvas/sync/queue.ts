@@ -2,14 +2,13 @@
 
 import { ECanvasNodeType, type INodePositionUpdate, type ISaveState, type TCanvasOperation } from '@interfaces';
 import {
-  createCanvasComment,
   createCanvasEdge,
   createCanvasNode,
   createNodeComment,
-  deleteCanvasComment,
   deleteCanvasEdge,
   deleteCanvasNode,
   deleteNodeComment,
+  updateCanvasNodeAnswer,
   updateCanvasNodeLabel,
   updateCanvasNodePositions,
   updateCanvasNodeStatus,
@@ -106,6 +105,7 @@ const NODE_UPDATE_TYPES = [
   'updateNodePosition',
   'updateNodeLabel',
   'updateNodeStatus',
+  'updateNodeAnswer',
 ] as const satisfies readonly TCanvasOperation['type'][];
 
 const isNodeUpdate = (
@@ -155,8 +155,6 @@ const coalesce = (operations: TCanvasOperation[]): TCanvasOperation[] => {
       if (cancelCreate('createEdge', operation.id)) continue;
     } else if (operation.type === 'deleteComment') {
       if (cancelCreate('createComment', operation.id)) continue;
-    } else if (operation.type === 'deleteCanvasComment') {
-      if (cancelCreate('createCanvasComment', operation.id)) continue;
     }
 
     const key = overrideKey(operation);
@@ -213,6 +211,10 @@ const runOperation = async (operation: TCanvasOperation): Promise<void> => {
       await updateCanvasNodeStatus(operation.id, operation.status);
 
       return;
+    case 'updateNodeAnswer':
+      await updateCanvasNodeAnswer(operation.id, operation.isAnswer);
+
+      return;
     case 'createEdge':
       await createCanvasEdge({
         id: operation.id,
@@ -238,18 +240,6 @@ const runOperation = async (operation: TCanvasOperation): Promise<void> => {
       return;
     case 'deleteComment':
       await deleteNodeComment(operation.id);
-
-      return;
-    case 'createCanvasComment':
-      await createCanvasComment({
-        id: operation.id,
-        threadId: operation.threadId,
-        text: operation.text,
-      });
-
-      return;
-    case 'deleteCanvasComment':
-      await deleteCanvasComment(operation.id);
 
       return;
     case 'updateNodePosition':

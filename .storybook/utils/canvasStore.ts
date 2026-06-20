@@ -8,13 +8,11 @@ const BASE_STATE: Required<IMockCanvasState> = {
   hydrated: true,
   nodes: [],
   edges: [],
-  canvasComments: [],
   activeTool: ECanvasTool.Select,
   pendingConnection: null,
   referenceSearchPosition: null,
   editingNodeId: null,
   openCommentsNodeId: null,
-  canvasCommentsOpen: false,
   middlePan: false,
 };
 

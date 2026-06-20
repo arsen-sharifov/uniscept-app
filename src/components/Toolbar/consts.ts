@@ -15,7 +15,7 @@ export const TOOL_KEY_MAP: Record<string, ECanvasTool> = {
   d: ECanvasTool.Delete,
   y: ECanvasTool.ValidPath,
   x: ECanvasTool.InvalidPath,
-  m: ECanvasTool.Comment,
+  a: ECanvasTool.Answer,
   r: ECanvasTool.CrossReference,
 };
 

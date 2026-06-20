@@ -1,6 +1,7 @@
 export * from './Canvas';
 export * from './CanvasEdge';
 export * from './CanvasNode';
+export * from './QuestionNode';
 export * from './ReferenceNode';
 export * from './ReferenceSearchPanel';
 export * from './consts';

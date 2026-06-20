@@ -70,3 +70,14 @@ export const editingNode: TCanvasNode = createCanvasNode(
   0,
   'Rename me — the field is focused for editing.',
 );
+
+export const answerNode: TCanvasNode = createCanvasNode(
+  SB_NODE_ID,
+  0,
+  0,
+  'Adopt qualified-majority voting for canvas evaluation.',
+  null,
+  [],
+  false,
+  true,
+);

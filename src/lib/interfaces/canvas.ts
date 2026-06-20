@@ -3,9 +3,12 @@ import type { Edge, Node } from '@xyflow/react';
 export enum ECanvasNodeType {
   Canvas = 'canvas-node',
   Reference = 'reference-node',
+  Question = 'question-node',
 }
 
 export type TNodeStatus = 'valid' | 'invalid' | null;
+
+export type TNodeBandTone = 'question' | 'reference' | 'answer' | 'valid' | 'invalid';
 
 export type THandleId = 'top' | 'right' | 'bottom' | 'left';
 
@@ -35,8 +38,10 @@ export interface IReferenceTargetMeta {
 export interface ICanvasNodeData {
   label: string;
   status: TNodeStatus;
+  isAnswer: boolean;
   comments: IComment[];
   isNew?: boolean;
+  eligibleHint?: boolean;
   [key: string]: unknown;
 }
 
@@ -72,7 +77,6 @@ export type TCanvasContextMenu =
 export interface ICanvasSnapshot {
   nodes: Array<TCanvasNode | TReferenceNode>;
   edges: Edge[];
-  canvasComments: IComment[];
 }
 
 export type TSaveStatus = 'idle' | 'saving' | 'retrying' | 'saved' | 'error' | 'offline';
@@ -146,12 +150,6 @@ export interface ICreateNodeCommentInput {
   text: string;
 }
 
-export interface ICreateCanvasCommentInput {
-  id: string;
-  threadId: string;
-  text: string;
-}
-
 export interface IIdScoped {
   id: string;
 }
@@ -195,6 +193,11 @@ export interface IUpdateNodeStatusOperation extends IIdScoped {
   status: TNodeStatus;
 }
 
+export interface IUpdateNodeAnswerOperation extends IIdScoped {
+  type: 'updateNodeAnswer';
+  isAnswer: boolean;
+}
+
 export interface ICreateEdgeOperation extends IThreadScoped {
   type: 'createEdge';
   source: string;
@@ -217,30 +220,18 @@ export interface IDeleteNodeCommentOperation extends IIdScoped {
   type: 'deleteComment';
 }
 
-export interface ICreateCanvasCommentOperation extends IThreadScoped {
-  type: 'createCanvasComment';
-  text: string;
-}
-
-export interface IDeleteCanvasCommentOperation extends IIdScoped {
-  type: 'deleteCanvasComment';
-}
-
 export type TNodeOperation =
   | ICreateCanvasNodeOperation
   | ICreateReferenceNodeOperation
   | IDeleteNodeOperation
   | IUpdateNodePositionOperation
   | IUpdateNodeLabelOperation
-  | IUpdateNodeStatusOperation;
+  | IUpdateNodeStatusOperation
+  | IUpdateNodeAnswerOperation;
 
 export type TEdgeOperation = ICreateEdgeOperation | IDeleteEdgeOperation;
 
-export type TCommentOperation =
-  | ICreateNodeCommentOperation
-  | IDeleteNodeCommentOperation
-  | ICreateCanvasCommentOperation
-  | IDeleteCanvasCommentOperation;
+export type TCommentOperation = ICreateNodeCommentOperation | IDeleteNodeCommentOperation;
 
 export type TCanvasOperation = TNodeOperation | TEdgeOperation | TCommentOperation;
 
@@ -252,6 +243,7 @@ export interface ICanvasNodeRow {
   position_y: number;
   label: string;
   status: TNodeStatus;
+  is_answer: boolean;
   source_node_id: string | null;
   created_at: string;
   updated_at: string;
@@ -282,14 +274,6 @@ export interface ICanvasEdgeRow {
 export interface INodeCommentRow {
   id: string;
   node_id: string;
-  author_id: string;
-  text: string;
-  created_at: string;
-}
-
-export interface ICanvasCommentRow {
-  id: string;
-  thread_id: string;
   author_id: string;
   text: string;
   created_at: string;

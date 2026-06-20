@@ -68,7 +68,10 @@ export const SortableWorkspaceItem = ({
       )}
 
       <div
-        className={clsx('relative flex min-h-7 min-w-0 items-stretch', isDragging && 'pointer-events-none opacity-40')}
+        className={clsx(
+          'relative flex min-h-7 min-w-0 items-stretch overflow-hidden',
+          isDragging && 'pointer-events-none opacity-40',
+        )}
       >
         <button
           type="button"

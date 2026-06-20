@@ -2,7 +2,7 @@
 
 import { useSortable } from '@dnd-kit/sortable';
 import { clsx } from 'clsx';
-import { Check, ChevronRight, FileText, Folder, FolderOpen, Pencil, Plus, Trash2 } from 'lucide-react';
+import { Check, CheckCircle2, ChevronRight, FileText, Folder, FolderOpen, Pencil, Plus, Trash2 } from 'lucide-react';
 import { type KeyboardEvent, type MouseEvent } from 'react';
 
 import type { IFlattenedItem, TDropZone, TNavItemType } from '@interfaces';
@@ -70,6 +70,8 @@ export const SortableNavItem = ({
   const isFolder = item.type === 'folder';
   const isEmpty = isFolder && item.childCount === 0;
 
+  const isAnswered = !isFolder && !!item.answered;
+
   const isHiddenDuringBulkDrag = isBulkDragActive && isSelected && !isActivelyDragged;
 
   const handleClick = (event: MouseEvent) => {
@@ -112,7 +114,10 @@ export const SortableNavItem = ({
       )}
 
       <div
-        className={clsx('relative flex min-h-7 min-w-0 items-stretch', isDragging && 'pointer-events-none opacity-40')}
+        className={clsx(
+          'relative flex min-h-7 min-w-0 items-stretch overflow-hidden',
+          isDragging && 'pointer-events-none opacity-40',
+        )}
       >
         <button
           type="button"
@@ -184,6 +189,15 @@ export const SortableNavItem = ({
             <SmartTooltip content={item.name} className="truncate" onlyIfTruncated>
               {item.name}
             </SmartTooltip>
+          )}
+          {isAnswered && !isSelected && !isEditing && (
+            <span
+              aria-label={translations.platform.sidebar.resolved}
+              title={translations.platform.sidebar.resolved}
+              className="ml-auto flex shrink-0 items-center transition-opacity duration-150 group-hover/item:opacity-0"
+            >
+              <CheckCircle2 className="h-3.5 w-3.5 text-[color:var(--decision)]" strokeWidth={2.25} />
+            </span>
           )}
           {isSelected && !isEditing ? (
             <span

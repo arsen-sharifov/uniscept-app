@@ -8,6 +8,7 @@ export interface IThreadItem {
   type: 'thread';
   id: string;
   name: string;
+  answered?: boolean;
 }
 
 export interface IFolderItem {
@@ -35,6 +36,7 @@ export interface IFlattenedItem {
   index: number;
   collapsed: boolean;
   childCount: number;
+  answered?: boolean;
 }
 
 export interface IProjection {

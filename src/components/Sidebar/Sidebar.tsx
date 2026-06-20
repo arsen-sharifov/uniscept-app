@@ -268,7 +268,7 @@ export const Sidebar = ({
         {activeWorkspaceId && (
           <div
             data-sidebar-scroll
-            className="flex flex-1 [scrollbar-width:none] flex-col overflow-x-hidden overflow-y-auto scroll-smooth px-2 pt-3 pb-2 [&::-webkit-scrollbar]:hidden"
+            className="relative flex flex-1 [scrollbar-width:none] flex-col overflow-x-hidden overflow-y-auto scroll-smooth px-2 pt-3 pb-2 [&::-webkit-scrollbar]:hidden"
           >
             <div className="mb-1 flex items-center justify-between px-2">
               <div className="flex items-center gap-1.5">
@@ -334,15 +334,17 @@ export const Sidebar = ({
             )}
 
             {showStructureEmpty && (
-              <div className="flex flex-1 items-center justify-center">
-                <EmptyState
-                  icon={Sparkles}
-                  title={t.platform.sidebar.emptyStructureTitle}
-                  hint={t.platform.sidebar.emptyStructureHint}
-                  ctaIcon={Plus}
-                  ctaLabel={t.platform.sidebar.newThread}
-                  onCta={() => onCreateThread?.()}
-                />
+              <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-2">
+                <div className="pointer-events-auto">
+                  <EmptyState
+                    icon={Sparkles}
+                    title={t.platform.sidebar.emptyStructureTitle}
+                    hint={t.platform.sidebar.emptyStructureHint}
+                    ctaIcon={Plus}
+                    ctaLabel={t.platform.sidebar.newThread}
+                    onCta={() => onCreateThread?.()}
+                  />
+                </div>
               </div>
             )}
           </div>

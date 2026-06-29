@@ -4,8 +4,9 @@ import { useCallback, useMemo } from 'react';
 import { useStore } from 'zustand';
 
 import type { IToolGroup } from '@interfaces';
-import { useTranslations } from '@hooks';
+
 import { ECanvasTool, buildCanvasToolGroups, isCanvasTool } from '@/components/tools';
+import { useTranslations } from '@/i18n';
 import { useCanvasStore } from '@/lib/stores';
 
 import { isToolDisabled } from '../utils';

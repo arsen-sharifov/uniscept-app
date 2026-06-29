@@ -1,8 +1,9 @@
 import { useMemo } from 'react';
 
 import type { IToolGroup, TTranslations } from '@interfaces';
-import { useTranslations } from '@hooks';
+
 import { type IToolbarProps, Toolbar, buildCanvasToolGroups } from '@/components';
+import { useTranslations } from '@/i18n';
 
 export interface IToolbarWithStateProps extends IToolbarProps {
   buildGroups?: (t: TTranslations) => IToolGroup[];

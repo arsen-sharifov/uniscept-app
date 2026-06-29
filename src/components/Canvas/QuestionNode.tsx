@@ -6,7 +6,8 @@ import { ChevronDown } from 'lucide-react';
 import { type FocusEvent, type KeyboardEvent, useCallback, useEffect, useRef, useState } from 'react';
 
 import type { TCanvasNode } from '@interfaces';
-import { useTranslations } from '@hooks';
+
+import { useTranslations } from '@/i18n';
 import { useCanvasStore } from '@/lib/stores';
 
 import { HANDLE_POSITIONS } from './consts';

@@ -1,7 +1,8 @@
 'use client';
 
 import type { IPreferences, TPreferenceUpdater } from '@interfaces';
-import { useTranslations } from '@hooks';
+
+import { useTranslations } from '@/i18n';
 
 import { BehaviorCard } from './BehaviorCard';
 import { GuidesDiorama } from './GuidesDiorama';

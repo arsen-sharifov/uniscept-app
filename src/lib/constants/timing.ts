@@ -1,1 +1,5 @@
 export const SUCCESS_RESET_DELAY_MS = 2000;
+
+export const TOAST_DEFAULT_DURATION_MS = 5000;
+export const TOAST_ERROR_DURATION_MS = 8000;
+export const TOAST_EXIT_FALLBACK_MS = 400;

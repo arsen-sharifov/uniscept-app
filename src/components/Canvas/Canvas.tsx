@@ -23,8 +23,9 @@ import {
   type TDefaultZoom,
 } from '@interfaces';
 import { DEFAULT_PREFERENCES } from '@constants';
-import { useEscapeKey, useTranslations } from '@hooks';
+import { useEscapeKey } from '@hooks';
 import { ECanvasTool } from '@/components/tools';
+import { useTranslations } from '@/i18n';
 import { useCanvasStore } from '@/lib/stores';
 
 import { CanvasEdge } from './CanvasEdge';

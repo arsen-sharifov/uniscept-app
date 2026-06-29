@@ -3,8 +3,8 @@
 import { CircleCheck } from 'lucide-react';
 
 import { LANDING_THEME } from '@constants';
-import { useTranslations } from '@hooks';
 import { Logo } from '@/components';
+import { useTranslations } from '@/i18n';
 
 const ConfirmedPage = () => {
   const { confirmed } = useTranslations().auth;

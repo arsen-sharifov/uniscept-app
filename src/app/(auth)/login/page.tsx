@@ -4,14 +4,14 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { type SubmitEvent, useEffect, useState } from 'react';
 
-import { useTranslations } from '@hooks';
 import { signIn } from '@api/client';
+import { useTranslations } from '@/i18n';
+import { event } from '@/lib/events';
 import { createClient } from '@/lib/supabase/client';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   const router = useRouter();
@@ -39,13 +39,12 @@ const LoginPage = () => {
 
   const handleLogin = async (e: SubmitEvent) => {
     e.preventDefault();
-    setError('');
     setLoading(true);
 
     const { error: authError } = await signIn(email, password);
 
     if (authError) {
-      setError(authError.message);
+      event.error(authError, { context: 'auth.signIn' });
       setLoading(false);
 
       return;
@@ -97,8 +96,6 @@ const LoginPage = () => {
             placeholder={placeholders.password}
           />
         </div>
-
-        {error && <p className="text-sm text-red-600">{error}</p>}
 
         <button
           type="submit"

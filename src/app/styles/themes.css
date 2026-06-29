@@ -34,6 +34,10 @@
   --status-error-bg: rgba(239, 68, 68, 0.1);
   --status-error-border: rgba(239, 68, 68, 0.28);
   --status-error-soft: rgba(239, 68, 68, 0.18);
+  --status-info: #2f74c0;
+  --status-info-bg: rgba(37, 99, 235, 0.08);
+  --status-info-border: rgba(37, 99, 235, 0.2);
+  --status-info-soft: rgba(37, 99, 235, 0.16);
   --ref: #4cc2d6;
   --ref-bg: rgba(6, 182, 212, 0.1);
   --ref-border: rgba(6, 182, 212, 0.3);
@@ -87,6 +91,9 @@
   --status-error-bg: rgba(239, 68, 68, 0.16);
   --status-error-border: rgba(239, 68, 68, 0.38);
   --status-error-soft: rgba(239, 68, 68, 0.24);
+  --status-info: #93c5fd;
+  --status-info-bg: rgba(59, 130, 246, 0.16);
+  --status-info-border: rgba(59, 130, 246, 0.34);
   --ref: #9be3ee;
   --ref-bg: rgba(6, 182, 212, 0.18);
   --ref-border: rgba(6, 182, 212, 0.45);
@@ -140,6 +147,9 @@
   --status-error-bg: rgba(248, 113, 113, 0.16);
   --status-error-border: rgba(248, 113, 113, 0.38);
   --status-error-soft: rgba(248, 113, 113, 0.24);
+  --status-info: #93c5fd;
+  --status-info-bg: rgba(96, 165, 250, 0.16);
+  --status-info-border: rgba(96, 165, 250, 0.34);
   --ref: #9be3ee;
   --ref-bg: rgba(147, 197, 253, 0.16);
   --ref-border: rgba(147, 197, 253, 0.38);
@@ -193,6 +203,9 @@
   --status-error-bg: rgba(153, 27, 27, 0.1);
   --status-error-border: rgba(153, 27, 27, 0.25);
   --status-error-soft: rgba(153, 27, 27, 0.18);
+  --status-info: #2f6db0;
+  --status-info-bg: rgba(37, 99, 235, 0.1);
+  --status-info-border: rgba(37, 99, 235, 0.24);
   --ref: #4cc2d6;
   --ref-bg: rgba(14, 116, 144, 0.1);
   --ref-border: rgba(14, 116, 144, 0.28);
@@ -246,6 +259,9 @@
   --status-error-bg: rgba(239, 68, 68, 0.1);
   --status-error-border: rgba(239, 68, 68, 0.28);
   --status-error-soft: rgba(239, 68, 68, 0.18);
+  --status-info: #2f74c0;
+  --status-info-bg: rgba(37, 99, 235, 0.08);
+  --status-info-border: rgba(37, 99, 235, 0.2);
   --ref: #4cc2d6;
   --ref-bg: rgba(6, 182, 212, 0.12);
   --ref-border: rgba(6, 182, 212, 0.3);
@@ -299,6 +315,9 @@
   --status-error-bg: rgba(239, 68, 68, 0.1);
   --status-error-border: rgba(239, 68, 68, 0.28);
   --status-error-soft: rgba(239, 68, 68, 0.18);
+  --status-info: #2f74c0;
+  --status-info-bg: rgba(37, 99, 235, 0.08);
+  --status-info-border: rgba(37, 99, 235, 0.2);
   --ref: #4cc2d6;
   --ref-bg: rgba(6, 182, 212, 0.1);
   --ref-border: rgba(6, 182, 212, 0.3);
@@ -354,6 +373,9 @@
     --status-error-bg: rgba(239, 68, 68, 0.16);
     --status-error-border: rgba(239, 68, 68, 0.38);
     --status-error-soft: rgba(239, 68, 68, 0.24);
+    --status-info: #93c5fd;
+    --status-info-bg: rgba(59, 130, 246, 0.16);
+    --status-info-border: rgba(59, 130, 246, 0.34);
     --ref: #9be3ee;
     --ref-bg: rgba(6, 182, 212, 0.18);
     --ref-border: rgba(6, 182, 212, 0.45);

@@ -65,7 +65,40 @@
   "common": {
     "loading": "Loading",
     "close": "Close",
-    "userAvatar": "User"
+    "userAvatar": "User",
+    "notifications": "Notifications",
+    "errors": {
+      "network": "Network problem. Check your connection and try again.",
+      "permission": "You don't have permission to do that.",
+      "notFound": "We couldn't find that anymore.",
+      "rateLimit": "Too many attempts. Please wait a moment.",
+      "validation": "Some details look invalid. Please review and try again.",
+      "auth": "Your session expired. Please sign in again.",
+      "unknown": "Something went wrong. Please try again.",
+      "invalidCredentials": "Incorrect email or password.",
+      "emailNotConfirmed": "Please confirm your email before signing in.",
+      "emailTaken": "An account with this email already exists.",
+      "invalidEmail": "That email address doesn't look valid.",
+      "weakPassword": "Password is too weak. Use at least 6 characters.",
+      "samePassword": "New password must be different from your current one."
+    },
+    "errorTitles": {
+      "createFailed": "Couldn't create",
+      "renameFailed": "Couldn't rename",
+      "deleteFailed": "Couldn't delete",
+      "moveFailed": "Couldn't move",
+      "loadFailed": "Couldn't load",
+      "saveFailed": "Couldn't save",
+      "searchFailed": "Search failed"
+    },
+    "errorPages": {
+      "notFoundTitle": "Page not found",
+      "notFoundHint": "The page you're looking for doesn't exist or was moved.",
+      "backHome": "Back to workspace",
+      "errorTitle": "Something broke",
+      "errorHint": "An unexpected error occurred. You can try again.",
+      "retry": "Try again"
+    }
   },
   "platform": {
     "sidebar": {
@@ -73,6 +106,17 @@
       "noWorkspaceSelected": "No workspace selected",
       "noWorkspaces": "No workspaces yet. Create one to get started.",
       "newWorkspace": "New workspace",
+      "workspaceCreated": "Workspace created",
+      "threadCreated": "Thread created",
+      "folderCreated": "Folder created",
+      "threadRenamed": "Thread renamed",
+      "folderRenamed": "Folder renamed",
+      "workspaceRenamed": "Workspace renamed",
+      "threadDeleted": "Thread deleted",
+      "folderDeleted": "Folder deleted",
+      "workspaceDeleted": "Workspace deleted",
+      "itemsDeleted": "Items deleted",
+      "workspacesDeleted": "Workspaces deleted",
       "structure": "Structure",
       "newThread": "New thread",
       "newFolder": "New folder",
@@ -290,6 +334,7 @@
         "changingEmail": "Sending…",
         "saveFailed": "Failed to save. Please try again.",
         "emailChangeFailed": "Failed to change email. Please try again.",
+        "emailChangeSent": "Check your new email to confirm the change.",
         "emailInvalid": "Please enter a valid email address.",
         "namePlaceholder": "How others see you",
         "avatarTitle": "Avatar",

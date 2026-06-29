@@ -6,7 +6,8 @@ import { useFormatter } from 'next-intl';
 import { useEffect, useState } from 'react';
 
 import type { ISaveState } from '@interfaces';
-import { useTranslations } from '@hooks';
+
+import { useTranslations } from '@/i18n';
 import { discardFailed, retryFailed, subscribeFailedOperations } from '@/lib/canvas';
 
 import { ARIA_LABEL_KEY_BY_STATUS, SAVE_STATUS_REFRESH_INTERVAL_MS } from '../consts';

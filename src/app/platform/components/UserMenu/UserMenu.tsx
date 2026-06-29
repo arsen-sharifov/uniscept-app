@@ -8,10 +8,10 @@ import { useEffect, useState } from 'react';
 
 import type { IUserMetadata, TAvatarIcon } from '@interfaces';
 import { PREFERENCES_STORAGE_KEY } from '@constants';
-import { useTranslations } from '@hooks';
 import { getUser, signOut } from '@api/client';
 import { Avatar, Popover } from '@/components';
-import { clearLocale } from '@/i18n';
+import { useTranslations, clearLocale } from '@/i18n';
+import { event } from '@/lib/events';
 import { isAvatarIcon } from '@/lib/utils';
 
 export interface IUserMenuProps {
@@ -32,7 +32,7 @@ export const UserMenu = ({ onSettingsClick }: IUserMenuProps) => {
           setUser(data.user);
         }
       })
-      .catch(() => {});
+      .catch((error) => event.error(error, { toast: false, context: 'userMenu.loadUser' }));
 
     return () => {
       cancelled = true;
@@ -48,6 +48,8 @@ export const UserMenu = ({ onSettingsClick }: IUserMenuProps) => {
   const handleSignOut = async () => {
     try {
       await signOut();
+    } catch (error) {
+      event.error(error, { toast: false, context: 'auth.signOut' });
     } finally {
       localStorage.removeItem(PREFERENCES_STORAGE_KEY);
       await clearLocale();

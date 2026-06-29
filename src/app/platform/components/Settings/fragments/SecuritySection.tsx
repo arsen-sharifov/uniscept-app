@@ -6,7 +6,8 @@ import { useId, useState } from 'react';
 
 import type { IChangePasswordPayload, TChangePasswordResult } from '@interfaces';
 import { MIN_PASSWORD_LENGTH } from '@constants';
-import { useAsyncAction, useTranslations } from '@hooks';
+import { useAsyncAction } from '@hooks';
+import { useTranslations } from '@/i18n';
 
 import { SettingsInput } from '../SettingsInput';
 import { SettingsPrimaryButton } from '../SettingsPrimaryButton';

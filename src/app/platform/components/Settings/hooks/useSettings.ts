@@ -5,8 +5,11 @@ import { useEffect, useState } from 'react';
 
 import type { IChangePasswordPayload, IUserProfileUpdate, TChangePasswordResult } from '@interfaces';
 import { deleteAccount, getUser, updateEmail, updatePassword, updateUserMetadata, verifyPassword } from '@api/client';
+import { useTranslations } from '@/i18n';
+import { event } from '@/lib/events';
 
 export const useSettings = () => {
+  const t = useTranslations();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -22,18 +25,19 @@ export const useSettings = () => {
         setUser(data.user);
         setLoading(false);
       })
-      .catch(() => {
+      .catch((error) => {
         if (cancelled) {
           return;
         }
 
         setLoading(false);
+        event.error(error, { title: t.common.errorTitles.loadFailed, context: 'settings.loadUser' });
       });
 
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [t]);
 
   const updateProfile = async (update: IUserProfileUpdate) => {
     const { data, error } = await updateUserMetadata(update);

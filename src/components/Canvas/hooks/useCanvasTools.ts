@@ -4,8 +4,9 @@ import { type EdgeMouseHandler, type IsValidConnection, type NodeMouseHandler, u
 import { type MouseEvent, useCallback } from 'react';
 
 import { ECanvasNodeType } from '@interfaces';
-import { useTranslations } from '@hooks';
+
 import { ECanvasTool } from '@/components/tools';
+import { useTranslations } from '@/i18n';
 import { findNearestHandlePair } from '@/lib/canvas';
 import { useCanvasStore } from '@/lib/stores';
 

@@ -1,5 +1,6 @@
 import { ECanvasNodeType, type IThread, type IThreadRow } from '@interfaces';
 
+import { event } from '@/lib/events';
 import { createClient } from '@/lib/supabase';
 
 import { createCanvasNode } from './canvasNode';
@@ -79,7 +80,7 @@ export const createThread = async (workspaceId: string, folderId?: string): Prom
     y: 0,
     label: '',
     sourceNodeId: null,
-  }).catch((error: unknown) => console.error('Failed to create question node for thread', thread.id, error));
+  }).catch((error: unknown) => event.error(error, { toast: false, context: `thread.createQuestionNode ${thread.id}` }));
 
   return thread;
 };

@@ -4,8 +4,9 @@ import { X } from 'lucide-react';
 import { useCallback, useState } from 'react';
 
 import type { IPreferences, TPreferenceUpdater, TSettingsSection } from '@interfaces';
-import { useTranslations } from '@hooks';
+
 import { Modal } from '@/components';
+import { useTranslations } from '@/i18n';
 
 import {
   AppearanceSection,

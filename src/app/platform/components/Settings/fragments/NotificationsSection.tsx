@@ -1,6 +1,6 @@
 'use client';
 
-import { useTranslations } from '@hooks';
+import { useTranslations } from '@/i18n';
 
 import { NOTIFICATION_ITEMS } from '../consts';
 import { Toggle } from '../Toggle';

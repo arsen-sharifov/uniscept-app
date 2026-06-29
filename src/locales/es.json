@@ -65,7 +65,40 @@
   "common": {
     "loading": "Cargando",
     "close": "Cerrar",
-    "userAvatar": "Usuario"
+    "userAvatar": "Usuario",
+    "notifications": "Notificaciones",
+    "errors": {
+      "network": "Problema de red. Comprueba tu conexión e inténtalo de nuevo.",
+      "permission": "No tienes permiso para hacer eso.",
+      "notFound": "Ya no pudimos encontrar eso.",
+      "rateLimit": "Demasiados intentos. Espera un momento.",
+      "validation": "Algunos datos parecen no válidos. Revísalos e inténtalo de nuevo.",
+      "auth": "Tu sesión expiró. Inicia sesión de nuevo.",
+      "unknown": "Algo salió mal. Inténtalo de nuevo.",
+      "invalidCredentials": "Correo o contraseña incorrectos.",
+      "emailNotConfirmed": "Confirma tu correo antes de iniciar sesión.",
+      "emailTaken": "Ya existe una cuenta con este correo.",
+      "invalidEmail": "Ese correo electrónico no parece válido.",
+      "weakPassword": "La contraseña es demasiado débil. Usa al menos 6 caracteres.",
+      "samePassword": "La nueva contraseña debe ser diferente de la actual."
+    },
+    "errorTitles": {
+      "createFailed": "No se pudo crear",
+      "renameFailed": "No se pudo renombrar",
+      "deleteFailed": "No se pudo eliminar",
+      "moveFailed": "No se pudo mover",
+      "loadFailed": "No se pudo cargar",
+      "saveFailed": "No se pudo guardar",
+      "searchFailed": "La búsqueda falló"
+    },
+    "errorPages": {
+      "notFoundTitle": "Página no encontrada",
+      "notFoundHint": "La página que buscas no existe o fue movida.",
+      "backHome": "Volver al espacio",
+      "errorTitle": "Algo se rompió",
+      "errorHint": "Ocurrió un error inesperado. Puedes intentarlo de nuevo.",
+      "retry": "Intentar de nuevo"
+    }
   },
   "platform": {
     "sidebar": {
@@ -73,6 +106,17 @@
       "noWorkspaceSelected": "Ningún espacio seleccionado",
       "noWorkspaces": "No hay espacios de trabajo. Crea uno para empezar.",
       "newWorkspace": "Nuevo espacio",
+      "workspaceCreated": "Espacio creado",
+      "threadCreated": "Hilo creado",
+      "folderCreated": "Carpeta creada",
+      "threadRenamed": "Hilo renombrado",
+      "folderRenamed": "Carpeta renombrada",
+      "workspaceRenamed": "Espacio renombrado",
+      "threadDeleted": "Hilo eliminado",
+      "folderDeleted": "Carpeta eliminada",
+      "workspaceDeleted": "Espacio eliminado",
+      "itemsDeleted": "Elementos eliminados",
+      "workspacesDeleted": "Espacios eliminados",
       "structure": "Estructura",
       "newThread": "Nuevo hilo",
       "newFolder": "Nueva carpeta",
@@ -290,6 +334,7 @@
         "changingEmail": "Enviando…",
         "saveFailed": "No se ha podido guardar. Inténtalo de nuevo.",
         "emailChangeFailed": "No se ha podido cambiar el correo. Inténtalo de nuevo.",
+        "emailChangeSent": "Revisa tu nuevo correo para confirmar el cambio.",
         "emailInvalid": "Introduce una dirección de correo válida.",
         "namePlaceholder": "Cómo te ven los demás",
         "avatarTitle": "Avatar",

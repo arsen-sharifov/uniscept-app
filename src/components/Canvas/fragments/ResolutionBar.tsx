@@ -2,7 +2,7 @@
 
 import { CheckCircle2 } from 'lucide-react';
 
-import { useTranslations } from '@hooks';
+import { useTranslations } from '@/i18n';
 import { useCanvasStore } from '@/lib/stores';
 
 import { isCanvasNodeData } from '../utils';

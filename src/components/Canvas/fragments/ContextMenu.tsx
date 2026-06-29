@@ -16,7 +16,8 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, type KeyboardEvent, type ReactNode } from 'react';
 
 import { ECanvasNodeType, type TCanvasContextMenu } from '@interfaces';
-import { useClickOutside, useEscapeKey, useTranslations } from '@hooks';
+import { useClickOutside, useEscapeKey } from '@hooks';
+import { useTranslations } from '@/i18n';
 import { useCanvasStore } from '@/lib/stores';
 
 import { buildReferenceUrl, hasValidatedParent, isCanvasNodeData } from '../utils';

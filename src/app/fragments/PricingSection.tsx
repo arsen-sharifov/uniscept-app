@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { useTranslations } from '@hooks';
+import { useTranslations } from '@/i18n';
 import { mergePlansWithTranslations } from '@/lib/pricing';
 
 import { PricingCard, Section } from './components';

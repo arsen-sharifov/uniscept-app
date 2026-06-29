@@ -4,8 +4,8 @@ import Link from 'next/link';
 import type { ReactNode } from 'react';
 
 import { LANDING_THEME } from '@constants';
-import { useTranslations } from '@hooks';
 import { Logo } from '@/components';
+import { useTranslations } from '@/i18n';
 
 const AuthLayout = ({ children }: { children: ReactNode }) => {
   const t = useTranslations();

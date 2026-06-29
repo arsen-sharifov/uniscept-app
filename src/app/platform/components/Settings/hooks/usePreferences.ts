@@ -5,10 +5,13 @@ import { useEffect, useRef, useState } from 'react';
 import type { IPreferences, TPreferenceUpdater } from '@interfaces';
 import { PREFERENCES_DEBOUNCE_MS } from '@constants';
 import { getPreferences, upsertPreferences } from '@api/client';
+import { useTranslations } from '@/i18n';
+import { event } from '@/lib/events';
 
 import { readFromStorage, writeToStorage } from '../utils';
 
 export const usePreferences = () => {
+  const t = useTranslations();
   const [preferences, setPreferences] = useState<IPreferences>(readFromStorage);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   const lastSyncedRef = useRef<IPreferences>(preferences);
@@ -16,15 +19,17 @@ export const usePreferences = () => {
   useEffect(() => {
     let cancelled = false;
 
-    getPreferences().then((dbPrefs) => {
-      if (cancelled || !dbPrefs) {
-        return;
-      }
+    getPreferences()
+      .then((dbPrefs) => {
+        if (cancelled || !dbPrefs) {
+          return;
+        }
 
-      lastSyncedRef.current = dbPrefs;
-      setPreferences(dbPrefs);
-      writeToStorage(dbPrefs);
-    });
+        lastSyncedRef.current = dbPrefs;
+        setPreferences(dbPrefs);
+        writeToStorage(dbPrefs);
+      })
+      .catch((error) => event.error(error, { toast: false, context: 'preferences.load' }));
 
     return () => {
       cancelled = true;
@@ -67,7 +72,7 @@ export const usePreferences = () => {
           .then(() => {
             lastSyncedRef.current = next;
           })
-          .catch(() => {
+          .catch((error) => {
             setPreferences((current) => {
               if (current[key] !== value) {
                 return current;
@@ -78,6 +83,7 @@ export const usePreferences = () => {
 
               return reverted;
             });
+            event.error(error, { title: t.common.errorTitles.saveFailed, context: 'preferences.save' });
           });
       }, PREFERENCES_DEBOUNCE_MS);
 

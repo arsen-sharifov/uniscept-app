@@ -5,7 +5,8 @@ import { X } from 'lucide-react';
 import { type MouseEvent, type ReactNode, type TransitionEvent, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
-import { useFocusTrap, useTranslations } from '@hooks';
+import { useFocusTrap } from '@hooks';
+import { useTranslations } from '@/i18n';
 
 import { adjustScrollLock } from './utils';
 

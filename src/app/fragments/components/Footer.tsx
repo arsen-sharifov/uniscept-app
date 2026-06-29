@@ -1,4 +1,4 @@
-import { useTranslations } from '@hooks';
+import { useTranslations } from '@/i18n';
 
 const CURRENT_YEAR = new Date().getFullYear();
 

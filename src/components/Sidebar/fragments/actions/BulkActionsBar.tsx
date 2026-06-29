@@ -4,7 +4,7 @@ import { clsx } from 'clsx';
 import type { LucideIcon } from 'lucide-react';
 import { FolderInput, Trash2, X } from 'lucide-react';
 
-import { useTranslations } from '@hooks';
+import { useTranslations } from '@/i18n';
 
 interface IBulkActionsBarProps {
   count: number;

@@ -1,5 +1,5 @@
-import { useTranslations } from '@hooks';
 import { Tooltip } from '@/components';
+import { useTranslations } from '@/i18n';
 
 interface IInviteCodeFieldProps {
   text?: string;

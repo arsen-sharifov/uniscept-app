@@ -3,7 +3,8 @@
 import { clsx } from 'clsx';
 
 import type { TSettingsSection } from '@interfaces';
-import { useTranslations } from '@hooks';
+
+import { useTranslations } from '@/i18n';
 
 import { SIDEBAR_GROUPS } from './consts';
 

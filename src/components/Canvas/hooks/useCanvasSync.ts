@@ -12,6 +12,7 @@ import {
   subscribeCanvasOperations,
   subscribeSaveState,
 } from '@/lib/canvas';
+import { event } from '@/lib/events';
 import { useCanvasStore } from '@/lib/stores';
 import { createClient } from '@/lib/supabase';
 
@@ -65,11 +66,11 @@ export const useCanvasSync = (threadId: string): IUseCanvasSyncResult => {
   }, []);
 
   useEffect(() => {
-    const onBeforeUnload = (event: BeforeUnloadEvent) => {
+    const onBeforeUnload = (beforeUnloadEvent: BeforeUnloadEvent) => {
       const { pendingCount, failedCount } = getSaveState();
       if (pendingCount === 0 && failedCount === 0) return;
-      event.preventDefault();
-      event.returnValue = '';
+      beforeUnloadEvent.preventDefault();
+      beforeUnloadEvent.returnValue = '';
     };
 
     window.addEventListener('beforeunload', onBeforeUnload);
@@ -89,6 +90,7 @@ export const useCanvasSync = (threadId: string): IUseCanvasSyncResult => {
       .catch((error: unknown) => {
         if (cancelled) return;
         setLoadError(toError(error));
+        event.error(error, { toast: false, context: 'canvas.load' });
       });
 
     return () => {

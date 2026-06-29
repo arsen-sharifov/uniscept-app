@@ -3,7 +3,8 @@
 import { Trash2 } from 'lucide-react';
 
 import type { IComment } from '@interfaces';
-import { useTranslations } from '@hooks';
+
+import { useTranslations } from '@/i18n';
 
 interface ICommentItemProps {
   comment: IComment;

@@ -4,9 +4,10 @@ import { Files, FolderPlus, LayoutGrid, Plus, SearchX, Sparkles } from 'lucide-r
 import { useCallback, useEffect, useMemo, useState, type MouseEvent, type ReactNode } from 'react';
 
 import type { TDeleteTarget, TNavItem, TNavItemType, IWorkspaceItem } from '@interfaces';
-import { useEscapeKey, useTranslations } from '@hooks';
+import { useEscapeKey } from '@hooks';
 import { Logo } from '@/components/Branding';
 import { ConfirmDialog } from '@/components/Modal';
+import { useTranslations } from '@/i18n';
 
 import { BulkActionsBar, EmptyState, MoveDialog, NavItems, SearchInput, WorkspaceSwitcher } from './fragments';
 import { useInlineEdit, useSelection } from './hooks';

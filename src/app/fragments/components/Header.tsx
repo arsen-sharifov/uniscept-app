@@ -1,7 +1,7 @@
 import Link from 'next/link';
 
-import { useTranslations } from '@hooks';
 import { Logo } from '@/components';
+import { useTranslations } from '@/i18n';
 
 export const Header = () => {
   const t = useTranslations();

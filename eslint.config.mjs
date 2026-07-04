@@ -17,7 +17,7 @@ const restrictedImportPaths = [
     name: 'next-intl',
     importNames: ['useMessages'],
     message:
-      'Use `useTranslations` from `@hooks` for full `TTranslations`. Use next-intl `useTranslations` directly only when you need scoped reads with interpolation.',
+      'Use `useTranslations` from `@/i18n` for full `TTranslations`. Use next-intl `useTranslations` directly only when you need scoped reads with interpolation.',
   },
 ];
 
@@ -166,7 +166,7 @@ const declarationFilesOverride = {
 };
 
 const useTranslationsWrapperOverride = {
-  files: ['src/lib/hooks/useTranslations.ts'],
+  files: ['src/i18n/hooks/useTranslations.ts'],
   rules: { 'no-restricted-imports': 'off' },
 };
 

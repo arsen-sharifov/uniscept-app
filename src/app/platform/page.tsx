@@ -1,6 +1,6 @@
 'use client';
 
-import { useTranslations } from '@hooks';
+import { useTranslations } from '@/i18n';
 
 const PlatformPage = () => {
   const t = useTranslations();

@@ -5,7 +5,7 @@ import { clsx } from 'clsx';
 import { Check, Lock, Sparkles } from 'lucide-react';
 import { useMemo } from 'react';
 
-import { useTranslations } from '@hooks';
+import { useTranslations } from '@/i18n';
 import { formatPlanPrice, mergePlansWithTranslations } from '@/lib/pricing';
 
 import { AVAILABLE_PLAN_IDS } from '../consts';

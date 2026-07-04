@@ -7,7 +7,8 @@ import { useRouter } from 'next/navigation';
 import type { MouseEvent } from 'react';
 
 import type { TReferenceNode } from '@interfaces';
-import { useTranslations } from '@hooks';
+
+import { useTranslations } from '@/i18n';
 
 import { HANDLE_POSITIONS } from './consts';
 import { NodeBand } from './fragments';

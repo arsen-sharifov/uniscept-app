@@ -1,6 +1,6 @@
 import { Zap, Lightbulb, Braces } from 'lucide-react';
 
-import { useTranslations } from '@hooks';
+import { useTranslations } from '@/i18n';
 
 import { Section } from './components';
 

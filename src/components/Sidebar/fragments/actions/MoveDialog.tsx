@@ -5,8 +5,9 @@ import { Folder, FolderOpen, Home } from 'lucide-react';
 import { useState, useMemo } from 'react';
 
 import type { TNavItem } from '@interfaces';
-import { useTranslations } from '@hooks';
+
 import { Modal } from '@/components/Modal';
+import { useTranslations } from '@/i18n';
 
 import { INDENTATION_WIDTH } from '../../consts';
 import { flattenTree } from '../../utils';

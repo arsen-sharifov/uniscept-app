@@ -6,8 +6,9 @@ import { Check, CheckCircle2, ChevronRight, FileText, Folder, FolderOpen, Pencil
 import { type KeyboardEvent, type MouseEvent } from 'react';
 
 import type { IFlattenedItem, TDropZone, TNavItemType } from '@interfaces';
-import { useTranslations } from '@hooks';
+
 import { SmartTooltip } from '@/components/Tooltip';
+import { useTranslations } from '@/i18n';
 
 import { DropLineIndicator } from './DropLineIndicator';
 import { GripActivator } from './GripActivator';

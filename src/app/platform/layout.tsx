@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 
 import { Sidebar, Toolbar, useToolbar } from '@/components';
 
@@ -13,6 +13,12 @@ const WorkspaceLayout = ({ children }: { children: ReactNode }) => {
   const { groups, activeTool, handleToolClick } = useToolbar();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const { preferences, updatePreference } = usePreferences();
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-has-toolbar', '');
+
+    return () => document.documentElement.removeAttribute('data-has-toolbar');
+  }, []);
 
   const {
     workspaces,

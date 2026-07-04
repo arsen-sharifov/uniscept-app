@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { SUCCESS_RESET_DELAY_MS } from '@constants';
+import { event } from '@/lib/events';
 
 export const useAsyncAction = () => {
   const [loading, setLoading] = useState(false);
@@ -22,6 +23,7 @@ export const useAsyncAction = () => {
       clearTimeout(timerRef.current);
       timerRef.current = setTimeout(() => setSuccess(false), SUCCESS_RESET_DELAY_MS);
     } catch (error) {
+      event.error(error, { toast: false, context: 'asyncAction' });
       setError(typeof errorMessage === 'function' ? errorMessage(error) : errorMessage);
     } finally {
       setLoading(false);

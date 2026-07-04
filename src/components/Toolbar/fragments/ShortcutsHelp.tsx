@@ -6,7 +6,8 @@ import { useRef } from 'react';
 import { createPortal } from 'react-dom';
 
 import type { IToolGroup } from '@interfaces';
-import { useEscapeKey, useFocusTrap, useTranslations } from '@hooks';
+import { useEscapeKey, useFocusTrap } from '@hooks';
+import { useTranslations } from '@/i18n';
 
 import { renderShortcut } from '../utils';
 

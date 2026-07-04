@@ -5,9 +5,10 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { type SubmitEvent, useMemo, useState } from 'react';
 
-import { useTranslations } from '@hooks';
 import { signUp, verifyInviteCode } from '@api/client';
 import { Stepper, Tooltip } from '@/components';
+import { useTranslations } from '@/i18n';
+import { event } from '@/lib/events';
 import { formatPlanPrice, mergePlansWithTranslations } from '@/lib/pricing';
 
 const SignUpPage = () => {
@@ -46,7 +47,17 @@ const SignUpPage = () => {
     setError('');
     setLoading(true);
 
-    const valid = await verifyInviteCode(inviteCode);
+    const valid = await verifyInviteCode(inviteCode).catch((error: unknown) => {
+      event.error(error, { context: 'auth.verifyInvite' });
+
+      return null;
+    });
+
+    if (valid === null) {
+      setLoading(false);
+
+      return;
+    }
 
     if (!valid) {
       setError(authErrors.invalidInviteCode);
@@ -58,7 +69,7 @@ const SignUpPage = () => {
     const { error: authError } = await signUp(email, password, name);
 
     if (authError) {
-      setError(authError.message);
+      event.error(authError, { context: 'auth.signUp' });
       setLoading(false);
 
       return;

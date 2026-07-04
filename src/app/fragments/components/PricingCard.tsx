@@ -3,7 +3,8 @@ import { CircleCheck } from 'lucide-react';
 import Link from 'next/link';
 
 import type { IPricingPlan } from '@interfaces';
-import { useTranslations } from '@hooks';
+
+import { useTranslations } from '@/i18n';
 import { formatPlanPrice } from '@/lib/pricing';
 
 interface IPricingCardProps {

@@ -65,7 +65,40 @@
   "common": {
     "loading": "Se încarcă",
     "close": "Închide",
-    "userAvatar": "Utilizator"
+    "userAvatar": "Utilizator",
+    "notifications": "Notificări",
+    "errors": {
+      "network": "Problemă de rețea. Verificați conexiunea și încercați din nou.",
+      "permission": "Nu aveți permisiunea pentru această acțiune.",
+      "notFound": "Nu am mai putut găsi acel element.",
+      "rateLimit": "Prea multe încercări. Așteptați un moment.",
+      "validation": "Unele detalii par invalide. Verificați și încercați din nou.",
+      "auth": "Sesiunea a expirat. Conectați-vă din nou.",
+      "unknown": "Ceva nu a mers bine. Încercați din nou.",
+      "invalidCredentials": "Email sau parolă incorecte.",
+      "emailNotConfirmed": "Confirmați adresa de email înainte de autentificare.",
+      "emailTaken": "Există deja un cont cu acest email.",
+      "invalidEmail": "Această adresă de email nu pare validă.",
+      "weakPassword": "Parola este prea slabă. Folosiți cel puțin 6 caractere.",
+      "samePassword": "Parola nouă trebuie să difere de cea actuală."
+    },
+    "errorTitles": {
+      "createFailed": "Nu s-a putut crea",
+      "renameFailed": "Nu s-a putut redenumi",
+      "deleteFailed": "Nu s-a putut șterge",
+      "moveFailed": "Nu s-a putut muta",
+      "loadFailed": "Nu s-a putut încărca",
+      "saveFailed": "Nu s-a putut salva",
+      "searchFailed": "Căutarea a eșuat"
+    },
+    "errorPages": {
+      "notFoundTitle": "Pagina nu a fost găsită",
+      "notFoundHint": "Pagina pe care o căutați nu există sau a fost mutată.",
+      "backHome": "Înapoi la spațiu",
+      "errorTitle": "Ceva s-a stricat",
+      "errorHint": "A apărut o eroare neașteptată. Puteți încerca din nou.",
+      "retry": "Încercați din nou"
+    }
   },
   "platform": {
     "sidebar": {
@@ -73,6 +106,17 @@
       "noWorkspaceSelected": "Niciun spațiu selectat",
       "noWorkspaces": "Niciun spațiu de lucru. Creează unul pentru a începe.",
       "newWorkspace": "Spațiu nou",
+      "workspaceCreated": "Spațiu creat",
+      "threadCreated": "Fir creat",
+      "folderCreated": "Folder creat",
+      "threadRenamed": "Fir redenumit",
+      "folderRenamed": "Folder redenumit",
+      "workspaceRenamed": "Spațiu redenumit",
+      "threadDeleted": "Fir șters",
+      "folderDeleted": "Folder șters",
+      "workspaceDeleted": "Spațiu șters",
+      "itemsDeleted": "Elemente șterse",
+      "workspacesDeleted": "Spații șterse",
       "structure": "Structură",
       "newThread": "Fir nou",
       "newFolder": "Folder nou",
@@ -290,6 +334,7 @@
         "changingEmail": "Se trimite…",
         "saveFailed": "Salvarea a eșuat. Încearcă din nou.",
         "emailChangeFailed": "Schimbarea emailului a eșuat. Încearcă din nou.",
+        "emailChangeSent": "Verifică noul email pentru a confirma schimbarea.",
         "emailInvalid": "Introdu o adresă de email validă.",
         "namePlaceholder": "Cum te văd ceilalți",
         "avatarTitle": "Avatar",

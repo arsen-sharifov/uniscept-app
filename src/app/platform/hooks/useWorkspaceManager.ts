@@ -43,6 +43,8 @@ import {
   setThreadAnswered,
   updateNavItemName,
 } from '@/components/Sidebar/utils';
+import { useTranslations } from '@/i18n';
+import { event } from '@/lib/events';
 import { useCanvasStore } from '@/lib/stores';
 import { createClient } from '@/lib/supabase';
 
@@ -51,6 +53,7 @@ export const useWorkspaceManager = () => {
   const params = useParams();
   const workspaceIdParam = params.workspaceId as string | undefined;
   const threadIdParam = params.threadId as string | undefined;
+  const t = useTranslations();
 
   const [workspaces, setWorkspaces] = useState<IWorkspaceItem[]>([]);
   const [activeWorkspaceId, setActiveWorkspaceId] = useState<string | null>(null);
@@ -61,6 +64,7 @@ export const useWorkspaceManager = () => {
   const [editingWorkspaceId, setEditingWorkspaceId] = useState<string | null>(null);
 
   const initialized = useRef(false);
+  const justCreatedIds = useRef<Set<string>>(new Set());
 
   const loadWorkspaceContent = useCallback(async (workspaceId: string): Promise<TNavItem[]> => {
     const [folders, threads] = await Promise.all([getFolders(workspaceId), getThreads(workspaceId)]);
@@ -69,6 +73,14 @@ export const useWorkspaceManager = () => {
 
     return tree;
   }, []);
+
+  const reloadWorkspaceContent = useCallback(
+    (workspaceId: string) =>
+      loadWorkspaceContent(workspaceId).catch((error: unknown) => {
+        event.error(error, { toast: false, context: 'sidebar.reloadContent' });
+      }),
+    [loadWorkspaceContent],
+  );
 
   useEffect(() => {
     if (initialized.current) return;
@@ -100,7 +112,10 @@ export const useWorkspaceManager = () => {
       setLoading(false);
     };
 
-    init().catch(() => setLoading(false));
+    init().catch((error) => {
+      event.error(error, { context: 'sidebar.loadWorkspaces' });
+      setLoading(false);
+    });
   }, [workspaceIdParam, threadIdParam, loadWorkspaceContent, router]);
 
   useEffect(() => {
@@ -125,20 +140,32 @@ export const useWorkspaceManager = () => {
 
   const handleWorkspaceSelect = useCallback(
     async (id: string) => {
+      const previousWorkspaceId = activeWorkspaceId;
       setActiveWorkspaceId(id);
       setEditingItemId(null);
       setEditingWorkspaceId(null);
       setLoading(true);
-      const tree = await loadWorkspaceContent(id);
+      const tree = await loadWorkspaceContent(id).catch((error: unknown) => {
+        event.error(error, { title: t.common.errorTitles.loadFailed, context: 'sidebar.selectWorkspace' });
+        setActiveWorkspaceId(previousWorkspaceId);
+
+        return null;
+      });
       setLoading(false);
+      if (!tree) return;
+
       const firstThreadId = findFirstThread(tree);
       router.push(firstThreadId ? `/platform/${id}/${firstThreadId}` : '/platform');
     },
-    [router, loadWorkspaceContent],
+    [activeWorkspaceId, router, loadWorkspaceContent, t],
   );
 
   const handleCreateWorkspace = useCallback(async () => {
-    const created = await createWorkspace('New Workspace');
+    const created = await createWorkspace('New Workspace').catch((error: unknown) => {
+      event.error(error, { title: t.common.errorTitles.createFailed, context: 'sidebar.createWorkspace' });
+
+      return null;
+    });
     if (!created) return;
 
     const newWorkspace: IWorkspaceItem = {
@@ -148,12 +175,20 @@ export const useWorkspaceManager = () => {
     setWorkspaces((prev) => [...prev, newWorkspace]);
     setActiveWorkspaceId(created.id);
     setEditingWorkspaceId(created.id);
+    justCreatedIds.current.add(created.id);
     setNavItems([]);
     router.push(`/platform`);
-  }, [router]);
+    event.success(t.platform.sidebar.workspaceCreated);
+  }, [router, t]);
 
   const reloadWorkspaces = useCallback(async () => {
-    const workspaceList = await getWorkspaces();
+    const workspaceList = await getWorkspaces().catch((error: unknown) => {
+      event.error(error, { toast: false, context: 'sidebar.reloadWorkspaces' });
+
+      return null;
+    });
+    if (!workspaceList) return;
+
     setWorkspaces(
       workspaceList.map((workspace) => ({
         id: workspace.id,
@@ -164,21 +199,26 @@ export const useWorkspaceManager = () => {
 
   const handleRenameWorkspace = useCallback(
     async (id: string, name: string) => {
+      const wasJustCreated = justCreatedIds.current.delete(id);
       setWorkspaces((prev) => prev.map((workspace) => (workspace.id === id ? { ...workspace, name } : workspace)));
       try {
         await updateWorkspaceName(id, name);
-      } catch {
+        if (!wasJustCreated) event.success(t.platform.sidebar.workspaceRenamed);
+      } catch (error) {
+        event.error(error, { title: t.common.errorTitles.renameFailed, context: 'sidebar.renameWorkspace' });
         await reloadWorkspaces();
       }
     },
-    [reloadWorkspaces],
+    [reloadWorkspaces, t],
   );
 
   const handleDeleteWorkspace = useCallback(
     async (id: string) => {
       try {
         await deleteWorkspace(id);
-      } catch {
+      } catch (error) {
+        event.error(error, { title: t.common.errorTitles.deleteFailed, context: 'sidebar.deleteWorkspace' });
+
         return;
       }
 
@@ -188,7 +228,7 @@ export const useWorkspaceManager = () => {
           const next = remaining[0];
           if (next) {
             setActiveWorkspaceId(next.id);
-            loadWorkspaceContent(next.id);
+            reloadWorkspaceContent(next.id);
           } else {
             setActiveWorkspaceId(null);
             setNavItems([]);
@@ -199,15 +239,20 @@ export const useWorkspaceManager = () => {
       });
 
       router.push('/platform');
+      event.success(t.platform.sidebar.workspaceDeleted);
     },
-    [activeWorkspaceId, router, loadWorkspaceContent],
+    [activeWorkspaceId, router, reloadWorkspaceContent, t],
   );
 
   const handleCreateThread = useCallback(
     async (folderId?: string) => {
       if (!activeWorkspaceId) return;
 
-      const thread = await createThread(activeWorkspaceId, folderId);
+      const thread = await createThread(activeWorkspaceId, folderId).catch((error: unknown) => {
+        event.error(error, { title: t.common.errorTitles.createFailed, context: 'sidebar.createThread' });
+
+        return null;
+      });
       if (!thread) return;
 
       const newItem: TNavItem = {
@@ -217,20 +262,28 @@ export const useWorkspaceManager = () => {
       };
       setNavItems((prev) => (folderId ? insertIntoTree(prev, newItem, folderId, Infinity) : [...prev, newItem]));
       setEditingItemId(thread.id);
+      justCreatedIds.current.add(thread.id);
       router.push(`/platform/${activeWorkspaceId}/${thread.id}`);
+      event.success(t.platform.sidebar.threadCreated);
     },
-    [activeWorkspaceId, router],
+    [activeWorkspaceId, router, t],
   );
 
   const handleCreateFolder = useCallback(async () => {
     if (!activeWorkspaceId) return;
 
-    const folder = await createFolder(activeWorkspaceId);
+    const folder = await createFolder(activeWorkspaceId).catch((error: unknown) => {
+      event.error(error, { title: t.common.errorTitles.createFailed, context: 'sidebar.createFolder' });
+
+      return null;
+    });
     if (!folder) return;
 
     setNavItems((prev) => [...prev, { type: 'folder', id: folder.id, name: folder.name, items: [] }]);
     setEditingItemId(folder.id);
-  }, [activeWorkspaceId]);
+    justCreatedIds.current.add(folder.id);
+    event.success(t.platform.sidebar.folderCreated);
+  }, [activeWorkspaceId, t]);
 
   const handleDeleteItem = useCallback(
     async (id: string) => {
@@ -245,11 +298,14 @@ export const useWorkspaceManager = () => {
         } else {
           await deleteThread(id);
         }
-      } catch {
+      } catch (error) {
+        event.error(error, { title: t.common.errorTitles.deleteFailed, context: 'sidebar.deleteItem' });
+
         return;
       }
 
       setNavItems((prev) => removeFromTree(prev, id));
+      event.success(item.type === 'folder' ? t.platform.sidebar.folderDeleted : t.platform.sidebar.threadDeleted);
 
       const shouldNavigate =
         item.type === 'thread' ? threadIdParam === id : threadIdParam && containsThread(item, threadIdParam);
@@ -257,7 +313,7 @@ export const useWorkspaceManager = () => {
         router.push(`/platform`);
       }
     },
-    [activeWorkspaceId, navItems, threadIdParam, router],
+    [activeWorkspaceId, navItems, threadIdParam, router, t],
   );
 
   const handleRenameItem = useCallback(
@@ -265,6 +321,7 @@ export const useWorkspaceManager = () => {
       const item = findInTree(navItems, id);
       if (!item) return;
 
+      const wasJustCreated = justCreatedIds.current.delete(id);
       setNavItems((prev) => updateNavItemName(prev, id, name));
 
       try {
@@ -273,11 +330,15 @@ export const useWorkspaceManager = () => {
         } else {
           await updateThreadName(id, name);
         }
-      } catch {
-        if (activeWorkspaceId) await loadWorkspaceContent(activeWorkspaceId);
+        if (!wasJustCreated) {
+          event.success(item.type === 'folder' ? t.platform.sidebar.folderRenamed : t.platform.sidebar.threadRenamed);
+        }
+      } catch (error) {
+        event.error(error, { title: t.common.errorTitles.renameFailed, context: 'sidebar.renameItem' });
+        if (activeWorkspaceId) await reloadWorkspaceContent(activeWorkspaceId);
       }
     },
-    [navItems, activeWorkspaceId, loadWorkspaceContent],
+    [navItems, activeWorkspaceId, reloadWorkspaceContent, t],
   );
 
   const handleMoveItem = useCallback(
@@ -338,11 +399,12 @@ export const useWorkspaceManager = () => {
               : moveThread(update.id, update.targetParentId, update.newPos),
           ),
         );
-      } catch {
-        if (activeWorkspaceId) await loadWorkspaceContent(activeWorkspaceId);
+      } catch (error) {
+        event.error(error, { title: t.common.errorTitles.moveFailed, context: 'sidebar.moveItem' });
+        if (activeWorkspaceId) await reloadWorkspaceContent(activeWorkspaceId);
       }
     },
-    [activeWorkspaceId, navItems, loadWorkspaceContent],
+    [activeWorkspaceId, navItems, reloadWorkspaceContent, t],
   );
 
   const handleBulkDelete = useCallback(
@@ -360,13 +422,17 @@ export const useWorkspaceManager = () => {
       if (threadIds.length > 0) promises.push(deleteThreads(threadIds));
       try {
         await Promise.all(promises);
-      } catch {
+      } catch (error) {
+        event.error(error, { title: t.common.errorTitles.deleteFailed, context: 'sidebar.bulkDelete' });
+
         if (activeWorkspaceId) {
-          await loadWorkspaceContent(activeWorkspaceId);
+          await reloadWorkspaceContent(activeWorkspaceId);
         }
 
         return;
       }
+
+      event.success(t.platform.sidebar.itemsDeleted);
 
       const shouldNavigate =
         !!threadIdParam &&
@@ -380,7 +446,7 @@ export const useWorkspaceManager = () => {
         router.push('/platform');
       }
     },
-    [activeWorkspaceId, navItems, threadIdParam, router, loadWorkspaceContent],
+    [activeWorkspaceId, navItems, threadIdParam, router, reloadWorkspaceContent, t],
   );
 
   const handleBulkDeleteWorkspaces = useCallback(
@@ -393,7 +459,7 @@ export const useWorkspaceManager = () => {
           const next = remaining[0];
           if (next) {
             setActiveWorkspaceId(next.id);
-            loadWorkspaceContent(next.id);
+            reloadWorkspaceContent(next.id);
           } else {
             setActiveWorkspaceId(null);
             setNavItems([]);
@@ -406,11 +472,13 @@ export const useWorkspaceManager = () => {
 
       try {
         await deleteWorkspaces(idArr);
-      } catch {
+        event.success(t.platform.sidebar.workspacesDeleted);
+      } catch (error) {
+        event.error(error, { title: t.common.errorTitles.deleteFailed, context: 'sidebar.bulkDeleteWorkspaces' });
         await reloadWorkspaces();
       }
     },
-    [activeWorkspaceId, router, loadWorkspaceContent, reloadWorkspaces],
+    [activeWorkspaceId, router, reloadWorkspaceContent, reloadWorkspaces, t],
   );
 
   const handleMoveWorkspace = useCallback(
@@ -434,11 +502,12 @@ export const useWorkspaceManager = () => {
 
       try {
         await Promise.all(updates.map((update) => moveWorkspace(update.id, update.position)));
-      } catch {
+      } catch (error) {
+        event.error(error, { title: t.common.errorTitles.moveFailed, context: 'sidebar.moveWorkspace' });
         await reloadWorkspaces();
       }
     },
-    [workspaces, reloadWorkspaces],
+    [workspaces, reloadWorkspaces, t],
   );
 
   const handleBulkMove = useCallback(
@@ -469,11 +538,12 @@ export const useWorkspaceManager = () => {
       );
       try {
         await Promise.all(promises);
-      } catch {
-        if (activeWorkspaceId) await loadWorkspaceContent(activeWorkspaceId);
+      } catch (error) {
+        event.error(error, { title: t.common.errorTitles.moveFailed, context: 'sidebar.bulkMove' });
+        if (activeWorkspaceId) await reloadWorkspaceContent(activeWorkspaceId);
       }
     },
-    [activeWorkspaceId, navItems, loadWorkspaceContent],
+    [activeWorkspaceId, navItems, reloadWorkspaceContent, t],
   );
 
   const handleItemClick = useCallback(
@@ -492,9 +562,15 @@ export const useWorkspaceManager = () => {
     navItems,
     activeThreadId: threadIdParam,
     editingItemId,
-    clearEditingItemId: useCallback(() => setEditingItemId(null), []),
+    clearEditingItemId: useCallback(() => {
+      justCreatedIds.current.clear();
+      setEditingItemId(null);
+    }, []),
     editingWorkspaceId,
-    clearEditingWorkspaceId: useCallback(() => setEditingWorkspaceId(null), []),
+    clearEditingWorkspaceId: useCallback(() => {
+      justCreatedIds.current.clear();
+      setEditingWorkspaceId(null);
+    }, []),
     loading,
     onWorkspaceSelect: handleWorkspaceSelect,
     onCreateWorkspace: handleCreateWorkspace,

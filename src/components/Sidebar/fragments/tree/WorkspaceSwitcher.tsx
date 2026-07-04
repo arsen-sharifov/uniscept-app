@@ -5,8 +5,9 @@ import { ChevronsUpDown, LayoutGrid, Plus } from 'lucide-react';
 import { useState, type KeyboardEvent, type MouseEvent } from 'react';
 
 import type { IWorkspaceItem } from '@interfaces';
-import { useTranslations } from '@hooks';
+
 import { Popover } from '@/components/Popover';
+import { useTranslations } from '@/i18n';
 
 import { WorkspaceItems } from './WorkspaceItems';
 import { BulkActionsBar } from '../actions/BulkActionsBar';

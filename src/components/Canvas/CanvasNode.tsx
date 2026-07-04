@@ -6,7 +6,8 @@ import { ChevronDown, MessageSquare, Send, X } from 'lucide-react';
 import { type FocusEvent, type FormEvent, type KeyboardEvent, useCallback, useEffect, useRef, useState } from 'react';
 
 import type { TCanvasNode, TNodeBandTone } from '@interfaces';
-import { useTranslations } from '@hooks';
+
+import { useTranslations } from '@/i18n';
 import { useCanvasStore } from '@/lib/stores';
 
 import { HANDLE_POSITIONS } from './consts';

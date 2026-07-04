@@ -65,7 +65,40 @@
   "common": {
     "loading": "Chargement",
     "close": "Fermer",
-    "userAvatar": "Utilisateur"
+    "userAvatar": "Utilisateur",
+    "notifications": "Notifications",
+    "errors": {
+      "network": "Problème de réseau. Vérifiez votre connexion et réessayez.",
+      "permission": "Vous n'avez pas la permission de faire cela.",
+      "notFound": "Nous n'avons pas pu retrouver cet élément.",
+      "rateLimit": "Trop de tentatives. Veuillez patienter un instant.",
+      "validation": "Certaines informations semblent invalides. Veuillez vérifier et réessayer.",
+      "auth": "Votre session a expiré. Veuillez vous reconnecter.",
+      "unknown": "Une erreur s'est produite. Veuillez réessayer.",
+      "invalidCredentials": "Email ou mot de passe incorrect.",
+      "emailNotConfirmed": "Confirmez votre email avant de vous connecter.",
+      "emailTaken": "Un compte avec cet email existe déjà.",
+      "invalidEmail": "Cette adresse email ne semble pas valide.",
+      "weakPassword": "Mot de passe trop faible. Utilisez au moins 6 caractères.",
+      "samePassword": "Le nouveau mot de passe doit être différent de l'actuel."
+    },
+    "errorTitles": {
+      "createFailed": "Impossible de créer",
+      "renameFailed": "Impossible de renommer",
+      "deleteFailed": "Impossible de supprimer",
+      "moveFailed": "Impossible de déplacer",
+      "loadFailed": "Impossible de charger",
+      "saveFailed": "Impossible d'enregistrer",
+      "searchFailed": "La recherche a échoué"
+    },
+    "errorPages": {
+      "notFoundTitle": "Page introuvable",
+      "notFoundHint": "La page que vous cherchez n'existe pas ou a été déplacée.",
+      "backHome": "Retour à l'espace",
+      "errorTitle": "Quelque chose a cassé",
+      "errorHint": "Une erreur inattendue s'est produite. Vous pouvez réessayer.",
+      "retry": "Réessayer"
+    }
   },
   "platform": {
     "sidebar": {
@@ -73,6 +106,17 @@
       "noWorkspaceSelected": "Aucun espace sélectionné",
       "noWorkspaces": "Aucun espace de travail. Créez-en un pour commencer.",
       "newWorkspace": "Nouvel espace",
+      "workspaceCreated": "Espace créé",
+      "threadCreated": "Fil créé",
+      "folderCreated": "Dossier créé",
+      "threadRenamed": "Fil renommé",
+      "folderRenamed": "Dossier renommé",
+      "workspaceRenamed": "Espace renommé",
+      "threadDeleted": "Fil supprimé",
+      "folderDeleted": "Dossier supprimé",
+      "workspaceDeleted": "Espace supprimé",
+      "itemsDeleted": "Éléments supprimés",
+      "workspacesDeleted": "Espaces supprimés",
       "structure": "Structure",
       "newThread": "Nouveau fil",
       "newFolder": "Nouveau dossier",
@@ -290,6 +334,7 @@
         "changingEmail": "Envoi en cours…",
         "saveFailed": "Échec de l'enregistrement. Veuillez réessayer.",
         "emailChangeFailed": "Échec du changement d'email. Veuillez réessayer.",
+        "emailChangeSent": "Vérifiez votre nouvel email pour confirmer le changement.",
         "emailInvalid": "Veuillez saisir une adresse email valide.",
         "namePlaceholder": "Comment les autres vous voient",
         "avatarTitle": "Avatar",

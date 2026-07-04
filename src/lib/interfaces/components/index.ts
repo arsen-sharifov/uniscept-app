@@ -5,5 +5,6 @@ export * from './popover';
 export * from './pricing';
 export * from './settings';
 export * from './sidebar';
+export * from './toast';
 export * from './toolbar';
 export * from './tooltip';

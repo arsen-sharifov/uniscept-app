@@ -4,6 +4,7 @@ import { getLocale } from 'next-intl/server';
 import type { ReactNode } from 'react';
 
 import { DEFAULT_PREFERENCES } from '@constants';
+import { EventBoundary } from '@/components/EventBoundary';
 
 import { THEME_BOOTSTRAP } from './themeBootstrap';
 import './globals.css';
@@ -20,6 +21,7 @@ const RootLayout = async ({ children }: Readonly<{ children: ReactNode }>) => {
     <html
       lang={locale}
       className="scroll-smooth"
+      data-scroll-behavior="smooth"
       data-theme={DEFAULT_PREFERENCES.theme}
       data-canvas-pattern={DEFAULT_PREFERENCES.canvasPattern}
       suppressHydrationWarning
@@ -28,7 +30,9 @@ const RootLayout = async ({ children }: Readonly<{ children: ReactNode }>) => {
         <script dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP }} />
       </head>
       <body className="bg-[color:var(--app-bg)] text-[color:var(--text)] antialiased">
-        <NextIntlClientProvider>{children}</NextIntlClientProvider>
+        <NextIntlClientProvider>
+          <EventBoundary>{children}</EventBoundary>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

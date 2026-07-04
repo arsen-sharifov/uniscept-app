@@ -6,8 +6,9 @@ import { Check, LayoutGrid, Pencil, Trash2 } from 'lucide-react';
 import { type KeyboardEvent, type MouseEvent } from 'react';
 
 import type { IWorkspaceItem, TWorkspaceDropZone } from '@interfaces';
-import { useTranslations } from '@hooks';
+
 import { SmartTooltip } from '@/components/Tooltip';
+import { useTranslations } from '@/i18n';
 
 import { DropLineIndicator } from './DropLineIndicator';
 import { GripActivator } from './GripActivator';

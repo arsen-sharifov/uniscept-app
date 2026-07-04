@@ -13,6 +13,7 @@ import {
   updateCanvasNodePositions,
   updateCanvasNodeStatus,
 } from '@api/client';
+import { event } from '@/lib/events';
 
 import { FLUSH_DEBOUNCE_MS, INITIAL_SAVE_STATE, MAX_RETRIES, OFFLINE_POLL_INTERVAL_MS, RETRY_BASE_MS } from './consts';
 
@@ -250,6 +251,12 @@ const runOperation = async (operation: TCanvasOperation): Promise<void> => {
 const collectUnflushedPositions = (operations: TCanvasOperation[], upToIndex: number): TCanvasOperation[] =>
   operations.slice(0, upToIndex).filter((operation) => operation.type === 'updateNodePosition');
 
+const withRemaining = (error: unknown, remaining: TCanvasOperation[]): object => {
+  const target = typeof error === 'object' && error !== null ? error : new Error(String(error));
+
+  return Object.assign(target, { remaining });
+};
+
 const runOperations = async (operations: TCanvasOperation[]): Promise<TCanvasOperation[]> => {
   const positions: INodePositionUpdate[] = [];
 
@@ -268,7 +275,7 @@ const runOperations = async (operations: TCanvasOperation[]): Promise<TCanvasOpe
         ...collectUnflushedPositions(operations, index),
         ...operations.slice(index),
       ];
-      throw Object.assign(error instanceof Error ? error : new Error(String(error)), { remaining });
+      throw withRemaining(error, remaining);
     }
   }
 
@@ -280,7 +287,7 @@ const runOperations = async (operations: TCanvasOperation[]): Promise<TCanvasOpe
     return [];
   } catch (error) {
     const remaining: TCanvasOperation[] = operations.filter((operation) => operation.type === 'updateNodePosition');
-    throw Object.assign(error instanceof Error ? error : new Error(String(error)), { remaining });
+    throw withRemaining(error, remaining);
   }
 };
 
@@ -415,6 +422,7 @@ export const flushNow = async (): Promise<void> => {
       state.retries = 0;
       setSaveState({ status: 'error', retryAttempt: 0 });
       notifyFailed();
+      event.error(error, { toast: false, context: 'canvas.flush' });
     }
   }
 };

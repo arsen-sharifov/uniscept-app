@@ -1,7 +1,7 @@
 import { clsx } from 'clsx';
 
 import { PROBLEM_CARDS } from '@constants';
-import { useTranslations } from '@hooks';
+import { useTranslations } from '@/i18n';
 
 import { Section } from './components';
 

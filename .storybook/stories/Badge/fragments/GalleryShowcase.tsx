@@ -1,6 +1,6 @@
 import { BADGES } from '@constants';
-import { useTranslations } from '@hooks';
 import { Badge } from '@/components';
+import { useTranslations } from '@/i18n';
 
 import { Showcase } from '../../../components';
 import { EARNED_DEMO } from '../consts';

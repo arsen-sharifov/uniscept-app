@@ -5,8 +5,10 @@ import { useId, useMemo, useState } from 'react';
 
 import type { IUserMetadata, IUserProfileUpdate, TAvatarIcon, TBadgeId } from '@interfaces';
 import { AVATAR_ICONS, BADGES, DEFAULT_BADGES, EMAIL_PATTERN, MAX_NAME_LENGTH } from '@constants';
-import { useAsyncAction, useTranslations } from '@hooks';
+import { useAsyncAction } from '@hooks';
 import { Avatar, Badge, BadgeConstellation, getInitials } from '@/components';
+import { useTranslations } from '@/i18n';
+import { event } from '@/lib/events';
 import { isAvatarIcon, isBadgeId } from '@/lib/utils';
 
 import { PickerCard } from './PickerCard';
@@ -122,11 +124,6 @@ export const ProfileSection = ({ user, onUpdateProfile, onUpdateEmail }: IProfil
               <h3 className="text-[11px] font-semibold tracking-[0.18em] text-[color:var(--text-subtle)] uppercase">
                 {profile.email}
               </h3>
-              {emailChange.success && (
-                <span className="text-[10.5px] tracking-[0.14em] text-[color:var(--accent-strong)] uppercase">
-                  {profile.saved}
-                </span>
-              )}
               {emailChanged && !emailIsValid && (
                 <span className="text-[10.5px] tracking-[0.14em] text-[color:var(--status-error)] uppercase">
                   {profile.emailInvalid}
@@ -143,7 +140,12 @@ export const ProfileSection = ({ user, onUpdateProfile, onUpdateEmail }: IProfil
                 />
               </div>
               <SettingsPrimaryButton
-                onClick={() => emailChange.run(() => onUpdateEmail(email.trim()), profile.emailChangeFailed)}
+                onClick={() =>
+                  emailChange.run(async () => {
+                    await onUpdateEmail(email.trim());
+                    event.info(profile.emailChangeSent);
+                  }, profile.emailChangeFailed)
+                }
                 disabled={emailChange.loading || !emailChanged || !emailIsValid}
               >
                 {emailChange.loading ? profile.changingEmail : profile.changeEmail}

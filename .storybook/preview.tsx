@@ -1,5 +1,6 @@
 import type { Decorator, Preview } from '@storybook/nextjs-vite';
 import { NextIntlClientProvider } from 'next-intl';
+import { useEffect } from 'react';
 
 import type { TTheme } from '@constants';
 
@@ -24,6 +25,10 @@ const IntlDecorator: Decorator = (Story) => (
 const ThemeDecorator: Decorator = (Story, context) => {
   const theme = (context.globals.theme as TTheme) || 'daybreak';
   const inStory = context.viewMode !== 'docs';
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
 
   return (
     <div

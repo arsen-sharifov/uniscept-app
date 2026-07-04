@@ -6,8 +6,9 @@ import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 
 import type { IPreferences, TCanvasPattern, TLocale, TPreferenceUpdater, TTheme } from '@interfaces';
-import { useTranslations } from '@hooks';
-import { LOCALES, setLocale } from '@/i18n';
+
+import { useTranslations, LOCALES, setLocale } from '@/i18n';
+import { event } from '@/lib/events';
 
 import { CANVAS_PATTERNS, THEME_SWATCH_BADGE, THEMES } from '../consts';
 
@@ -46,7 +47,8 @@ export const AppearanceSection = ({ preferences, onUpdate }: IAppearanceSectionP
           document.documentElement.setAttribute('lang', next);
         }
         router.refresh();
-      } catch {
+      } catch (error) {
+        event.error(error, { toast: false, context: 'settings.setLocale' });
         onUpdate('language', previous);
         setErrored(true);
       }

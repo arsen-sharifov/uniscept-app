@@ -65,7 +65,40 @@
   "common": {
     "loading": "A carregar",
     "close": "Fechar",
-    "userAvatar": "Utilizador"
+    "userAvatar": "Utilizador",
+    "notifications": "Notificações",
+    "errors": {
+      "network": "Problema de rede. Verifique a sua ligação e tente novamente.",
+      "permission": "Não tem permissão para fazer isso.",
+      "notFound": "Já não foi possível encontrar isso.",
+      "rateLimit": "Demasiadas tentativas. Aguarde um momento.",
+      "validation": "Alguns dados parecem inválidos. Reveja e tente novamente.",
+      "auth": "A sua sessão expirou. Inicie sessão novamente.",
+      "unknown": "Algo correu mal. Tente novamente.",
+      "invalidCredentials": "Email ou palavra-passe incorretos.",
+      "emailNotConfirmed": "Confirme o seu email antes de iniciar sessão.",
+      "emailTaken": "Já existe uma conta com este email.",
+      "invalidEmail": "Esse email não parece válido.",
+      "weakPassword": "A palavra-passe é demasiado fraca. Use pelo menos 6 caracteres.",
+      "samePassword": "A nova palavra-passe deve ser diferente da atual."
+    },
+    "errorTitles": {
+      "createFailed": "Não foi possível criar",
+      "renameFailed": "Não foi possível renomear",
+      "deleteFailed": "Não foi possível eliminar",
+      "moveFailed": "Não foi possível mover",
+      "loadFailed": "Não foi possível carregar",
+      "saveFailed": "Não foi possível guardar",
+      "searchFailed": "A pesquisa falhou"
+    },
+    "errorPages": {
+      "notFoundTitle": "Página não encontrada",
+      "notFoundHint": "A página que procura não existe ou foi movida.",
+      "backHome": "Voltar ao espaço",
+      "errorTitle": "Algo falhou",
+      "errorHint": "Ocorreu um erro inesperado. Pode tentar novamente.",
+      "retry": "Tentar novamente"
+    }
   },
   "platform": {
     "sidebar": {
@@ -73,6 +106,17 @@
       "noWorkspaceSelected": "Nenhum espaço selecionado",
       "noWorkspaces": "Sem espaços de trabalho. Crie um para começar.",
       "newWorkspace": "Novo espaço",
+      "workspaceCreated": "Espaço criado",
+      "threadCreated": "Tópico criado",
+      "folderCreated": "Pasta criada",
+      "threadRenamed": "Tópico renomeado",
+      "folderRenamed": "Pasta renomeada",
+      "workspaceRenamed": "Espaço renomeado",
+      "threadDeleted": "Tópico eliminado",
+      "folderDeleted": "Pasta eliminada",
+      "workspaceDeleted": "Espaço eliminado",
+      "itemsDeleted": "Itens eliminados",
+      "workspacesDeleted": "Espaços eliminados",
       "structure": "Estrutura",
       "newThread": "Novo tópico",
       "newFolder": "Nova pasta",
@@ -290,6 +334,7 @@
         "changingEmail": "A enviar…",
         "saveFailed": "Falha ao guardar. Tente novamente.",
         "emailChangeFailed": "Falha ao alterar o e-mail. Tente novamente.",
+        "emailChangeSent": "Verifique o seu novo e-mail para confirmar a alteração.",
         "emailInvalid": "Introduza um endereço de e-mail válido.",
         "namePlaceholder": "Como os outros te veem",
         "avatarTitle": "Avatar",

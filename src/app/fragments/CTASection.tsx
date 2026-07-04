@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-import { useTranslations } from '@hooks';
+import { useTranslations } from '@/i18n';
 
 import { Section } from './components';
 

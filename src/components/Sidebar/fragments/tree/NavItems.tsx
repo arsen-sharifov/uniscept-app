@@ -6,7 +6,8 @@ import { useCallback, useEffect, useRef, type MouseEvent } from 'react';
 import { createPortal } from 'react-dom';
 
 import type { TDropZone, TNavItem, TNavItemType } from '@interfaces';
-import { useTranslations } from '@hooks';
+
+import { useTranslations } from '@/i18n';
 
 import { DND_MEASURING } from '../../consts';
 import { useDndTree, useDragSelect, useInlineEdit } from '../../hooks';

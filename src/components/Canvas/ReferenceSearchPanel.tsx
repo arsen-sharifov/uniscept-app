@@ -6,7 +6,8 @@ import { Link2, Search, SearchX } from 'lucide-react';
 import { useState, useEffect, useRef, useMemo, useCallback, useId } from 'react';
 
 import type { INodeReference, IReferenceNodeData, IScreenPoint } from '@interfaces';
-import { useClickOutside, useEscapeKey, useFocusTrap, useTranslations } from '@hooks';
+import { useClickOutside, useEscapeKey, useFocusTrap } from '@hooks';
+import { useTranslations } from '@/i18n';
 import { useCanvasStore } from '@/lib/stores';
 
 interface IReferenceSearchPanelContentProps {

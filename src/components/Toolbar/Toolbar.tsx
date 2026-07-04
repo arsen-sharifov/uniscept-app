@@ -5,8 +5,9 @@ import { HelpCircle } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import type { IToolGroup, IToolItem } from '@interfaces';
-import { useTranslations } from '@hooks';
+
 import { buildHelpTool } from '@/components/tools';
+import { useTranslations } from '@/i18n';
 
 import { TOOLTIP_DELAY_MS } from './consts';
 import { ShortcutsHelp, ToolButton, ToolTooltip } from './fragments';

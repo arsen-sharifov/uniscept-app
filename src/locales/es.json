@@ -39,10 +39,15 @@
         "password": "Contraseña",
         "back": "Atrás",
         "submit": "Registrarse",
-        "submitting": "Creando cuenta…"
+        "submitting": "Creando cuenta…",
+        "emailLocked": "Se te invitó con este correo",
+        "join": "Unirse",
+        "joining": "Uniéndote…"
       },
       "hasAccount": "¿Ya tienes cuenta?",
-      "signInLink": "Iniciar sesión"
+      "signInLink": "Iniciar sesión",
+      "inviteHeading": "Configura tu cuenta",
+      "inviteSubtitle": "Te unes a tu equipo en Uniscept"
     },
     "placeholders": {
       "name": "Juan Pérez",
@@ -82,6 +87,7 @@
       "weakPassword": "La contraseña es demasiado débil. Usa al menos 6 caracteres.",
       "samePassword": "La nueva contraseña debe ser diferente de la actual."
     },
+    "noPermission": "No tienes permiso",
     "errorTitles": {
       "createFailed": "No se pudo crear",
       "renameFailed": "No se pudo renombrar",
@@ -102,6 +108,16 @@
   },
   "platform": {
     "sidebar": {
+      "invitations": {
+        "title": "Invitaciones",
+        "accept": "Aceptar",
+        "decline": "Rechazar",
+        "accepted": "Te uniste al espacio de trabajo",
+        "declined": "Invitación rechazada",
+        "acceptFailed": "No se pudo aceptar la invitación",
+        "declineFailed": "No se pudo rechazar la invitación"
+      },
+      "workspaceSettings": "Configuración del espacio de trabajo",
       "workspaces": "Espacios de trabajo",
       "noWorkspaceSelected": "Ningún espacio seleccionado",
       "noWorkspaces": "No hay espacios de trabajo. Crea uno para empezar.",
@@ -117,6 +133,7 @@
       "workspaceDeleted": "Espacio eliminado",
       "itemsDeleted": "Elementos eliminados",
       "workspacesDeleted": "Espacios eliminados",
+      "workspacesDeleteSkipped": "Algunos espacios no se eliminaron porque no los administras",
       "structure": "Estructura",
       "newThread": "Nuevo hilo",
       "newFolder": "Nueva carpeta",
@@ -501,6 +518,111 @@
         "invitesDescription": "Cuando te invitan a un espacio o cambia tu rol.",
         "digest": "Resumen semanal",
         "digestDescription": "Un resumen de los lunes de la actividad de tus espacios."
+      }
+    },
+    "workspaceSettings": {
+      "close": "Cerrar la configuración del espacio de trabajo",
+      "groups": {
+        "workspace": "Espacio de trabajo",
+        "access": "Acceso"
+      },
+      "sections": {
+        "general": "General",
+        "members": "Miembros",
+        "roles": "Roles"
+      },
+      "roleNames": {
+        "owner": "Propietario",
+        "member": "Miembro",
+        "viewer": "Espectador"
+      },
+      "general": {
+        "nameLabel": "Nombre del espacio de trabajo",
+        "namePlaceholder": "Nombra este espacio de trabajo",
+        "save": "Guardar",
+        "saving": "Guardando…",
+        "membersStat": "Miembros",
+        "roleStat": "Tu rol",
+        "createdStat": "Creado el"
+      },
+      "members": {
+        "hint": "Personas con acceso a este espacio de trabajo.",
+        "you": "Tú",
+        "changeRole": "Cambiar rol",
+        "remove": "Quitar",
+        "removeConfirm": "Quitar",
+        "removed": "Miembro eliminado",
+        "removeFailed": "No se pudo quitar al miembro",
+        "roleChanged": "Rol actualizado",
+        "roleChangeFailed": "No se pudo cambiar el rol",
+        "transferTitle": "Transferir propiedad",
+        "transferCritical": "Acción crítica",
+        "transferConfirmPrefix": "¿Transferir la propiedad a",
+        "transferConfirmSuffix": "? Pasarás a ser miembro y esta acción no se puede deshacer.",
+        "transferConfirm": "Transferir",
+        "transferred": "Propiedad transferida",
+        "transferFailed": "No se pudo transferir la propiedad",
+        "cancel": "Cancelar",
+        "inviteTitle": "Invitar a personas",
+        "inviteHint": "Se unen la próxima vez que abran Uniscept.",
+        "emailPlaceholder": "nombre@empresa.com",
+        "sendInvite": "Enviar invitación",
+        "sending": "Enviando…",
+        "invited": "Invitación lista",
+        "inviteFailed": "No se pudo crear la invitación",
+        "pendingTitle": "Pendientes",
+        "revoke": "Revocar",
+        "revoked": "Invitación revocada",
+        "revokeFailed": "No se pudo revocar la invitación"
+      },
+      "roles": {
+        "hint": "Cada persona tiene un rol. Los roles definen lo que puede hacer.",
+        "membersSuffix": "miembros",
+        "newRole": "Nuevo rol",
+        "nameLabel": "Nombre del rol",
+        "namePlaceholder": "p. ej. Revisor",
+        "iconLabel": "Icono",
+        "permissionsLabel": "Permisos",
+        "systemLocked": "Integrado",
+        "save": "Guardar rol",
+        "saving": "Guardando…",
+        "create": "Crear rol",
+        "cancel": "Cancelar",
+        "edit": "Editar rol",
+        "delete": "Eliminar rol",
+        "created": "Rol creado",
+        "createFailed": "No se pudo crear el rol",
+        "updated": "Rol actualizado",
+        "updateFailed": "No se pudo actualizar el rol",
+        "deleteConfirm": "Eliminar",
+        "deleted": "Rol eliminado",
+        "deleteFailed": "No se pudo eliminar el rol"
+      },
+      "permissions": {
+        "canEditCanvas": {
+          "name": "Editar el lienzo",
+          "description": "Crear y modificar nodos, conexiones y conclusiones."
+        },
+        "canComment": {
+          "name": "Comentar",
+          "description": "Dejar comentarios en nodos y lienzos."
+        },
+        "canManageStructure": {
+          "name": "Gestionar hilos y carpetas",
+          "description": "Crear, renombrar, mover y eliminar hilos y carpetas."
+        },
+        "canManageMembers": {
+          "name": "Gestionar miembros",
+          "description": "Invitar personas, asignar roles y quitar miembros."
+        },
+        "canManageRoles": {
+          "name": "Gestionar roles",
+          "description": "Crear, editar y eliminar roles personalizados."
+        },
+        "canManageWorkspace": {
+          "name": "Gestionar el espacio de trabajo",
+          "description": "Renombrar o eliminar el espacio de trabajo."
+        }
       }
     }
   },

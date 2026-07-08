@@ -1,13 +1,18 @@
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { getRequestConfig } from 'next-intl/server';
 
 import type { TLocale } from '@interfaces';
 
 import { createClient } from '@/lib/supabase/server';
 
-import { DEFAULT_LOCALE, LOCALE_COOKIE, LOCALES } from './consts';
+import { DEFAULT_LOCALE, LOCALE_COOKIE, LOCALES, LOCALE_LOCKED_PATHS } from './consts';
 
 const resolveLocale = async (): Promise<TLocale> => {
+  const pathname = (await headers()).get('x-pathname');
+  if (pathname && (LOCALE_LOCKED_PATHS.includes(pathname) || pathname.startsWith('/auth/'))) {
+    return DEFAULT_LOCALE;
+  }
+
   const cookieLocale = (await cookies()).get(LOCALE_COOKIE)?.value;
   if (cookieLocale && LOCALES.includes(cookieLocale as TLocale)) {
     return cookieLocale as TLocale;

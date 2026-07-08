@@ -4,7 +4,6 @@ import { useCanvasStore } from '@/lib/stores';
 
 const BASE_STATE: Required<IMockCanvasState> = {
   threadId: 'sb-thread',
-  userId: 'storybook-user',
   hydrated: true,
   nodes: [],
   edges: [],
@@ -19,7 +18,6 @@ const BASE_STATE: Required<IMockCanvasState> = {
 const RESET_STATE: Required<IMockCanvasState> = {
   ...BASE_STATE,
   threadId: null,
-  userId: null,
   hydrated: false,
 };
 

@@ -40,6 +40,7 @@ export interface ICanvasNodeData {
   status: TNodeStatus;
   isAnswer: boolean;
   comments: IComment[];
+  createdBy?: string;
   isNew?: boolean;
   eligibleHint?: boolean;
   [key: string]: unknown;
@@ -55,6 +56,7 @@ export interface IReferenceNodeData {
   sourceThreadName: string;
   sourceWorkspaceId: string;
   sourceWorkspaceName: string;
+  createdBy?: string;
   [key: string]: unknown;
 }
 
@@ -245,6 +247,7 @@ export interface ICanvasNodeRow {
   status: TNodeStatus;
   is_answer: boolean;
   source_node_id: string | null;
+  created_by: string | null;
   created_at: string;
   updated_at: string;
 }

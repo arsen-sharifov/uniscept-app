@@ -3,11 +3,12 @@
 import { Files, FolderPlus, LayoutGrid, Plus, SearchX, Sparkles } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState, type MouseEvent, type ReactNode } from 'react';
 
-import type { TDeleteTarget, TNavItem, TNavItemType, IWorkspaceItem } from '@interfaces';
+import type { TDeleteTarget, TNavItem, TNavItemType, IWorkspaceItem, IMyInvitation } from '@interfaces';
 import { useEscapeKey } from '@hooks';
 import { Logo } from '@/components/Branding';
 import { ConfirmDialog } from '@/components/Modal';
 import { useTranslations } from '@/i18n';
+import { usePermissionsStore } from '@/lib/stores';
 
 import { BulkActionsBar, EmptyState, MoveDialog, NavItems, SearchInput, WorkspaceSwitcher } from './fragments';
 import { useInlineEdit, useSelection } from './hooks';
@@ -32,6 +33,10 @@ export interface ISidebarProps {
   onRenameWorkspace?: (id: string, name: string) => void;
   onDeleteWorkspace?: (id: string) => void;
   onMoveWorkspace?: (id: string, position: number) => void;
+  onOpenWorkspaceSettings?: (id: string) => void;
+  invitations?: IMyInvitation[];
+  onAcceptInvitation?: (invitation: IMyInvitation) => void;
+  onDeclineInvitation?: (invitation: IMyInvitation) => void;
   onMoveItem?: (id: string, type: TNavItemType, parentId: string | null, position: number) => void;
   onBulkDelete?: (ids: Set<string>) => void;
   onBulkMove?: (ids: Set<string>, parentId: string | null, position: number) => void;
@@ -58,6 +63,10 @@ export const Sidebar = ({
   onRenameWorkspace,
   onDeleteWorkspace,
   onMoveWorkspace,
+  onOpenWorkspaceSettings,
+  invitations = [],
+  onAcceptInvitation,
+  onDeclineInvitation,
   onMoveItem,
   onBulkDelete,
   onBulkMove,
@@ -65,6 +74,7 @@ export const Sidebar = ({
   footer,
 }: ISidebarProps) => {
   const t = useTranslations();
+  const canManageStructure = usePermissionsStore((s) => s.canManageStructure);
 
   const {
     selectedIds,
@@ -254,9 +264,13 @@ export const Sidebar = ({
                 type: 'workspace',
               })
             }
+            onRequestSettings={(id) => onOpenWorkspaceSettings?.(id)}
             onMoveWorkspace={onMoveWorkspace}
             onBulkDelete={handleWorkspaceBulkDelete}
             onClearSelection={clearWorkspaceSelection}
+            invitations={invitations}
+            onAcceptInvitation={onAcceptInvitation}
+            onDeclineInvitation={onDeclineInvitation}
           />
         </div>
 
@@ -282,24 +296,26 @@ export const Sidebar = ({
                   </span>
                 )}
               </div>
-              <div className="flex items-center gap-0.5">
-                <button
-                  type="button"
-                  onClick={onCreateFolder}
-                  className="rounded-md p-1 text-[color:var(--text-subtle)] transition-colors hover:bg-[color:var(--surface-overlay)] hover:text-[color:var(--text)]"
-                  title={t.platform.sidebar.newFolder}
-                >
-                  <FolderPlus className="h-3.5 w-3.5" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onCreateThread?.()}
-                  className="rounded-md p-1 text-[color:var(--text-subtle)] transition-colors hover:bg-[color:var(--surface-overlay)] hover:text-[color:var(--text)]"
-                  title={t.platform.sidebar.newThread}
-                >
-                  <Plus className="h-3.5 w-3.5" />
-                </button>
-              </div>
+              {canManageStructure && (
+                <div className="flex items-center gap-0.5">
+                  <button
+                    type="button"
+                    onClick={onCreateFolder}
+                    className="rounded-md p-1 text-[color:var(--text-subtle)] transition-colors hover:bg-[color:var(--surface-overlay)] hover:text-[color:var(--text)]"
+                    title={t.platform.sidebar.newFolder}
+                  >
+                    <FolderPlus className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onCreateThread?.()}
+                    className="rounded-md p-1 text-[color:var(--text-subtle)] transition-colors hover:bg-[color:var(--surface-overlay)] hover:text-[color:var(--text)]"
+                    title={t.platform.sidebar.newThread}
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              )}
             </div>
 
             {!showStructureEmpty && !showSearchEmpty && (
@@ -343,7 +359,7 @@ export const Sidebar = ({
                     hint={t.platform.sidebar.emptyStructureHint}
                     ctaIcon={Plus}
                     ctaLabel={t.platform.sidebar.newThread}
-                    onCta={() => onCreateThread?.()}
+                    onCta={canManageStructure ? () => onCreateThread?.() : undefined}
                   />
                 </div>
               </div>
@@ -368,7 +384,7 @@ export const Sidebar = ({
           </div>
         )}
 
-        {selectionCount > 0 && (
+        {selectionCount > 0 && canManageStructure && (
           <div className="border-t border-[color:var(--border)] px-2 pt-2 pb-2">
             <BulkActionsBar
               count={selectionCount}

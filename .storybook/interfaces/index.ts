@@ -4,4 +4,5 @@ export * from './canvasStore';
 export * from './foundations';
 export * from './logo';
 export * from './modal';
+export * from './permissionsStore';
 export * from './showcase';

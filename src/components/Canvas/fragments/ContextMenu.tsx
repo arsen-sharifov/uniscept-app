@@ -18,7 +18,8 @@ import { useCallback, useEffect, useRef, type KeyboardEvent, type ReactNode } fr
 import { ECanvasNodeType, type TCanvasContextMenu } from '@interfaces';
 import { useClickOutside, useEscapeKey } from '@hooks';
 import { useTranslations } from '@/i18n';
-import { useCanvasStore } from '@/lib/stores';
+import { useCanvasStore, usePermissionsStore } from '@/lib/stores';
+import { canEditNode } from '@/lib/utils';
 
 import { buildReferenceUrl, hasValidatedParent, isCanvasNodeData } from '../utils';
 import { MenuDivider, MenuItem } from './MenuItem';
@@ -27,6 +28,14 @@ interface IContextMenuProps {
   menu: TCanvasContextMenu;
   onClose: () => void;
 }
+
+const joinSections = (sections: ReactNode[][]): ReactNode[] => {
+  const nonEmpty = sections.filter((section) => section.length > 0);
+
+  return nonEmpty.flatMap((section, index) =>
+    index === 0 ? section : [<MenuDivider key={`divider-${index}`} />, ...section],
+  );
+};
 
 export const ContextMenu = ({ menu, onClose }: IContextMenuProps) => {
   const t = useTranslations();
@@ -127,43 +136,46 @@ export const ContextMenu = ({ menu, onClose }: IContextMenuProps) => {
     [getMenuItems],
   );
 
-  const renderItems = (): ReactNode => {
+  const renderItems = (): ReactNode[] => {
     if (menu.type === 'pane') {
-      return (
-        <>
-          <MenuItem
-            icon={<Plus className="h-3 w-3" strokeWidth={2.25} />}
-            label={t.platform.canvas.context.addNode}
-            shortcut="N"
-            onClick={close(() => addNode({ x: menu.flowX, y: menu.flowY }, t.platform.canvas.node.defaultLabel))}
-            accent="emerald"
-          />
-
-          <MenuItem
-            icon={<Link2 className="h-3 w-3" strokeWidth={2.25} />}
-            label={t.platform.canvas.context.addReference}
-            shortcut="R"
-            onClick={close(() => setReferenceSearchPosition({ x: menu.flowX, y: menu.flowY }))}
-            accent="cyan"
-          />
-        </>
-      );
+      return [
+        <MenuItem
+          key="add-node"
+          icon={<Plus className="h-3 w-3" strokeWidth={2.25} />}
+          label={t.platform.canvas.context.addNode}
+          shortcut="N"
+          onClick={close(() => addNode({ x: menu.flowX, y: menu.flowY }, t.platform.canvas.node.defaultLabel))}
+          accent="emerald"
+        />,
+        <MenuItem
+          key="add-reference"
+          icon={<Link2 className="h-3 w-3" strokeWidth={2.25} />}
+          label={t.platform.canvas.context.addReference}
+          shortcut="R"
+          onClick={close(() => setReferenceSearchPosition({ x: menu.flowX, y: menu.flowY }))}
+          accent="cyan"
+        />,
+      ];
     }
 
     if (menu.type === 'edge') {
-      return (
+      return [
         <MenuItem
+          key="delete-edge"
           icon={<Trash2 className="h-3 w-3" strokeWidth={2.25} />}
           label={t.platform.canvas.context.deleteEdge}
           onClick={close(() => deleteEdge(menu.edgeId))}
           accent="red"
-        />
-      );
+        />,
+      ];
     }
 
     const state = useCanvasStore.getState();
     const node = state.nodes.find((n) => n.id === menu.nodeId);
-    if (!node) return null;
+    if (!node) return [];
+
+    const access = usePermissionsStore.getState();
+    const canEdit = canEditNode(node.data.createdBy, access);
 
     if (node.type === ECanvasNodeType.Reference) {
       const sourceWorkspaceId = typeof node.data.sourceWorkspaceId === 'string' ? node.data.sourceWorkspaceId : '';
@@ -171,11 +183,11 @@ export const ContextMenu = ({ menu, onClose }: IContextMenuProps) => {
       const sourceNodeId = typeof node.data.sourceNodeId === 'string' ? node.data.sourceNodeId : '';
       const canNavigate = Boolean(sourceWorkspaceId && sourceThreadId && sourceNodeId);
 
-      return (
-        <>
-          {canNavigate && (
-            <>
+      return joinSections([
+        canNavigate
+          ? [
               <MenuItem
+                key="open-referenced"
                 icon={<ExternalLink className="h-3 w-3" strokeWidth={2.25} />}
                 label={t.platform.canvas.context.openReferenced}
                 onClick={close(() => {
@@ -183,95 +195,121 @@ export const ContextMenu = ({ menu, onClose }: IContextMenuProps) => {
                   if (url) router.push(url);
                 })}
                 accent="cyan"
-              />
-
-              <MenuDivider />
-            </>
-          )}
-
-          <MenuItem
-            icon={<Trash2 className="h-3 w-3" strokeWidth={2.25} />}
-            label={t.platform.canvas.context.deleteReference}
-            onClick={close(() => deleteNode(menu.nodeId))}
-            accent="red"
-          />
-        </>
-      );
+              />,
+            ]
+          : [],
+        canEdit
+          ? [
+              <MenuItem
+                key="delete-reference"
+                icon={<Trash2 className="h-3 w-3" strokeWidth={2.25} />}
+                label={t.platform.canvas.context.deleteReference}
+                onClick={close(() => deleteNode(menu.nodeId))}
+                accent="red"
+              />,
+            ]
+          : [],
+      ]);
     }
 
     if (node.type === ECanvasNodeType.Question) {
-      return (
-        <MenuItem
-          icon={<Pencil className="h-3 w-3" strokeWidth={2.25} />}
-          label={t.platform.canvas.question.editLabel}
-          onClick={close(() => setEditingNodeId(menu.nodeId))}
-        />
-      );
+      return canEdit
+        ? [
+            <MenuItem
+              key="edit-question"
+              icon={<Pencil className="h-3 w-3" strokeWidth={2.25} />}
+              label={t.platform.canvas.question.editLabel}
+              onClick={close(() => setEditingNodeId(menu.nodeId))}
+            />,
+          ]
+        : [];
     }
 
-    if (!isCanvasNodeData(node.data)) return null;
+    if (!isCanvasNodeData(node.data)) return [];
 
     const { status, isAnswer } = node.data;
     const validatedParent = hasValidatedParent(menu.nodeId, state.nodes, state.edges);
-    const validDisabled = status !== 'valid' && !validatedParent;
-    const answerDisabled = !isAnswer && !validatedParent;
 
-    return (
-      <>
+    const actions = [
+      access.canEditCanvas && (
         <MenuItem
+          key="mark-valid"
           icon={<CheckCircle className="h-3 w-3" strokeWidth={2.25} />}
           label={status === 'valid' ? t.platform.canvas.context.unmarkValid : t.platform.canvas.context.markValid}
           shortcut="Y"
           onClick={close(() => setNodesStatus([menu.nodeId], 'valid'))}
           accent="emerald"
-          disabled={validDisabled}
+          disabled={status !== 'valid' && !validatedParent}
           hint={t.platform.canvas.context.needsValidParent}
         />
-
+      ),
+      access.canEditCanvas && (
         <MenuItem
+          key="mark-invalid"
           icon={<XCircle className="h-3 w-3" strokeWidth={2.25} />}
           label={status === 'invalid' ? t.platform.canvas.context.unmarkInvalid : t.platform.canvas.context.markInvalid}
           shortcut="X"
           onClick={close(() => setNodesStatus([menu.nodeId], 'invalid'))}
           accent="red"
         />
-
+      ),
+      access.canEditCanvas && (
         <MenuItem
+          key="mark-answer"
           icon={<Flag className="h-3 w-3" strokeWidth={2.25} />}
           label={isAnswer ? t.platform.canvas.context.unmarkAnswer : t.platform.canvas.context.markAnswer}
           shortcut="A"
           onClick={close(() => setNodeAnswer(menu.nodeId))}
-          disabled={answerDisabled}
+          disabled={!isAnswer && !validatedParent}
           hint={t.platform.canvas.context.needsValidParent}
         />
-
+      ),
+      access.canComment && (
         <MenuItem
+          key="comment"
           icon={<MessageSquare className="h-3 w-3" strokeWidth={2.25} />}
           label={t.platform.canvas.context.comment}
           shortcut="M"
           onClick={close(() => setOpenCommentsNodeId(menu.nodeId))}
         />
+      ),
+    ].filter(Boolean);
 
-        <MenuDivider />
-
-        <MenuItem
-          icon={<Copy className="h-3 w-3" strokeWidth={2.25} />}
-          label={t.platform.canvas.context.duplicate}
-          onClick={close(() => duplicateNode(menu.nodeId))}
-        />
-
-        <MenuDivider />
-
-        <MenuItem
-          icon={<Trash2 className="h-3 w-3" strokeWidth={2.25} />}
-          label={t.platform.canvas.context.delete}
-          shortcut="⌫"
-          onClick={close(() => deleteNode(menu.nodeId))}
-          accent="red"
-        />
-      </>
-    );
+    return joinSections([
+      actions,
+      access.canEditCanvas
+        ? [
+            <MenuItem
+              key="duplicate"
+              icon={<Copy className="h-3 w-3" strokeWidth={2.25} />}
+              label={t.platform.canvas.context.duplicate}
+              onClick={close(() => duplicateNode(menu.nodeId))}
+            />,
+          ]
+        : [],
+      canEdit
+        ? [
+            <MenuItem
+              key="delete"
+              icon={<Trash2 className="h-3 w-3" strokeWidth={2.25} />}
+              label={t.platform.canvas.context.delete}
+              shortcut="⌫"
+              onClick={close(() => deleteNode(menu.nodeId))}
+              accent="red"
+            />,
+          ]
+        : [],
+    ]);
   };
+
+  const items = renderItems();
+  const isEmpty = items.length === 0;
+
+  useEffect(() => {
+    if (isEmpty) onClose();
+  }, [isEmpty, onClose]);
+
+  if (isEmpty) return null;
 
   return (
     <div
@@ -282,7 +320,7 @@ export const ContextMenu = ({ menu, onClose }: IContextMenuProps) => {
       style={{ left: menu.x, top: menu.y }}
       className="fixed z-50 flex w-52 animate-rise-down flex-col rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-elevated)]/95 p-1 text-[color:var(--text)] shadow-[0_18px_48px_-16px_rgba(15,23,42,0.42)] backdrop-blur-2xl motion-reduce:animate-none"
     >
-      {renderItems()}
+      {items}
     </div>
   );
 };

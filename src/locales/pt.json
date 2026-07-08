@@ -39,10 +39,15 @@
         "password": "Palavra-passe",
         "back": "Voltar",
         "submit": "Registar",
-        "submitting": "A criar conta…"
+        "submitting": "A criar conta…",
+        "emailLocked": "Foi convidado com este e-mail",
+        "join": "Juntar-se",
+        "joining": "A juntar-se…"
       },
       "hasAccount": "Já tem conta?",
-      "signInLink": "Entrar"
+      "signInLink": "Entrar",
+      "inviteHeading": "Configure a sua conta",
+      "inviteSubtitle": "Está a juntar-se à sua equipa no Uniscept"
     },
     "placeholders": {
       "name": "João Silva",
@@ -82,6 +87,7 @@
       "weakPassword": "A palavra-passe é demasiado fraca. Use pelo menos 6 caracteres.",
       "samePassword": "A nova palavra-passe deve ser diferente da atual."
     },
+    "noPermission": "Você não tem permissão",
     "errorTitles": {
       "createFailed": "Não foi possível criar",
       "renameFailed": "Não foi possível renomear",
@@ -102,6 +108,16 @@
   },
   "platform": {
     "sidebar": {
+      "invitations": {
+        "title": "Convites",
+        "accept": "Aceitar",
+        "decline": "Recusar",
+        "accepted": "Você entrou no espaço de trabalho",
+        "declined": "Convite recusado",
+        "acceptFailed": "Não foi possível aceitar o convite",
+        "declineFailed": "Não foi possível recusar o convite"
+      },
+      "workspaceSettings": "Configurações do espaço de trabalho",
       "workspaces": "Espaços de trabalho",
       "noWorkspaceSelected": "Nenhum espaço selecionado",
       "noWorkspaces": "Sem espaços de trabalho. Crie um para começar.",
@@ -117,6 +133,7 @@
       "workspaceDeleted": "Espaço eliminado",
       "itemsDeleted": "Itens eliminados",
       "workspacesDeleted": "Espaços eliminados",
+      "workspacesDeleteSkipped": "Alguns espaços não foram eliminados porque você não os gere",
       "structure": "Estrutura",
       "newThread": "Novo tópico",
       "newFolder": "Nova pasta",
@@ -501,6 +518,111 @@
         "invitesDescription": "Quando você é convidado para um espaço ou seu papel muda.",
         "digest": "Resumo semanal",
         "digestDescription": "Um resumo de segunda-feira da atividade dos seus espaços."
+      }
+    },
+    "workspaceSettings": {
+      "close": "Fechar as configurações do espaço de trabalho",
+      "groups": {
+        "workspace": "Espaço de trabalho",
+        "access": "Acesso"
+      },
+      "sections": {
+        "general": "Geral",
+        "members": "Membros",
+        "roles": "Funções"
+      },
+      "roleNames": {
+        "owner": "Proprietário",
+        "member": "Membro",
+        "viewer": "Visualizador"
+      },
+      "general": {
+        "nameLabel": "Nome do espaço de trabalho",
+        "namePlaceholder": "Dê um nome a este espaço de trabalho",
+        "save": "Salvar",
+        "saving": "Salvando…",
+        "membersStat": "Membros",
+        "roleStat": "Sua função",
+        "createdStat": "Criado"
+      },
+      "members": {
+        "hint": "Pessoas com acesso a este espaço de trabalho.",
+        "you": "Você",
+        "changeRole": "Alterar função",
+        "remove": "Remover",
+        "removeConfirm": "Remover",
+        "removed": "Membro removido",
+        "removeFailed": "Não foi possível remover o membro",
+        "roleChanged": "Função atualizada",
+        "roleChangeFailed": "Não foi possível alterar a função",
+        "transferTitle": "Transferir propriedade",
+        "transferCritical": "Ação crítica",
+        "transferConfirmPrefix": "Transferir a propriedade para",
+        "transferConfirmSuffix": "? Você se tornará membro e esta ação não pode ser desfeita.",
+        "transferConfirm": "Transferir",
+        "transferred": "Propriedade transferida",
+        "transferFailed": "Não foi possível transferir a propriedade",
+        "cancel": "Cancelar",
+        "inviteTitle": "Convidar pessoas",
+        "inviteHint": "Elas entram na próxima vez que abrirem o Uniscept.",
+        "emailPlaceholder": "nome@empresa.com",
+        "sendInvite": "Enviar convite",
+        "sending": "Enviando…",
+        "invited": "Convite pronto",
+        "inviteFailed": "Não foi possível criar o convite",
+        "pendingTitle": "Pendentes",
+        "revoke": "Revogar",
+        "revoked": "Convite revogado",
+        "revokeFailed": "Não foi possível revogar o convite"
+      },
+      "roles": {
+        "hint": "Cada pessoa tem uma função. As funções definem o que ela pode fazer.",
+        "membersSuffix": "membros",
+        "newRole": "Nova função",
+        "nameLabel": "Nome da função",
+        "namePlaceholder": "ex.: Revisor",
+        "iconLabel": "Ícone",
+        "permissionsLabel": "Permissões",
+        "systemLocked": "Integrada",
+        "save": "Salvar função",
+        "saving": "Salvando…",
+        "create": "Criar função",
+        "cancel": "Cancelar",
+        "edit": "Editar função",
+        "delete": "Excluir função",
+        "created": "Função criada",
+        "createFailed": "Não foi possível criar a função",
+        "updated": "Função atualizada",
+        "updateFailed": "Não foi possível atualizar a função",
+        "deleteConfirm": "Excluir",
+        "deleted": "Função excluída",
+        "deleteFailed": "Não foi possível excluir a função"
+      },
+      "permissions": {
+        "canEditCanvas": {
+          "name": "Editar o quadro",
+          "description": "Criar e alterar nós, conexões e conclusões."
+        },
+        "canComment": {
+          "name": "Comentar",
+          "description": "Deixar comentários em nós e quadros."
+        },
+        "canManageStructure": {
+          "name": "Gerenciar tópicos e pastas",
+          "description": "Criar, renomear, mover e excluir tópicos e pastas."
+        },
+        "canManageMembers": {
+          "name": "Gerenciar membros",
+          "description": "Convidar pessoas, atribuir funções e remover membros."
+        },
+        "canManageRoles": {
+          "name": "Gerenciar funções",
+          "description": "Criar, editar e excluir funções personalizadas."
+        },
+        "canManageWorkspace": {
+          "name": "Gerenciar o espaço de trabalho",
+          "description": "Renomear ou excluir o espaço de trabalho."
+        }
       }
     }
   },

@@ -9,7 +9,6 @@
   --toast-safe-right: 1rem;
 }
 
-/* Surfaces with the vertical Toolbar reserve its right rail (right-4 + w-14 + gap) so toasts clear it. */
 :root[data-has-toolbar] {
   --toast-safe-right: 5.5rem;
 }

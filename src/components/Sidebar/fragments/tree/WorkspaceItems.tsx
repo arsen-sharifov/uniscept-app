@@ -32,6 +32,7 @@ interface IWorkspaceItemsProps {
   onClick: (id: string, event: MouseEvent) => void;
   onRequestRename: (id: string, name: string) => void;
   onRequestDelete: (id: string, name: string) => void;
+  onRequestSettings: (id: string) => void;
   onMove: (id: string, position: number) => void;
 }
 
@@ -48,6 +49,7 @@ export const WorkspaceItems = ({
   onClick,
   onRequestRename,
   onRequestDelete,
+  onRequestSettings,
   onMove,
 }: IWorkspaceItemsProps) => {
   const sensors = useSensors(
@@ -143,6 +145,7 @@ export const WorkspaceItems = ({
             onClick={onClick}
             onRequestRename={onRequestRename}
             onRequestDelete={onRequestDelete}
+            onRequestSettings={onRequestSettings}
             isDragActive={activeId !== null}
             dropIndicator={getDropIndicator(workspace.id)}
           />

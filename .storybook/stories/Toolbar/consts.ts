@@ -8,3 +8,13 @@ export const DENSE_DISABLED_TOOL_IDS = new Set<string>([
   ECanvasTool.Undo,
   ECanvasTool.Redo,
 ]);
+
+export const READ_ONLY_DISABLED_TOOL_IDS = new Set<string>([
+  ECanvasTool.AddNode,
+  ECanvasTool.Connect,
+  ECanvasTool.Delete,
+  ECanvasTool.ValidPath,
+  ECanvasTool.InvalidPath,
+  ECanvasTool.Answer,
+  ECanvasTool.CrossReference,
+]);

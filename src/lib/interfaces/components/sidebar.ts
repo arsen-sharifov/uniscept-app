@@ -23,6 +23,7 @@ export type TNavItem = IThreadItem | IFolderItem;
 export interface IWorkspaceItem {
   id: string;
   name: string;
+  canManageWorkspace: boolean;
 }
 
 export type TDropZone = 'before' | 'inside' | 'after';

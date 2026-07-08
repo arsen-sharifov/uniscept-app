@@ -1,21 +1,13 @@
 import { timingSafeEqual } from 'node:crypto';
 
-import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 
 import { INVITE_RATE_LIMIT_MAX_ATTEMPTS, INVITE_RATE_LIMIT_WINDOW_MS } from '@constants';
 import { createClient as createServerClient } from '@/lib/supabase/server';
 
-let adminClient: ReturnType<typeof createClient> | null = null;
+import { getAdminClient } from './utils';
+
 const inviteAttempts = new Map<string, { count: number; resetAt: number }>();
-
-const getAdminClient = () => {
-  if (!adminClient) {
-    adminClient = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
-  }
-
-  return adminClient;
-};
 
 const safeEqualStrings = (a: string, b: string): boolean => {
   const bufA = Buffer.from(a, 'utf8');

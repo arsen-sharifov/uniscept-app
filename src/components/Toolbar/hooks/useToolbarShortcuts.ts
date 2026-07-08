@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 
-import { useCanvasStore } from '@/lib/stores';
+import { useCanvasStore, usePermissionsStore } from '@/lib/stores';
 
 import { TOOL_KEY_MAP } from '../consts';
 import { isToolDisabled, isTypingTarget } from '../utils';
@@ -39,6 +39,7 @@ export const useToolbarShortcuts = (): void => {
       const disabled = isToolDisabled(tool, {
         canUndo: temporal.pastStates.length > 0,
         canRedo: temporal.futureStates.length > 0,
+        canEditCanvas: usePermissionsStore.getState().canEditCanvas,
       });
       if (disabled) return;
 

@@ -8,7 +8,8 @@ import { type FocusEvent, type FormEvent, type KeyboardEvent, useCallback, useEf
 import type { TCanvasNode, TNodeBandTone } from '@interfaces';
 
 import { useTranslations } from '@/i18n';
-import { useCanvasStore } from '@/lib/stores';
+import { useCanvasStore, usePermissionsStore } from '@/lib/stores';
+import { canEditNode } from '@/lib/utils';
 
 import { HANDLE_POSITIONS } from './consts';
 import { CommentItem, NodeBand } from './fragments';
@@ -27,10 +28,14 @@ export const CanvasNode = ({ id, data, selected }: NodeProps<TCanvasNode>) => {
   const addComment = useCanvasStore((s) => s.addComment);
   const deleteComment = useCanvasStore((s) => s.deleteComment);
   const clearNewFlag = useCanvasStore((s) => s.clearNewFlag);
-  const userId = useCanvasStore((s) => s.userId);
+  const userId = usePermissionsStore((s) => s.userId);
+  const isOwner = usePermissionsStore((s) => s.isOwner);
+  const canEditCanvas = usePermissionsStore((s) => s.canEditCanvas);
+  const canComment = usePermissionsStore((s) => s.canComment);
 
+  const canEdit = canEditNode(data.createdBy, { userId, isOwner, canEditCanvas });
   const isPending = pendingConnection === id;
-  const isEditing = editingNodeId === id;
+  const isEditing = editingNodeId === id && canEdit;
   const showComments = openCommentsNodeId === id;
 
   const [commentText, setCommentText] = useState('');
@@ -131,7 +136,11 @@ export const CanvasNode = ({ id, data, selected }: NodeProps<TCanvasNode>) => {
           id={handleId}
           type="source"
           position={position}
-          className="!h-2.5 !w-2.5 !rounded-full !border !border-[color:var(--surface)] !bg-[color:var(--accent)] !opacity-0 !shadow-[0_0_0_3px_var(--accent-soft)] !transition-opacity group-hover/node:!opacity-100"
+          isConnectable={canEditCanvas}
+          className={clsx(
+            '!h-2.5 !w-2.5 !rounded-full !border !border-[color:var(--surface)] !bg-[color:var(--accent)] !opacity-0 !shadow-[0_0_0_3px_var(--accent-soft)] !transition-opacity',
+            canEditCanvas ? 'group-hover/node:!opacity-100' : '!pointer-events-none',
+          )}
         />
       ))}
 
@@ -162,7 +171,7 @@ export const CanvasNode = ({ id, data, selected }: NodeProps<TCanvasNode>) => {
             </p>
           )}
 
-          {!isEditing && (
+          {!isEditing && (hasComments || canComment) && (
             <button
               type="button"
               onClick={(event) => {
@@ -239,32 +248,34 @@ export const CanvasNode = ({ id, data, selected }: NodeProps<TCanvasNode>) => {
                 <CommentItem
                   key={comment.id}
                   comment={comment}
-                  canDelete={isOwnComment(comment, userId)}
+                  canDelete={canComment && isOwnComment(comment, userId)}
                   onDelete={(commentId) => deleteComment(id, commentId)}
                 />
               ))
             )}
           </div>
 
-          <form
-            onSubmit={handleCommentSubmit}
-            className="flex items-center gap-2 border-t border-[color:var(--border)] px-2.5 py-2"
-          >
-            <input
-              value={commentText}
-              onChange={(event) => setCommentText(event.target.value)}
-              placeholder={t.platform.canvas.node.addCommentPlaceholder}
-              className="min-w-0 flex-1 bg-transparent px-1 text-[12px] text-[color:var(--text-strong)] outline-none placeholder:text-[color:var(--text-muted)]"
-            />
-            <button
-              type="submit"
-              disabled={!commentText.trim()}
-              className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-[color:var(--accent)] text-[color:var(--on-accent)] transition-[opacity,transform] duration-150 hover:scale-105 active:scale-95 disabled:opacity-30"
-              aria-label={t.platform.canvas.node.sendComment}
+          {canComment && (
+            <form
+              onSubmit={handleCommentSubmit}
+              className="flex items-center gap-2 border-t border-[color:var(--border)] px-2.5 py-2"
             >
-              <Send className="h-3 w-3" strokeWidth={2.25} />
-            </button>
-          </form>
+              <input
+                value={commentText}
+                onChange={(event) => setCommentText(event.target.value)}
+                placeholder={t.platform.canvas.node.addCommentPlaceholder}
+                className="min-w-0 flex-1 bg-transparent px-1 text-[12px] text-[color:var(--text-strong)] outline-none placeholder:text-[color:var(--text-muted)]"
+              />
+              <button
+                type="submit"
+                disabled={!commentText.trim()}
+                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-[color:var(--accent)] text-[color:var(--on-accent)] transition-[opacity,transform] duration-150 hover:scale-105 active:scale-95 disabled:opacity-30"
+                aria-label={t.platform.canvas.node.sendComment}
+              >
+                <Send className="h-3 w-3" strokeWidth={2.25} />
+              </button>
+            </form>
+          )}
         </div>
       )}
     </div>

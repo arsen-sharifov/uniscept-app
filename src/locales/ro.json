@@ -39,10 +39,15 @@
         "password": "Parolă",
         "back": "Înapoi",
         "submit": "Înregistrare",
-        "submitting": "Se creează contul…"
+        "submitting": "Se creează contul…",
+        "emailLocked": "Ai fost invitat cu acest e-mail",
+        "join": "Alătură-te",
+        "joining": "Se alătură…"
       },
       "hasAccount": "Ai deja cont?",
-      "signInLink": "Autentificare"
+      "signInLink": "Autentificare",
+      "inviteHeading": "Configurează-ți contul",
+      "inviteSubtitle": "Te alături echipei tale pe Uniscept"
     },
     "placeholders": {
       "name": "Ion Popescu",
@@ -82,6 +87,7 @@
       "weakPassword": "Parola este prea slabă. Folosiți cel puțin 6 caractere.",
       "samePassword": "Parola nouă trebuie să difere de cea actuală."
     },
+    "noPermission": "Nu ai permisiunea necesară",
     "errorTitles": {
       "createFailed": "Nu s-a putut crea",
       "renameFailed": "Nu s-a putut redenumi",
@@ -102,6 +108,16 @@
   },
   "platform": {
     "sidebar": {
+      "invitations": {
+        "title": "Invitații",
+        "accept": "Acceptă",
+        "decline": "Refuză",
+        "accepted": "Te-ai alăturat spațiului de lucru",
+        "declined": "Invitație refuzată",
+        "acceptFailed": "Nu s-a putut accepta invitația",
+        "declineFailed": "Nu s-a putut refuza invitația"
+      },
+      "workspaceSettings": "Setări spațiu de lucru",
       "workspaces": "Spații de lucru",
       "noWorkspaceSelected": "Niciun spațiu selectat",
       "noWorkspaces": "Niciun spațiu de lucru. Creează unul pentru a începe.",
@@ -117,6 +133,7 @@
       "workspaceDeleted": "Spațiu șters",
       "itemsDeleted": "Elemente șterse",
       "workspacesDeleted": "Spații șterse",
+      "workspacesDeleteSkipped": "Unele spații nu au fost șterse deoarece nu le administrați",
       "structure": "Structură",
       "newThread": "Fir nou",
       "newFolder": "Folder nou",
@@ -501,6 +518,111 @@
         "invitesDescription": "Când ești invitat într-un spațiu sau rolul tău se schimbă.",
         "digest": "Rezumat săptămânal",
         "digestDescription": "Un rezumat de luni al activității din spațiile tale."
+      }
+    },
+    "workspaceSettings": {
+      "close": "Închide setările spațiului de lucru",
+      "groups": {
+        "workspace": "Spațiu de lucru",
+        "access": "Acces"
+      },
+      "sections": {
+        "general": "General",
+        "members": "Membri",
+        "roles": "Roluri"
+      },
+      "roleNames": {
+        "owner": "Proprietar",
+        "member": "Membru",
+        "viewer": "Vizualizator"
+      },
+      "general": {
+        "nameLabel": "Numele spațiului de lucru",
+        "namePlaceholder": "Denumește acest spațiu de lucru",
+        "save": "Salvează",
+        "saving": "Se salvează…",
+        "membersStat": "Membri",
+        "roleStat": "Rolul tău",
+        "createdStat": "Creat"
+      },
+      "members": {
+        "hint": "Persoanele cu acces la acest spațiu de lucru.",
+        "you": "Tu",
+        "changeRole": "Schimbă rolul",
+        "remove": "Elimină",
+        "removeConfirm": "Elimină",
+        "removed": "Membru eliminat",
+        "removeFailed": "Nu s-a putut elimina membrul",
+        "roleChanged": "Rol actualizat",
+        "roleChangeFailed": "Nu s-a putut schimba rolul",
+        "transferTitle": "Transferă proprietatea",
+        "transferCritical": "Acțiune critică",
+        "transferConfirmPrefix": "Transferă proprietatea către",
+        "transferConfirmSuffix": "? Vei deveni membru și această acțiune nu poate fi anulată.",
+        "transferConfirm": "Transferă",
+        "transferred": "Proprietate transferată",
+        "transferFailed": "Nu s-a putut transfera proprietatea",
+        "cancel": "Anulează",
+        "inviteTitle": "Invită persoane",
+        "inviteHint": "Se alătură la următoarea deschidere a Uniscept.",
+        "emailPlaceholder": "nume@companie.com",
+        "sendInvite": "Trimite invitația",
+        "sending": "Se trimite…",
+        "invited": "Invitație pregătită",
+        "inviteFailed": "Nu s-a putut crea invitația",
+        "pendingTitle": "În așteptare",
+        "revoke": "Revocă",
+        "revoked": "Invitație revocată",
+        "revokeFailed": "Nu s-a putut revoca invitația"
+      },
+      "roles": {
+        "hint": "Fiecare are un singur rol. Rolurile stabilesc ce poate face o persoană.",
+        "membersSuffix": "membri",
+        "newRole": "Rol nou",
+        "nameLabel": "Numele rolului",
+        "namePlaceholder": "ex. Recenzent",
+        "iconLabel": "Pictogramă",
+        "permissionsLabel": "Permisiuni",
+        "systemLocked": "Predefinit",
+        "save": "Salvează rolul",
+        "saving": "Se salvează…",
+        "create": "Creează rolul",
+        "cancel": "Anulează",
+        "edit": "Editează rolul",
+        "delete": "Șterge rolul",
+        "created": "Rol creat",
+        "createFailed": "Nu s-a putut crea rolul",
+        "updated": "Rol actualizat",
+        "updateFailed": "Nu s-a putut actualiza rolul",
+        "deleteConfirm": "Șterge",
+        "deleted": "Rol șters",
+        "deleteFailed": "Nu s-a putut șterge rolul"
+      },
+      "permissions": {
+        "canEditCanvas": {
+          "name": "Editează pânza",
+          "description": "Creează și modifică noduri, conexiuni și concluzii."
+        },
+        "canComment": {
+          "name": "Comentează",
+          "description": "Lasă comentarii pe noduri și pânze."
+        },
+        "canManageStructure": {
+          "name": "Gestionează fire și foldere",
+          "description": "Creează, redenumește, mută și șterge fire și foldere."
+        },
+        "canManageMembers": {
+          "name": "Gestionează membrii",
+          "description": "Invită persoane, atribuie roluri și elimină membri."
+        },
+        "canManageRoles": {
+          "name": "Gestionează rolurile",
+          "description": "Creează, editează și șterge roluri personalizate."
+        },
+        "canManageWorkspace": {
+          "name": "Gestionează spațiul de lucru",
+          "description": "Redenumește sau șterge spațiul de lucru."
+        }
       }
     }
   },

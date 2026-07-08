@@ -10,9 +10,12 @@ import {
   type TNavItem,
   type TNavItemType,
   type IWorkspaceItem,
+  type IMyInvitation,
 } from '@interfaces';
 import {
-  getWorkspaces,
+  getMyWorkspaces,
+  getMyWorkspacePermissions,
+  getUser,
   createWorkspace,
   updateWorkspaceName,
   deleteWorkspace,
@@ -30,6 +33,9 @@ import {
   deleteThreads,
   moveFolder,
   moveThread,
+  getMyInvitations,
+  acceptWorkspaceInvitation,
+  declineWorkspaceInvitation,
 } from '@api/client';
 import {
   buildNavTree,
@@ -45,7 +51,7 @@ import {
 } from '@/components/Sidebar/utils';
 import { useTranslations } from '@/i18n';
 import { event } from '@/lib/events';
-import { useCanvasStore } from '@/lib/stores';
+import { useCanvasStore, usePermissionsStore } from '@/lib/stores';
 import { createClient } from '@/lib/supabase';
 
 export const useWorkspaceManager = () => {
@@ -62,6 +68,7 @@ export const useWorkspaceManager = () => {
 
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const [editingWorkspaceId, setEditingWorkspaceId] = useState<string | null>(null);
+  const [invitations, setInvitations] = useState<IMyInvitation[]>([]);
 
   const initialized = useRef(false);
   const justCreatedIds = useRef<Set<string>>(new Set());
@@ -87,13 +94,8 @@ export const useWorkspaceManager = () => {
     initialized.current = true;
 
     const init = async () => {
-      const [, workspaceList] = await Promise.all([createClient().auth.getSession(), getWorkspaces()]);
-      setWorkspaces(
-        workspaceList.map((workspace) => ({
-          id: workspace.id,
-          name: workspace.name,
-        })),
-      );
+      const [, workspaceList] = await Promise.all([createClient().auth.getSession(), getMyWorkspaces()]);
+      setWorkspaces(workspaceList);
 
       const targetWorkspaceId = workspaceIdParam
         ? workspaceList.find((workspace) => workspace.id === workspaceIdParam)?.id
@@ -138,6 +140,27 @@ export const useWorkspaceManager = () => {
     });
   }, []);
 
+  useEffect(() => {
+    usePermissionsStore.getState().clearAccess();
+    if (!activeWorkspaceId) return;
+
+    let cancelled = false;
+
+    Promise.all([getUser(), getMyWorkspacePermissions(activeWorkspaceId)])
+      .then(([{ data }, access]) => {
+        if (cancelled) return;
+        usePermissionsStore.getState().setAccess(activeWorkspaceId, data.user?.id ?? null, access);
+      })
+      .catch((error) => {
+        if (cancelled) return;
+        event.error(error, { title: t.common.errorTitles.loadFailed, context: 'sidebar.loadPermissions' });
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeWorkspaceId, t]);
+
   const handleWorkspaceSelect = useCallback(
     async (id: string) => {
       const previousWorkspaceId = activeWorkspaceId;
@@ -171,6 +194,7 @@ export const useWorkspaceManager = () => {
     const newWorkspace: IWorkspaceItem = {
       id: created.id,
       name: created.name,
+      canManageWorkspace: true,
     };
     setWorkspaces((prev) => [...prev, newWorkspace]);
     setActiveWorkspaceId(created.id);
@@ -182,23 +206,73 @@ export const useWorkspaceManager = () => {
   }, [router, t]);
 
   const reloadWorkspaces = useCallback(async () => {
-    const workspaceList = await getWorkspaces().catch((error: unknown) => {
+    const workspaceList = await getMyWorkspaces().catch((error: unknown) => {
       event.error(error, { toast: false, context: 'sidebar.reloadWorkspaces' });
 
       return null;
     });
     if (!workspaceList) return;
 
-    setWorkspaces(
-      workspaceList.map((workspace) => ({
-        id: workspace.id,
-        name: workspace.name,
-      })),
-    );
+    setWorkspaces(workspaceList);
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    getMyInvitations()
+      .then((list) => {
+        if (!cancelled) setInvitations(list);
+      })
+      .catch((error) => event.error(error, { toast: false, context: 'sidebar.loadInvitations' }));
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const handleAcceptInvitation = useCallback(
+    async (invitation: IMyInvitation) => {
+      try {
+        await acceptWorkspaceInvitation(invitation.id);
+      } catch (error) {
+        event.error(error, {
+          title: t.platform.sidebar.invitations.acceptFailed,
+          context: 'sidebar.acceptInvitation',
+        });
+
+        return;
+      }
+
+      setInvitations((prev) => prev.filter((item) => item.id !== invitation.id));
+      await reloadWorkspaces();
+      event.success(t.platform.sidebar.invitations.accepted);
+      handleWorkspaceSelect(invitation.workspaceId);
+    },
+    [reloadWorkspaces, handleWorkspaceSelect, t],
+  );
+
+  const handleDeclineInvitation = useCallback(
+    async (invitation: IMyInvitation) => {
+      try {
+        await declineWorkspaceInvitation(invitation.id);
+      } catch (error) {
+        event.error(error, {
+          title: t.platform.sidebar.invitations.declineFailed,
+          context: 'sidebar.declineInvitation',
+        });
+
+        return;
+      }
+
+      setInvitations((prev) => prev.filter((item) => item.id !== invitation.id));
+      event.success(t.platform.sidebar.invitations.declined);
+    },
+    [t],
+  );
 
   const handleRenameWorkspace = useCallback(
     async (id: string, name: string) => {
+      if (!workspaces.find((workspace) => workspace.id === id)?.canManageWorkspace) return;
+
       const wasJustCreated = justCreatedIds.current.delete(id);
       setWorkspaces((prev) => prev.map((workspace) => (workspace.id === id ? { ...workspace, name } : workspace)));
       try {
@@ -209,11 +283,13 @@ export const useWorkspaceManager = () => {
         await reloadWorkspaces();
       }
     },
-    [reloadWorkspaces, t],
+    [workspaces, reloadWorkspaces, t],
   );
 
   const handleDeleteWorkspace = useCallback(
     async (id: string) => {
+      if (!workspaces.find((workspace) => workspace.id === id)?.canManageWorkspace) return;
+
       try {
         await deleteWorkspace(id);
       } catch (error) {
@@ -241,12 +317,13 @@ export const useWorkspaceManager = () => {
       router.push('/platform');
       event.success(t.platform.sidebar.workspaceDeleted);
     },
-    [activeWorkspaceId, router, reloadWorkspaceContent, t],
+    [workspaces, activeWorkspaceId, router, reloadWorkspaceContent, t],
   );
 
   const handleCreateThread = useCallback(
     async (folderId?: string) => {
       if (!activeWorkspaceId) return;
+      if (!usePermissionsStore.getState().canManageStructure) return;
 
       const thread = await createThread(activeWorkspaceId, folderId).catch((error: unknown) => {
         event.error(error, { title: t.common.errorTitles.createFailed, context: 'sidebar.createThread' });
@@ -271,6 +348,7 @@ export const useWorkspaceManager = () => {
 
   const handleCreateFolder = useCallback(async () => {
     if (!activeWorkspaceId) return;
+    if (!usePermissionsStore.getState().canManageStructure) return;
 
     const folder = await createFolder(activeWorkspaceId).catch((error: unknown) => {
       event.error(error, { title: t.common.errorTitles.createFailed, context: 'sidebar.createFolder' });
@@ -288,6 +366,7 @@ export const useWorkspaceManager = () => {
   const handleDeleteItem = useCallback(
     async (id: string) => {
       if (!activeWorkspaceId) return;
+      if (!usePermissionsStore.getState().canManageStructure) return;
 
       const item = findInTree(navItems, id);
       if (!item) return;
@@ -318,6 +397,8 @@ export const useWorkspaceManager = () => {
 
   const handleRenameItem = useCallback(
     async (id: string, name: string) => {
+      if (!usePermissionsStore.getState().canManageStructure) return;
+
       const item = findInTree(navItems, id);
       if (!item) return;
 
@@ -344,6 +425,7 @@ export const useWorkspaceManager = () => {
   const handleMoveItem = useCallback(
     async (id: string, type: TNavItemType, parentId: string | null, position: number) => {
       if (!activeWorkspaceId) return;
+      if (!usePermissionsStore.getState().canManageStructure) return;
 
       const oldParentId = findParentId(navItems, id) ?? null;
 
@@ -410,6 +492,7 @@ export const useWorkspaceManager = () => {
   const handleBulkDelete = useCallback(
     async (ids: Set<string>) => {
       if (!activeWorkspaceId) return;
+      if (!usePermissionsStore.getState().canManageStructure) return;
 
       const resolved = [...ids].map((id) => findInTree(navItems, id)).filter((item): item is TNavItem => item !== null);
       const folderIds = resolved.filter((item) => item.type === 'folder').map((item) => item.id);
@@ -451,11 +534,21 @@ export const useWorkspaceManager = () => {
 
   const handleBulkDeleteWorkspaces = useCallback(
     async (ids: Set<string>) => {
-      const idArr = [...ids];
+      const manageableIds = new Set(
+        [...ids].filter((id) => workspaces.find((workspace) => workspace.id === id)?.canManageWorkspace),
+      );
+      const skippedCount = ids.size - manageableIds.size;
+      if (manageableIds.size === 0) {
+        if (skippedCount > 0) event.warning(t.platform.sidebar.workspacesDeleteSkipped);
+
+        return;
+      }
+
+      const idArr = [...manageableIds];
 
       setWorkspaces((prev) => {
-        const remaining = prev.filter((workspace) => !ids.has(workspace.id));
-        if (activeWorkspaceId && ids.has(activeWorkspaceId)) {
+        const remaining = prev.filter((workspace) => !manageableIds.has(workspace.id));
+        if (activeWorkspaceId && manageableIds.has(activeWorkspaceId)) {
           const next = remaining[0];
           if (next) {
             setActiveWorkspaceId(next.id);
@@ -472,13 +565,17 @@ export const useWorkspaceManager = () => {
 
       try {
         await deleteWorkspaces(idArr);
-        event.success(t.platform.sidebar.workspacesDeleted);
+        if (skippedCount > 0) {
+          event.warning(t.platform.sidebar.workspacesDeleteSkipped);
+        } else {
+          event.success(t.platform.sidebar.workspacesDeleted);
+        }
       } catch (error) {
         event.error(error, { title: t.common.errorTitles.deleteFailed, context: 'sidebar.bulkDeleteWorkspaces' });
         await reloadWorkspaces();
       }
     },
-    [activeWorkspaceId, router, reloadWorkspaceContent, reloadWorkspaces, t],
+    [workspaces, activeWorkspaceId, router, reloadWorkspaceContent, reloadWorkspaces, t],
   );
 
   const handleMoveWorkspace = useCallback(
@@ -513,6 +610,7 @@ export const useWorkspaceManager = () => {
   const handleBulkMove = useCallback(
     async (ids: Set<string>, targetParentId: string | null) => {
       if (!activeWorkspaceId) return;
+      if (!usePermissionsStore.getState().canManageStructure) return;
 
       const targetSiblings = getSiblings(navItems, targetParentId);
       const existingCount = targetSiblings.filter((sibling) => !ids.has(sibling.id)).length;
@@ -586,5 +684,9 @@ export const useWorkspaceManager = () => {
     onBulkDelete: handleBulkDelete,
     onBulkMove: handleBulkMove,
     onBulkDeleteWorkspaces: handleBulkDeleteWorkspaces,
+    invitations,
+    onAcceptInvitation: handleAcceptInvitation,
+    onDeclineInvitation: handleDeclineInvitation,
+    reloadWorkspaces,
   };
 };

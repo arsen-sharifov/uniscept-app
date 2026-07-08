@@ -9,6 +9,7 @@ import type { IFlattenedItem, TDropZone, TNavItemType } from '@interfaces';
 
 import { SmartTooltip } from '@/components/Tooltip';
 import { useTranslations } from '@/i18n';
+import { usePermissionsStore } from '@/lib/stores';
 
 import { DropLineIndicator } from './DropLineIndicator';
 import { GripActivator } from './GripActivator';
@@ -61,9 +62,10 @@ export const SortableNavItem = ({
   isDragActive,
 }: ISortableNavItemProps) => {
   const translations = useTranslations();
+  const canManageStructure = usePermissionsStore((s) => s.canManageStructure);
   const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({
     id: item.id,
-    disabled: editingId === item.id,
+    disabled: editingId === item.id || !canManageStructure,
   });
 
   const isActive = item.id === activeItemId;
@@ -147,7 +149,7 @@ export const SortableNavItem = ({
                   className={clsx(
                     'absolute inset-0 h-4 w-4 transition-opacity duration-150',
                     highlightIcon ? 'text-[color:var(--accent)]' : 'text-[color:var(--text-subtle)]',
-                    !isEditing && 'group-hover/item:opacity-0',
+                    !isEditing && canManageStructure && 'group-hover/item:opacity-0',
                   )}
                 />
               ) : (
@@ -155,7 +157,7 @@ export const SortableNavItem = ({
                   className={clsx(
                     'absolute inset-0 h-4 w-4 transition-opacity duration-150',
                     highlightIcon ? 'text-[color:var(--accent)]' : 'text-[color:var(--text-muted)]',
-                    !isEditing && 'group-hover/item:opacity-0',
+                    !isEditing && canManageStructure && 'group-hover/item:opacity-0',
                   )}
                 />
               )
@@ -164,11 +166,11 @@ export const SortableNavItem = ({
                 className={clsx(
                   'absolute inset-0 h-4 w-4 transition-opacity duration-150',
                   isActive ? 'text-[color:var(--accent)]' : 'text-[color:var(--text-subtle)]',
-                  !isEditing && 'group-hover/item:opacity-0',
+                  !isEditing && canManageStructure && 'group-hover/item:opacity-0',
                 )}
               />
             )}
-            {!isEditing && (
+            {!isEditing && canManageStructure && (
               <GripActivator
                 setActivatorRef={setActivatorNodeRef}
                 attributes={attributes}
@@ -195,7 +197,10 @@ export const SortableNavItem = ({
             <span
               aria-label={translations.platform.sidebar.resolved}
               title={translations.platform.sidebar.resolved}
-              className="ml-auto flex shrink-0 items-center transition-opacity duration-150 group-hover/item:opacity-0"
+              className={clsx(
+                'ml-auto flex shrink-0 items-center transition-opacity duration-150',
+                canManageStructure && 'group-hover/item:opacity-0',
+              )}
             >
               <CheckCircle2 className="h-3.5 w-3.5 text-[color:var(--decision)]" strokeWidth={2.25} />
             </span>
@@ -214,7 +219,8 @@ export const SortableNavItem = ({
               <ChevronRight
                 aria-hidden="true"
                 className={clsx(
-                  'ml-auto h-3 w-3 shrink-0 transition-[transform,opacity,color] duration-150 group-hover/item:opacity-0',
+                  'ml-auto h-3 w-3 shrink-0 transition-[transform,opacity,color] duration-150',
+                  canManageStructure && 'group-hover/item:opacity-0',
                   !item.collapsed && 'rotate-90',
                   highlightIcon ? 'text-[color:var(--accent)]' : 'text-[color:var(--text-subtle)]',
                 )}
@@ -223,7 +229,7 @@ export const SortableNavItem = ({
           )}
         </button>
 
-        {!isDragging && !isEditing && (
+        {!isDragging && !isEditing && canManageStructure && (
           <ItemActionsToolbar isActive={isActive} isSelected={isSelected}>
             {isFolder && (
               <button

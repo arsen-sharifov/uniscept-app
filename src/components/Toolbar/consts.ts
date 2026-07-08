@@ -1,5 +1,7 @@
 import { ECanvasTool } from '@/components/tools';
 
+export const EDIT_GROUP_IDS: ReadonlySet<string> = new Set(['build', 'decide', 'link']);
+
 export const TOOLTIP_DELAY_MS = 450;
 
 export const FLASH_DURATION_MS = 220;

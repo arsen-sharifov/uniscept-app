@@ -4,9 +4,9 @@ import { fn } from 'storybook/test';
 
 import type { IToolGroup } from '@interfaces';
 
-import { ECanvasTool, type IToolbarProps, Toolbar, buildCanvasTools } from '@/components';
+import { ECanvasTool, type IToolbarProps, Toolbar, buildCanvasToolGroups, buildCanvasTools } from '@/components';
 
-import { DENSE_DISABLED_TOOL_IDS } from './consts';
+import { DENSE_DISABLED_TOOL_IDS, READ_ONLY_DISABLED_TOOL_IDS } from './consts';
 import { ToolbarWithState, type IToolbarWithStateProps } from './fragments';
 import { ARG_CATEGORIES } from '../../consts';
 
@@ -104,6 +104,28 @@ export const WithDisabledTools: Story = {
         ...group,
         tools: group.tools.map((tool) =>
           tool.id === ECanvasTool.Undo || tool.id === ECanvasTool.Redo ? { ...tool, disabled: true } : tool,
+        ),
+      })),
+  }),
+};
+
+export const ReadOnly: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Viewer permissions — every canvas-mutating tool is disabled and its tooltip swaps the shortcut for the "no permission" reason, matching the production state driven by the permissions store.',
+      },
+    },
+  },
+  render: renderToolbar({
+    buildGroups: (t) =>
+      buildCanvasToolGroups(t.platform.canvas.tools).map((group) => ({
+        ...group,
+        tools: group.tools.map((tool) =>
+          READ_ONLY_DISABLED_TOOL_IDS.has(tool.id)
+            ? { ...tool, disabled: true, disabledReason: t.common.noPermission }
+            : tool,
         ),
       })),
   }),

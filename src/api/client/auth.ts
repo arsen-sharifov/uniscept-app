@@ -16,6 +16,24 @@ export const signUp = async (email: string, password: string, name: string) => {
   });
 };
 
+export const getSession = async () => {
+  const supabase = createClient();
+
+  return supabase.auth.getSession();
+};
+
+export const setSession = async (accessToken: string, refreshToken: string) => {
+  const supabase = createClient();
+
+  return supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+};
+
+export const completeInvitedAccount = async (name: string, password: string) => {
+  const supabase = createClient();
+
+  return supabase.auth.updateUser({ password, data: { name, plan: 'beta' } });
+};
+
 export const signOut = async () => {
   const supabase = createClient();
 

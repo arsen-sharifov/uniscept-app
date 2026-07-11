@@ -23,6 +23,7 @@ export interface IToolGroup {
 export interface IToolAvailability {
   canUndo: boolean;
   canRedo: boolean;
+  canEditCanvas: boolean;
 }
 
 export type TCanvasToolsTranslations = TTranslations['platform']['canvas']['tools'];

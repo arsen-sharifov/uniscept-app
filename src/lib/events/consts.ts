@@ -3,6 +3,7 @@ import type { TErrorCategory } from '@interfaces';
 export const FETCH_FAILURE_PATTERN = /failed to fetch|networkerror|load failed/i;
 
 export const CATEGORY_BY_HTTP_STATUS: Record<number, TErrorCategory> = {
+  400: 'validation',
   401: 'auth',
   403: 'permission',
   404: 'notFound',
@@ -13,7 +14,9 @@ export const CATEGORY_BY_HTTP_STATUS: Record<number, TErrorCategory> = {
 export const CATEGORY_BY_CODE: Record<string, TErrorCategory> = {
   '23505': 'validation',
   '23503': 'validation',
+  '22023': 'validation',
   '42501': 'permission',
+  P0002: 'notFound',
   PGRST301: 'auth',
   invalid_credentials: 'invalidCredentials',
   email_not_confirmed: 'emailNotConfirmed',

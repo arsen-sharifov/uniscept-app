@@ -4,10 +4,11 @@ import { clsx } from 'clsx';
 import { ChevronsUpDown, LayoutGrid, Plus } from 'lucide-react';
 import { useState, type KeyboardEvent, type MouseEvent } from 'react';
 
-import type { IWorkspaceItem } from '@interfaces';
+import type { IMyInvitation, IWorkspaceItem } from '@interfaces';
 
 import { Popover } from '@/components/Popover';
 import { useTranslations } from '@/i18n';
+import { roleLabel } from '@/lib/utils';
 
 import { WorkspaceItems } from './WorkspaceItems';
 import { BulkActionsBar } from '../actions/BulkActionsBar';
@@ -27,9 +28,13 @@ interface IWorkspaceSwitcherProps {
   onCreateWorkspace?: () => void;
   onRequestRename: (id: string, name: string) => void;
   onRequestDelete: (id: string, name: string) => void;
+  onRequestSettings: (id: string) => void;
   onMoveWorkspace?: (id: string, position: number) => void;
   onBulkDelete: () => void;
   onClearSelection: () => void;
+  invitations?: IMyInvitation[];
+  onAcceptInvitation?: (invitation: IMyInvitation) => void;
+  onDeclineInvitation?: (invitation: IMyInvitation) => void;
 }
 
 export const WorkspaceSwitcher = ({
@@ -47,9 +52,13 @@ export const WorkspaceSwitcher = ({
   onCreateWorkspace,
   onRequestRename,
   onRequestDelete,
+  onRequestSettings,
   onMoveWorkspace,
   onBulkDelete,
   onClearSelection,
+  invitations = [],
+  onAcceptInvitation,
+  onDeclineInvitation,
 }: IWorkspaceSwitcherProps) => {
   const t = useTranslations();
   const [open, setOpen] = useState(false);
@@ -107,6 +116,48 @@ export const WorkspaceSwitcher = ({
         </button>
       }
     >
+      {invitations.length > 0 && (
+        <div className="border-b border-[color:var(--border)] px-2 py-2">
+          <span className="mb-1.5 block px-1 text-[10px] font-semibold tracking-wider text-[color:var(--text-muted)] uppercase">
+            {t.platform.sidebar.invitations.title}
+          </span>
+          <div className="space-y-1.5">
+            {invitations.map((invitation) => (
+              <div
+                key={invitation.id}
+                className="rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-overlay)] px-2.5 py-2"
+              >
+                <p className="truncate text-xs font-semibold text-[color:var(--text-strong)]">
+                  {invitation.workspaceName}
+                </p>
+                <p className="truncate text-[10px] text-[color:var(--text-muted)]">
+                  {roleLabel(invitation.roleKey, invitation.roleName, t)}
+                </p>
+                <div className="mt-1.5 flex gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onAcceptInvitation?.(invitation);
+                      setOpen(false);
+                    }}
+                    className="flex-1 cursor-pointer rounded-lg bg-gradient-to-r from-[color:var(--accent)] to-[color:var(--accent-2)] px-2 py-1 text-[11px] font-medium text-[color:var(--on-accent)] transition-opacity hover:opacity-90"
+                  >
+                    {t.platform.sidebar.invitations.accept}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onDeclineInvitation?.(invitation)}
+                    className="cursor-pointer rounded-lg px-2 py-1 text-[11px] font-medium text-[color:var(--text-muted)] transition-colors hover:bg-[color:var(--surface)] hover:text-[color:var(--text-strong)]"
+                  >
+                    {t.platform.sidebar.invitations.decline}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="flex items-center justify-between border-b border-[color:var(--border)] px-3 py-2">
         <span className="text-[10px] font-semibold tracking-wider text-[color:var(--text-muted)] uppercase">
           {t.platform.sidebar.workspaces}
@@ -163,6 +214,10 @@ export const WorkspaceSwitcher = ({
             }}
             onRequestRename={onRequestRename}
             onRequestDelete={onRequestDelete}
+            onRequestSettings={(id) => {
+              onRequestSettings(id);
+              setOpen(false);
+            }}
             onMove={(id, position) => onMoveWorkspace?.(id, position)}
           />
         )}

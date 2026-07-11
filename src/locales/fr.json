@@ -39,10 +39,15 @@
         "password": "Mot de passe",
         "back": "Retour",
         "submit": "S'inscrire",
-        "submitting": "Création du compte…"
+        "submitting": "Création du compte…",
+        "emailLocked": "Vous avez été invité avec cet e-mail",
+        "join": "Rejoindre",
+        "joining": "En cours…"
       },
       "hasAccount": "Vous avez déjà un compte ?",
-      "signInLink": "Se connecter"
+      "signInLink": "Se connecter",
+      "inviteHeading": "Configurez votre compte",
+      "inviteSubtitle": "Vous rejoignez votre équipe sur Uniscept"
     },
     "placeholders": {
       "name": "Jean Dupont",
@@ -82,6 +87,7 @@
       "weakPassword": "Mot de passe trop faible. Utilisez au moins 6 caractères.",
       "samePassword": "Le nouveau mot de passe doit être différent de l'actuel."
     },
+    "noPermission": "Vous n'avez pas la permission",
     "errorTitles": {
       "createFailed": "Impossible de créer",
       "renameFailed": "Impossible de renommer",
@@ -102,6 +108,16 @@
   },
   "platform": {
     "sidebar": {
+      "invitations": {
+        "title": "Invitations",
+        "accept": "Accepter",
+        "decline": "Refuser",
+        "accepted": "Vous avez rejoint l'espace de travail",
+        "declined": "Invitation refusée",
+        "acceptFailed": "Impossible d'accepter l'invitation",
+        "declineFailed": "Impossible de refuser l'invitation"
+      },
+      "workspaceSettings": "Paramètres de l'espace de travail",
       "workspaces": "Espaces de travail",
       "noWorkspaceSelected": "Aucun espace sélectionné",
       "noWorkspaces": "Aucun espace de travail. Créez-en un pour commencer.",
@@ -117,6 +133,7 @@
       "workspaceDeleted": "Espace supprimé",
       "itemsDeleted": "Éléments supprimés",
       "workspacesDeleted": "Espaces supprimés",
+      "workspacesDeleteSkipped": "Certains espaces n'ont pas été supprimés car vous ne les gérez pas",
       "structure": "Structure",
       "newThread": "Nouveau fil",
       "newFolder": "Nouveau dossier",
@@ -501,6 +518,111 @@
         "invitesDescription": "Quand vous êtes invité à un espace ou que votre rôle change.",
         "digest": "Résumé hebdomadaire",
         "digestDescription": "Un résumé du lundi de l'activité de vos espaces."
+      }
+    },
+    "workspaceSettings": {
+      "close": "Fermer les paramètres de l'espace de travail",
+      "groups": {
+        "workspace": "Espace de travail",
+        "access": "Accès"
+      },
+      "sections": {
+        "general": "Général",
+        "members": "Membres",
+        "roles": "Rôles"
+      },
+      "roleNames": {
+        "owner": "Propriétaire",
+        "member": "Membre",
+        "viewer": "Lecteur"
+      },
+      "general": {
+        "nameLabel": "Nom de l'espace de travail",
+        "namePlaceholder": "Nommez cet espace de travail",
+        "save": "Enregistrer",
+        "saving": "Enregistrement…",
+        "membersStat": "Membres",
+        "roleStat": "Votre rôle",
+        "createdStat": "Créé le"
+      },
+      "members": {
+        "hint": "Les personnes ayant accès à cet espace de travail.",
+        "you": "Vous",
+        "changeRole": "Changer le rôle",
+        "remove": "Retirer",
+        "removeConfirm": "Retirer",
+        "removed": "Membre retiré",
+        "removeFailed": "Impossible de retirer le membre",
+        "roleChanged": "Rôle mis à jour",
+        "roleChangeFailed": "Impossible de changer le rôle",
+        "transferTitle": "Transférer la propriété",
+        "transferCritical": "Action critique",
+        "transferConfirmPrefix": "Transférer la propriété à",
+        "transferConfirmSuffix": " ? Vous deviendrez membre et cette action est irréversible.",
+        "transferConfirm": "Transférer",
+        "transferred": "Propriété transférée",
+        "transferFailed": "Impossible de transférer la propriété",
+        "cancel": "Annuler",
+        "inviteTitle": "Inviter des personnes",
+        "inviteHint": "Elles rejoignent à leur prochaine ouverture d'Uniscept.",
+        "emailPlaceholder": "nom@entreprise.com",
+        "sendInvite": "Envoyer l'invitation",
+        "sending": "Envoi…",
+        "invited": "Invitation prête",
+        "inviteFailed": "Impossible de créer l'invitation",
+        "pendingTitle": "En attente",
+        "revoke": "Révoquer",
+        "revoked": "Invitation révoquée",
+        "revokeFailed": "Impossible de révoquer l'invitation"
+      },
+      "roles": {
+        "hint": "Chacun a un seul rôle. Les rôles déterminent ce qu'une personne peut faire.",
+        "membersSuffix": "membres",
+        "newRole": "Nouveau rôle",
+        "nameLabel": "Nom du rôle",
+        "namePlaceholder": "ex. Relecteur",
+        "iconLabel": "Icône",
+        "permissionsLabel": "Autorisations",
+        "systemLocked": "Intégré",
+        "save": "Enregistrer le rôle",
+        "saving": "Enregistrement…",
+        "create": "Créer le rôle",
+        "cancel": "Annuler",
+        "edit": "Modifier le rôle",
+        "delete": "Supprimer le rôle",
+        "created": "Rôle créé",
+        "createFailed": "Impossible de créer le rôle",
+        "updated": "Rôle mis à jour",
+        "updateFailed": "Impossible de mettre à jour le rôle",
+        "deleteConfirm": "Supprimer",
+        "deleted": "Rôle supprimé",
+        "deleteFailed": "Impossible de supprimer le rôle"
+      },
+      "permissions": {
+        "canEditCanvas": {
+          "name": "Modifier le canevas",
+          "description": "Créer et modifier des nœuds, des connexions et des conclusions."
+        },
+        "canComment": {
+          "name": "Commenter",
+          "description": "Laisser des commentaires sur les nœuds et les canevas."
+        },
+        "canManageStructure": {
+          "name": "Gérer les fils et dossiers",
+          "description": "Créer, renommer, déplacer et supprimer des fils et des dossiers."
+        },
+        "canManageMembers": {
+          "name": "Gérer les membres",
+          "description": "Inviter des personnes, attribuer des rôles et retirer des membres."
+        },
+        "canManageRoles": {
+          "name": "Gérer les rôles",
+          "description": "Créer, modifier et supprimer des rôles personnalisés."
+        },
+        "canManageWorkspace": {
+          "name": "Gérer l'espace de travail",
+          "description": "Renommer ou supprimer l'espace de travail."
+        }
       }
     }
   },

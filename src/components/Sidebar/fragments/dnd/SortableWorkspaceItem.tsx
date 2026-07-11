@@ -2,7 +2,7 @@
 
 import { useSortable } from '@dnd-kit/sortable';
 import { clsx } from 'clsx';
-import { Check, LayoutGrid, Pencil, Trash2 } from 'lucide-react';
+import { Check, LayoutGrid, Pencil, Settings, Trash2 } from 'lucide-react';
 import { type KeyboardEvent, type MouseEvent } from 'react';
 
 import type { IWorkspaceItem, TWorkspaceDropZone } from '@interfaces';
@@ -29,6 +29,7 @@ interface ISortableWorkspaceItemProps {
   onClick: (id: string, event: MouseEvent) => void;
   onRequestRename: (id: string, name: string) => void;
   onRequestDelete: (id: string, name: string) => void;
+  onRequestSettings: (id: string) => void;
   isDragActive: boolean;
   dropIndicator: TWorkspaceDropZone | null;
 }
@@ -46,10 +47,13 @@ export const SortableWorkspaceItem = ({
   onClick,
   onRequestRename,
   onRequestDelete,
+  onRequestSettings,
   isDragActive,
   dropIndicator,
 }: ISortableWorkspaceItemProps) => {
   const translations = useTranslations();
+  const canManage = workspace.canManageWorkspace;
+  const noPermission = translations.common.noPermission;
   const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({
     id: workspace.id,
     disabled: isEditing,
@@ -132,17 +136,35 @@ export const SortableWorkspaceItem = ({
           <ItemActionsToolbar isActive={isActive} isSelected={isSelected}>
             <button
               type="button"
-              onClick={() => onRequestRename(workspace.id, workspace.name)}
+              onClick={() => onRequestSettings(workspace.id)}
               className="rounded-md p-1 text-[color:var(--text-muted)] transition-colors duration-150 hover:bg-[color:var(--surface-overlay)] hover:text-[color:var(--text-strong)]"
-              title={translations.platform.sidebar.rename}
+              title={translations.platform.sidebar.workspaceSettings}
+            >
+              <Settings className="h-3 w-3" />
+            </button>
+            <button
+              type="button"
+              onClick={canManage ? () => onRequestRename(workspace.id, workspace.name) : undefined}
+              aria-disabled={!canManage}
+              className={clsx(
+                'rounded-md p-1 text-[color:var(--text-muted)] transition-colors duration-150',
+                canManage
+                  ? 'hover:bg-[color:var(--surface-overlay)] hover:text-[color:var(--text-strong)]'
+                  : 'cursor-not-allowed opacity-40',
+              )}
+              title={canManage ? translations.platform.sidebar.rename : noPermission}
             >
               <Pencil className="h-3 w-3" />
             </button>
             <button
               type="button"
-              onClick={() => onRequestDelete(workspace.id, workspace.name)}
-              className="rounded-md p-1 text-[color:var(--text-muted)] transition-colors duration-150 hover:bg-red-500/10 hover:text-red-500"
-              title={translations.platform.sidebar.delete}
+              onClick={canManage ? () => onRequestDelete(workspace.id, workspace.name) : undefined}
+              aria-disabled={!canManage}
+              className={clsx(
+                'rounded-md p-1 text-[color:var(--text-muted)] transition-colors duration-150',
+                canManage ? 'hover:bg-red-500/10 hover:text-red-500' : 'cursor-not-allowed opacity-40',
+              )}
+              title={canManage ? translations.platform.sidebar.delete : noPermission}
             >
               <Trash2 className="h-3 w-3" />
             </button>

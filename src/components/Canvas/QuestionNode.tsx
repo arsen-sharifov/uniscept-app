@@ -8,7 +8,8 @@ import { type FocusEvent, type KeyboardEvent, useCallback, useEffect, useRef, us
 import type { TCanvasNode } from '@interfaces';
 
 import { useTranslations } from '@/i18n';
-import { useCanvasStore } from '@/lib/stores';
+import { useCanvasStore, usePermissionsStore } from '@/lib/stores';
+import { canEditNode } from '@/lib/utils';
 
 import { HANDLE_POSITIONS } from './consts';
 import { NodeBand } from './fragments';
@@ -21,9 +22,13 @@ export const QuestionNode = ({ id, data, selected }: NodeProps<TCanvasNode>) => 
   const editingNodeId = useCanvasStore((s) => s.editingNodeId);
   const setEditingNodeId = useCanvasStore((s) => s.setEditingNodeId);
   const updateNodeLabel = useCanvasStore((s) => s.updateNodeLabel);
+  const userId = usePermissionsStore((s) => s.userId);
+  const isOwner = usePermissionsStore((s) => s.isOwner);
+  const canEditCanvas = usePermissionsStore((s) => s.canEditCanvas);
 
+  const canEdit = canEditNode(data.createdBy, { userId, isOwner, canEditCanvas });
   const isPending = pendingConnection === id;
-  const isEditing = editingNodeId === id;
+  const isEditing = editingNodeId === id && canEdit;
   const hasLabel = label.trim().length > 0;
 
   const [expanded, setExpanded] = useState(false);
@@ -95,7 +100,11 @@ export const QuestionNode = ({ id, data, selected }: NodeProps<TCanvasNode>) => 
           id={handleId}
           type="source"
           position={position}
-          className="!h-2.5 !w-2.5 !rounded-full !border !border-[color:var(--surface)] !bg-[color:var(--question)] !opacity-0 !shadow-[0_0_0_3px_var(--question-soft)] !transition-opacity group-hover/question:!opacity-100"
+          isConnectable={canEditCanvas}
+          className={clsx(
+            '!h-2.5 !w-2.5 !rounded-full !border !border-[color:var(--surface)] !bg-[color:var(--question)] !opacity-0 !shadow-[0_0_0_3px_var(--question-soft)] !transition-opacity',
+            canEditCanvas ? 'group-hover/question:!opacity-100' : '!pointer-events-none',
+          )}
         />
       ))}
 

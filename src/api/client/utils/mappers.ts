@@ -3,21 +3,50 @@ import type {
   IComment,
   IFolder,
   IFolderRow,
+  IMyInvitation,
+  IMyInvitationRow,
+  IMyWorkspaceRow,
   INodeCommentRow,
   INodeReference,
   IReferenceTargetMeta,
   IThread,
   IThreadRow,
   IWorkspace,
+  IWorkspaceAccess,
+  IWorkspaceAccessRow,
+  IWorkspaceInvitation,
+  IWorkspaceInvitationRow,
+  IWorkspaceItem,
+  IWorkspaceMember,
+  IWorkspaceMemberRow,
+  IWorkspaceRole,
+  IWorkspaceRoleRow,
   IWorkspaceRow,
 } from '@interfaces';
+
+import { isAvatarIcon } from '@/lib/utils';
 
 export const toWorkspace = (row: IWorkspaceRow): IWorkspace => ({
   id: row.id,
   name: row.name,
   ownerId: row.owner_id,
   createdAt: row.created_at,
-  position: row.position,
+});
+
+export const toMyWorkspace = (row: IMyWorkspaceRow): IWorkspaceItem => ({
+  id: row.id,
+  name: row.name,
+  canManageWorkspace: row.can_manage_workspace,
+});
+
+export const toWorkspaceAccess = (row: IWorkspaceAccessRow): IWorkspaceAccess => ({
+  isOwner: row.is_owner,
+  canEditCanvas: row.can_edit_canvas,
+  canComment: row.can_comment,
+  canManageStructure: row.can_manage_structure,
+  canManageMembers: row.can_manage_members,
+  canManageRoles: row.can_manage_roles,
+  canManageWorkspace: row.can_manage_workspace,
 });
 
 export const toFolder = (row: IFolderRow): IFolder => ({
@@ -58,4 +87,51 @@ export const toNodeReference = (row: ICanvasNodeWithThreadRow): INodeReference =
   threadName: row.threads?.name ?? '',
   workspaceId: row.threads?.workspace_id ?? '',
   workspaceName: row.threads?.workspaces?.name ?? '',
+});
+
+export const toWorkspaceRole = (row: IWorkspaceRoleRow): IWorkspaceRole => ({
+  id: row.id,
+  key: row.key,
+  name: row.name,
+  icon: row.icon,
+  isSystem: row.is_system,
+  isOwner: row.is_owner,
+  canEditCanvas: row.can_edit_canvas,
+  canComment: row.can_comment,
+  canManageStructure: row.can_manage_structure,
+  canManageMembers: row.can_manage_members,
+  canManageRoles: row.can_manage_roles,
+  canManageWorkspace: row.can_manage_workspace,
+  memberCount: Number(row.member_count),
+});
+
+export const toWorkspaceMember = (row: IWorkspaceMemberRow): IWorkspaceMember => ({
+  userId: row.user_id,
+  roleId: row.role_id,
+  roleKey: row.role_key,
+  roleName: row.role_name,
+  isOwner: row.is_owner,
+  name: row.name ?? '',
+  email: row.email,
+  avatarIcon: isAvatarIcon(row.avatar_icon) ? row.avatar_icon : null,
+  joinedAt: row.joined_at,
+});
+
+export const toWorkspaceInvitation = (row: IWorkspaceInvitationRow): IWorkspaceInvitation => ({
+  id: row.id,
+  email: row.email,
+  roleId: row.role_id,
+  roleKey: row.role_key,
+  roleName: row.role_name,
+  createdAt: row.created_at,
+});
+
+export const toMyInvitation = (row: IMyInvitationRow): IMyInvitation => ({
+  id: row.id,
+  workspaceId: row.workspace_id,
+  workspaceName: row.workspace_name,
+  roleKey: row.role_key,
+  roleName: row.role_name,
+  invitedByName: row.invited_by_name,
+  createdAt: row.created_at,
 });

@@ -16,7 +16,7 @@ import {
 } from './consts';
 import { SingleNodeFlow } from './fragments';
 import { ARG_CATEGORIES } from '../../consts';
-import { WithCanvasStage, withCanvasStore, WithReactFlow } from '../../decorators';
+import { WithCanvasStage, withCanvasStore, withPermissionsStore, WithReactFlow } from '../../decorators';
 
 const meta: Meta<typeof CanvasNode> = {
   title: 'Components/Canvas/CanvasNode',
@@ -88,6 +88,23 @@ export const WithComments: Story = {
     },
   },
   decorators: [withCanvasStore({ nodes: [withCommentsNode], openCommentsNodeId: SB_NODE_ID })],
+  render: () => <SingleNodeFlow node={withCommentsNode} />,
+};
+
+export const ReadOnlyComments: Story = {
+  parameters: {
+    docs: {
+      story: { inline: false, height: '480px' },
+      description: {
+        story:
+          'Viewer permissions — the comments popover stays readable, but the composer and delete affordances are hidden because `canComment` is off. Rendered in an iframe on the docs page so the permissions override cannot leak into sibling stories that share the store.',
+      },
+    },
+  },
+  decorators: [
+    withCanvasStore({ nodes: [withCommentsNode], openCommentsNodeId: SB_NODE_ID }),
+    withPermissionsStore({ isOwner: false, canEditCanvas: false, canComment: false }),
+  ],
   render: () => <SingleNodeFlow node={withCommentsNode} />,
 };
 

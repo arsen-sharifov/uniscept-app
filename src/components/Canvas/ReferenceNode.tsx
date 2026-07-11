@@ -9,6 +9,7 @@ import type { MouseEvent } from 'react';
 import type { TReferenceNode } from '@interfaces';
 
 import { useTranslations } from '@/i18n';
+import { usePermissionsStore } from '@/lib/stores';
 
 import { HANDLE_POSITIONS } from './consts';
 import { NodeBand } from './fragments';
@@ -20,6 +21,7 @@ export const ReferenceNode = ({ data, selected }: NodeProps<TReferenceNode>) => 
     data;
 
   const router = useRouter();
+  const canEditCanvas = usePermissionsStore((s) => s.canEditCanvas);
 
   const canNavigate = Boolean(sourceWorkspaceId && sourceThreadId && sourceNodeId);
 
@@ -48,7 +50,11 @@ export const ReferenceNode = ({ data, selected }: NodeProps<TReferenceNode>) => 
           id={handleId}
           type="target"
           position={position}
-          className="!h-2.5 !w-2.5 !rounded-full !border !border-[color:var(--surface)] !bg-[color:var(--ref)] !opacity-0 !shadow-[0_0_0_3px_var(--ref-soft)] !transition-opacity group-hover/ref:!opacity-100"
+          isConnectable={canEditCanvas}
+          className={clsx(
+            '!h-2.5 !w-2.5 !rounded-full !border !border-[color:var(--surface)] !bg-[color:var(--ref)] !opacity-0 !shadow-[0_0_0_3px_var(--ref-soft)] !transition-opacity',
+            canEditCanvas ? 'group-hover/ref:!opacity-100' : '!pointer-events-none',
+          )}
         />
       ))}
 

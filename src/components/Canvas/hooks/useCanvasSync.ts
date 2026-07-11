@@ -14,12 +14,6 @@ import {
 } from '@/lib/canvas';
 import { event } from '@/lib/events';
 import { useCanvasStore } from '@/lib/stores';
-import { createClient } from '@/lib/supabase';
-
-interface ICanvasLoad {
-  userId: string | null;
-  snapshot: ICanvasSnapshot;
-}
 
 interface IUseCanvasSyncResult {
   saveState: ISaveState;
@@ -35,21 +29,8 @@ const withTimeout = <T>(promise: Promise<T>, ms: number): Promise<T> =>
     new Promise<T>((_, reject) => setTimeout(() => reject(new Error(TIMEOUT_ERROR_MESSAGE)), ms)),
   ]);
 
-const loadCanvasFromBackend = async (threadId: string): Promise<ICanvasLoad> => {
-  const supabase = createClient();
-
-  const [{ data: userData, error: authError }, snapshot] = await withTimeout(
-    Promise.all([supabase.auth.getUser(), getCanvasContent(threadId)]),
-    LOAD_TIMEOUT_MS,
-  );
-
-  if (authError) throw authError;
-
-  return {
-    userId: userData.user?.id ?? null,
-    snapshot,
-  };
-};
+const loadCanvasFromBackend = (threadId: string): Promise<ICanvasSnapshot> =>
+  withTimeout(getCanvasContent(threadId), LOAD_TIMEOUT_MS);
 
 const toError = (value: unknown): Error => (value instanceof Error ? value : new Error(String(value)));
 
@@ -82,9 +63,9 @@ export const useCanvasSync = (threadId: string): IUseCanvasSyncResult => {
     let cancelled = false;
 
     loadCanvasFromBackend(threadId)
-      .then(({ userId, snapshot }) => {
+      .then((snapshot) => {
         if (cancelled) return;
-        useCanvasStore.getState().loadCanvas(threadId, userId, snapshot);
+        useCanvasStore.getState().loadCanvas(threadId, snapshot);
         setLoadError(null);
       })
       .catch((error: unknown) => {

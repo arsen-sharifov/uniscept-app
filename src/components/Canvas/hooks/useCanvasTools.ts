@@ -8,7 +8,7 @@ import { ECanvasNodeType } from '@interfaces';
 import { ECanvasTool } from '@/components/tools';
 import { useTranslations } from '@/i18n';
 import { findNearestHandlePair } from '@/lib/canvas';
-import { useCanvasStore } from '@/lib/stores';
+import { useCanvasStore, usePermissionsStore } from '@/lib/stores';
 
 import { ZOOM_DURATION_MS, ZOOM_MAX, ZOOM_MIN, ZOOM_STEP_FACTOR } from '../consts';
 import { collectStatusTargetIds } from '../utils';
@@ -149,6 +149,7 @@ export const useCanvasTools = (): IUseCanvasToolsResult => {
   const onNodeDoubleClick: NodeMouseHandler = useCallback(
     (_event, node) => {
       if (activeTool !== ECanvasTool.Select) return;
+      if (!usePermissionsStore.getState().canEditCanvas) return;
       if (node.type === ECanvasNodeType.Canvas || node.type === ECanvasNodeType.Question) {
         useCanvasStore.getState().setEditingNodeId(node.id);
       }

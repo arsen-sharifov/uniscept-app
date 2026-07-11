@@ -26,7 +26,8 @@ import { DEFAULT_PREFERENCES } from '@constants';
 import { useEscapeKey } from '@hooks';
 import { ECanvasTool } from '@/components/tools';
 import { useTranslations } from '@/i18n';
-import { useCanvasStore } from '@/lib/stores';
+import { useCanvasStore, usePermissionsStore } from '@/lib/stores';
+import { canEditNode } from '@/lib/utils';
 
 import { CanvasEdge } from './CanvasEdge';
 import { CanvasNode } from './CanvasNode';
@@ -116,6 +117,9 @@ export const Canvas = ({
   const t = useTranslations();
   const { saveState, loadError } = useCanvasSync(threadId);
   const referenceNodes = useReferenceSearch({ workspaceId, threadId });
+
+  const canEditCanvas = usePermissionsStore((s) => s.canEditCanvas);
+  const canComment = usePermissionsStore((s) => s.canComment);
 
   useMiddlePan();
 
@@ -316,6 +320,7 @@ export const Canvas = ({
     (event: ReactMouseEvent | MouseEvent) => {
       event.preventDefault();
       closeAllOverlays();
+      if (!canEditCanvas) return;
 
       const flow = screenToFlowPosition({
         x: event.clientX,
@@ -330,13 +335,14 @@ export const Canvas = ({
         flowY: flow.y,
       });
     },
-    [closeAllOverlays, screenToFlowPosition],
+    [closeAllOverlays, screenToFlowPosition, canEditCanvas],
   );
 
   const handleNodeContextMenu: NodeMouseHandler = useCallback(
     (event, node) => {
       event.preventDefault();
       closeAllOverlays();
+      if (!canEditCanvas && !canComment && node.type !== ECanvasNodeType.Reference) return;
 
       setContextMenu({
         type: 'node',
@@ -345,13 +351,14 @@ export const Canvas = ({
         nodeId: node.id,
       });
     },
-    [closeAllOverlays],
+    [closeAllOverlays, canEditCanvas, canComment],
   );
 
   const handleEdgeContextMenu: EdgeMouseHandler = useCallback(
     (event, edge) => {
       event.preventDefault();
       closeAllOverlays();
+      if (!canEditCanvas) return;
 
       setContextMenu({
         type: 'edge',
@@ -360,7 +367,7 @@ export const Canvas = ({
         edgeId: edge.id,
       });
     },
-    [closeAllOverlays],
+    [closeAllOverlays, canEditCanvas],
   );
 
   const handleNodeDrag = useCallback(
@@ -375,6 +382,26 @@ export const Canvas = ({
   const handleNodeDragStop = useCallback(() => {
     setAlignmentGuides(NO_GUIDES);
   }, []);
+
+  const handleBeforeDelete = useCallback(
+    async ({ nodes: nodesToDelete, edges: edgesToDelete }: { nodes: Node[]; edges: Edge[] }) => {
+      const access = usePermissionsStore.getState();
+      if (!access.canEditCanvas) return false;
+
+      const allowedNodes = nodesToDelete.filter(
+        (node) => node.type !== ECanvasNodeType.Question && canEditNode(node.data.createdBy, access),
+      );
+      const allowedNodeIds = new Set(allowedNodes.map((node) => node.id));
+      const allowedEdges = edgesToDelete.filter(
+        (edge) => edge.selected || allowedNodeIds.has(edge.source) || allowedNodeIds.has(edge.target),
+      );
+
+      if (allowedNodes.length === 0 && allowedEdges.length === 0) return false;
+
+      return { nodes: allowedNodes, edges: allowedEdges };
+    },
+    [],
+  );
 
   return (
     <div data-canvas-tool={activeTool} className="relative h-full w-full">
@@ -407,6 +434,7 @@ export const Canvas = ({
         onNodeDragStop={handleNodeDragStop}
         onEdgeClick={onEdgeClick}
         onConnect={onConnect}
+        onBeforeDelete={handleBeforeDelete}
         isValidConnection={isValidConnection}
         connectionMode={ConnectionMode.Loose}
         connectionRadius={CONNECTION_RADIUS}
@@ -417,9 +445,10 @@ export const Canvas = ({
         panOnDrag={activeTool === ECanvasTool.Pan || middlePan ? PAN_BUTTONS_ALL : PAN_BUTTONS_MIDDLE}
         selectionOnDrag={activeTool === ECanvasTool.Select}
         elementsSelectable={activeTool === ECanvasTool.Select}
-        nodesDraggable={!middlePan}
+        nodesDraggable={!middlePan && canEditCanvas}
+        nodesConnectable={canEditCanvas}
         nodeDragThreshold={NODE_DRAG_THRESHOLD}
-        deleteKeyCode={activeTool === ECanvasTool.Select ? SELECT_DELETE_KEYS : null}
+        deleteKeyCode={activeTool === ECanvasTool.Select && canEditCanvas ? SELECT_DELETE_KEYS : null}
         proOptions={PRO_OPTIONS}
       >
         {canvasPattern !== 'none' && (

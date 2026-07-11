@@ -7,8 +7,9 @@ import type { IToolGroup } from '@interfaces';
 
 import { ECanvasTool, buildCanvasToolGroups, isCanvasTool } from '@/components/tools';
 import { useTranslations } from '@/i18n';
-import { useCanvasStore } from '@/lib/stores';
+import { useCanvasStore, usePermissionsStore } from '@/lib/stores';
 
+import { EDIT_GROUP_IDS } from '../consts';
 import { isToolDisabled } from '../utils';
 
 interface IUseToolbarResult {
@@ -21,6 +22,7 @@ export const useToolbar = (): IUseToolbarResult => {
   const t = useTranslations();
   const storedActiveTool = useCanvasStore((s) => s.activeTool);
   const middlePan = useCanvasStore((s) => s.middlePan);
+  const canEditCanvas = usePermissionsStore((s) => s.canEditCanvas);
 
   const activeTool = middlePan ? ECanvasTool.Pan : storedActiveTool;
 
@@ -32,14 +34,16 @@ export const useToolbar = (): IUseToolbarResult => {
 
   const groups = useMemo(
     () =>
-      baseGroups.map((group) => ({
-        ...group,
-        tools: group.tools.map((tool) => ({
-          ...tool,
-          disabled: isToolDisabled(tool.id, { canUndo, canRedo }),
+      baseGroups
+        .filter((group) => canEditCanvas || !EDIT_GROUP_IDS.has(group.id))
+        .map((group) => ({
+          ...group,
+          tools: group.tools.map((tool) => ({
+            ...tool,
+            disabled: isToolDisabled(tool.id, { canUndo, canRedo, canEditCanvas }),
+          })),
         })),
-      })),
-    [baseGroups, canUndo, canRedo],
+    [baseGroups, canUndo, canRedo, canEditCanvas],
   );
 
   const handleToolClick = useCallback((id: string) => {

@@ -4,7 +4,6 @@ import type { ECanvasTool } from '@/components';
 
 export interface IMockCanvasState {
   threadId?: string | null;
-  userId?: string | null;
   hydrated?: boolean;
   nodes?: Node[];
   edges?: Edge[];

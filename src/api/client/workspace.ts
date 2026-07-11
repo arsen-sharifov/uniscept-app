@@ -1,54 +1,68 @@
-import type { IWorkspace, IWorkspaceRow } from '@interfaces';
+import type {
+  IMyWorkspaceRow,
+  IWorkspace,
+  IWorkspaceAccess,
+  IWorkspaceAccessRow,
+  IWorkspaceItem,
+  IWorkspaceRow,
+} from '@interfaces';
 
 import { createClient } from '@/lib/supabase';
 
 import { getUser } from './user';
-import { toWorkspace } from './utils';
+import { toMyWorkspace, toWorkspace, toWorkspaceAccess } from './utils';
 
-export const getWorkspaces = async (): Promise<IWorkspace[]> => {
+export const getMyWorkspaces = async (): Promise<IWorkspaceItem[]> => {
   const supabase = createClient();
-  const { data, error } = await supabase
-    .from('workspaces')
-    .select('id, name, owner_id, created_at, position')
-    .order('position')
-    .returns<IWorkspaceRow[]>();
+  const { data, error } = await supabase.rpc('get_my_workspaces');
 
   if (error) throw error;
 
-  return (data ?? []).map(toWorkspace);
+  return ((data ?? []) as IMyWorkspaceRow[]).map(toMyWorkspace);
+};
+
+export const getMyWorkspacePermissions = async (workspaceId: string): Promise<IWorkspaceAccess | null> => {
+  const supabase = createClient();
+  const { data, error } = await supabase.rpc('get_my_workspace_permissions', { p_workspace_id: workspaceId });
+
+  if (error) throw error;
+
+  const [row] = (data ?? []) as IWorkspaceAccessRow[];
+
+  return row ? toWorkspaceAccess(row) : null;
+};
+
+export const getWorkspace = async (id: string): Promise<IWorkspace | null> => {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from('workspaces')
+    .select('id, name, owner_id, created_at')
+    .eq('id', id)
+    .maybeSingle<IWorkspaceRow>();
+
+  if (error) throw error;
+
+  return data ? toWorkspace(data) : null;
 };
 
 export const createWorkspace = async (name: string): Promise<IWorkspace | null> => {
   const {
     data: { user },
   } = await getUser();
+
   if (!user) return null;
 
   const supabase = createClient();
 
-  const { count, error: countError } = await supabase
-    .from('workspaces')
-    .select('id', { count: 'exact', head: true })
-    .eq('owner_id', user.id);
-
-  if (countError) throw countError;
-
   const { data, error: insertError } = await supabase
     .from('workspaces')
-    .insert({ name, owner_id: user.id, position: count ?? 0 })
-    .select('id, name, owner_id, created_at, position')
+    .insert({ name, owner_id: user.id })
+    .select('id, name, owner_id, created_at')
     .single<IWorkspaceRow>();
 
   if (insertError) throw insertError;
-  if (!data) return null;
 
-  const { error: memberError } = await supabase
-    .from('workspace_members')
-    .insert({ workspace_id: data.id, user_id: user.id, role: 'owner' });
-
-  if (memberError) throw memberError;
-
-  return toWorkspace(data);
+  return data ? toWorkspace(data) : null;
 };
 
 export const updateWorkspaceName = async (id: string, name: string): Promise<void> => {
@@ -74,7 +88,7 @@ export const deleteWorkspaces = async (ids: string[]): Promise<void> => {
 
 export const moveWorkspace = async (id: string, position: number): Promise<void> => {
   const supabase = createClient();
-  const { error } = await supabase.from('workspaces').update({ position }).eq('id', id);
+  const { error } = await supabase.from('workspace_members').update({ position }).eq('workspace_id', id);
 
   if (error) throw error;
 };

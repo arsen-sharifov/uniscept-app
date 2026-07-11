@@ -5,8 +5,12 @@ export const middleware = async (request: NextRequest) => {
   const { pathname } = request.nextUrl;
   const isAuthRoute = pathname === '/login' || pathname === '/signup';
   const isAuthApi = pathname.startsWith('/auth/');
+  const isPublicRoute = isAuthRoute || pathname === '/' || pathname === '/join';
 
-  const response = NextResponse.next({ request });
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set('x-pathname', pathname);
+
+  const response = NextResponse.next({ request: { headers: requestHeaders } });
 
   const supabase = createServerClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY, {
     cookies: {
@@ -34,7 +38,7 @@ export const middleware = async (request: NextRequest) => {
       return NextResponse.redirect(url);
     }
 
-    url.pathname = '/auth/confirmed';
+    url.pathname = pathname === '/join' ? '/join' : '/auth/confirmed';
     url.searchParams.delete('code');
 
     const redirect = NextResponse.redirect(url);
@@ -53,7 +57,7 @@ export const middleware = async (request: NextRequest) => {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user && !isAuthRoute && pathname !== '/') {
+  if (!user && !isPublicRoute) {
     const url = request.nextUrl.clone();
     url.pathname = '/login';
 

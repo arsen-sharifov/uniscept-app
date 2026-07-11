@@ -39,10 +39,15 @@
         "password": "Пароль",
         "back": "Назад",
         "submit": "Зареєструватися",
-        "submitting": "Створення акаунта…"
+        "submitting": "Створення акаунта…",
+        "emailLocked": "Вас запросили на цю пошту",
+        "join": "Приєднатися",
+        "joining": "Приєднання…"
       },
       "hasAccount": "Уже маєте акаунт?",
-      "signInLink": "Увійти"
+      "signInLink": "Увійти",
+      "inviteHeading": "Налаштуйте акаунт",
+      "inviteSubtitle": "Ви приєднуєтесь до команди в Uniscept"
     },
     "placeholders": {
       "name": "Іван Петренко",
@@ -82,6 +87,7 @@
       "weakPassword": "Пароль надто слабкий. Використайте щонайменше 6 символів.",
       "samePassword": "Новий пароль має відрізнятися від поточного."
     },
+    "noPermission": "У вас немає дозволу",
     "errorTitles": {
       "createFailed": "Не вдалося створити",
       "renameFailed": "Не вдалося перейменувати",
@@ -102,6 +108,16 @@
   },
   "platform": {
     "sidebar": {
+      "invitations": {
+        "title": "Запрошення",
+        "accept": "Прийняти",
+        "decline": "Відхилити",
+        "accepted": "Ви приєдналися до простору",
+        "declined": "Запрошення відхилено",
+        "acceptFailed": "Не вдалося прийняти запрошення",
+        "declineFailed": "Не вдалося відхилити запрошення"
+      },
+      "workspaceSettings": "Налаштування простору",
       "workspaces": "Робочі простори",
       "noWorkspaceSelected": "Робочий простір не вибрано",
       "noWorkspaces": "Робочих просторів немає. Створіть, щоб почати.",
@@ -117,6 +133,7 @@
       "workspaceDeleted": "Простір видалено",
       "itemsDeleted": "Елементи видалено",
       "workspacesDeleted": "Простори видалено",
+      "workspacesDeleteSkipped": "Частину просторів не видалено, бо ви ними не керуєте",
       "structure": "Структура",
       "newThread": "Новий тред",
       "newFolder": "Нова тека",
@@ -501,6 +518,111 @@
         "invitesDescription": "Коли вас запрошують до простору або змінюється ваша роль.",
         "digest": "Тижневий дайджест",
         "digestDescription": "Підсумок активності у ваших просторах щопонеділка."
+      }
+    },
+    "workspaceSettings": {
+      "close": "Закрити налаштування простору",
+      "groups": {
+        "workspace": "Простір",
+        "access": "Доступ"
+      },
+      "sections": {
+        "general": "Загальне",
+        "members": "Учасники",
+        "roles": "Ролі"
+      },
+      "roleNames": {
+        "owner": "Власник",
+        "member": "Учасник",
+        "viewer": "Глядач"
+      },
+      "general": {
+        "nameLabel": "Назва простору",
+        "namePlaceholder": "Назвіть цей простір",
+        "save": "Зберегти",
+        "saving": "Збереження…",
+        "membersStat": "Учасників",
+        "roleStat": "Ваша роль",
+        "createdStat": "Створено"
+      },
+      "members": {
+        "hint": "Люди з доступом до цього простору.",
+        "you": "Ви",
+        "changeRole": "Змінити роль",
+        "remove": "Видалити",
+        "removeConfirm": "Видалити",
+        "removed": "Учасника видалено",
+        "removeFailed": "Не вдалося видалити учасника",
+        "roleChanged": "Роль оновлено",
+        "roleChangeFailed": "Не вдалося змінити роль",
+        "transferTitle": "Передати право власності",
+        "transferCritical": "Важлива дія",
+        "transferConfirmPrefix": "Передати право власності користувачу",
+        "transferConfirmSuffix": "? Ви станете учасником, і це не можна буде скасувати.",
+        "transferConfirm": "Передати",
+        "transferred": "Право власності передано",
+        "transferFailed": "Не вдалося передати право власності",
+        "cancel": "Скасувати",
+        "inviteTitle": "Запросити людей",
+        "inviteHint": "Вони приєднаються, щойно відкриють Uniscept.",
+        "emailPlaceholder": "name@company.com",
+        "sendInvite": "Надіслати запрошення",
+        "sending": "Надсилання…",
+        "invited": "Запрошення створено",
+        "inviteFailed": "Не вдалося створити запрошення",
+        "pendingTitle": "Очікують",
+        "revoke": "Відкликати",
+        "revoked": "Запрошення відкликано",
+        "revokeFailed": "Не вдалося відкликати запрошення"
+      },
+      "roles": {
+        "hint": "У кожного одна роль. Ролі визначають, що людина може робити.",
+        "membersSuffix": "учасн.",
+        "newRole": "Нова роль",
+        "nameLabel": "Назва ролі",
+        "namePlaceholder": "напр., Рецензент",
+        "iconLabel": "Іконка",
+        "permissionsLabel": "Права",
+        "systemLocked": "Вбудована",
+        "save": "Зберегти роль",
+        "saving": "Збереження…",
+        "create": "Створити роль",
+        "cancel": "Скасувати",
+        "edit": "Редагувати роль",
+        "delete": "Видалити роль",
+        "created": "Роль створено",
+        "createFailed": "Не вдалося створити роль",
+        "updated": "Роль оновлено",
+        "updateFailed": "Не вдалося оновити роль",
+        "deleteConfirm": "Видалити",
+        "deleted": "Роль видалено",
+        "deleteFailed": "Не вдалося видалити роль"
+      },
+      "permissions": {
+        "canEditCanvas": {
+          "name": "Редагувати полотно",
+          "description": "Створювати й змінювати вузли, звʼязки та підсумки."
+        },
+        "canComment": {
+          "name": "Коментувати",
+          "description": "Залишати коментарі на вузлах і полотнах."
+        },
+        "canManageStructure": {
+          "name": "Керувати тредами й теками",
+          "description": "Створювати, перейменовувати, переміщати й видаляти треди та теки."
+        },
+        "canManageMembers": {
+          "name": "Керувати учасниками",
+          "description": "Запрошувати людей, призначати ролі та видаляти учасників."
+        },
+        "canManageRoles": {
+          "name": "Керувати ролями",
+          "description": "Створювати, редагувати й видаляти кастомні ролі."
+        },
+        "canManageWorkspace": {
+          "name": "Керувати простором",
+          "description": "Перейменувати або видалити простір."
+        }
       }
     }
   },

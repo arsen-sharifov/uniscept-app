@@ -10,3 +10,6 @@ export * from './thread';
 export * from './user';
 export * from './utils';
 export * from './workspace';
+export * from './workspaceInvitation';
+export * from './workspaceMember';
+export * from './workspaceRole';

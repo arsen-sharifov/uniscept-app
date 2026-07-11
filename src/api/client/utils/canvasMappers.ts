@@ -30,6 +30,7 @@ export const rowToNode = (
       sourceThreadName: referenceTarget?.threadName ?? '',
       sourceWorkspaceId: referenceTarget?.workspaceId ?? '',
       sourceWorkspaceName: referenceTarget?.workspaceName ?? '',
+      createdBy: row.created_by ?? undefined,
     };
 
     return {
@@ -53,6 +54,7 @@ export const rowToNode = (
         status: null,
         isAnswer: false,
         comments: mappedComments,
+        createdBy: row.created_by ?? undefined,
       },
     } satisfies TCanvasNode;
   }
@@ -66,6 +68,7 @@ export const rowToNode = (
       status: row.status ?? null,
       isAnswer: row.is_answer,
       comments: mappedComments,
+      createdBy: row.created_by ?? undefined,
     },
   } satisfies TCanvasNode;
 };

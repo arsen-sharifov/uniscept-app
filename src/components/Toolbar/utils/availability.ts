@@ -8,6 +8,14 @@ export const isToolDisabled = (toolId: string, availability: IToolAvailability):
       return !availability.canUndo;
     case ECanvasTool.Redo:
       return !availability.canRedo;
+    case ECanvasTool.AddNode:
+    case ECanvasTool.Connect:
+    case ECanvasTool.Delete:
+    case ECanvasTool.ValidPath:
+    case ECanvasTool.InvalidPath:
+    case ECanvasTool.Answer:
+    case ECanvasTool.CrossReference:
+      return !availability.canEditCanvas;
     default:
       return false;
   }

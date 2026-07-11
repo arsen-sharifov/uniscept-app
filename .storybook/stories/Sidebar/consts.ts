@@ -1,9 +1,9 @@
 import type { TNavItem, IWorkspaceItem } from '@interfaces';
 
 export const workspaces: IWorkspaceItem[] = [
-  { id: 'ws-1', name: 'My Workspace' },
-  { id: 'ws-2', name: 'Design Team' },
-  { id: 'ws-3', name: 'Engineering' },
+  { id: 'ws-1', name: 'My Workspace', canManageWorkspace: true },
+  { id: 'ws-2', name: 'Design Team', canManageWorkspace: true },
+  { id: 'ws-3', name: 'Engineering', canManageWorkspace: true },
 ];
 
 export const defaultWorkspaceId = 'ws-1';

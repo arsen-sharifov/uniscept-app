@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 
 import type { TTheme } from '@constants';
 
+import { mockPermissionsStore } from './utils';
 import en from '../src/locales/en.json';
 import '../src/app/globals.css';
 
@@ -46,6 +47,9 @@ const ThemeDecorator: Decorator = (Story, context) => {
 
 const preview: Preview = {
   decorators: [ThemeDecorator, IntlDecorator],
+  beforeEach: () => {
+    mockPermissionsStore();
+  },
   tags: ['autodocs'],
   globalTypes: {
     theme: {

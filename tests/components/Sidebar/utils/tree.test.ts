@@ -1,0 +1,282 @@
+import { describe, expect, test } from 'vitest';
+
+import { folderInput, folderItem, threadInput, threadItem } from '@mocks/sidebar';
+import {
+  buildNavTree,
+  containsThread,
+  filterTree,
+  findFirstThread,
+  findInTree,
+  findParentId,
+  getSiblings,
+  insertIntoTree,
+  removeFromTree,
+  setThreadAnswered,
+  updateNavItemName,
+} from '@/components/Sidebar/utils';
+
+describe('buildNavTree', () => {
+  describe('GIVEN folders and threads out of position order with nesting', () => {
+    describe('WHEN the tree is built', () => {
+      test('THEN every level is sorted by position under the right parent', () => {
+        const folders = [folderInput('fB', 1), folderInput('fA', 0), folderInput('fC', 0, 'fA')];
+        const threads = [
+          threadInput('t-root', 2, null, true),
+          threadInput('t-a1', 1, 'fA'),
+          threadInput('t-a0', 0, 'fA'),
+        ];
+
+        expect(buildNavTree(folders, threads)).toEqual([
+          folderItem('fA', [folderItem('fC'), threadItem('t-a0'), threadItem('t-a1')]),
+          folderItem('fB'),
+          threadItem('t-root', true),
+        ]);
+      });
+    });
+  });
+
+  describe('GIVEN a thread pointing at a missing folder', () => {
+    describe('WHEN the tree is built', () => {
+      test('THEN the orphan lands at the root', () => {
+        expect(buildNavTree([], [threadInput('t1', 0, 'missing')])).toEqual([threadItem('t1')]);
+      });
+    });
+  });
+});
+
+describe('findInTree', () => {
+  describe('GIVEN a nested tree', () => {
+    describe('WHEN a nested id is searched', () => {
+      test('THEN the item is found', () => {
+        const items = [folderItem('f1', [threadItem('t1')])];
+
+        expect(findInTree(items, 't1')).toEqual(threadItem('t1'));
+      });
+    });
+
+    describe('WHEN an unknown id is searched', () => {
+      test('THEN nothing is found', () => {
+        expect(findInTree([folderItem('f1')], 'ghost')).toBeNull();
+      });
+    });
+  });
+});
+
+describe('findFirstThread', () => {
+  describe('GIVEN a tree starting with a folder', () => {
+    describe('WHEN the first thread is searched', () => {
+      test('THEN the nested thread wins over later root threads', () => {
+        const items = [folderItem('f1', [threadItem('t1')]), threadItem('t2')];
+
+        expect(findFirstThread(items)).toBe('t1');
+      });
+    });
+  });
+
+  describe('GIVEN a tree without threads', () => {
+    describe('WHEN the first thread is searched', () => {
+      test('THEN nothing is found', () => {
+        expect(findFirstThread([folderItem('f1'), folderItem('f2')])).toBeNull();
+      });
+    });
+  });
+});
+
+describe('findParentId', () => {
+  describe('GIVEN a nested tree', () => {
+    describe('WHEN the parent of a root item is searched', () => {
+      test('THEN the parent is null', () => {
+        expect(findParentId([threadItem('t1')], 't1')).toBeNull();
+      });
+    });
+
+    describe('WHEN the parent of a nested item is searched', () => {
+      test('THEN the folder id is returned', () => {
+        const items = [folderItem('f1', [folderItem('f2', [threadItem('t1')])])];
+
+        expect(findParentId(items, 't1')).toBe('f2');
+      });
+    });
+
+    describe('WHEN an unknown id is searched', () => {
+      test('THEN nothing is found', () => {
+        expect(findParentId([folderItem('f1')], 'ghost')).toBeUndefined();
+      });
+    });
+  });
+});
+
+describe('getSiblings', () => {
+  describe('GIVEN a nested tree', () => {
+    describe('WHEN the root siblings are requested', () => {
+      test('THEN the root items are returned', () => {
+        const items = [folderItem('f1'), threadItem('t1')];
+
+        expect(getSiblings(items, null)).toBe(items);
+      });
+    });
+
+    describe('WHEN a folder is the parent', () => {
+      test('THEN its children are returned', () => {
+        const items = [folderItem('f1', [threadItem('t1'), threadItem('t2')])];
+
+        expect(getSiblings(items, 'f1')).toEqual([threadItem('t1'), threadItem('t2')]);
+      });
+    });
+
+    describe('WHEN the parent is a thread or missing', () => {
+      test('THEN no siblings are returned', () => {
+        const items = [folderItem('f1', [threadItem('t1')])];
+
+        expect(getSiblings(items, 't1')).toEqual([]);
+        expect(getSiblings(items, 'ghost')).toEqual([]);
+      });
+    });
+  });
+});
+
+describe('containsThread', () => {
+  describe('GIVEN a folder with a deeply nested thread', () => {
+    describe('WHEN the thread is searched', () => {
+      test('THEN the folder contains it', () => {
+        const folder = folderItem('f1', [folderItem('f2', [threadItem('t1')])]);
+
+        expect(containsThread(folder, 't1')).toBe(true);
+        expect(containsThread(folder, 'ghost')).toBe(false);
+      });
+    });
+  });
+
+  describe('GIVEN a bare thread', () => {
+    describe('WHEN it is checked against itself', () => {
+      test('THEN it matches only its own id', () => {
+        expect(containsThread(threadItem('t1'), 't1')).toBe(true);
+        expect(containsThread(threadItem('t1'), 't2')).toBe(false);
+      });
+    });
+  });
+});
+
+describe('updateNavItemName', () => {
+  describe('GIVEN a nested tree', () => {
+    describe('WHEN a nested item is renamed', () => {
+      test('THEN only that item changes', () => {
+        const items = [folderItem('f1', [threadItem('t1'), threadItem('t2')])];
+
+        expect(updateNavItemName(items, 't1', 'Renamed')).toEqual([
+          folderItem('f1', [{ ...threadItem('t1'), name: 'Renamed' }, threadItem('t2')]),
+        ]);
+      });
+    });
+  });
+});
+
+describe('setThreadAnswered', () => {
+  describe('GIVEN a nested tree', () => {
+    describe('WHEN a nested thread is marked answered', () => {
+      test('THEN only that thread changes', () => {
+        const items = [folderItem('f1', [threadItem('t1'), threadItem('t2')])];
+
+        expect(setThreadAnswered(items, 't1', true)).toEqual([
+          folderItem('f1', [threadItem('t1', true), threadItem('t2')]),
+        ]);
+      });
+    });
+  });
+});
+
+describe('removeFromTree', () => {
+  describe('GIVEN a nested tree', () => {
+    describe('WHEN a nested item is removed', () => {
+      test('THEN the siblings and the rest of the tree survive', () => {
+        const items = [folderItem('f1', [threadItem('t1'), threadItem('t2')]), threadItem('t3')];
+
+        expect(removeFromTree(items, 't1')).toEqual([folderItem('f1', [threadItem('t2')]), threadItem('t3')]);
+      });
+    });
+
+    describe('WHEN a root folder is removed', () => {
+      test('THEN it disappears with its children', () => {
+        const items = [folderItem('f1', [threadItem('t1')]), threadItem('t2')];
+
+        expect(removeFromTree(items, 'f1')).toEqual([threadItem('t2')]);
+      });
+    });
+  });
+});
+
+describe('insertIntoTree', () => {
+  describe('GIVEN a tree with root items', () => {
+    describe('WHEN an item is inserted at a root position', () => {
+      test('THEN it lands between the existing items', () => {
+        const items = [threadItem('t1'), threadItem('t3')];
+
+        expect(insertIntoTree(items, threadItem('t2'), null, 1)).toEqual([
+          threadItem('t1'),
+          threadItem('t2'),
+          threadItem('t3'),
+        ]);
+      });
+    });
+
+    describe('WHEN an item is inserted into a nested folder', () => {
+      test('THEN it lands inside the right folder at the right position', () => {
+        const items = [folderItem('f1', [folderItem('f2', [threadItem('t1')])])];
+
+        expect(insertIntoTree(items, threadItem('t0'), 'f2', 0)).toEqual([
+          folderItem('f1', [folderItem('f2', [threadItem('t0'), threadItem('t1')])]),
+        ]);
+      });
+    });
+  });
+});
+
+describe('filterTree', () => {
+  describe('GIVEN an empty query', () => {
+    describe('WHEN the tree is filtered', () => {
+      test('THEN the same items are returned untouched', () => {
+        const items = [folderItem('f1', [threadItem('t1')])];
+
+        expect(filterTree(items, '')).toBe(items);
+      });
+    });
+  });
+
+  describe('GIVEN a query matching only a nested thread', () => {
+    describe('WHEN the tree is filtered', () => {
+      test('THEN the folder is kept with only the matching descendants', () => {
+        const items = [
+          folderItem('f1', [
+            { ...threadItem('t1'), name: 'Budget review' },
+            { ...threadItem('t2'), name: 'Roadmap' },
+          ]),
+          { ...threadItem('t3'), name: 'Budget summary' },
+          { ...threadItem('t4'), name: 'Notes' },
+        ];
+
+        expect(filterTree(items, 'budget')).toEqual([
+          folderItem('f1', [{ ...threadItem('t1'), name: 'Budget review' }]),
+          { ...threadItem('t3'), name: 'Budget summary' },
+        ]);
+      });
+    });
+  });
+
+  describe('GIVEN a query matching a folder itself', () => {
+    describe('WHEN none of its children match', () => {
+      test('THEN the folder keeps its original children', () => {
+        const items = [{ ...folderItem('f1', [threadItem('t1')]), name: 'Budgets' }];
+
+        expect(filterTree(items, 'budget')).toEqual([{ ...folderItem('f1', [threadItem('t1')]), name: 'Budgets' }]);
+      });
+    });
+  });
+
+  describe('GIVEN a query matching nothing', () => {
+    describe('WHEN the tree is filtered', () => {
+      test('THEN the result is empty', () => {
+        expect(filterTree([folderItem('f1', [threadItem('t1')])], 'nothing')).toEqual([]);
+      });
+    });
+  });
+});

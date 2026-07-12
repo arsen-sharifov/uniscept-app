@@ -6,6 +6,7 @@ body:
   - type: textarea
     id: scope
     attributes:
-      label: What to test
+      label: Scope
+      description: What this delivers (units under test, mocks, tooling, coverage, CI)
     validations:
       required: true

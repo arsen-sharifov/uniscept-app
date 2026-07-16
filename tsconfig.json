@@ -31,7 +31,8 @@
       "@api": ["./src/api"],
       "@api/*": ["./src/api/*"],
       "@story-interfaces": ["./.storybook/interfaces"],
-      "@story-interfaces/*": ["./.storybook/interfaces/*"]
+      "@story-interfaces/*": ["./.storybook/interfaces/*"],
+      "@mocks/*": ["./tests/mocks/*"]
     }
   },
   "include": [

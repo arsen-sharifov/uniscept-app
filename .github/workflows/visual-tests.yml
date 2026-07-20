@@ -1,0 +1,55 @@
+name: Visual Tests
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  NEXT_PUBLIC_APP_URL: http://localhost:3000
+  NEXT_PUBLIC_SUPABASE_URL: http://localhost:54321
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-anon-placeholder
+  SUPABASE_SERVICE_ROLE_KEY: ci-service-role-placeholder
+  INVITE_CODE: ci-invite-placeholder
+  VISUAL_CONTAINER: '1'
+
+jobs:
+  visual:
+    name: Visual regression
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    container:
+      image: mcr.microsoft.com/playwright:v1.58.2-noble
+      options: --ipc=host
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup
+        uses: ./.github/actions/setup
+
+      - name: Build Storybook
+        run: pnpm build-storybook
+
+      - name: Playwright test
+        run: pnpm exec playwright test
+
+      - name: Upload visual report
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: visual-report
+          path: |
+            playwright-report
+            test-results
+          retention-days: 14

@@ -9,7 +9,10 @@ import { ARG_CATEGORIES } from '../../consts';
 
 const WithStage: Decorator = (Story) => (
   <div className="flex min-h-screen w-full justify-center px-8 py-16">
-    <div className="h-fit w-80 rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-elevated)] p-2">
+    <div
+      data-visual-target
+      className="h-fit w-80 rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-elevated)] p-2"
+    >
       <Story />
     </div>
   </div>

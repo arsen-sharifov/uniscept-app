@@ -20,6 +20,8 @@ export default defineConfig([
     'build/**',
     'storybook-static/**',
     'coverage/**',
+    'test-results/**',
+    'playwright-report/**',
     'next-env.d.ts',
     'node_modules/**',
     '.idea/**',

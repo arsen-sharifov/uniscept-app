@@ -12,7 +12,7 @@ interface IShowcaseProps {
 }
 
 export const Showcase = ({ title, caption, columns = 3, items }: IShowcaseProps) => (
-  <div className="mx-auto w-full max-w-[1120px] px-8 py-12">
+  <div data-visual-target className="mx-auto w-full max-w-[1120px] px-8 py-12">
     {title && (
       <header className="mb-6 flex items-baseline justify-between gap-4 border-b border-[color:var(--border)] pb-3">
         <h2 className="font-serif text-[22px] leading-none tracking-tight text-[color:var(--text-strong)] italic">

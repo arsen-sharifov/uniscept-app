@@ -6,20 +6,12 @@ import { IconCell } from './IconCell';
 
 const iconEntries = Object.entries(icons);
 
-interface IIconGalleryProps extends LucideProps {
+interface IIconGalleryProps extends Pick<LucideProps, 'absoluteStrokeWidth' | 'color' | 'size' | 'strokeWidth'> {
   onCopy: (name: string) => void;
-  initialSearch?: string;
 }
 
-export const IconGallery = ({
-  size,
-  color,
-  strokeWidth,
-  absoluteStrokeWidth,
-  onCopy,
-  initialSearch = '',
-}: IIconGalleryProps) => {
-  const [search, setSearch] = useState(initialSearch);
+export const IconGallery = ({ size, color, strokeWidth, absoluteStrokeWidth, onCopy }: IIconGalleryProps) => {
+  const [search, setSearch] = useState('');
   const [scrollTop, setScrollTop] = useState(0);
   const [viewportHeight, setViewportHeight] = useState(800);
 

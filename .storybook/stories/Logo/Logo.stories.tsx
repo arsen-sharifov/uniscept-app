@@ -68,7 +68,10 @@ export const Themes: Story = {
     layout: 'fullscreen',
   },
   render: () => (
-    <div className="mx-auto grid w-full max-w-[1100px] grid-cols-1 gap-3 px-8 py-10 sm:grid-cols-2 lg:grid-cols-3">
+    <div
+      data-visual-target
+      className="mx-auto grid w-full max-w-[1100px] grid-cols-1 gap-3 px-8 py-10 sm:grid-cols-2 lg:grid-cols-3"
+    >
       {THEMES.map((theme) => (
         <div
           key={theme}

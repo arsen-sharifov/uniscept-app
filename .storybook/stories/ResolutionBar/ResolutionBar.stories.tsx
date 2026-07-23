@@ -33,7 +33,11 @@ export const Resolved: Story = {
     },
   },
   decorators: [withCanvasStore({ nodes: answeredNodes })],
-  render: () => <ResolutionBar />,
+  render: () => (
+    <div data-visual-target>
+      <ResolutionBar />
+    </div>
+  ),
 };
 
 export const WithoutAnswer: Story = {

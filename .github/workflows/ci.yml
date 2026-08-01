@@ -97,6 +97,71 @@ jobs:
       - name: Build
         run: pnpm build
 
+  e2e:
+    name: E2E
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    needs: validate
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup
+        uses: ./.github/actions/setup
+
+      - name: Start Supabase
+        id: supabase
+        run: |
+          pnpm db:start
+          status=$(pnpm exec supabase status -o json)
+          url=$(echo "$status" | jq -er '.API_URL')
+          anon_key=$(echo "$status" | jq -er '.PUBLISHABLE_KEY // .ANON_KEY')
+          service_role_key=$(echo "$status" | jq -er '.SECRET_KEY // .SERVICE_ROLE_KEY')
+          {
+            echo "url=$url"
+            echo "anon_key=$anon_key"
+            echo "service_role_key=$service_role_key"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Cache Next.js build
+        uses: actions/cache@v5
+        with:
+          path: .next/cache
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-
+
+      - name: Build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ steps.supabase.outputs.url }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ steps.supabase.outputs.anon_key }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ steps.supabase.outputs.service_role_key }}
+        run: pnpm build
+
+      - name: Install Playwright browser
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: E2E test
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ steps.supabase.outputs.url }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ steps.supabase.outputs.anon_key }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ steps.supabase.outputs.service_role_key }}
+        run: pnpm test:e2e
+
+      - name: Upload E2E report
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: e2e-report
+          path: |
+            playwright-report/e2e
+            test-results/e2e
+          retention-days: 14
+
+      - name: Stop Supabase
+        if: always()
+        run: pnpm db:stop
+
   build-storybook:
     name: Build Storybook
     runs-on: ubuntu-latest

@@ -50,7 +50,12 @@ const runVisualTests = () => {
     throw new Error('Docker is unavailable. Start Docker Desktop and try again.');
   }
 
-  const playwrightArgs = ['test', ...(update ? ['--update-snapshots'] : []), ...(grep ? ['--grep', grep] : [])];
+  const playwrightArgs = [
+    'test',
+    '--config=playwright.visual.config.ts',
+    ...(update ? ['--update-snapshots'] : []),
+    ...(grep ? ['--grep', grep] : []),
+  ];
   const containerCommand = [
     'corepack enable',
     'pnpm install --frozen-lockfile --ignore-scripts',

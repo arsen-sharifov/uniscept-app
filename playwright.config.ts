@@ -1,43 +1,43 @@
-import { defineConfig } from '@playwright/test';
+import { defineConfig, devices } from '@playwright/test';
 
-const isOfficialVisualContainer = process.platform === 'linux' && process.env.VISUAL_CONTAINER === '1';
-const isExplicitNativeRun = process.env.VISUAL_ALLOW_NATIVE === '1';
-const snapshotPathTemplate = isExplicitNativeRun
-  ? 'test-results/native-screenshots/{arg}{ext}'
-  : '{testDir}/__screenshots__/{arg}{ext}';
-
-if (!isOfficialVisualContainer && !isExplicitNativeRun) {
-  throw new Error(
-    'Visual tests require the official Playwright Linux container. Run `pnpm test:visual`, or set VISUAL_ALLOW_NATIVE=1 for a throwaway native run.',
-  );
-}
+const isCi = !!process.env.GITHUB_ACTIONS;
+const port = 3000;
+const baseURL = `http://localhost:${port}`;
 
 export default defineConfig({
-  testDir: 'tests/visual',
-  outputDir: 'test-results',
-  snapshotPathTemplate,
+  testDir: 'tests/e2e',
+  outputDir: 'test-results/e2e',
+  globalSetup: './tests/e2e/globalSetup.ts',
   fullyParallel: true,
-  forbidOnly: !!process.env.GITHUB_ACTIONS,
-  retries: process.env.GITHUB_ACTIONS ? 1 : 0,
-  reporter: [['list'], ['html', { open: 'never' }]],
-  expect: {
-    timeout: 15_000,
-    toHaveScreenshot: { animations: 'disabled', caret: 'hide' },
-  },
+  forbidOnly: isCi,
+  retries: isCi ? 2 : 0,
+  workers: isCi ? 2 : 4,
+  timeout: 60_000,
+  reporter: [['list'], ['html', { open: 'never', outputFolder: 'playwright-report/e2e' }]],
+  expect: { timeout: 10_000 },
   use: {
-    baseURL: 'http://127.0.0.1:6106',
-    viewport: { width: 1280, height: 800 },
-    deviceScaleFactor: 1,
-    colorScheme: 'light',
+    baseURL,
     locale: 'en-US',
     timezoneId: 'UTC',
+    actionTimeout: 15_000,
+    navigationTimeout: 30_000,
     contextOptions: { reducedMotion: 'reduce' },
-    trace: 'on-first-retry',
+    trace: 'retain-on-failure',
+    screenshot: 'only-on-failure',
+    video: 'retain-on-failure',
   },
+  projects: [
+    {
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } },
+    },
+  ],
   webServer: {
-    command: 'pnpm exec http-server storybook-static --port 6106 --silent',
-    url: 'http://127.0.0.1:6106/iframe.html',
-    reuseExistingServer: !process.env.CI,
-    timeout: 30_000,
+    command: isCi ? `pnpm start --port ${port}` : `pnpm dev --port ${port}`,
+    url: baseURL,
+    reuseExistingServer: !isCi,
+    timeout: 180_000,
+    stdout: 'pipe',
+    stderr: 'pipe',
   },
 });

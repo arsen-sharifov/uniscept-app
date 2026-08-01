@@ -1,4 +1,4 @@
-import { STORYBOOK_FILES } from './consts.mjs';
+import { E2E_FILES, STORYBOOK_FILES } from './consts.mjs';
 
 export const storybookOverride = {
   files: STORYBOOK_FILES,
@@ -14,6 +14,11 @@ export const declarationFilesOverride = {
     '@typescript-eslint/naming-convention': 'off',
     '@typescript-eslint/consistent-type-definitions': 'off',
   },
+};
+
+export const e2eFixturesOverride = {
+  files: E2E_FILES,
+  rules: { 'react-hooks/rules-of-hooks': 'off' },
 };
 
 export const useTranslationsWrapperOverride = {

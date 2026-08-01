@@ -4,7 +4,12 @@ import nextTs from 'eslint-config-next/typescript';
 import storybook from 'eslint-plugin-storybook';
 
 import { importRestrictionRules, importStructureRules } from './eslint/imports.mjs';
-import { declarationFilesOverride, storybookOverride, useTranslationsWrapperOverride } from './eslint/overrides.mjs';
+import {
+  declarationFilesOverride,
+  e2eFixturesOverride,
+  storybookOverride,
+  useTranslationsWrapperOverride,
+} from './eslint/overrides.mjs';
 import { codeStyleRules, reactRules } from './eslint/style.mjs';
 import { testConventionRules } from './eslint/tests.mjs';
 import { typescriptRules } from './eslint/typescript.mjs';
@@ -43,5 +48,6 @@ export default defineConfig([
 
   storybookOverride,
   declarationFilesOverride,
+  e2eFixturesOverride,
   useTranslationsWrapperOverride,
 ]);

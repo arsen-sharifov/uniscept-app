@@ -42,7 +42,7 @@ jobs:
         run: pnpm build-storybook
 
       - name: Playwright test
-        run: pnpm exec playwright test
+        run: pnpm exec playwright test --config=playwright.visual.config.ts
 
       - name: Upload visual report
         if: failure()
@@ -50,6 +50,6 @@ jobs:
         with:
           name: visual-report
           path: |
-            playwright-report
-            test-results
+            playwright-report/visual
+            test-results/visual
           retention-days: 14

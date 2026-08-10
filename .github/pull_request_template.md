@@ -44,6 +44,5 @@ Closes #
 - [ ] Accessibility considered (focus, keyboard, ARIA, contrast)
 - [ ] `package.json` version bumped (semver)
 - [ ] `pnpm validate` passes (type-check, lint, format)
-- [ ] `pnpm test` passes
+- [ ] `pnpm test` passes (all four suites; needs Docker + `pnpm db:start`)
 - [ ] `pnpm build` passes (if shipping production code)
-- [ ] `pnpm build-storybook` passes (if touched UI)

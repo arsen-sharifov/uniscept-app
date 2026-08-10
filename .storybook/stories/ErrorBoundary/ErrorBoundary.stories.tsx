@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
 import { ErrorBoundary } from '@/components';
 
-import { CrashDemo } from './fragments';
+import { CrashDemo, CrashedBoundary } from './fragments';
 import { WithPad } from '../../decorators';
 
 const meta: Meta<typeof ErrorBoundary> = {
@@ -25,4 +25,8 @@ type Story = StoryObj<typeof ErrorBoundary>;
 
 export const Playground: Story = {
   render: () => <CrashDemo />,
+};
+
+export const Fallback: Story = {
+  render: () => <CrashedBoundary />,
 };

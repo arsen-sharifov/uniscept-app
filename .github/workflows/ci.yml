@@ -7,6 +7,7 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -24,7 +25,7 @@ env:
 
 jobs:
   validate:
-    name: Validate (type-check, lint, format)
+    name: Validate
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -44,7 +45,7 @@ jobs:
         run: pnpm format:check
 
   audit:
-    name: Audit (pnpm audit, dedupe)
+    name: Audit
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -61,7 +62,7 @@ jobs:
         run: pnpm dedupe --check
 
   test:
-    name: Tests
+    name: Unit tests
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -72,33 +73,28 @@ jobs:
         uses: ./.github/actions/setup
 
       - name: Test
-        run: pnpm test
+        run: pnpm test:coverage
 
-  build:
-    name: Build (Next.js)
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    needs: validate
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
+      - name: Coverage summary
+        if: ${{ !cancelled() }}
+        run: |
+          if [ -f coverage/coverage-summary.json ]; then
+            {
+              echo "### Unit coverage"
+              jq -r '"| Metric | % |\n|---|---|\n| Statements | \(.total.statements.pct)% |\n| Branches | \(.total.branches.pct)% |\n| Functions | \(.total.functions.pct)% |\n| Lines | \(.total.lines.pct)% |"' coverage/coverage-summary.json
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
 
-      - name: Setup
-        uses: ./.github/actions/setup
-
-      - name: Cache Next.js build
-        uses: actions/cache@v5
+      - name: Upload coverage report
+        if: ${{ !cancelled() && hashFiles('coverage/lcov.info') != '' }}
+        uses: actions/upload-artifact@v7
         with:
-          path: .next/cache
-          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-nextjs-
-
-      - name: Build
-        run: pnpm build
+          name: coverage-report
+          path: coverage/lcov.info
+          retention-days: 14
 
   e2e:
-    name: E2E
+    name: Integration & E2E tests
     runs-on: ubuntu-latest
     timeout-minutes: 25
     needs: validate
@@ -138,8 +134,30 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ${{ steps.supabase.outputs.service_role_key }}
         run: pnpm build
 
+      - name: Integration tests
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ steps.supabase.outputs.url }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ steps.supabase.outputs.anon_key }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ steps.supabase.outputs.service_role_key }}
+        run: pnpm test:integration
+
+      - name: Resolve Playwright version
+        run: echo "PLAYWRIGHT_VERSION=$(jq -er '.devDependencies["@playwright/test"] | select(test("^[0-9]+\\.[0-9]+\\.[0-9]+$"))' package.json)" >> "$GITHUB_ENV"
+
+      - name: Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ env.PLAYWRIGHT_VERSION }}
+
       - name: Install Playwright browser
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: pnpm exec playwright install --with-deps chromium
+
+      - name: Install Playwright dependencies
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: pnpm exec playwright install-deps chromium
 
       - name: E2E test
         env:
@@ -163,10 +181,12 @@ jobs:
         run: pnpm db:stop
 
   build-storybook:
-    name: Build Storybook
+    name: Storybook build
     runs-on: ubuntu-latest
     timeout-minutes: 15
     needs: validate
+    outputs:
+      playwright-image: ${{ steps.image.outputs.image }}
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -174,5 +194,54 @@ jobs:
       - name: Setup
         uses: ./.github/actions/setup
 
+      - name: Resolve Playwright image
+        id: image
+        run: |
+          version=$(jq -er '.devDependencies["@playwright/test"] | select(test("^[0-9]+\\.[0-9]+\\.[0-9]+$"))' package.json)
+          echo "image=mcr.microsoft.com/playwright:v${version}-noble" >> "$GITHUB_OUTPUT"
+
       - name: Build Storybook
         run: pnpm build-storybook
+
+      - name: Upload Storybook build
+        uses: actions/upload-artifact@v7
+        with:
+          name: storybook-static
+          path: storybook-static
+          retention-days: 7
+
+  visual:
+    name: Visual tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: build-storybook
+    container:
+      image: ${{ needs.build-storybook.outputs.playwright-image }}
+      options: --ipc=host
+    env:
+      VISUAL_CONTAINER: '1'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup
+        uses: ./.github/actions/setup
+
+      - name: Download Storybook build
+        uses: actions/download-artifact@v7
+        with:
+          name: storybook-static
+          path: storybook-static
+
+      - name: Visual tests
+        run: pnpm exec playwright test --config=playwright.visual.config.ts
+
+      - name: Upload visual report
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: visual-report
+          path: |
+            playwright-report/visual
+            test-results/visual
+          retention-days: 14

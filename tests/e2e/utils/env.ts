@@ -59,3 +59,9 @@ export const getInviteCode = (): string => {
 
   return requireEnv('INVITE_CODE');
 };
+
+export const getAppUrl = (): string => {
+  loadEnvFiles();
+
+  return requireEnv('NEXT_PUBLIC_APP_URL');
+};

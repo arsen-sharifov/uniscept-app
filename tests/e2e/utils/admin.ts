@@ -20,7 +20,7 @@ import type {
   IE2EWorkspace,
   TE2ERoleKey,
 } from '../interfaces';
-import { getSupabaseEnv } from './env';
+import { getAppUrl, getSupabaseEnv } from './env';
 
 let client: SupabaseClient | null = null;
 
@@ -258,4 +258,18 @@ export const seedInvitation = async (workspaceId: string, email: string, key: TE
     .insert({ workspace_id: workspaceId, email, role_id: roleId });
 
   if (error) throw new Error(`Could not seed an invitation for ${email} to ${workspaceId}: ${error.message}`);
+};
+
+export const sendInviteEmail = async (email: string, workspaceName: string): Promise<void> => {
+  const { error } = await getAdminClient().auth.admin.inviteUserByEmail(email, {
+    redirectTo: `${getAppUrl()}/join`,
+    data: {
+      name: email.split('@')[0],
+      workspaceName,
+      workspaceInitial: workspaceName.trim().charAt(0).toUpperCase(),
+      invitedByName: 'E2E Host',
+    },
+  });
+
+  if (error) throw new Error(`Could not send the invite email to ${email}: ${error.message}`);
 };

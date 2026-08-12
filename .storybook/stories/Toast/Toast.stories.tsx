@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
 import { Toaster } from '@/components';
 
-import { TriggerRow } from './fragments';
+import { OpenToasts, TriggerRow } from './fragments';
 import { WithPad } from '../../decorators';
 
 const meta: Meta<typeof Toaster> = {
@@ -30,4 +30,9 @@ export const Playground: Story = {
       <Toaster />
     </>
   ),
+};
+
+export const OpenStates: Story = {
+  name: 'Open toasts',
+  render: () => <OpenToasts />,
 };

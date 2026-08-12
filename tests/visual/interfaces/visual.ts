@@ -21,10 +21,7 @@ export interface IVisualRegionCapture {
 }
 
 export type TVisualCaptureConfig =
-  | IVisualViewportCapture
-  | IVisualFullPageCapture
-  | IVisualElementCapture
-  | IVisualRegionCapture;
+  IVisualViewportCapture | IVisualFullPageCapture | IVisualElementCapture | IVisualRegionCapture;
 
 export type TVisualCapture =
   | 'aside'
@@ -38,6 +35,7 @@ export type TVisualCapture =
   | 'resolvedCanvas'
   | 'stepper'
   | 'target'
+  | 'toasts'
   | 'viewport';
 
 export interface IVisualClip {

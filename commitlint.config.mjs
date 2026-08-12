@@ -16,11 +16,11 @@ const config = {
     'subject-case': [0],
     'subject-empty': [2, 'never'],
     'subject-full-stop': [2, 'never', '.'],
-    'header-max-length': [2, 'always', 100],
+    'header-max-length': [0],
     'body-leading-blank': [2, 'always'],
-    'body-max-line-length': [2, 'always', 100],
+    'body-max-line-length': [0],
     'footer-leading-blank': [2, 'always'],
-    'footer-max-line-length': [2, 'always', 100],
+    'footer-max-line-length': [0],
   },
   plugins: [
     {

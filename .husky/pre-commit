@@ -1,1 +1,1 @@
-pnpm exec lint-staged && pnpm type-check
+pnpm exec lint-staged --max-arg-length=4000 && pnpm type-check

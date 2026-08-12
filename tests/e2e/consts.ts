@@ -30,3 +30,11 @@ export const EDGE_SELECTOR = '.react-flow__edge';
 export const PANE_SELECTOR = '.react-flow__pane';
 
 export const VIEWPORT_SELECTOR = '.react-flow__viewport';
+
+export const CONTEXT_MENU_TIMEOUT_MS = 2_000;
+
+export const CONTEXT_MENU_ATTEMPTS = 3;
+
+export const LABEL_EDITOR_TIMEOUT_MS = 2_000;
+
+export const LABEL_EDITOR_ATTEMPTS = 3;

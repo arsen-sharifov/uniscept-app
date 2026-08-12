@@ -371,7 +371,7 @@ export const Canvas = ({
   );
 
   const handleNodeDrag = useCallback(
-    (_event: ReactMouseEvent, node: Node) => {
+    (_event: MouseEvent | TouchEvent, node: Node) => {
       if (!smartGuides) return;
 
       setAlignmentGuides(computeAlignmentGuides(node, nodes));

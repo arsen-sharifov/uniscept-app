@@ -1,10 +1,8 @@
 import type { Edge, Node } from '@xyflow/react';
 
-import { ECanvasNodeType } from '@interfaces';
+import { ECanvasNodeType, type TValidationAction } from '@interfaces';
 
 import { isCanvasNodeData } from './status';
-
-export type TValidationAction = 'valid' | 'answer';
 
 export const hasValidatedParent = (nodeId: string, nodes: Node[], edges: Edge[]): boolean => {
   const parentIds = edges.filter((edge) => edge.target === nodeId).map((edge) => edge.source);

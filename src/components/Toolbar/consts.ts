@@ -1,10 +1,20 @@
+import type { TToolTone } from '@interfaces';
+
 import { ECanvasTool } from '@/components/tools';
 
 export const EDIT_GROUP_IDS: ReadonlySet<string> = new Set(['build', 'decide', 'link']);
 
+export const TOOL_TONES: Record<TToolTone, { ink: string; fill: string }> = {
+  success: { ink: 'var(--status-success)', fill: 'var(--status-success-bg)' },
+  error: { ink: 'var(--status-error)', fill: 'var(--status-error-bg)' },
+  decision: { ink: 'var(--decision)', fill: 'var(--decision-soft)' },
+};
+
 export const TOOLTIP_DELAY_MS = 450;
 
 export const FLASH_DURATION_MS = 220;
+
+export const ICON_STROKE = 1.75;
 
 export const TOOL_KEY_MAP: Record<string, ECanvasTool> = {
   v: ECanvasTool.Select,

@@ -118,7 +118,7 @@
         "declineFailed": "Impossible de refuser l'invitation"
       },
       "workspaceSettings": "Paramètres de l'espace de travail",
-      "workspaces": "Espaces de travail",
+      "workspaces": "Espaces",
       "noWorkspaceSelected": "Aucun espace sélectionné",
       "noWorkspaces": "Aucun espace de travail. Créez-en un pour commencer.",
       "newWorkspace": "Nouvel espace",
@@ -250,6 +250,7 @@
         "answerBadge": "Réponse",
         "validBadge": "Valide",
         "invalidBadge": "Invalide",
+        "affectedBadge": "Affectée",
         "defaultLabel": "Nouveau nœud",
         "showMore": "Afficher plus",
         "showLess": "Afficher moins",
@@ -280,10 +281,8 @@
         "deleteTitle": "Supprimer le commentaire"
       },
       "save": {
-        "saving": "Enregistrement…",
         "retrying": "Nouvelle tentative…",
         "retryAttempt": "Tentative {n, number}",
-        "saved": "Enregistré",
         "offline": "Hors ligne",
         "offlinePending": "{count, plural, one {# modification en attente} other {# modifications en attente}}",
         "errorTitle": "Échec de l'enregistrement",
@@ -403,7 +402,7 @@
           "storytellerUnlock": "Créez 5 fils de discussion.",
           "badgeWorkspaceBuilder": "Bâtisseur",
           "workspaceBuilderUnlock": "Créez votre premier espace de travail.",
-          "badgeNightOwl": "Oiseau de nuit",
+          "badgeNightOwl": "Noctambule",
           "nightOwlUnlock": "Travaillez après minuit pendant une semaine.",
           "badgeMarathoner": "Marathonien",
           "marathonerUnlock": "Restez actif 30 jours d'affilée.",
@@ -446,21 +445,26 @@
       },
       "appearance": {
         "theme": "Thème",
-        "themeIntro": "Six humeurs",
-        "themeBlurb": "Choisissez une palette qui correspond à votre façon de penser. Chacune repeint l'espace de travail, du canevas à la barre d'outils.",
-        "themeDaybreak": "Aube",
-        "themeEclipse": "Éclipse",
-        "themeGraphite": "Graphite",
-        "themeSolstice": "Solstice",
-        "themeAurora": "Aurore",
+        "themeIntro": "Huit palettes",
+        "themeBlurb": "Daybreak et Eclipse sont la paire livrée ; Auto suit votre système et choisit entre les deux. Les six autres repeignent tout, du canevas à la barre d'outils.",
+        "themeDaybreak": "Daybreak",
+        "themeEclipse": "Eclipse",
+        "themeGraphite": "Paper",
+        "themeSolstice": "Carbon",
+        "themeAurora": "Ember",
         "themeAuto": "Auto",
-        "daybreakDesc": "Papier net, lumière douce",
-        "eclipseDesc": "Encre nocturne, lueur cyan",
-        "graphiteDesc": "Monochrome pur",
-        "solsticeDesc": "Parchemin chaud, ambre",
-        "auroraDesc": "Verre iridescent",
-        "autoDesc": "Suit votre système",
-        "defaultBadge": "Défaut",
+        "daybreakDesc": "Brume verte, action lime",
+        "eclipseDesc": "Vert presque noir, action lime",
+        "graphiteDesc": "Blanc neutre pur, action encre",
+        "solsticeDesc": "Noir absolu, action blanche",
+        "auroraDesc": "Charbon chaud, action turquoise",
+        "themeTide": "Tide",
+        "tideDesc": "Gris-bleu froid, action azur",
+        "themeOrchid": "Orchid",
+        "orchidDesc": "Prune profonde, action chartreuse",
+        "themeBloom": "Bloom",
+        "bloomDesc": "Porcelaine chaude, action magenta",
+        "autoDesc": "Associe Daybreak et Eclipse",
         "adaptive": "Adaptatif",
         "canvas": "Canevas",
         "canvasIntro": "Quatre textures",
@@ -639,11 +643,78 @@
       "subtitle2": "Chaque réunion est une amnésie structurée.",
       "tagline": "Construisez du savoir. Pas du chaos.",
       "ctaPrimary": "Commencer",
-      "ctaSecondary": "En savoir plus"
+      "ctaSecondary": "En savoir plus",
+      "demo": {
+        "threadBand": "Question ouverte",
+        "demoTag": "Démo",
+        "ariaDemo": "Démo interactive de l'argument",
+        "statusQuestion": "Question",
+        "statusValid": "Valide",
+        "statusRefuted": "Réfutée",
+        "statusAffected": "Affectée",
+        "statusAnswer": "Réponse",
+        "statusClaim": "Affirmation",
+        "counterValid": "valides",
+        "counterRefuted": "réfutées",
+        "counterAffected": "affectées",
+        "log": {
+          "opened": "Fil T-001 ouvert · 7 affirmations citées",
+          "refuted": "P-02 réfutée en revue",
+          "tainted": "2 conclusions dépendantes entachées",
+          "rerouted": "P-05 épinglée · dépendance morte reroutée",
+          "restored": "C-02 restaurée comme réponse"
+        },
+        "claims": {
+          "q": "Reconstruire le cœur legacy pour la v2 ?",
+          "p1": "Le cœur legacy bloque chaque point de la roadmap",
+          "p2": "L'équipe peut geler les features six mois",
+          "p3": "Trois seniors connaissent encore le cœur de bout en bout",
+          "p5": "Une migration strangler reconstruit sans gel",
+          "c1": "Reconstruire le cœur vaut son coût",
+          "c2": "Acter la refonte au prochain trimestre"
+        }
+      }
     },
     "problem": {
       "title": "Le problème",
-      "subtitle": "Des outils superficiels engendrent une pensée superficielle."
+      "subtitle": "Des outils superficiels engendrent une pensée superficielle.",
+      "stream": {
+        "channel": "#product-decisions",
+        "live": "live",
+        "stamp": "Enterré",
+        "decision": "DÉCISION : on livre la réécriture v2 au T4",
+        "lines": [
+          "ok je pousse le hotfix",
+          "quelqu’un a vérifié le staging ?",
+          "attends, on est sur quelle config",
+          "voir le fil ↑",
+          "je renvoie le lien du doc",
+          "qui gère la rétention maintenant ?",
+          "déjeuner d’abord ?",
+          "je redémarre le pod de démo",
+          "quelqu’un peut réexpliquer le plan"
+        ]
+      },
+      "exhibits": {
+        "chat": {
+          "medium": "Chat",
+          "claim": "Les décisions se noient au milieu du fil.",
+          "detail": "L'argument qui a tout tranché est quatre cents messages plus haut, éparpillé sur trois canaux.",
+          "verdict": "Sans structure"
+        },
+        "meetings": {
+          "medium": "Réunions",
+          "claim": "Les conclusions sortent de la salle. Les raisons, non.",
+          "detail": "Une semaine plus tard, le même débat repart de zéro, avec les mêmes slides.",
+          "verdict": "Sans trace"
+        },
+        "docs": {
+          "medium": "Docs",
+          "claim": "Les docs retiennent le texte, pas la logique.",
+          "detail": "Le compte rendu dit ce qui a été décidé, jamais sur quoi cela reposait.",
+          "verdict": "Invérifiable"
+        }
+      }
     },
     "product": {
       "title": "C'est un moteur de raisonnement.",
@@ -652,21 +723,35 @@
       "features": {
         "structured": {
           "title": "Raisonnement structuré",
-          "description": "Décomposez les problèmes complexes en nœuds et connexions logiques. Rendez le raisonnement implicite explicite. Voyez l'architecture de votre pensée.",
-          "tags": ["Cartographie visuelle", "Flux logique", "Structure claire"]
+          "description": "Les affirmations deviennent des nœuds, le soutien des arêtes dirigées. La forme de l'argument devient enfin visible."
         },
         "validation": {
           "title": "Validation des chemins",
-          "description": "Marquez les chemins de raisonnement comme valides ou invalides. Suivez ce qui fonctionne. Construisez sur la vérité."
+          "description": "Réfutez une affirmation et chaque conclusion qui repose dessus se recalcule instantanément. Rien ne survit en silence."
         },
         "references": {
           "title": "Références croisées",
-          "description": "Liez les canvas sans duplication. Réutilisez les conclusions. Laissez la connaissance se cumuler."
+          "description": "Référencez une conclusion validée d'un autre canevas. Prouvez-la une fois, appuyez-vous dessus partout où cela compte."
         },
         "collaboration": {
           "title": "Collaboration en équipe",
-          "description": "Accès basé sur les rôles. Commentaires contextuels. Mises à jour en temps réel. Pensez ensemble, décidez plus vite, construisez plus solide."
+          "description": "Rôles d'espace de travail, commentaires par nœud, permissions sur mesure. Débattez au grand jour, décidez sur procès-verbal."
         }
+      },
+      "vignettes": {
+        "structuredQuestion": "Où lançons-nous en premier ?",
+        "structuredClaimA": "UE : la régulation est prête",
+        "structuredClaimB": "US : marché précoce plus large",
+        "validationPremise": "Les coûts restent stables à l'échelle",
+        "validationConclusion": "L'économie unitaire tient",
+        "validationSafe": "La rétention tient à l’échelle",
+        "referencesCanvasA": "Canevas · Tarifs",
+        "referencesCanvasB": "Canevas · Stratégie",
+        "referencesSource": "Retour CAC sous 12 mois",
+        "referencesBadge": "Référence",
+        "collaborationClaim": "Livrer la migration derrière un flag",
+        "collaborationClaimB": "Déployer plutôt région par région",
+        "collaborationRole": "Relecteur"
       }
     },
     "builders": {
@@ -674,16 +759,25 @@
       "subtitle": "Ceux qui détestent la pensée superficielle.",
       "founders": {
         "title": "Fondateurs",
+        "question": "Lever maintenant ou tenir un an de plus ?",
+        "nodeA": "La trésorerie couvre 14 mois",
+        "nodeB": "Un an de plus en bootstrap",
         "description": "Prenez de meilleures décisions. Documentez votre raisonnement. Arrêtez de ressasser les mêmes arguments à chaque trimestre.",
         "useCases": ["Stratégie produit", "Analyse de marché", "Architecture technique"]
       },
       "researchers": {
         "title": "Chercheurs",
+        "question": "L'effet se réplique-t-il hors du labo ?",
+        "nodeA": "Réplication terrain, n=2400",
+        "nodeB": "L'effet tient sur le terrain",
         "description": "Cartographiez la littérature. Construisez des cadres. Transformez les articles en graphes de connaissance structurés qui ont vraiment du sens.",
         "useCases": ["Synthèse littéraire", "Cartographie d'hypothèses", "Réseaux de citations"]
       },
       "engineers": {
         "title": "Ingénieurs",
+        "question": "Monolithe ou services pour la v3 ?",
+        "nodeA": "Le monolithe tient une charge 10x",
+        "nodeB": "La v3 reste un monolithe",
         "description": "Concevez des systèmes. Déboguez la logique. Documentez les décisions architecturales qui comptent vraiment.",
         "useCases": ["Conception de systèmes", "Workflows de débogage", "Décisions techniques"]
       }
@@ -733,21 +827,33 @@
     },
     "howItWorks": {
       "title": "Trois étapes.",
-      "subtitle": "C'est tout."
+      "subtitle": "C'est tout.",
+      "steps": {
+        "ask": {
+          "title": "Demandez",
+          "description": "Ouvrez un fil. Le nœud central de la question attend déjà sur le canevas."
+        },
+        "argue": {
+          "title": "Argumentez",
+          "description": "Posez les affirmations autour. Citez, reliez, soutenez : le raisonnement prend forme."
+        },
+        "decide": {
+          "title": "Décidez",
+          "description": "Réfutez ce qui échoue, regardez les conséquences se propager, épinglez la réponse qui tient."
+        }
+      },
+      "vignettes": {
+        "question": "Réécrire l'app mobile ?",
+        "pro": "Les crashs ont doublé en un an",
+        "con": "Une réécriture coûte deux trimestres",
+        "answer": "Reconstruire module par module"
+      }
     },
     "cta": {
       "title1": "Arrêtez de parler.",
       "title2": "Commencez à bâtir.",
-      "subtitle": "Rejoignez chercheurs, fondateurs et ingénieurs qui livrent vraiment.",
+      "subtitle": "Pour les chercheurs, fondateurs et ingénieurs qui livrent vraiment.",
       "button": "Commencer gratuitement"
-    },
-    "footer": {
-      "copyright": "© 2026 Uniscept",
-      "links": {
-        "twitter": "Twitter",
-        "github": "GitHub",
-        "docs": "Documentation"
-      }
     }
   }
 }

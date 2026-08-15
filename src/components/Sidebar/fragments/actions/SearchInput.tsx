@@ -31,8 +31,8 @@ export const SearchInput = ({ value, onChange, placeholder }: ISearchInputProps)
   const hasValue = value.length > 0;
 
   return (
-    <div className="group relative flex items-center rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-overlay)] transition-all duration-150 focus-within:border-[color:var(--border-active)] focus-within:bg-[color:var(--surface-elevated)] focus-within:shadow-[0_0_0_3px_var(--accent-soft)]">
-      <Search className="pointer-events-none absolute left-2.5 h-3.5 w-3.5 text-[color:var(--text-subtle)] transition-colors group-focus-within:text-[color:var(--accent)]" />
+    <div className="group relative flex items-center rounded-lg border border-[color:var(--border-strong)] bg-[color:var(--surface-soft)] transition-colors duration-150 focus-within:border-[color:var(--accent)] focus-within:ring-2 focus-within:ring-[color:var(--ring-focus)] motion-reduce:transition-none">
+      <Search className="pointer-events-none absolute left-2.5 h-3.5 w-3.5 text-[color:var(--text-subtle)] transition-colors duration-150 group-focus-within:text-[color:var(--accent-text)] motion-reduce:transition-none" />
       <input
         ref={ref}
         type="text"
@@ -45,13 +45,13 @@ export const SearchInput = ({ value, onChange, placeholder }: ISearchInputProps)
           }
         }}
         placeholder={placeholder}
-        className="w-full min-w-0 bg-transparent py-1.5 pr-7 pl-8 text-xs text-[color:var(--text)] placeholder:text-[color:var(--text-subtle)] focus:outline-none"
+        className="w-full min-w-0 bg-transparent py-1.5 pr-7 pl-8 font-grotesk text-sm text-[color:var(--text-strong)] caret-[color:var(--accent)] outline-none selection:bg-[color:var(--accent-soft)] selection:text-[color:var(--text-strong)] placeholder:text-[color:var(--text-muted)]"
       />
       {hasValue && (
         <button
           type="button"
           onClick={() => onChange('')}
-          className="absolute right-1.5 rounded-md p-0.5 text-[color:var(--text-subtle)] transition-colors hover:bg-[color:var(--surface-overlay)] hover:text-[color:var(--text)]"
+          className="absolute right-1.5 cursor-pointer rounded-full p-0.5 text-[color:var(--text-subtle)] transition-colors duration-150 hover:bg-[color:var(--surface-overlay)] hover:text-[color:var(--text-strong)] focus-visible:ring-2 focus-visible:ring-[color:var(--ring-focus)] focus-visible:outline-none active:bg-[color:var(--accent-soft)] active:text-[color:var(--accent-text)] motion-reduce:transition-none"
           tabIndex={-1}
         >
           <X className="h-3 w-3" />

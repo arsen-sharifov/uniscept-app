@@ -15,7 +15,7 @@ const meta: Meta<typeof ReferenceNode> = {
     docs: {
       description: {
         component:
-          'Cross-thread reference card — a thin pointer to a node living on another canvas. Dashed border and `--ref` tokens distinguish it from regular reasoning nodes. Double-click or the arrow button navigate to the source canvas in the real app; here the router push is harmless.',
+          'Cross-thread reference card — a thin pointer to a node living on another canvas. It shares the card shell of a reasoning node and is told apart by its band: a 3px `--ref` strip, the link icon, and the REFERENCE status word, with `--ref` handles to match. Double-click or the arrow button navigate to the source canvas in the real app; here the router push is harmless.',
       },
     },
   },
@@ -46,7 +46,7 @@ export const Default: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Resting reference card with workspace / thread breadcrumb and an external-link affordance.',
+        story: 'Resting reference card with a mono workspace / thread breadcrumb and an arrow affordance in the band.',
       },
     },
   },
@@ -58,7 +58,7 @@ export const Selected: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Selected via React Flow — solid cyan ring replaces the dashed border on the outer edge.',
+        story: 'Selected via React Flow — outlined with the same `--selection` ring every node type uses.',
       },
     },
   },

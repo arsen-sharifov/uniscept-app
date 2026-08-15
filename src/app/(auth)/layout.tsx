@@ -3,45 +3,38 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
-import { LANDING_THEME } from '@constants';
+import { LandingWorld } from '@/app/fragments/components';
 import { Logo } from '@/components';
 import { useTranslations } from '@/i18n';
+
+import { AuthPanel } from './fragments';
 
 const AuthLayout = ({ children }: { children: ReactNode }) => {
   const t = useTranslations();
   const { aside } = t.auth;
 
   return (
-    <div data-theme={LANDING_THEME} className="flex min-h-screen">
-      <div className="relative hidden flex-1 overflow-hidden bg-black lg:flex lg:flex-col lg:justify-between">
-        <div className="absolute inset-0 noise-texture opacity-30" />
-        <div className="absolute inset-0 dot-pattern opacity-20" />
-        <div className="pointer-events-none absolute top-[10%] left-[5%] h-[30rem] w-[30rem] rounded-full bg-gradient-to-br from-emerald-500/30 to-cyan-500/30 blur-3xl" />
-        <div className="pointer-events-none absolute right-[5%] bottom-[15%] h-[28rem] w-[28rem] rounded-full bg-gradient-to-br from-purple-500/20 to-pink-500/20 blur-3xl" />
+    <LandingWorld className="relative flex min-h-screen flex-col items-center justify-center px-6 py-12">
+      <div className="relative z-[1] flex w-full max-w-md flex-col items-center">
+        <Link
+          href="/"
+          className="inline-flex rounded-md transition-opacity duration-200 hover:opacity-80 focus-visible:ring-2 focus-visible:ring-[color:var(--hero-lime-glow)] focus-visible:outline-none"
+        >
+          <Logo className="text-2xl text-[color:var(--hero-title)]" />
+        </Link>
 
-        <div className="relative z-10 p-10">
-          <Link href="/">
-            <Logo className="text-2xl text-white" />
-          </Link>
-        </div>
+        <blockquote className="mt-7 text-center text-balance">
+          <p className="font-grotesk text-lg leading-relaxed font-medium text-[color:var(--hero-ground-text)]">
+            {`“${aside.quote}”`}
+          </p>
+          <p className="mt-2 font-mono-ui text-[11px] tracking-[0.08em] text-[color:var(--hero-ground-muted)]">
+            {aside.tagline}
+          </p>
+        </blockquote>
 
-        <div className="relative z-10 p-10">
-          <blockquote className="max-w-md">
-            <p className="text-lg leading-relaxed font-medium text-white/80">{`“${aside.quote}”`}</p>
-            <p className="mt-3 text-sm text-white/40">{aside.tagline}</p>
-          </blockquote>
-        </div>
+        <AuthPanel className="mt-9 w-full">{children}</AuthPanel>
       </div>
-
-      <div className="flex flex-1 flex-col items-center justify-center px-6 py-12">
-        <div className="mb-8 lg:hidden">
-          <Link href="/">
-            <Logo className="text-2xl" />
-          </Link>
-        </div>
-        {children}
-      </div>
-    </div>
+    </LandingWorld>
   );
 };
 

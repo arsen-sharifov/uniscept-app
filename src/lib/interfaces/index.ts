@@ -3,6 +3,7 @@ export * from './components';
 export * from './error';
 export * from './geometry';
 export * from './i18n';
+export * from './landing';
 export * from './preferences';
 export * from './profile';
 export * from './workspace';

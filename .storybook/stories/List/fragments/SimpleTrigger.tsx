@@ -27,7 +27,7 @@ export const SimpleTrigger = (label: string, { onToggle }: ISimpleTriggerOptions
         strokeWidth={2.25}
       />
       <span className="truncate font-medium">{label}</span>
-      <span className="ml-auto font-mono text-[9.5px] tracking-[0.18em] text-[color:var(--text-faint)] uppercase">
+      <span className="ml-auto font-mono-ui text-[9.5px] tracking-[0.18em] text-[color:var(--text-faint)] uppercase">
         {open ? 'open' : 'closed'}
       </span>
     </button>

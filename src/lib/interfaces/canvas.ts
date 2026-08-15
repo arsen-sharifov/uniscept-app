@@ -8,7 +8,7 @@ export enum ECanvasNodeType {
 
 export type TNodeStatus = 'valid' | 'invalid' | null;
 
-export type TNodeBandTone = 'question' | 'reference' | 'answer' | 'valid' | 'invalid';
+export type TNodeBandTone = 'question' | 'reference' | 'answer' | 'valid' | 'invalid' | 'affected' | 'open';
 
 export type THandleId = 'top' | 'right' | 'bottom' | 'left';
 
@@ -43,6 +43,7 @@ export interface ICanvasNodeData {
   createdBy?: string;
   isNew?: boolean;
   eligibleHint?: boolean;
+  effectiveStatus?: TEffectiveStatus;
   [key: string]: unknown;
 }
 
@@ -82,6 +83,10 @@ export interface ICanvasSnapshot {
 }
 
 export type TSaveStatus = 'idle' | 'saving' | 'retrying' | 'saved' | 'error' | 'offline';
+
+export type TVisibleSaveStatus = Extract<TSaveStatus, 'retrying' | 'error' | 'offline'>;
+
+export type TValidationAction = 'valid' | 'answer';
 
 export interface ISaveState {
   status: TSaveStatus;
@@ -280,4 +285,27 @@ export interface INodeCommentRow {
   author_id: string;
   text: string;
   created_at: string;
+}
+
+export interface IReferenceSearchInput {
+  workspaceId: string;
+  threadId: string;
+}
+
+export interface IReferenceSearchResult {
+  nodes: INodeReference[];
+  loading: boolean;
+}
+
+export interface IReferenceSearchResponse {
+  request: IReferenceSearchInput;
+  nodes: INodeReference[];
+}
+
+export interface ICanvasSkeletonNode {
+  id: string;
+  x: number;
+  y: number;
+  width: number;
+  lines: number;
 }

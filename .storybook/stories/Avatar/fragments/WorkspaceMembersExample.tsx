@@ -15,7 +15,7 @@ export const WorkspaceMembersExample = () => (
         <span className="flex-1 truncate text-[12px] font-medium text-[color:var(--text-strong)]">{m.name}</span>
         <span
           className={clsx(
-            'shrink-0 rounded-full px-2 py-0.5 font-mono text-[9px] tracking-[0.08em] uppercase',
+            'shrink-0 rounded-full px-2 py-0.5 font-mono-ui text-[9px] tracking-[0.08em] uppercase',
             m.tone === 'owner' && 'bg-[color:var(--accent-soft)] text-[color:var(--accent-strong)]',
             m.tone === 'editor' && 'bg-[color:var(--surface-overlay)] text-[color:var(--text-strong)]',
             m.tone === 'viewer' && 'bg-[color:var(--surface-overlay)] text-[color:var(--text-muted)]',

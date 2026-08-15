@@ -177,7 +177,7 @@ export const LongContent: Story = {
       <div className="space-y-1 px-3 py-2 text-[12px] leading-relaxed text-[color:var(--text-muted)]">
         {Array.from({ length: 8 }).map((_, i) => (
           <p key={i}>
-            <span className="font-mono text-[9.5px] tracking-[0.18em] text-[color:var(--text-subtle)] uppercase">
+            <span className="font-mono-ui text-[9.5px] tracking-[0.18em] text-[color:var(--text-subtle)] uppercase">
               ¶ {String(i + 1).padStart(2, '0')}
             </span>{' '}
             — Paragraph used to exercise the open/close transition. Each entry is intentionally short to keep the page

@@ -7,3 +7,4 @@ export * from './RoleIcon';
 export * from './RoleListItem';
 export * from './RoleSelect';
 export * from './RolesSection';
+export * from './WorkspaceSettingsSkeleton';

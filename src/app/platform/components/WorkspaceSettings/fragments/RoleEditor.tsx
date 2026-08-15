@@ -10,7 +10,7 @@ import { useTranslations } from '@/i18n';
 import { SettingsInput, SettingsPrimaryButton, Toggle } from '../../Settings';
 import { DEFAULT_ROLE_ICON_KEY, EMPTY_PERMISSIONS, PERMISSION_DEFINITIONS, ROLE_ICONS } from '../consts';
 
-export interface IRoleEditorProps {
+interface IRoleEditorProps {
   role: IWorkspaceRole | null;
   onSave: (name: string, icon: string, permissions: IWorkspaceRolePermissions) => Promise<boolean>;
   onCancel: () => void;
@@ -50,13 +50,13 @@ export const RoleEditor = ({ role, onSave, onCancel }: IRoleEditorProps) => {
   };
 
   return (
-    <div className="space-y-5 rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-elevated)] p-5">
+    <div className="space-y-5 rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-elevated)] p-5">
       <div>
-        <header className="mb-1.5 flex items-baseline justify-between">
-          <h3 className="text-[11px] font-semibold tracking-[0.18em] text-[color:var(--text-subtle)] uppercase">
+        <header className="mb-1.5 flex items-baseline justify-between gap-3">
+          <h3 className="font-mono-ui text-[10px] font-bold tracking-[0.14em] text-[color:var(--text-label)] uppercase">
             {copy.nameLabel}
           </h3>
-          <span className="text-[10.5px] tracking-[0.14em] text-[color:var(--text-faint)] uppercase">
+          <span className="shrink-0 font-mono-ui text-[10px] tracking-[0.14em] text-[color:var(--text-faint)] uppercase tabular-nums">
             {trimmedName.length}/{MAX_NAME_LENGTH}
           </span>
         </header>
@@ -71,7 +71,7 @@ export const RoleEditor = ({ role, onSave, onCancel }: IRoleEditorProps) => {
       </div>
 
       <div>
-        <h3 className="mb-2 text-[11px] font-semibold tracking-[0.18em] text-[color:var(--text-subtle)] uppercase">
+        <h3 className="mb-2 font-mono-ui text-[10px] font-bold tracking-[0.14em] text-[color:var(--text-label)] uppercase">
           {copy.iconLabel}
         </h3>
         <div role="radiogroup" aria-label={copy.iconLabel} className="grid grid-cols-6 gap-2">
@@ -84,11 +84,10 @@ export const RoleEditor = ({ role, onSave, onCancel }: IRoleEditorProps) => {
               aria-label={option.key}
               onClick={() => setIcon(option.key)}
               className={clsx(
-                'flex aspect-square cursor-pointer items-center justify-center rounded-lg border transition-colors',
-                'focus-visible:ring-2 focus-visible:ring-[color:var(--ring-focus)] focus-visible:outline-none',
+                'flex aspect-square cursor-pointer items-center justify-center rounded-lg border transition-[color,background-color,border-color,scale] duration-150 focus-visible:ring-2 focus-visible:ring-[color:var(--ring-focus)] focus-visible:outline-none active:scale-95 motion-reduce:transition-none',
                 icon === option.key
-                  ? 'border-[color:var(--accent)] bg-[color:var(--accent-soft)] text-[color:var(--accent-text)]'
-                  : 'border-[color:var(--border)] text-[color:var(--text-subtle)] hover:border-[color:var(--border-strong)] hover:text-[color:var(--text)]',
+                  ? 'border-[color:var(--border-active)] bg-[color:var(--accent-soft)] text-[color:var(--accent-text)]'
+                  : 'border-[color:var(--border)] text-[color:var(--text-subtle)] hover:border-[color:var(--border-strong)] hover:bg-[color:var(--surface-overlay)] hover:text-[color:var(--text)]',
               )}
             >
               <option.icon className="h-4 w-4" aria-hidden />
@@ -98,19 +97,26 @@ export const RoleEditor = ({ role, onSave, onCancel }: IRoleEditorProps) => {
       </div>
 
       <div>
-        <h3 className="mb-3 text-[11px] font-semibold tracking-[0.18em] text-[color:var(--text-subtle)] uppercase">
+        <h3 className="mb-3 font-mono-ui text-[10px] font-bold tracking-[0.14em] text-[color:var(--text-label)] uppercase">
           {copy.permissionsLabel}
         </h3>
-        <div className="space-y-3">
+        <div className="divide-y divide-[color:var(--border)] overflow-hidden rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-soft)]">
           {PERMISSION_DEFINITIONS.map((definition) => (
-            <Toggle
+            <div
               key={definition.key}
-              icon={definition.icon}
-              label={permissions[definition.key].name}
-              description={permissions[definition.key].description}
-              checked={perms[definition.key]}
-              onChange={(value) => setPerms((prev) => ({ ...prev, [definition.key]: value }))}
-            />
+              className={clsx(
+                'px-3 py-2.5 transition-colors duration-150 motion-reduce:transition-none',
+                perms[definition.key] ? 'bg-[color:var(--accent-soft)]' : 'hover:bg-[color:var(--surface-overlay)]',
+              )}
+            >
+              <Toggle
+                icon={definition.icon}
+                label={permissions[definition.key].name}
+                description={permissions[definition.key].description}
+                checked={perms[definition.key]}
+                onChange={(value) => setPerms((prev) => ({ ...prev, [definition.key]: value }))}
+              />
+            </div>
           ))}
         </div>
       </div>
@@ -119,7 +125,7 @@ export const RoleEditor = ({ role, onSave, onCancel }: IRoleEditorProps) => {
         <button
           type="button"
           onClick={onCancel}
-          className="cursor-pointer rounded-xl px-4 py-2 text-sm font-medium text-[color:var(--text-muted)] transition-colors hover:bg-[color:var(--surface-overlay)] hover:text-[color:var(--text-strong)]"
+          className="cursor-pointer rounded-lg border border-[color:var(--border-strong)] px-4 py-2 font-grotesk text-sm font-medium text-[color:var(--text-muted)] transition-[color,background-color,scale] duration-150 hover:bg-[color:var(--surface-overlay)] hover:text-[color:var(--text-strong)] focus-visible:ring-2 focus-visible:ring-[color:var(--ring-focus)] focus-visible:outline-none active:scale-95 motion-reduce:transition-none"
         >
           {copy.cancel}
         </button>

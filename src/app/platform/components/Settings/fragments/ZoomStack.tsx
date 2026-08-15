@@ -15,7 +15,7 @@ export const ZoomStack = ({ value, onChange, label }: IZoomStackProps) => (
   <div
     role="radiogroup"
     aria-label={label}
-    className="flex items-stretch gap-1.5 rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-elevated)] p-1.5"
+    className="flex items-stretch gap-1.5 rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-elevated)] p-1.5"
   >
     {DEFAULT_ZOOM_VALUES.map((option) => {
       const isActive = option === value;
@@ -28,22 +28,23 @@ export const ZoomStack = ({ value, onChange, label }: IZoomStackProps) => (
           aria-checked={isActive}
           onClick={() => onChange(option)}
           className={clsx(
-            'group relative flex-1 cursor-pointer rounded-xl py-2.5 text-[13px] font-semibold tracking-tight tabular-nums',
-            'transition-[background-color,color,transform] duration-200 ease-out',
+            'group relative flex-1 cursor-pointer rounded-lg py-2.5 font-grotesk text-[13px] font-semibold tracking-tight tabular-nums',
+            'transition-[background-color,color,transform] duration-200 ease-out motion-reduce:transition-none',
             'focus-visible:ring-2 focus-visible:ring-[color:var(--ring-focus)] focus-visible:outline-none',
+            'active:translate-y-px',
             isActive
               ? 'bg-[color:var(--accent)] text-[color:var(--on-accent)] shadow-[0_8px_22px_-12px_var(--accent-glow)]'
-              : 'text-[color:var(--text-muted)] hover:bg-[color:var(--surface-overlay)] hover:text-[color:var(--text)]',
+              : 'text-[color:var(--text-muted)] hover:bg-[color:var(--surface-overlay)] hover:text-[color:var(--text-strong)]',
           )}
         >
           <span className="inline-flex items-baseline justify-center gap-px">
             {option}
-            <span className="text-[9px] tracking-wider opacity-70">%</span>
+            <span className="font-mono-ui text-[9px] tracking-wider opacity-70">%</span>
           </span>
           <span
             aria-hidden
             className={clsx(
-              'pointer-events-none absolute -bottom-1 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-[color:var(--accent)] transition-opacity duration-300',
+              'pointer-events-none absolute -bottom-1 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-[color:var(--accent)] transition-opacity duration-200 motion-reduce:transition-none',
               isActive ? 'opacity-100' : 'opacity-0',
             )}
           />

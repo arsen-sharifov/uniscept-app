@@ -1,7 +1,6 @@
 'use client';
 
 import { ArrowRight, ArrowLeft, Lock } from 'lucide-react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { type SubmitEvent, useMemo, useState } from 'react';
 
@@ -17,7 +16,13 @@ import { useTranslations } from '@/i18n';
 import { event } from '@/lib/events';
 import { formatPlanPrice, mergePlansWithTranslations } from '@/lib/pricing';
 
-export interface ISignUpFlowProps {
+import { AuthButton } from './AuthButton';
+import { AuthHeading } from './AuthHeading';
+import { AuthInput } from './AuthInput';
+import { AuthLabel } from './AuthLabel';
+import { AuthLink } from './AuthLink';
+
+interface ISignUpFlowProps {
   mode?: 'signup' | 'invite';
   lockedEmail?: string;
 }
@@ -40,6 +45,19 @@ export const SignUpFlow = ({ mode = 'signup', lockedEmail }: ISignUpFlowProps) =
   const { signUp: signUpT, placeholders, errors: authErrors } = t.auth;
   const { planStep, accountStep } = signUpT;
   const periods = t.landing.pricing.periods;
+  const copy = isInvite
+    ? {
+        heading: signUpT.inviteHeading,
+        subtitle: signUpT.inviteSubtitle,
+        submit: accountStep.join,
+        submitting: accountStep.joining,
+      }
+    : {
+        heading: signUpT.heading,
+        subtitle: signUpT.subtitle,
+        submit: accountStep.submit,
+        submitting: accountStep.submitting,
+      };
 
   const lockedPlans = useMemo(
     () =>
@@ -113,14 +131,10 @@ export const SignUpFlow = ({ mode = 'signup', lockedEmail }: ISignUpFlowProps) =
 
   return (
     <div className="w-full max-w-sm">
-      <div className="mb-8 text-center">
-        <h1 className="text-2xl font-bold text-black">
-          {step === 1 ? planStep.heading : isInvite ? signUpT.inviteHeading : signUpT.heading}
-        </h1>
-        <p className="mt-1 text-sm text-black/50">
-          {step === 1 ? planStep.subtitle : isInvite ? signUpT.inviteSubtitle : signUpT.subtitle}
-        </p>
-      </div>
+      <AuthHeading
+        title={step === 1 ? planStep.heading : copy.heading}
+        subtitle={step === 1 ? planStep.subtitle : copy.subtitle}
+      />
 
       <div className="mb-6">
         <Stepper steps={[signUpT.steps.plan, signUpT.steps.account]} currentStep={step} />
@@ -129,58 +143,72 @@ export const SignUpFlow = ({ mode = 'signup', lockedEmail }: ISignUpFlowProps) =
       {step === 1 && (
         <div className="space-y-4">
           <div>
-            <p className="mb-2 text-xs font-medium tracking-wider text-black/30 uppercase">{planStep.available}</p>
-            <button type="button" className="w-full rounded-xl border-2 border-black px-4 py-3 text-left">
+            <p className="mb-2 font-mono-ui text-[10px] font-bold tracking-[0.14em] text-[color:var(--hero-ground-muted)] uppercase">
+              {planStep.available}
+            </p>
+            <button
+              type="button"
+              className="w-full cursor-default rounded-xl border border-[color:var(--hero-lime)]/45 bg-[color:var(--hero-lime)]/10 px-4 py-3 text-left transition-colors duration-200 focus-visible:border-[color:var(--hero-lime)] focus-visible:ring-2 focus-visible:ring-[color:var(--hero-lime-glow)] focus-visible:outline-none"
+            >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-5 w-5 items-center justify-center rounded-full border-2 border-black">
-                    <div className="h-2.5 w-2.5 rounded-full bg-black" />
+                  <div className="flex h-5 w-5 items-center justify-center rounded-full border-2 border-[color:var(--hero-lime)]">
+                    <div className="h-2.5 w-2.5 rounded-full bg-[color:var(--hero-lime)] shadow-[0_0_10px_var(--hero-lime-glow)]" />
                   </div>
-                  <span className="text-sm font-semibold text-black">{planStep.betaPlan}</span>
+                  <span className="font-grotesk text-sm font-semibold text-[color:var(--hero-ground-text)]">
+                    {planStep.betaPlan}
+                  </span>
                 </div>
-                <span className="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-xs font-medium text-emerald-600">
+                <span className="rounded-md border border-[color:var(--hero-lime)]/40 bg-[color:var(--hero-lime)]/10 px-2 py-0.5 font-mono-ui text-[10px] font-bold tracking-[0.14em] text-[color:var(--hero-accent-text)] uppercase">
                   {planStep.free}
                 </span>
               </div>
-              <p className="mt-1.5 ml-8 text-xs text-black/40">{planStep.betaDescription}</p>
+              <p className="mt-1.5 ml-8 font-grotesk text-xs leading-relaxed text-[color:var(--hero-ground-muted)]">
+                {planStep.betaDescription}
+              </p>
             </button>
           </div>
 
           <div>
-            <p className="mb-2 text-xs font-medium tracking-wider text-black/30 uppercase">{planStep.comingSoon}</p>
+            <p className="mb-2 font-mono-ui text-[10px] font-bold tracking-[0.14em] text-[color:var(--hero-ground-muted)] uppercase">
+              {planStep.comingSoon}
+            </p>
             <div className="space-y-2">
               {lockedPlans.map((plan) => (
                 <div
                   key={plan.id}
-                  className="flex items-center justify-between rounded-xl border border-black/5 bg-black/[0.02] px-4 py-3 opacity-50"
+                  className="flex items-center justify-between rounded-xl border border-[color:var(--hero-hairline)] bg-[color:var(--hero-chip-bg)] px-4 py-3 opacity-60"
                 >
                   <div className="flex items-center gap-3">
-                    <Lock className="h-4 w-4 text-black/20" />
-                    <span className="text-sm font-medium text-black/40">{plan.name}</span>
+                    <Lock aria-hidden className="h-4 w-4 shrink-0 text-[color:var(--hero-ground-muted)]" />
+                    <span className="font-grotesk text-sm font-medium text-[color:var(--hero-ground-muted)]">
+                      {plan.name}
+                    </span>
                   </div>
-                  <span className="text-xs text-black/30">{plan.price}</span>
+                  <span className="font-mono-ui text-[11px] tracking-[0.04em] text-[color:var(--hero-ground-muted)]">
+                    {plan.price}
+                  </span>
                 </div>
               ))}
             </div>
           </div>
 
-          <p className="text-center text-xs text-black/40">
+          <p className="text-center font-grotesk text-xs leading-relaxed text-[color:var(--hero-ground-muted)]">
             {planStep.paidPlansNote}
             <br />
             {planStep.earlyBirdNote}
           </p>
 
-          <button
-            type="button"
+          <AuthButton
             onClick={() => {
               setError('');
               setStep(2);
             }}
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-black py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:bg-black/80"
+            className="flex w-full items-center justify-center gap-2"
           >
             {planStep.continue}
-            <ArrowRight className="h-4 w-4" />
-          </button>
+            <ArrowRight aria-hidden className="h-4 w-4" />
+          </AuthButton>
         </div>
       )}
 
@@ -188,74 +216,73 @@ export const SignUpFlow = ({ mode = 'signup', lockedEmail }: ISignUpFlowProps) =
         <form onSubmit={handleSubmit} className="space-y-4">
           {!isInvite && (
             <div>
-              <div className="mb-1 flex items-center gap-1.5">
-                <label htmlFor="invite-code" className="text-sm font-medium text-black/70">
-                  {accountStep.inviteCode}
-                </label>
+              <div className="mb-1.5 flex items-center gap-1.5">
+                <AuthLabel htmlFor="invite-code">{accountStep.inviteCode}</AuthLabel>
                 <Tooltip text={accountStep.inviteCodeTooltip} />
               </div>
-              <input
+              <AuthInput
                 id="invite-code"
                 type="text"
                 value={inviteCode}
                 onChange={(e) => setInviteCode(e.target.value)}
                 required
-                className="w-full rounded-lg border border-black/10 bg-white px-4 py-2.5 text-sm transition-colors duration-200 outline-none focus:border-black/30"
                 placeholder={accountStep.inviteCodePlaceholder}
               />
             </div>
           )}
 
           <div>
-            <label htmlFor="name" className="mb-1 block text-sm font-medium text-black/70">
+            <AuthLabel htmlFor="name" className="mb-1.5">
               {accountStep.name}
-            </label>
-            <input
+            </AuthLabel>
+            <AuthInput
               id="name"
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
               autoFocus={isInvite}
-              className="w-full rounded-lg border border-black/10 bg-white px-4 py-2.5 text-sm transition-colors duration-200 outline-none focus:border-black/30"
               placeholder={placeholders.name}
             />
           </div>
 
           <div>
-            <label htmlFor="email" className="mb-1 block text-sm font-medium text-black/70">
+            <AuthLabel htmlFor="email" className="mb-1.5">
               {accountStep.email}
-            </label>
-            <input
+            </AuthLabel>
+            <AuthInput
               id="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
               disabled={isInvite}
-              className="w-full rounded-lg border border-black/10 bg-white px-4 py-2.5 text-sm transition-colors duration-200 outline-none focus:border-black/30 disabled:cursor-not-allowed disabled:bg-black/[0.03] disabled:text-black/50"
               placeholder={placeholders.email}
             />
-            {isInvite && <p className="mt-1 text-xs text-black/40">{accountStep.emailLocked}</p>}
+            {isInvite && (
+              <p className="mt-1.5 flex items-center gap-1.5 font-grotesk text-xs text-[color:var(--hero-ground-muted)]">
+                <Lock aria-hidden className="h-3 w-3 shrink-0" />
+                {accountStep.emailLocked}
+              </p>
+            )}
           </div>
 
           <div>
-            <label htmlFor="password" className="mb-1 block text-sm font-medium text-black/70">
+            <AuthLabel htmlFor="password" className="mb-1.5">
               {accountStep.password}
-            </label>
-            <input
+            </AuthLabel>
+            <AuthInput
               id="password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={6}
-              className="w-full rounded-lg border border-black/10 bg-white px-4 py-2.5 text-sm transition-colors duration-200 outline-none focus:border-black/30"
               placeholder={placeholders.password}
             />
           </div>
 
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="font-grotesk text-sm text-[color:var(--hero-refuted)]">{error}</p>}
 
           <div className="flex gap-2">
             <button
@@ -264,34 +291,21 @@ export const SignUpFlow = ({ mode = 'signup', lockedEmail }: ISignUpFlowProps) =
                 setError('');
                 setStep(1);
               }}
-              className="flex items-center justify-center gap-1 rounded-lg border border-black/10 px-4 py-2.5 text-sm font-medium text-black/60 transition-all duration-200 hover:border-black/30 hover:text-black"
+              className="flex cursor-pointer items-center justify-center gap-1 rounded-lg border border-[color:var(--hero-hairline-strong)] bg-[color:var(--hero-chip-bg)] px-4 py-2.5 font-grotesk text-sm font-medium text-[color:var(--hero-ground-text)] transition-colors duration-200 hover:bg-[color:var(--hero-chip-hover)] focus-visible:ring-2 focus-visible:ring-[color:var(--hero-lime-glow)] focus-visible:outline-none active:bg-[color:var(--hero-chip-strong)]"
             >
-              <ArrowLeft className="h-4 w-4" />
+              <ArrowLeft aria-hidden className="h-4 w-4" />
               {accountStep.back}
             </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex-1 rounded-lg bg-black py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:bg-black/80 disabled:opacity-50"
-            >
-              {loading
-                ? isInvite
-                  ? accountStep.joining
-                  : accountStep.submitting
-                : isInvite
-                  ? accountStep.join
-                  : accountStep.submit}
-            </button>
+            <AuthButton type="submit" disabled={loading} className="flex-1">
+              {loading ? copy.submitting : copy.submit}
+            </AuthButton>
           </div>
         </form>
       )}
 
       {!isInvite && (
-        <p className="mt-6 text-center text-sm text-black/50">
-          {signUpT.hasAccount}{' '}
-          <Link href="/login" className="font-medium text-black transition-colors duration-200 hover:underline">
-            {signUpT.signInLink}
-          </Link>
+        <p className="mt-6 text-center font-grotesk text-sm text-[color:var(--hero-ground-muted)]">
+          {signUpT.hasAccount} <AuthLink href="/login">{signUpT.signInLink}</AuthLink>
         </p>
       )}
     </div>

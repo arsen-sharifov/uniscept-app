@@ -16,10 +16,10 @@ export const ProductIconGallery = ({
 }: IProductIconGalleryProps) => (
   <div data-visual-target className="mx-auto w-full max-w-[1120px] px-8 py-10">
     <header className="mb-5 flex flex-wrap items-baseline justify-between gap-3 border-b border-[color:var(--border)] pb-3">
-      <h2 className="font-serif text-[22px] leading-none tracking-tight text-[color:var(--text-strong)] italic">
+      <h2 className="font-grotesk text-[22px] leading-none font-semibold tracking-tight text-[color:var(--text-strong)]">
         Product icon set
       </h2>
-      <span className="font-mono text-[10px] tracking-[0.2em] text-[color:var(--text-subtle)] uppercase">
+      <span className="font-mono-ui text-[10px] tracking-[0.2em] text-[color:var(--text-subtle)] uppercase">
         {PRODUCT_ICON_NAMES.length} icons
       </span>
     </header>

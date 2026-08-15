@@ -17,7 +17,7 @@ const meta: Meta<typeof ReferenceSearchPanel> = {
     docs: {
       description: {
         component:
-          'Portal-style search palette anchored to the spot where the user requested a new reference. Filters across node label, thread name, and workspace name. The store flag `referenceSearchPosition` controls visibility; here it is mocked directly so the panel renders without going through the toolbar.',
+          'Search palette pinned to the spot where the user requested a new reference, drawn as an opaque `--surface` panel. Filters across node label, thread name, and workspace name. The store flag `referenceSearchPosition` controls visibility; here it is mocked directly so the panel renders without going through the toolbar.',
       },
     },
   },
@@ -39,7 +39,8 @@ export const Default: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Six candidate nodes shown — fully keyboard-navigable. Type into the input to filter live.',
+        story:
+          'Six candidate nodes shown — fully keyboard-navigable. The active option carries the standard selection pair: an `--accent-soft` row fill and a 3px lime strip on its left edge. Type into the input to filter live.',
       },
     },
   },

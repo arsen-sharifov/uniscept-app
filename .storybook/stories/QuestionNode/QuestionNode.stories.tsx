@@ -23,7 +23,7 @@ const meta: Meta<typeof QuestionNode> = {
     docs: {
       description: {
         component:
-          'The central question node — auto-created with every thread as the root of the discussion. Distinct from reasoning nodes: accent-anchored, non-deletable, excluded from valid/invalid evaluation, and built to hold the full multi-sentence question with inline multi-line editing. The store is mocked so each visual state (resting, empty placeholder, selected, editing, long, pending) previews in isolation.',
+          'The central question node — auto-created with every thread as the root of the discussion. Distinct from reasoning nodes: anchored on the `--question` tone rather than the accent, non-deletable, excluded from valid/invalid evaluation, and built to hold the full multi-sentence question with inline multi-line editing. The store is mocked so each visual state (resting, empty placeholder, selected, editing, long, pending) previews in isolation.',
       },
     },
   },
@@ -55,7 +55,8 @@ export const Default: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Resting state — the framed question with its accent anchor. Handles fade in on hover.',
+        story:
+          'Resting state — the framed question under a 3px `--question` strip and the QUESTION status word. Handles fade in on hover.',
       },
     },
   },

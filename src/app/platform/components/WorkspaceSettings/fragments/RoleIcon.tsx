@@ -2,7 +2,7 @@ import type { IWorkspaceRole } from '@interfaces';
 
 import { CUSTOM_ROLE_ICON, ROLE_ICON_MAP, SYSTEM_ROLE_ICONS } from '../consts';
 
-export interface IRoleIconProps {
+interface IRoleIconProps {
   role: IWorkspaceRole;
   className?: string;
 }

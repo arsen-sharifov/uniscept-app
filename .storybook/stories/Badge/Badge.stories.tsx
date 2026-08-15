@@ -13,7 +13,7 @@ const meta: Meta<typeof Badge> = {
     docs: {
       description: {
         component:
-          'Achievement badge card with earned and locked states. Earned badges glow with the theme accent gradient; locked ones dim, show a lock pip, and surface their unlock hint on hover. Used in the grid of Settings → Profile.',
+          'Achievement badge card with earned and locked states. Earned badges carry a solid `--accent` medallion on `--on-accent` ink, an `--accent-soft` wash behind it, an active border and a hairline accent underline; locked ones dim, show a lock pip, and surface their unlock hint on hover. Used in the grid of Settings → Profile.',
       },
     },
   },
@@ -46,7 +46,7 @@ export const Constellation: Story = {
     docs: {
       description: {
         story:
-          'Inline row of mini medallions used in the Identity Card to summarise badge progress. Earned pips glow with the theme accent gradient; locked pips are faint outlines.',
+          'Inline row of mini medallions used in the Identity Card to summarise badge progress. Earned pips fill with `--accent` on `--on-accent` ink; locked pips are faint outlines on `--surface-overlay`.',
       },
     },
   },

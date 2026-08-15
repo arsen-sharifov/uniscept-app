@@ -13,7 +13,7 @@ export const DragSelectOverlay = ({ rect }: IDragSelectOverlayProps) => {
 
   return (
     <div
-      className="pointer-events-none fixed z-50 rounded border border-[color:var(--border-active)] bg-[color:var(--accent-soft)]"
+      className="pointer-events-none fixed z-50 rounded-lg border border-[color:var(--accent)] bg-[color:var(--accent-soft)]"
       style={{
         left: rect.x,
         top: rect.y,

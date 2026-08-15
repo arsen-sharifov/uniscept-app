@@ -4,7 +4,7 @@ import { afterEach, describe, expect, test, vi } from 'vitest';
 import { useEdgePalette } from '@/components/Canvas/hooks';
 
 const TOKEN_VALUES: Record<string, string> = {
-  '--border-strong': 'gray',
+  '--text-subtle': 'gray',
   '--status-success': 'green',
   '--status-error': 'red',
   '--status-warning': 'orange',
@@ -40,10 +40,10 @@ describe('useEdgePalette', () => {
         const { result } = renderHook(() => useEdgePalette());
 
         expect(result.current).toEqual({
-          default: { stroke: 'rgba(100, 116, 139, 0.7)', marker: 'rgba(100, 116, 139, 0.7)' },
-          valid: { stroke: 'rgb(16, 185, 129)', marker: 'rgb(16, 185, 129)' },
-          invalid: { stroke: 'rgb(239, 68, 68)', marker: 'rgb(239, 68, 68)' },
-          tainted: { stroke: 'rgb(245, 158, 11)', marker: 'rgb(245, 158, 11)' },
+          default: { stroke: 'rgba(13, 19, 16, 0.34)', marker: 'rgba(13, 19, 16, 0.34)' },
+          valid: { stroke: 'rgb(21, 128, 61)', marker: 'rgb(21, 128, 61)' },
+          invalid: { stroke: 'rgb(220, 38, 38)', marker: 'rgb(220, 38, 38)' },
+          tainted: { stroke: 'rgb(180, 83, 9)', marker: 'rgb(180, 83, 9)' },
         });
       });
     });

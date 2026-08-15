@@ -105,7 +105,7 @@ test.describe('node building', () => {
 
     test.describe('WHEN a node is added from the pane context menu', () => {
       test.beforeEach(async ({ page }) => {
-        const menu = await openPaneMenu(page, { x: 520, y: 420 });
+        const menu = await openPaneMenu(page, { x: 300, y: 620 });
         await menu.getByRole('menuitem', { name: canvas.context.addNode }).click();
         await expectSaved(page);
       });

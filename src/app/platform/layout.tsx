@@ -2,16 +2,16 @@
 
 import { useEffect, useState, type ReactNode } from 'react';
 
-import { Sidebar, Toolbar, useToolbar } from '@/components';
+import { CanvasSkeleton, Sidebar, Toolbar, useToolbar } from '@/components';
 
 import { Settings } from './components/Settings';
 import { usePreferences } from './components/Settings/hooks';
+import { SheetChrome } from './components/SheetChrome';
 import { UserMenu } from './components/UserMenu';
 import { WorkspaceSettings } from './components/WorkspaceSettings';
 import { useWorkspaceManager } from './hooks';
 
 const WorkspaceLayout = ({ children }: { children: ReactNode }) => {
-  const { groups, activeTool, handleToolClick } = useToolbar();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [workspaceSettingsId, setWorkspaceSettingsId] = useState<string | null>(null);
   const { preferences, updatePreference } = usePreferences();
@@ -27,6 +27,7 @@ const WorkspaceLayout = ({ children }: { children: ReactNode }) => {
     activeWorkspaceId,
     navItems,
     activeThreadId,
+    activeThreadName,
     onWorkspaceSelect,
     onCreateWorkspace,
     onRenameWorkspace,
@@ -49,13 +50,23 @@ const WorkspaceLayout = ({ children }: { children: ReactNode }) => {
     onAcceptInvitation,
     onDeclineInvitation,
     reloadWorkspaces,
+    loading,
   } = useWorkspaceManager();
+
+  const { groups, pendingGroupSizes, activeTool, handleToolClick } = useToolbar(loading);
 
   const workspaceSettingsTarget = workspaces.find((workspace) => workspace.id === workspaceSettingsId);
 
   return (
-    <div className="relative h-screen w-screen bg-[color:var(--app-bg-tint)] transition-colors duration-300 ease-out">
+    <div className="relative flex h-screen w-screen gap-3 overflow-hidden bg-[color:var(--app-bg-tint)] p-3 transition-colors duration-200 ease-out">
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0 z-0"
+        style={{ backgroundImage: 'var(--app-atmosphere)' }}
+      />
+      <div aria-hidden className="app-grain pointer-events-none fixed inset-0 noise-texture" />
       <Sidebar
+        loading={loading}
         items={navItems}
         workspaces={workspaces}
         activeWorkspaceId={activeWorkspaceId ?? undefined}
@@ -84,8 +95,22 @@ const WorkspaceLayout = ({ children }: { children: ReactNode }) => {
         onDeclineInvitation={onDeclineInvitation}
         footer={<UserMenu onSettingsClick={() => setSettingsOpen(true)} />}
       />
-      <Toolbar groups={groups} activeTool={activeTool} onToolClick={handleToolClick} />
-      {children}
+      <main className="relative z-10 flex min-w-0 flex-1 flex-col overflow-hidden rounded-2xl border border-[color:var(--border)] bg-[color:var(--app-bg)] shadow-[var(--shadow-modal)]">
+        <SheetChrome
+          workspaceName={workspaces.find((workspace) => workspace.id === activeWorkspaceId)?.name}
+          threadName={activeThreadName ?? undefined}
+        />
+        <div className="relative min-h-0 flex-1">
+          {children}
+          {loading && <CanvasSkeleton />}
+        </div>
+      </main>
+      <Toolbar
+        groups={groups}
+        pendingGroupSizes={pendingGroupSizes}
+        activeTool={activeTool}
+        onToolClick={handleToolClick}
+      />
       {settingsOpen && (
         <Settings
           onClose={() => setSettingsOpen(false)}

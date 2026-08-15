@@ -39,7 +39,7 @@ export const StepperWithState = () => {
           Next
         </button>
       </div>
-      <p className="text-center font-mono text-[10.5px] tracking-[0.2em] text-[color:var(--text-subtle)] uppercase">
+      <p className="text-center font-mono-ui text-[10.5px] tracking-[0.2em] text-[color:var(--text-subtle)] uppercase">
         step {current} of {total}
       </p>
     </div>

@@ -29,7 +29,7 @@ export const ColorsAtlas = ({ activeTheme }: IColorsAtlasProps) => {
         <div className="flex flex-wrap items-center gap-3">
           <FilterInput value={query} onChange={setQuery} placeholder="--accent, status, ref…" />
           <div className="flex flex-col items-end gap-0.5">
-            <span className="font-mono text-[9.5px] tracking-[0.22em] text-[color:var(--text-subtle)] uppercase">
+            <span className="font-mono-ui text-[9.5px] tracking-[0.22em] text-[color:var(--text-subtle)] uppercase">
               {COLOR_GROUPS.reduce((acc, g) => acc + g.tokens.length, 0)} tokens · {findActiveTheme(activeTheme).name}
             </span>
           </div>

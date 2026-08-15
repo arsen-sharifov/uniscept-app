@@ -18,7 +18,7 @@ export const defaultReference: TReferenceNode = createReferenceNode(
 
 export const selectedReference: TReferenceNode = createReferenceNode(
   SB_REF_ID,
-  'Selected reference card — cyan outline is active.',
+  'Selected reference card — the active border ring is on.',
   'Governance model',
   'Research',
   true,

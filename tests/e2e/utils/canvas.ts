@@ -12,6 +12,9 @@ import {
   PANE_SELECTOR,
   QUESTION_NODE_TYPE,
   REFERENCE_NODE_TYPE,
+  SAVE_STATE_ATTRIBUTE,
+  SAVE_STATE_SAVED,
+  SAVE_STATE_SELECTOR,
 } from '../consts';
 
 const { canvas } = COPY.platform;
@@ -33,7 +36,7 @@ export const waitForCanvas = async (page: Page): Promise<void> => {
 };
 
 export const expectSaved = async (page: Page): Promise<void> => {
-  await expect(page.getByRole('status', { name: canvas.save.saved })).toBeVisible();
+  await expect(page.locator(SAVE_STATE_SELECTOR)).toHaveAttribute(SAVE_STATE_ATTRIBUTE, SAVE_STATE_SAVED);
 };
 
 export const selectTool = async (page: Page, label: string): Promise<void> => {

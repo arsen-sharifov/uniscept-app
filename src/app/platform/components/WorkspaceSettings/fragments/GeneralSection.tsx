@@ -1,5 +1,6 @@
 'use client';
 
+import { clsx } from 'clsx';
 import { CalendarDays, LayoutGrid, Shield, Users } from 'lucide-react';
 import { useFormatter } from 'next-intl';
 import { useState, type KeyboardEvent } from 'react';
@@ -9,7 +10,7 @@ import { useTranslations } from '@/i18n';
 
 import { SettingsInput, SettingsPrimaryButton } from '../../Settings';
 
-export interface IGeneralSectionProps {
+interface IGeneralSectionProps {
   workspaceId: string;
   initialName: string;
   createdAt: string | null;
@@ -44,10 +45,10 @@ export const GeneralSection = ({
     : null;
 
   const details = [
-    ...(canManageWorkspace ? [] : [{ icon: LayoutGrid, label: general.nameLabel, value: initialName }]),
-    { icon: Users, label: general.membersStat, value: String(memberCount) },
-    ...(currentRoleName ? [{ icon: Shield, label: general.roleStat, value: currentRoleName }] : []),
-    ...(createdLabel ? [{ icon: CalendarDays, label: general.createdStat, value: createdLabel }] : []),
+    ...(canManageWorkspace ? [] : [{ icon: LayoutGrid, label: general.nameLabel, value: initialName, mono: false }]),
+    { icon: Users, label: general.membersStat, value: String(memberCount), mono: true },
+    ...(currentRoleName ? [{ icon: Shield, label: general.roleStat, value: currentRoleName, mono: false }] : []),
+    ...(createdLabel ? [{ icon: CalendarDays, label: general.createdStat, value: createdLabel, mono: true }] : []),
   ];
 
   const handleSave = async () => {
@@ -66,11 +67,11 @@ export const GeneralSection = ({
     <div className="space-y-6">
       {canManageWorkspace && (
         <section>
-          <header className="mb-2 flex items-baseline justify-between">
-            <h3 className="text-[11px] font-semibold tracking-[0.18em] text-[color:var(--text-subtle)] uppercase">
+          <header className="mb-2 flex items-baseline justify-between gap-3">
+            <h3 className="font-mono-ui text-[10px] font-bold tracking-[0.14em] text-[color:var(--text-label)] uppercase">
               {general.nameLabel}
             </h3>
-            <span className="text-[10.5px] tracking-[0.14em] text-[color:var(--text-faint)] uppercase">
+            <span className="shrink-0 font-mono-ui text-[10px] tracking-[0.14em] text-[color:var(--text-faint)] uppercase tabular-nums">
               {trimmedName.length}/{MAX_NAME_LENGTH}
             </span>
           </header>
@@ -93,14 +94,23 @@ export const GeneralSection = ({
         </section>
       )}
 
-      <section className="divide-y divide-[color:var(--border)] rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-elevated)] px-5">
-        {details.map(({ icon: Icon, label, value }) => (
+      <section className="divide-y divide-[color:var(--border)] overflow-hidden rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-elevated)] px-5">
+        {details.map(({ icon: Icon, label, value, mono }) => (
           <div key={label} className="flex items-center gap-3 py-3.5">
             <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[color:var(--surface-overlay)] text-[color:var(--text-subtle)]">
               <Icon className="h-4 w-4" aria-hidden />
             </span>
-            <span className="text-[13px] text-[color:var(--text-muted)]">{label}</span>
-            <span className="ml-auto truncate pl-3 text-[13px] font-medium text-[color:var(--text-strong)]">
+            <span className="min-w-0 truncate font-mono-ui text-[10px] font-bold tracking-[0.14em] text-[color:var(--text-label)] uppercase">
+              {label}
+            </span>
+            <span
+              className={clsx(
+                'ml-auto min-w-0 truncate pl-3 text-right',
+                mono
+                  ? 'font-mono-ui text-[11px] text-[color:var(--text)] tabular-nums'
+                  : 'font-grotesk text-sm font-medium text-[color:var(--text-strong)]',
+              )}
+            >
               {value}
             </span>
           </div>

@@ -11,7 +11,7 @@ const meta: Meta = {
     docs: {
       description: {
         component:
-          'Six themes share one token vocabulary. The hero card mirrors your active toolbar theme; the strip surfaces the others. Switch the toolbar to retune everything.',
+          'Eight themes and Auto share one token vocabulary; Daybreak and Eclipse are the pair the product ships under, and Auto resolves to one of them from the browser preference. The hero card mirrors your active toolbar theme; the strip surfaces the others. Switch the toolbar to retune everything.',
       },
     },
   },
@@ -29,7 +29,7 @@ export const Typography: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'A four-voice typographic specimen rendered across every theme.',
+        story: 'Four steps of the type scale rendered across every theme.',
       },
     },
   },

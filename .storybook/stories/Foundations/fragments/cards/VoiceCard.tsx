@@ -17,7 +17,7 @@ interface IVoiceCardProps {
 export const VoiceCard = ({ family, label, sample, sampleClass, classes, note }: IVoiceCardProps) => (
   <article className="space-y-2 rounded-lg border border-[color:var(--border)] bg-[color:var(--surface-elevated)] p-4">
     <div className="flex items-baseline justify-between">
-      <span className="font-mono text-[10px] font-semibold tracking-[0.2em] text-[color:var(--text-subtle)] uppercase">
+      <span className="font-mono-ui text-[10px] font-semibold tracking-[0.2em] text-[color:var(--text-subtle)] uppercase">
         {label}
       </span>
       <FamilyChip family={family} />

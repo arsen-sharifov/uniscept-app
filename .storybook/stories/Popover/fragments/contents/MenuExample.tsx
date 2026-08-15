@@ -52,7 +52,9 @@ export const MenuExample = ({ onSelect }: IMenuExampleProps = {}) => {
               <span className="truncate">{entry.label}</span>
             </span>
             {entry.hint && (
-              <kbd className="font-mono text-[10px] tracking-[0.06em] text-[color:var(--text-faint)]">{entry.hint}</kbd>
+              <kbd className="font-mono-ui text-[10px] tracking-[0.06em] text-[color:var(--text-faint)]">
+                {entry.hint}
+              </kbd>
             )}
           </button>
           {index === 2 && <div className="my-1 h-px bg-[color:var(--border)]" />}

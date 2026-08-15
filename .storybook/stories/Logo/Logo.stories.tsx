@@ -12,7 +12,8 @@ const meta: Meta<typeof Logo> = {
   parameters: {
     docs: {
       description: {
-        component: 'Animated gradient wordmark. Use `className` to control size and weight.',
+        component:
+          'Static solid-ink wordmark set in `font-grotesk` at `font-extrabold`. It paints in `currentColor`, so the surrounding text color decides its ink. Use `className` to control size and weight.',
       },
     },
   },
@@ -46,11 +47,11 @@ export const Sizes: Story = {
     <div className="flex flex-col items-start gap-4">
       {SIZES.map(({ label, className }) => (
         <div key={label} className="flex items-baseline gap-6">
-          <span className="w-12 font-mono text-[10.5px] tracking-[0.18em] text-[color:var(--text-subtle)] uppercase">
+          <span className="w-12 font-mono-ui text-[10.5px] tracking-[0.18em] text-[color:var(--text-subtle)] uppercase">
             {label}
           </span>
           <Logo className={className} />
-          <code className="font-mono text-[10px] tracking-[0.04em] text-[color:var(--text-muted)]">{className}</code>
+          <code className="font-mono-ui text-[10px] tracking-[0.04em] text-[color:var(--text-muted)]">{className}</code>
         </div>
       ))}
     </div>
@@ -62,7 +63,7 @@ export const Themes: Story = {
     docs: {
       description: {
         story:
-          'The wordmark inherits the accent gradient of the active theme. Each tile renders the logo under a different `data-theme`.',
+          'The wordmark takes the inherited text color of its surface, so it reads as ink on every theme rather than carrying a color of its own. Each tile renders the logo under a different `data-theme`.',
       },
     },
     layout: 'fullscreen',
@@ -79,11 +80,11 @@ export const Themes: Story = {
           className="relative isolate flex h-40 items-center justify-center rounded-xl border border-[color:var(--border)] bg-[color:var(--app-bg)] text-[color:var(--text)]"
         >
           <Logo className="text-5xl" />
-          <span className="absolute top-3 left-3 font-mono text-[10px] tracking-[0.18em] text-[color:var(--text-subtle)] uppercase">
+          <span className="absolute top-3 left-3 font-mono-ui text-[10px] tracking-[0.18em] text-[color:var(--text-subtle)] uppercase">
             {theme}
           </span>
           {theme === 'auto' && (
-            <span className="absolute top-7 left-3 font-mono text-[9px] tracking-[0.18em] text-[color:var(--text-faint)] uppercase">
+            <span className="absolute top-7 left-3 font-mono-ui text-[9px] tracking-[0.18em] text-[color:var(--text-faint)] uppercase">
               adaptive
             </span>
           )}
@@ -98,7 +99,7 @@ export const MotionShowcase: Story = {
     docs: {
       description: {
         story:
-          'The wordmark uses `gradient-text-animated` — a continuously animated background gradient. Toggle the OS-level reduced-motion preference to verify the second tile renders a static gradient without distracting motion.',
+          'The wordmark is a static solid-ink grotesk (no gradient, no motion) so it renders identically regardless of the reduced-motion preference; both tiles should look the same.',
       },
     },
     layout: 'fullscreen',
@@ -107,20 +108,20 @@ export const MotionShowcase: Story = {
     <div className="mx-auto grid w-full max-w-[1100px] grid-cols-1 gap-3 px-8 py-10 lg:grid-cols-2">
       <div className="relative isolate flex h-48 items-center justify-center rounded-xl border border-[color:var(--border)] bg-[color:var(--app-bg)] text-[color:var(--text)]">
         <Logo className="text-6xl" />
-        <span className="absolute top-3 left-3 font-mono text-[10px] tracking-[0.18em] text-[color:var(--text-subtle)] uppercase">
+        <span className="absolute top-3 left-3 font-mono-ui text-[10px] tracking-[0.18em] text-[color:var(--text-subtle)] uppercase">
           motion-on
         </span>
-        <span className="absolute top-7 left-3 font-mono text-[9px] tracking-[0.18em] text-[color:var(--text-faint)] uppercase">
-          animated gradient
+        <span className="absolute top-7 left-3 font-mono-ui text-[9px] tracking-[0.18em] text-[color:var(--text-faint)] uppercase">
+          static wordmark
         </span>
       </div>
       <div className="relative isolate flex h-48 items-center justify-center rounded-xl border border-[color:var(--border)] bg-[color:var(--app-bg)] text-[color:var(--text)] motion-reduce:[&_*]:!animate-none">
         <Logo className="text-6xl" />
-        <span className="absolute top-3 left-3 font-mono text-[10px] tracking-[0.18em] text-[color:var(--text-subtle)] uppercase">
+        <span className="absolute top-3 left-3 font-mono-ui text-[10px] tracking-[0.18em] text-[color:var(--text-subtle)] uppercase">
           motion-reduce
         </span>
-        <span className="absolute top-7 left-3 font-mono text-[9px] tracking-[0.18em] text-[color:var(--text-faint)] uppercase">
-          static fallback
+        <span className="absolute top-7 left-3 font-mono-ui text-[9px] tracking-[0.18em] text-[color:var(--text-faint)] uppercase">
+          static wordmark
         </span>
       </div>
     </div>

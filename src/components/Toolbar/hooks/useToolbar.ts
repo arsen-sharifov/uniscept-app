@@ -3,7 +3,7 @@
 import { useCallback, useMemo } from 'react';
 import { useStore } from 'zustand';
 
-import type { IToolGroup } from '@interfaces';
+import type { IToolbarModel } from '@interfaces';
 
 import { ECanvasTool, buildCanvasToolGroups, isCanvasTool } from '@/components/tools';
 import { useTranslations } from '@/i18n';
@@ -12,17 +12,12 @@ import { useCanvasStore, usePermissionsStore } from '@/lib/stores';
 import { EDIT_GROUP_IDS } from '../consts';
 import { isToolDisabled } from '../utils';
 
-interface IUseToolbarResult {
-  groups: IToolGroup[];
-  activeTool: ECanvasTool;
-  handleToolClick: (id: string) => void;
-}
-
-export const useToolbar = (): IUseToolbarResult => {
+export const useToolbar = (workspaceLoading = false): IToolbarModel => {
   const t = useTranslations();
   const storedActiveTool = useCanvasStore((s) => s.activeTool);
   const middlePan = useCanvasStore((s) => s.middlePan);
   const canEditCanvas = usePermissionsStore((s) => s.canEditCanvas);
+  const grantsPending = usePermissionsStore((s) => s.workspaceId !== null && !s.resolved);
 
   const activeTool = middlePan ? ECanvasTool.Pan : storedActiveTool;
 
@@ -46,6 +41,11 @@ export const useToolbar = (): IUseToolbarResult => {
     [baseGroups, canUndo, canRedo, canEditCanvas],
   );
 
+  const pendingGroupSizes = useMemo(
+    () => (workspaceLoading || grantsPending ? baseGroups.map((group) => group.tools.length) : []),
+    [baseGroups, workspaceLoading, grantsPending],
+  );
+
   const handleToolClick = useCallback((id: string) => {
     const store = useCanvasStore.getState();
 
@@ -64,5 +64,5 @@ export const useToolbar = (): IUseToolbarResult => {
     store.setActiveTool(id);
   }, []);
 
-  return { groups, activeTool, handleToolClick };
+  return { groups, pendingGroupSizes, activeTool, handleToolClick };
 };

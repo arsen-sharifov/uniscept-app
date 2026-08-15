@@ -3,25 +3,27 @@ import {
   Bell,
   Contrast,
   CreditCard,
+  Flame,
   Grid3x3,
   Grip,
   Mail,
   MessageSquare,
   Minus,
   Moon,
+  MoonStar,
   Palette,
   PenTool,
-  Pencil,
   Plus,
   Shield,
-  Sparkles,
+  Sun,
+  SunMedium,
   Sunrise,
-  Sunset,
   User,
   UserPlus,
+  Waves,
 } from 'lucide-react';
 
-import type { ICanvasPatternOption, ISettingsSidebarGroup, IThemeOption, TTheme } from '@interfaces';
+import type { ICanvasPatternOption, ISettingsSidebarGroup, IThemeOption } from '@interfaces';
 
 export const SIDEBAR_GROUPS = [
   {
@@ -45,14 +47,28 @@ export const SIDEBAR_GROUPS = [
   },
 ] as const satisfies readonly ISettingsSidebarGroup[];
 
-export const THEMES = [
-  { value: 'daybreak', icon: Sunrise, labelKey: 'themeDaybreak', descriptionKey: 'daybreakDesc' },
-  { value: 'eclipse', icon: Moon, labelKey: 'themeEclipse', descriptionKey: 'eclipseDesc' },
-  { value: 'graphite', icon: Pencil, labelKey: 'themeGraphite', descriptionKey: 'graphiteDesc' },
-  { value: 'solstice', icon: Sunset, labelKey: 'themeSolstice', descriptionKey: 'solsticeDesc' },
-  { value: 'aurora', icon: Sparkles, labelKey: 'themeAurora', descriptionKey: 'auroraDesc' },
-  { value: 'auto', icon: Contrast, labelKey: 'themeAuto', descriptionKey: 'autoDesc' },
-] as const satisfies readonly IThemeOption[];
+export const THEMES: readonly IThemeOption[] = [
+  {
+    value: 'daybreak',
+    icon: Sunrise,
+    labelKey: 'themeDaybreak',
+    descriptionKey: 'daybreakDesc',
+    systemPair: true,
+  },
+  {
+    value: 'eclipse',
+    icon: Moon,
+    labelKey: 'themeEclipse',
+    descriptionKey: 'eclipseDesc',
+    systemPair: true,
+  },
+  { value: 'graphite', icon: Sun, labelKey: 'themeGraphite', descriptionKey: 'graphiteDesc' },
+  { value: 'solstice', icon: Contrast, labelKey: 'themeSolstice', descriptionKey: 'solsticeDesc' },
+  { value: 'aurora', icon: Flame, labelKey: 'themeAurora', descriptionKey: 'auroraDesc' },
+  { value: 'tide', icon: Waves, labelKey: 'themeTide', descriptionKey: 'tideDesc' },
+  { value: 'orchid', icon: MoonStar, labelKey: 'themeOrchid', descriptionKey: 'orchidDesc' },
+  { value: 'bloom', icon: SunMedium, labelKey: 'themeBloom', descriptionKey: 'bloomDesc' },
+];
 
 export const CANVAS_PATTERNS = [
   { value: 'dots', icon: Grip, labelKey: 'patternDots', descriptionKey: 'patternDotsDesc' },
@@ -70,11 +86,10 @@ export const NOTIFICATION_ITEMS = [
 
 export const AVAILABLE_PLAN_IDS: readonly string[] = ['demo'];
 
-export const THEME_SWATCH_BADGE: Record<TTheme, string> = {
-  daybreak: 'bg-white text-neutral-900 ring-black/10',
-  eclipse: 'bg-slate-900 text-cyan-200 ring-cyan-300/25',
-  graphite: 'bg-neutral-900 text-neutral-50 ring-white/15',
-  solstice: 'bg-amber-50 text-amber-950 ring-amber-900/15',
-  aurora: 'bg-violet-50 text-violet-950 ring-violet-900/15',
-  auto: 'bg-zinc-100 text-zinc-900 ring-zinc-900/12',
-};
+export const SETTINGS_SKELETON_AVATAR_TILES = 21;
+
+export const SETTINGS_SKELETON_BADGE_TILES = 14;
+
+export const SETTINGS_SKELETON_BADGE_DOTS = 6;
+
+export const SETTINGS_SKELETON_PLAN_CARDS = 4;

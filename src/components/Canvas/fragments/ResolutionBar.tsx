@@ -1,22 +1,26 @@
 'use client';
 
 import { CheckCircle2 } from 'lucide-react';
+import { useMemo } from 'react';
 
 import { useTranslations } from '@/i18n';
 import { useCanvasStore } from '@/lib/stores';
 
-import { isCanvasNodeData } from '../utils';
+import { isThreadResolved } from '../utils';
 
 export const ResolutionBar = () => {
   const t = useTranslations();
-  const hasAnswer = useCanvasStore((s) => s.nodes.some((node) => isCanvasNodeData(node.data) && node.data.isAnswer));
+  const nodes = useCanvasStore((s) => s.nodes);
+  const edges = useCanvasStore((s) => s.edges);
 
-  if (!hasAnswer) return null;
+  const resolved = useMemo(() => isThreadResolved(nodes, edges), [nodes, edges]);
+
+  if (!resolved) return null;
 
   return (
-    <div className="absolute top-4 left-1/2 z-30 flex -translate-x-1/2 items-center gap-1.5 rounded-full border border-[color:var(--decision-border)] bg-[color:var(--surface)]/90 px-3 py-1 shadow-[0_4px_12px_-6px_rgba(15,23,42,0.18)] backdrop-blur-md">
-      <span className="flex items-center gap-1.5 text-[11px] font-semibold tracking-tight text-[color:var(--decision-text)]">
-        <CheckCircle2 className="h-3.5 w-3.5 text-[color:var(--decision)]" strokeWidth={2.25} />
+    <div className="pointer-events-none absolute top-3 left-1/2 z-30 flex -translate-x-1/2 items-center gap-1.5 rounded-full border border-[color:var(--decision-border)] bg-[color:var(--decision-soft)] px-3.5 py-1 whitespace-nowrap shadow-[var(--shadow-card-hover)] backdrop-blur-xl select-none">
+      <span className="flex items-center gap-1.5 font-mono-ui text-[10px] font-bold tracking-[0.16em] text-[color:var(--decision-text)] uppercase">
+        <CheckCircle2 className="h-3 w-3 text-[color:var(--decision)]" strokeWidth={2.5} />
         {t.platform.canvas.resolution.resolved}
       </span>
     </div>

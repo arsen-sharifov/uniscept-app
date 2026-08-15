@@ -34,8 +34,10 @@ export const collectStatusTargetIds = (nodes: Node[], clickedId: string): string
   return [clickedId];
 };
 
-const isMarkedValid = (status: TEffectiveStatus | undefined): boolean =>
-  status === 'valid' || status === 'tainted' || status === 'tainted-valid';
+export const isAffected = (status: TEffectiveStatus | undefined): boolean =>
+  status === 'tainted' || status === 'tainted-valid';
+
+const isMarkedValid = (status: TEffectiveStatus | undefined): boolean => status === 'valid' || isAffected(status);
 
 export const resolveEdgeTone = (
   sourceStatus: TEffectiveStatus | undefined,
@@ -119,4 +121,13 @@ export const computeEffectiveStatuses = (nodes: Node[], edges: Edge[]): Map<stri
   }
 
   return result;
+};
+
+export const isThreadResolved = (nodes: Node[], edges: Edge[]): boolean => {
+  const answerIds = nodes.filter((node) => isCanvasNodeData(node.data) && node.data.isAnswer).map((node) => node.id);
+  if (answerIds.length === 0) return false;
+
+  const statusById = computeEffectiveStatuses(nodes, edges);
+
+  return answerIds.some((id) => statusById.get(id) === 'valid');
 };

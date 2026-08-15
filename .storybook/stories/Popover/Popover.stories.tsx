@@ -39,7 +39,7 @@ const meta: Meta<typeof Popover> = {
     docs: {
       description: {
         component:
-          'Portal-based popover anchored to its trigger. Closes on outside click, Escape, or window resize, and clamps inside the viewport. `open` is bound to the Controls panel via `useArgs`; `onOpenChange` fires as an action.',
+          'Portal-based popover anchored to its trigger, drawn as an opaque `--surface` panel so the content beneath never ghosts through. Closes on outside click, Escape, or window resize. `open` is bound to the Controls panel via `useArgs`; `onOpenChange` fires as an action.',
       },
     },
   },
@@ -204,7 +204,7 @@ export const ViewportClamping: Story = {
     docs: {
       description: {
         story:
-          'Trigger pinned to the bottom-right corner with `placement="bottom-end"`. The panel clamps inside the viewport instead of overflowing off-screen.',
+          'Trigger pinned to the bottom-right corner with `placement="bottom-end"`. The panel is right-aligned to the trigger and its left edge is floored at 8px, so it never runs off the left side of the window.',
       },
     },
   },

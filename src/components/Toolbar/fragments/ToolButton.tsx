@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import type { IToolItem } from '@interfaces';
 
-import { FLASH_DURATION_MS } from '../consts';
+import { FLASH_DURATION_MS, ICON_STROKE, TOOL_TONES } from '../consts';
 import { toAriaShortcut } from '../utils';
 
 interface IToolButtonProps {
@@ -21,7 +21,12 @@ export const ToolButton = ({ tool, active, onClick, onPointerEnter, onPointerLea
   const flashTimerRef = useRef<number | null>(null);
   const [flash, setFlash] = useState(false);
   const isAction = tool.kind === 'action';
+  const isSelected = active && !isAction && !tool.disabled;
   const Icon = tool.icon;
+  const tone = tool.tone && !tool.disabled ? TOOL_TONES[tool.tone] : null;
+  const toneStyle = tone
+    ? { color: tone.ink, backgroundColor: isSelected || flash ? tone.fill : undefined }
+    : undefined;
 
   useEffect(
     () => () => {
@@ -70,30 +75,42 @@ export const ToolButton = ({ tool, active, onClick, onPointerEnter, onPointerLea
         aria-label={tool.label}
         aria-pressed={!isAction ? active : undefined}
         aria-keyshortcuts={toAriaShortcut(tool.shortcut)}
+        style={toneStyle}
         className={clsx(
-          'relative flex h-9 w-9 items-center justify-center rounded-[10px] outline-none',
-          'transition-[background,color,box-shadow,transform] duration-150 ease-out motion-reduce:transition-none',
+          'flex h-9 w-9 items-center justify-center rounded-lg outline-none',
+          'transition-[background-color,color,box-shadow,transform] duration-200 ease-out motion-reduce:transition-none',
           'focus-visible:ring-2 focus-visible:ring-[color:var(--ring-focus)] focus-visible:ring-offset-1 focus-visible:ring-offset-[color:var(--surface)]',
-          tool.disabled && 'cursor-not-allowed text-[color:var(--text-faint)]',
+          tool.disabled && 'cursor-not-allowed text-[color:var(--text-muted)] opacity-40',
+          !tool.disabled && 'cursor-pointer active:scale-[0.94]',
           !tool.disabled &&
-            !active && [
-              'text-[color:var(--text-muted)] hover:text-[color:var(--text-strong)]',
-              'hover:bg-[color:var(--surface-overlay)] active:bg-[color:var(--surface-overlay)]',
-              'active:scale-[0.94]',
-            ],
-          !tool.disabled && active && !isAction && 'bg-[color:var(--accent-soft)] text-[color:var(--accent-text)]',
-          flash && ['bg-[color:var(--accent-soft)] text-[color:var(--accent-text)]', 'scale-[1.08]'],
+            !isSelected &&
+            !flash &&
+            'hover:bg-[color:var(--surface-overlay)] active:bg-[color:var(--surface-overlay)]',
+          !tool.disabled &&
+            !isSelected &&
+            !flash &&
+            !tone &&
+            'text-[color:var(--text-muted)] hover:text-[color:var(--text)]',
+          isSelected &&
+            !tone &&
+            'bg-[color:var(--accent-soft)] text-[color:var(--accent-text)] shadow-[0_8px_24px_-12px_var(--accent-glow)]',
+          flash && 'scale-[1.06]',
+          flash && !tone && 'bg-[color:var(--accent-soft)] text-[color:var(--accent-text)]',
         )}
       >
-        <span
-          aria-hidden
-          className={clsx(
-            'pointer-events-none absolute top-1/2 -right-px z-10 h-5 w-[3px] -translate-y-1/2 rounded-l-full bg-gradient-to-b from-[color:var(--accent)] to-[color:var(--accent-2)] transition-opacity duration-200 ease-out motion-reduce:transition-none',
-            active && !isAction ? 'opacity-100' : 'opacity-0',
-          )}
-        />
-        <Icon className="h-[17px] w-[17px]" strokeWidth={active && !isAction ? 2 : 1.85} />
+        <Icon className="h-[17px] w-[17px]" strokeWidth={ICON_STROKE} />
       </button>
+
+      <span
+        aria-hidden
+        style={tone ? { backgroundColor: tone.ink } : undefined}
+        className={clsx(
+          'pointer-events-none absolute top-1/2 right-0 h-6 w-[3px] -translate-y-1/2 rounded-l-full',
+          !tone && 'bg-[color:var(--accent)]',
+          'transition-opacity duration-200 ease-out motion-reduce:transition-none',
+          isSelected ? 'opacity-100' : 'opacity-0',
+        )}
+      />
     </div>
   );
 };

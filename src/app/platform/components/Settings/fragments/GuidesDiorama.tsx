@@ -31,10 +31,8 @@ export const GuidesDiorama = ({ active }: IGuidesDioramaProps) => (
       strokeWidth="0.7"
       strokeDasharray="3.5 3"
       strokeLinecap="round"
-      style={{
-        opacity: active ? 0.9 : 0,
-        transition: 'opacity 240ms ease-out',
-      }}
+      className="transition-opacity duration-200 ease-out motion-reduce:transition-none"
+      style={{ opacity: active ? 0.9 : 0 }}
     >
       <line x1="38" y1="20" x2="100" y2="20" />
       <line x1="100" y1="20" x2="100" y2="40" />
@@ -49,9 +47,9 @@ export const GuidesDiorama = ({ active }: IGuidesDioramaProps) => (
         height="22"
         rx="3.5"
         fill="var(--surface-elevated)"
-        stroke="var(--accent)"
-        strokeWidth={active ? 1.2 : 0.7}
-        style={{ transition: 'stroke-width 240ms ease-out' }}
+        stroke={active ? 'var(--accent)' : 'var(--border-strong)'}
+        strokeWidth={active ? 1.2 : 0.9}
+        className="transition-[stroke,stroke-width] duration-200 ease-out motion-reduce:transition-none"
       />
       <rect x="-14" y="-6" width="28" height="2" rx="1" fill="var(--text-muted)" opacity="0.55" />
       <rect x="-14" y="-1.5" width="20" height="2" rx="1" fill="var(--text-muted)" opacity="0.32" />

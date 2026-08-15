@@ -12,14 +12,12 @@
   100% {
     box-shadow:
       0 0 0 0 var(--accent-glow),
-      var(--shadow-pip),
-      0 8px 24px -12px var(--shadow-pip);
+      var(--shadow-pip);
   }
   50% {
     box-shadow:
       0 0 0 6px transparent,
-      var(--shadow-pip),
-      0 8px 24px -12px var(--shadow-pip);
+      var(--shadow-pip);
   }
 }
 
@@ -92,6 +90,23 @@
   to {
     stroke-dashoffset: 12;
   }
+}
+
+.react-flow__node {
+  border-radius: 0.75rem;
+}
+
+.react-flow__node:focus {
+  outline: none;
+}
+
+.react-flow__node:focus-visible {
+  outline: 2px solid var(--ring-focus);
+  outline-offset: 2px;
+}
+
+.react-flow__edge-path {
+  transition: stroke 200ms ease;
 }
 
 .react-flow__edge:is(:hover, .selected) .react-flow__edge-path {
@@ -185,6 +200,11 @@ body.canvas-middle-pan .react-flow *:not(input, textarea) {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .react-flow__edge-path {
+    transition: none;
+  }
+
+  .react-flow__edge:is(.edge-tone-invalid, .edge-tone-tainted) .react-flow__edge-path,
   .react-flow__edge:is(:hover, .selected) .react-flow__edge-path {
     stroke-dasharray: none;
     animation: none;

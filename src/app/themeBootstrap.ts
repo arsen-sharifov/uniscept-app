@@ -26,6 +26,7 @@ export const THEME_BOOTSTRAP = `
   const c = ${escapeForInlineScript(JSON.stringify(BOOTSTRAP_CONFIG))};
   const h = document.documentElement;
   const set = (a, v) => h.setAttribute(a, v);
+  set('data-scripted', '');
   const bool = (a, v, d) => set(a, typeof v === 'boolean' ? String(v) : String(d));
   try {
     const p = JSON.parse(localStorage.getItem(c.storageKey) || 'null');

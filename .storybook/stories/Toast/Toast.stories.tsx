@@ -12,7 +12,7 @@ const meta: Meta<typeof Toaster> = {
     docs: {
       description: {
         component:
-          'Imperative toast system. Call `event.success`, `event.info`, `event.warning` with a message, or `event.error(unknownError)` to normalize, log, and surface a caught error as a localized toast. Everything is callable from anywhere, even outside React. The `<Toaster />` renderer is mounted once via `<EventBoundary>` in the root layout; here it sits beside the trigger buttons.',
+          'Imperative toast system. Call `event.success`, `event.info`, `event.warning` with a message, or `event.error(unknownError)` to normalize, log, and surface a caught error as a localized toast. Everything is callable from anywhere, even outside React. Each toast is an opaque `--surface` panel carrying a 3px tone strip down its left edge in the matching status color, with the message in `font-grotesk`. The `<Toaster />` renderer is mounted once via `<EventBoundary>` in the root layout and portals to the top-right of the viewport, so it stacks in the corner rather than beside the trigger buttons.',
       },
     },
   },

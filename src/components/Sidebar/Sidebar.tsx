@@ -10,7 +10,15 @@ import { ConfirmDialog } from '@/components/Modal';
 import { useTranslations } from '@/i18n';
 import { usePermissionsStore } from '@/lib/stores';
 
-import { BulkActionsBar, EmptyState, MoveDialog, NavItems, SearchInput, WorkspaceSwitcher } from './fragments';
+import {
+  BulkActionsBar,
+  EmptyState,
+  MoveDialog,
+  NavItems,
+  SearchInput,
+  SidebarSkeleton,
+  WorkspaceSwitcher,
+} from './fragments';
 import { useInlineEdit, useSelection } from './hooks';
 import { filterTree, getSiblings, getSingleDeleteTitleKey } from './utils';
 
@@ -41,12 +49,14 @@ export interface ISidebarProps {
   onBulkDelete?: (ids: Set<string>) => void;
   onBulkMove?: (ids: Set<string>, parentId: string | null, position: number) => void;
   onBulkDeleteWorkspaces?: (ids: Set<string>) => void;
+  loading?: boolean;
   footer?: ReactNode;
 }
 
 export const Sidebar = ({
   items = [],
   workspaces = [],
+  loading = false,
   activeWorkspaceId,
   activeItemId,
   onItemClick,
@@ -236,12 +246,14 @@ export const Sidebar = ({
 
   return (
     <>
-      <aside className="fixed top-4 left-4 z-40 flex h-[calc(100vh-2rem)] w-64 flex-col rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)]/85 shadow-[0_8px_32px_-8px_rgba(0,0,0,0.18)] backdrop-blur-2xl transition-[background-color,border-color] duration-300 ease-out select-none">
-        <div className="px-3 py-3">
-          <Logo className="text-base" />
+      <aside className="app-glass relative z-40 flex h-full w-64 shrink-0 flex-col rounded-2xl border border-[color:var(--border)] transition-[background-color,border-color] duration-200 ease-out select-none motion-reduce:transition-none">
+        <div className="border-b border-[color:var(--border)] px-4 py-3">
+          <Logo className="text-base text-[color:var(--text-strong)]" />
         </div>
 
-        <div className="px-2">
+        {loading && <SidebarSkeleton />}
+
+        <div className="px-2 pt-2" hidden={loading}>
           <WorkspaceSwitcher
             workspaces={workspaces}
             activeWorkspaceId={activeWorkspaceId}
@@ -274,45 +286,39 @@ export const Sidebar = ({
           />
         </div>
 
-        {activeWorkspaceId && items.length > 0 && (
-          <div className="px-3 pt-2">
+        {!loading && activeWorkspaceId && items.length > 0 && (
+          <div className="px-2 pt-2">
             <SearchInput value={query} onChange={setQuery} placeholder={t.platform.sidebar.searchPlaceholder} />
           </div>
         )}
 
-        {activeWorkspaceId && (
+        {!loading && activeWorkspaceId && (
           <div
             data-sidebar-scroll
             className="relative flex flex-1 [scrollbar-width:none] flex-col overflow-x-hidden overflow-y-auto scroll-smooth px-2 pt-3 pb-2 [&::-webkit-scrollbar]:hidden"
           >
             <div className="mb-1 flex items-center justify-between px-2">
-              <div className="flex items-center gap-1.5">
-                <span className="text-[10px] font-semibold tracking-wider text-[color:var(--text-muted)] uppercase">
-                  {t.platform.sidebar.structure}
-                </span>
-                {items.length > 0 && (
-                  <span className="inline-flex h-4 min-w-4 items-center justify-center rounded-md bg-[color:var(--surface-overlay)] px-1 text-[9px] font-semibold text-[color:var(--text-muted)]">
-                    {items.length}
-                  </span>
-                )}
+              <div className="flex items-center gap-1.5 font-mono-ui text-[10px] font-bold tracking-[0.14em] text-[color:var(--text-label)] uppercase">
+                <span>{t.platform.sidebar.structure}</span>
+                {items.length > 0 && <span className="tabular-nums">{items.length}</span>}
               </div>
               {canManageStructure && (
                 <div className="flex items-center gap-0.5">
                   <button
                     type="button"
                     onClick={onCreateFolder}
-                    className="rounded-md p-1 text-[color:var(--text-subtle)] transition-colors hover:bg-[color:var(--surface-overlay)] hover:text-[color:var(--text)]"
+                    className="flex h-6 w-6 cursor-pointer items-center justify-center rounded-md text-[color:var(--text-muted)] transition-colors duration-150 hover:bg-[color:var(--surface-overlay)] hover:text-[color:var(--text-strong)] focus-visible:ring-2 focus-visible:ring-[color:var(--ring-focus)] focus-visible:outline-none active:bg-[color:var(--accent-soft)] active:text-[color:var(--accent-text)] motion-reduce:transition-none"
                     title={t.platform.sidebar.newFolder}
                   >
-                    <FolderPlus className="h-3.5 w-3.5" />
+                    <FolderPlus className="h-4 w-4" strokeWidth={1.9} />
                   </button>
                   <button
                     type="button"
                     onClick={() => onCreateThread?.()}
-                    className="rounded-md p-1 text-[color:var(--text-subtle)] transition-colors hover:bg-[color:var(--surface-overlay)] hover:text-[color:var(--text)]"
+                    className="flex h-6 w-6 cursor-pointer items-center justify-center rounded-md text-[color:var(--text-muted)] transition-colors duration-150 hover:bg-[color:var(--surface-overlay)] hover:text-[color:var(--text-strong)] focus-visible:ring-2 focus-visible:ring-[color:var(--ring-focus)] focus-visible:outline-none active:bg-[color:var(--accent-soft)] active:text-[color:var(--accent-text)] motion-reduce:transition-none"
                     title={t.platform.sidebar.newThread}
                   >
-                    <Plus className="h-3.5 w-3.5" />
+                    <Plus className="h-4 w-4" strokeWidth={1.9} />
                   </button>
                 </div>
               )}
@@ -340,11 +346,13 @@ export const Sidebar = ({
 
             {showSearchEmpty && (
               <div className="flex flex-1 flex-col items-center justify-center px-4 py-8 text-center">
-                <div className="mb-2 flex h-9 w-9 items-center justify-center rounded-xl bg-[color:var(--surface-overlay)]">
+                <div className="mb-2 flex h-9 w-9 items-center justify-center rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-overlay)]">
                   <SearchX className="h-4 w-4 text-[color:var(--text-subtle)]" />
                 </div>
-                <p className="text-xs text-[color:var(--text-muted)]">{t.platform.sidebar.noSearchResults}</p>
-                <p className="mt-1 max-w-[180px] truncate text-[11px] text-[color:var(--text-subtle)]">
+                <p className="font-grotesk text-xs font-medium text-[color:var(--text-muted)]">
+                  {t.platform.sidebar.noSearchResults}
+                </p>
+                <p className="mt-1 max-w-[180px] truncate font-mono-ui text-[10px] text-[color:var(--text-label)]">
                   &ldquo;{query}&rdquo;
                 </p>
               </div>
@@ -367,7 +375,7 @@ export const Sidebar = ({
           </div>
         )}
 
-        {!activeWorkspaceId && (
+        {!loading && !activeWorkspaceId && (
           <div className="flex flex-1 items-center justify-center px-2">
             <EmptyState
               icon={LayoutGrid}
@@ -397,7 +405,7 @@ export const Sidebar = ({
           </div>
         )}
 
-        {footer && <div className="border-t border-[color:var(--border)] px-2 py-2">{footer}</div>}
+        {footer && <footer className="border-t border-[color:var(--border)] px-2 py-2">{footer}</footer>}
       </aside>
 
       <ConfirmDialog

@@ -9,7 +9,7 @@ import { GuidesDiorama } from './GuidesDiorama';
 import { SnapDiorama } from './SnapDiorama';
 import { ZoomStack } from './ZoomStack';
 
-export interface IEditorSectionProps {
+interface IEditorSectionProps {
   preferences: IPreferences;
   onUpdate: TPreferenceUpdater;
 }
@@ -22,10 +22,10 @@ export const EditorSection = ({ preferences, onUpdate }: IEditorSectionProps) =>
     <div className="space-y-8">
       <section>
         <header className="mb-1 flex items-baseline justify-between">
-          <h3 className="text-[11px] font-semibold tracking-[0.18em] text-[color:var(--text-subtle)] uppercase">
+          <h3 className="font-mono-ui text-[10px] font-bold tracking-[0.14em] text-[color:var(--text-label)] uppercase">
             {editor.behaviors}
           </h3>
-          <span className="text-[10.5px] tracking-[0.16em] text-[color:var(--text-faint)] uppercase">
+          <span className="font-mono-ui text-[10px] tracking-[0.14em] text-[color:var(--text-label)] uppercase">
             {editor.behaviorsCaption}
           </span>
         </header>
@@ -51,10 +51,10 @@ export const EditorSection = ({ preferences, onUpdate }: IEditorSectionProps) =>
 
       <section className="border-t border-[color:var(--border)] pt-6">
         <header className="mb-1 flex items-baseline justify-between">
-          <h3 className="text-[11px] font-semibold tracking-[0.18em] text-[color:var(--text-subtle)] uppercase">
+          <h3 className="font-mono-ui text-[10px] font-bold tracking-[0.14em] text-[color:var(--text-label)] uppercase">
             {editor.zoom}
           </h3>
-          <span className="text-[10.5px] tracking-[0.16em] text-[color:var(--text-faint)] uppercase">
+          <span className="font-mono-ui text-[10px] tracking-[0.14em] text-[color:var(--text-label)] uppercase">
             {editor.zoomCaption}
           </span>
         </header>

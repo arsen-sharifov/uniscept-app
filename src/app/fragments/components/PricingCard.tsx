@@ -1,5 +1,7 @@
+'use client';
+
 import { clsx } from 'clsx';
-import { CircleCheck } from 'lucide-react';
+import { CheckCircle2, Flag } from 'lucide-react';
 import Link from 'next/link';
 
 import type { IPricingPlan } from '@interfaces';
@@ -7,72 +9,83 @@ import type { IPricingPlan } from '@interfaces';
 import { useTranslations } from '@/i18n';
 import { formatPlanPrice } from '@/lib/pricing';
 
+import { TickerNumber } from './TickerNumber';
+
 interface IPricingCardProps {
   plan: IPricingPlan;
 }
 
 export const PricingCard = ({ plan }: IPricingCardProps) => {
   const t = useTranslations();
-  const isDark = plan.highlighted;
+  const isHighlighted = plan.highlighted === true;
   const periodLabel = plan.period ? t.landing.pricing.periods[plan.period] : null;
 
   return (
     <div
       className={clsx(
-        'relative flex flex-col overflow-hidden rounded-2xl border-2 p-8 transition-all duration-300 ease-in-out hover:scale-[1.02]',
-        isDark
-          ? 'border-emerald-500/30 bg-gradient-to-br from-black via-gray-900 to-black shadow-2xl hover:border-emerald-500/50'
-          : 'group border-black/10 bg-white shadow-lg hover:border-black/20 hover:shadow-xl',
+        'landing-glass relative flex h-full flex-col rounded-xl border bg-[color:var(--hero-card)] p-7 shadow-[var(--hero-card-shadow)] backdrop-blur-md transition-[border-color,box-shadow] duration-300 hover:border-[color:var(--hero-lime)]/45 hover:shadow-[0_22px_52px_-20px_var(--hero-lime-glow)]',
+        isHighlighted ? 'border-[color:var(--hero-lime)]/55' : 'border-[color:var(--hero-card-border)]',
+        plan.disabled && 'plan-quarantine',
       )}
     >
-      {isDark && (
-        <>
-          <div className="absolute top-3 right-3 rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 px-3 py-1.5 text-xs font-black tracking-wider text-white uppercase shadow-lg">
+      {isHighlighted && (
+        <div className="absolute inset-x-0 top-0 flex items-center gap-1.5 rounded-t-xl bg-[color:var(--hero-lime)] px-3 py-1.5 text-[color:var(--hero-lime-ink)] select-none">
+          <Flag aria-hidden className="h-2.5 w-2.5 shrink-0" strokeWidth={2.5} />
+          <span className="font-mono-ui text-[8.5px] font-bold tracking-[0.16em] uppercase">
             {t.landing.pricing.popular}
-          </div>
-          <div className="absolute -top-20 -right-20 h-64 w-64 rounded-full bg-gradient-to-br from-emerald-500/30 to-cyan-500/30 blur-3xl" />
-          <div className="absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-gradient-to-br from-purple-500/20 to-pink-500/20 blur-3xl" />
-        </>
+          </span>
+        </div>
       )}
 
-      <div className={clsx('mb-8', isDark && 'relative')}>
-        <h3 className={clsx('mb-2 text-xl font-bold', isDark ? 'text-white' : 'text-black')}>{plan.name}</h3>
-        <div className="flex items-baseline gap-2">
-          <span className={clsx('text-5xl font-black', isDark ? 'text-white' : 'text-black')}>
-            {formatPlanPrice(plan.price, t.landing.pricing.free)}
+      <div className="mt-5 mb-7">
+        <h3 className="mb-3 font-grotesk text-lg font-semibold text-[color:var(--hero-card-text)]">{plan.name}</h3>
+        <div className="flex items-baseline gap-1.5">
+          <span className="font-mono-ui text-4xl font-bold tracking-tight text-[color:var(--hero-card-text)]">
+            {plan.price === 'free' ? (
+              formatPlanPrice(plan.price, t.landing.pricing.free)
+            ) : (
+              <>
+                $
+                <TickerNumber value={plan.price} />
+              </>
+            )}
           </span>
           {periodLabel && (
-            <span className={clsx('text-lg', isDark ? 'text-white/60' : 'text-black/60')}>/{periodLabel}</span>
+            <span className="font-mono-ui text-[11px] text-[color:var(--hero-card-muted)]">/{periodLabel}</span>
           )}
         </div>
         {plan.description && (
-          <p className={clsx('mt-2 text-sm', isDark ? 'text-white/60' : 'text-black/60')}>{plan.description}</p>
+          <p className="mt-2 font-grotesk text-sm text-[color:var(--hero-card-muted)]">{plan.description}</p>
         )}
       </div>
 
-      <ul className={clsx('mb-8 flex-1 space-y-3', isDark && 'relative')}>
+      <ul className="mb-8 flex-1 space-y-2.5">
         {plan.features.map((feature) => (
-          <li key={feature} className="flex items-start gap-3">
-            <span className={isDark ? 'text-emerald-400' : 'text-emerald-600'}>
-              <CircleCheck className="mt-0.5 h-5 w-5 flex-shrink-0" />
+          <li key={feature} className="flex items-start gap-2.5">
+            <CheckCircle2
+              aria-hidden
+              className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[color:var(--hero-accent-text)]"
+              strokeWidth={2.25}
+            />
+            <span className="font-grotesk text-[13.5px] leading-snug text-[color:var(--hero-card-text)]">
+              {feature}
             </span>
-            <span className={clsx('text-sm', isDark ? 'text-white/90' : 'text-black/70')}>{feature}</span>
           </li>
         ))}
       </ul>
 
       {plan.disabled ? (
-        <span className="block w-full cursor-not-allowed rounded-lg border-2 border-black/10 bg-black/5 py-3.5 text-center text-sm font-bold text-black/30">
+        <span className="block w-full cursor-not-allowed rounded-md border border-[color:var(--hero-hairline-strong)] py-3 text-center font-mono-ui text-[11px] font-bold tracking-[0.12em] text-[color:var(--hero-card-muted)] uppercase">
           {t.landing.pricing.tryDemo}
         </span>
       ) : (
         <Link
           href={plan.href}
           className={clsx(
-            'block w-full rounded-lg py-3.5 text-center text-sm font-bold transition-all duration-300 ease-in-out hover:scale-105',
-            isDark
-              ? 'bg-gradient-to-r from-emerald-600 to-cyan-500 text-white shadow-xl hover:from-emerald-500 hover:to-cyan-400 hover:shadow-2xl'
-              : 'border-2 border-black bg-black text-white hover:bg-black/90',
+            'block w-full rounded-md py-3 text-center font-mono-ui text-[11px] font-bold tracking-[0.12em] uppercase transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-[color:var(--hero-lime-glow)] focus-visible:outline-none',
+            isHighlighted
+              ? 'bg-[color:var(--hero-lime)] text-[color:var(--hero-lime-ink)] hover:bg-[color:var(--hero-lime-strong)]'
+              : 'border border-[color:var(--hero-hairline-strong)] text-[color:var(--hero-card-text)] hover:bg-[color:var(--hero-chip-bg)]',
           )}
         >
           {t.landing.pricing.getStarted}

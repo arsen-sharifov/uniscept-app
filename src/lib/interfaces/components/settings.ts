@@ -36,6 +36,7 @@ export interface IThemeOption {
   icon: LucideIcon;
   labelKey: TThemeLabelKey;
   descriptionKey: TThemeDescriptionKey;
+  systemPair?: boolean;
 }
 
 export interface ICanvasPatternOption {

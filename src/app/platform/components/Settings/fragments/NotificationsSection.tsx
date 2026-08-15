@@ -13,15 +13,15 @@ export const NotificationsSection = () => {
     <div className="space-y-8">
       <section>
         <header className="mb-4 flex items-center gap-2.5">
-          <h3 className="text-[11px] font-semibold tracking-[0.18em] text-[color:var(--text-subtle)] uppercase">
+          <h3 className="font-mono-ui text-[10px] font-bold tracking-[0.14em] text-[color:var(--text-label)] uppercase">
             {notifications.title}
           </h3>
-          <span className="rounded-full bg-[color:var(--surface-overlay)] px-2 py-0.5 text-[9.5px] font-semibold tracking-[0.16em] text-[color:var(--text-subtle)] uppercase shadow-[inset_0_0_0_1px_var(--border)]">
+          <span className="rounded-md bg-[color:var(--surface-overlay)] px-2 py-0.5 font-mono-ui text-[10px] font-bold tracking-[0.14em] text-[color:var(--text-label)] uppercase ring-1 ring-[color:var(--border-strong)]">
             {comingSoon}
           </span>
         </header>
 
-        <div className="divide-y divide-[color:var(--border)] rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-elevated)] px-5">
+        <div className="divide-y divide-[color:var(--border)] rounded-xl border border-dashed border-[color:var(--border-strong)] bg-[color:var(--surface-soft)] px-5">
           {NOTIFICATION_ITEMS.map(({ icon, labelKey, descriptionKey }) => (
             <div key={labelKey} className="py-4">
               <Toggle

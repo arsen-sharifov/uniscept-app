@@ -1,79 +1,47 @@
-import { clsx } from 'clsx';
+'use client';
 
-import { PROBLEM_CARDS } from '@constants';
+import { clsx } from 'clsx';
+import { XCircle } from 'lucide-react';
+
 import { useTranslations } from '@/i18n';
 
-import { Section } from './components';
+import { Section, SectionHeading, ThreadStream, TiltPanel } from './components';
+import { HERO_EXHIBITS, LANDING_SURFACE_CLASSES } from './consts';
 
 export const ProblemSection = () => {
   const t = useTranslations();
-  const [chaos, mindmaps, docs, cost] = PROBLEM_CARDS;
 
   return (
-    <Section id="problem">
-      <div className="mx-auto max-w-7xl">
-        <div data-reveal className="mb-20 scroll-reveal text-center">
-          <h2 className="mb-6 text-5xl font-black tracking-tight text-black sm:text-6xl">{t.landing.problem.title}</h2>
-          <p className="text-xl text-black/60">{t.landing.problem.subtitle}</p>
+    <Section id="problem" ground="deep">
+      <div className="mx-auto max-w-6xl">
+        <div className="mb-10 max-w-2xl">
+          <SectionHeading title={t.landing.problem.title} subtitle={t.landing.problem.subtitle} />
         </div>
 
-        <div data-reveal className="grid scroll-reveal gap-5 md:grid-cols-6 md:grid-rows-3">
-          <div className="group relative card-3d overflow-hidden rounded-2xl border border-black/5 bg-gradient-to-br from-white to-gray-50/50 p-8 shadow-xl transition-all duration-300 ease-in-out hover:border-emerald-500/30 hover:shadow-2xl md:col-span-4 md:row-span-2">
-            <div className="absolute top-0 right-0 h-64 w-64 rounded-full bg-gradient-to-br from-emerald-500/10 to-cyan-500/10 blur-3xl transition-all duration-500 ease-in-out group-hover:scale-150" />
-            <div className="relative">
-              <div className="mb-5 text-5xl">{chaos.emoji}</div>
-              <h3 className="mb-3 text-3xl font-black text-black">{chaos.title}</h3>
-              <p className="max-w-xl text-lg leading-relaxed text-black/60">{chaos.description}</p>
-              <div className="mt-6 flex gap-2">
-                {chaos.tags.map((tag) => (
-                  <span
-                    key={tag.label}
-                    className={clsx(
-                      'rounded-full px-3 py-1.5 text-xs font-semibold',
-                      tag.color === 'red' && 'bg-red-100 text-red-700',
-                      tag.color === 'orange' && 'bg-orange-100 text-orange-700',
-                      tag.color === 'yellow' && 'bg-yellow-100 text-yellow-700',
-                    )}
-                  >
-                    {tag.label}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
+        <div className="grid items-start gap-6 lg:grid-cols-[1.15fr_1fr]">
+          <ThreadStream />
 
-          <div className="group relative card-3d overflow-hidden rounded-2xl border border-black/5 bg-gradient-to-br from-white to-purple-50/30 p-7 shadow-xl transition-all duration-300 ease-in-out hover:border-purple-500/30 hover:shadow-2xl md:col-span-2 md:row-span-2">
-            <div className="absolute right-0 bottom-0 h-48 w-48 rounded-full bg-gradient-to-br from-purple-500/10 to-pink-500/10 blur-3xl transition-all duration-500 ease-in-out group-hover:scale-150" />
-            <div className="relative">
-              <div className="mb-5 text-4xl">{mindmaps.emoji}</div>
-              <h3 className="mb-3 text-2xl font-black text-black">{mindmaps.title}</h3>
-              <p className="text-base leading-relaxed text-black/60">{mindmaps.description}</p>
-              {mindmaps.tags.length > 0 && (
-                <div className="mt-5">
-                  <span className="rounded-full bg-purple-100 px-3 py-1.5 text-xs font-semibold text-purple-700">
-                    {mindmaps.tags[0]!.label}
-                  </span>
-                </div>
-              )}
-            </div>
-          </div>
+          <div className="flex flex-col gap-4">
+            {HERO_EXHIBITS.map((exhibitId) => {
+              const content = t.landing.problem.exhibits[exhibitId];
 
-          <div className="group relative card-3d overflow-hidden rounded-2xl border border-black/5 bg-gradient-to-br from-white to-blue-50/30 p-7 shadow-xl transition-all duration-300 ease-in-out hover:border-blue-500/30 hover:shadow-2xl md:col-span-3">
-            <div className="absolute -top-10 -right-10 h-32 w-32 rounded-full bg-gradient-to-br from-blue-500/10 to-cyan-500/10 blur-2xl transition-all duration-500 ease-in-out group-hover:scale-150" />
-            <div className="relative">
-              <div className="mb-3 text-3xl">{docs.emoji}</div>
-              <h3 className="mb-2 text-xl font-black text-black">{docs.title}</h3>
-              <p className="text-sm leading-relaxed text-black/60">{docs.description}</p>
-            </div>
-          </div>
-
-          <div className="group relative card-3d overflow-hidden rounded-2xl bg-gradient-to-br from-black to-gray-900 p-7 shadow-2xl transition-all duration-300 ease-in-out hover:scale-[1.02] md:col-span-3">
-            <div className="absolute top-0 -right-10 h-32 w-32 rounded-full bg-gradient-to-br from-emerald-500/30 to-cyan-500/30 blur-2xl" />
-            <div className="relative">
-              <div className="mb-3 text-3xl">{cost.emoji}</div>
-              <h3 className="mb-2 text-xl font-black text-white">{cost.title}</h3>
-              <p className="text-sm leading-relaxed text-white/90">{cost.description}</p>
-            </div>
+              return (
+                <TiltPanel key={exhibitId}>
+                  <article className={clsx(LANDING_SURFACE_CLASSES.card, 'relative flex h-full flex-col p-5')}>
+                    <p className="font-grotesk text-lg leading-snug font-semibold tracking-tight text-[color:var(--hero-card-text)]">
+                      {content.claim}
+                    </p>
+                    <p className="mt-2 flex-1 font-grotesk text-[13.5px] leading-snug text-[color:var(--hero-card-muted)]">
+                      {content.detail}
+                    </p>
+                    <span className="mt-3 inline-flex w-fit items-center gap-1.5 rounded border border-[color:var(--hero-refuted)]/35 bg-[color:var(--hero-refuted)]/8 px-2 py-1 font-mono-ui text-[9px] font-bold tracking-[0.14em] text-[color:var(--hero-refuted)] uppercase">
+                      <XCircle aria-hidden className="h-2.5 w-2.5 shrink-0" strokeWidth={2.5} />
+                      {content.verdict} · {content.medium}
+                    </span>
+                  </article>
+                </TiltPanel>
+              );
+            })}
           </div>
         </div>
       </div>

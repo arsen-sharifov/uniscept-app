@@ -118,7 +118,7 @@
         "declineFailed": "Nu s-a putut refuza invitația"
       },
       "workspaceSettings": "Setări spațiu de lucru",
-      "workspaces": "Spații de lucru",
+      "workspaces": "Spații",
       "noWorkspaceSelected": "Niciun spațiu selectat",
       "noWorkspaces": "Niciun spațiu de lucru. Creează unul pentru a începe.",
       "newWorkspace": "Spațiu nou",
@@ -250,6 +250,7 @@
         "answerBadge": "Răspuns",
         "validBadge": "Valid",
         "invalidBadge": "Invalid",
+        "affectedBadge": "Afectat",
         "defaultLabel": "Nod nou",
         "showMore": "Afișează mai mult",
         "showLess": "Afișează mai puțin",
@@ -280,10 +281,8 @@
         "deleteTitle": "Șterge comentariu"
       },
       "save": {
-        "saving": "Se salvează…",
         "retrying": "Se reîncearcă…",
         "retryAttempt": "Încercarea {n, number}",
-        "saved": "Salvat",
         "offline": "Fără conexiune",
         "offlinePending": "{count, plural, one {# modificare în așteptare} few {# modificări în așteptare} other {# de modificări în așteptare}}",
         "errorTitle": "Salvarea a eșuat",
@@ -446,21 +445,26 @@
       },
       "appearance": {
         "theme": "Temă",
-        "themeIntro": "Șase stări",
-        "themeBlurb": "Alege o paletă care se potrivește cu felul tău de a gândi. Fiecare repictează spațiul, de la pânză la bara de instrumente.",
-        "themeDaybreak": "Zori",
-        "themeEclipse": "Eclipsă",
-        "themeGraphite": "Grafit",
-        "themeSolstice": "Solstițiu",
-        "themeAurora": "Auroră",
+        "themeIntro": "Opt palete",
+        "themeBlurb": "Daybreak și Eclipse sunt perechea livrată; Auto urmează sistemul și alege între ele. Celelalte șase repictează tot, de la pânză la bara de unelte.",
+        "themeDaybreak": "Daybreak",
+        "themeEclipse": "Eclipse",
+        "themeGraphite": "Paper",
+        "themeSolstice": "Carbon",
+        "themeAurora": "Ember",
         "themeAuto": "Auto",
-        "daybreakDesc": "Hârtie clară, lumină blândă",
-        "eclipseDesc": "Cerneală de noapte, sclipire ciano",
-        "graphiteDesc": "Monocrom pur",
-        "solsticeDesc": "Pergament cald, chihlimbar",
-        "auroraDesc": "Sticlă iridescentă",
-        "autoDesc": "Urmează sistemul",
-        "defaultBadge": "Implicit",
+        "daybreakDesc": "Ceață verde, acțiune lime",
+        "eclipseDesc": "Verde aproape negru, acțiune lime",
+        "graphiteDesc": "Alb neutru pur, acțiune cerneală",
+        "solsticeDesc": "Negru pur, acțiune albă",
+        "auroraDesc": "Cărbune cald, acțiune turcoaz",
+        "themeTide": "Tide",
+        "tideDesc": "Gri-albăstrui rece, acțiune azur",
+        "themeOrchid": "Orchid",
+        "orchidDesc": "Prună adâncă, acțiune chartreuse",
+        "themeBloom": "Bloom",
+        "bloomDesc": "Porțelan cald, acțiune magenta",
+        "autoDesc": "Împerechează Daybreak și Eclipse",
         "adaptive": "Adaptiv",
         "canvas": "Pânză",
         "canvasIntro": "Patru texturi",
@@ -639,11 +643,78 @@
       "subtitle2": "Fiecare ședință e amnezie structurată.",
       "tagline": "Construiește cunoaștere. Nu haos.",
       "ctaPrimary": "Începe acum",
-      "ctaSecondary": "Află mai multe"
+      "ctaSecondary": "Află mai multe",
+      "demo": {
+        "threadBand": "Întrebare deschisă",
+        "demoTag": "Demo",
+        "ariaDemo": "Demo interactiv al argumentului",
+        "statusQuestion": "Întrebare",
+        "statusValid": "Valid",
+        "statusRefuted": "Respins",
+        "statusAffected": "Afectat",
+        "statusAnswer": "Răspuns",
+        "statusClaim": "Afirmație",
+        "counterValid": "valide",
+        "counterRefuted": "respinse",
+        "counterAffected": "afectate",
+        "log": {
+          "opened": "Firul T-001 deschis · 7 afirmații citate",
+          "refuted": "P-02 respins la recenzie",
+          "tainted": "2 concluzii dependente contaminate",
+          "rerouted": "P-05 fixat · dependența moartă redirecționată",
+          "restored": "C-02 restaurat ca răspuns"
+        },
+        "claims": {
+          "q": "Reconstruim nucleul legacy pentru v2?",
+          "p1": "Nucleul legacy blochează fiecare punct din roadmap",
+          "p2": "Echipa poate îngheța feature-urile șase luni",
+          "p3": "Trei seniori încă știu nucleul cap-coadă",
+          "p5": "O migrare strangler reconstruiește fără îngheț",
+          "c1": "Reconstrucția nucleului merită costul",
+          "c2": "Angajăm reconstrucția în trimestrul următor"
+        }
+      }
     },
     "problem": {
       "title": "Problema",
-      "subtitle": "Instrumentele superficiale produc gândire superficială."
+      "subtitle": "Instrumentele superficiale produc gândire superficială.",
+      "stream": {
+        "channel": "#product-decisions",
+        "live": "live",
+        "stamp": "Îngropat",
+        "decision": "DECIZIE: livrăm rescrierea v2 în Q4",
+        "lines": [
+          "ok, dau push la hotfix",
+          "a verificat cineva staging?",
+          "stai, pe ce config suntem",
+          "vezi firul ↑",
+          "retrimit linkul la doc",
+          "cine ține retenția acum?",
+          "întâi prânzul?",
+          "repornesc podul de demo",
+          "poate cineva să reexplice planul"
+        ]
+      },
+      "exhibits": {
+        "chat": {
+          "medium": "Chat",
+          "claim": "Deciziile se pierd în mijlocul firului.",
+          "detail": "Argumentul care a decis totul e cu patru sute de mesaje mai sus, împărțit în trei canale.",
+          "verdict": "Fără structură"
+        },
+        "meetings": {
+          "medium": "Ședințe",
+          "claim": "Concluziile ies din sală. Motivele nu.",
+          "detail": "O săptămână mai târziu aceeași dezbatere pornește de la zero, cu aceleași slide-uri.",
+          "verdict": "Fără urmă"
+        },
+        "docs": {
+          "medium": "Documente",
+          "claim": "Documentele rețin textul, nu logica.",
+          "detail": "Rezumatul spune ce s-a decis, niciodată pe ce se sprijinea.",
+          "verdict": "Neverificabil"
+        }
+      }
     },
     "product": {
       "title": "Acesta este un motor de raționament.",
@@ -652,21 +723,35 @@
       "features": {
         "structured": {
           "title": "Raționament structurat",
-          "description": "Descompune problemele complexe în noduri și conexiuni logice. Fă raționamentul implicit explicit. Vezi arhitectura gândirii tale.",
-          "tags": ["Mapare vizuală", "Flux logic", "Structură clară"]
+          "description": "Afirmațiile devin noduri, susținerea devine muchii direcționate. Forma argumentului e în sfârșit vizibilă."
         },
         "validation": {
           "title": "Validare a căilor",
-          "description": "Marchează căile de raționament ca valide sau invalide. Urmărește ce funcționează. Construiește pe adevăr."
+          "description": "Marchează o afirmație respinsă și fiecare concluzie care se sprijină pe ea se recalculează instant. Nimic nu supraviețuiește pe tăcute."
         },
         "references": {
           "title": "Referințe încrucișate",
-          "description": "Leagă canvas-uri fără duplicare. Reutilizează concluzii. Lasă cunoașterea să crească exponențial."
+          "description": "Referențiază o concluzie validată din alt canvas. Demonstreaz-o o dată, sprijină-te pe ea oriunde contează."
         },
         "collaboration": {
           "title": "Colaborare în echipă",
-          "description": "Acces bazat pe roluri. Comentarii contextuale. Actualizări în timp real. Gândiți împreună, decideți mai rapid, construiți mai puternic."
+          "description": "Roluri în workspace, comentarii pe noduri, permisiuni proprii. Argumentați deschis, decideți pe înregistrare."
         }
+      },
+      "vignettes": {
+        "structuredQuestion": "Unde lansăm mai întâi?",
+        "structuredClaimA": "UE: reglementarea e gata",
+        "structuredClaimB": "SUA: piață timpurie mai mare",
+        "validationPremise": "Costurile rămân constante la scară",
+        "validationConclusion": "Economia unitară se susține",
+        "validationSafe": "Retenția se menține la scară",
+        "referencesCanvasA": "Canvas · Prețuri",
+        "referencesCanvasB": "Canvas · Strategie",
+        "referencesSource": "Recuperarea CAC sub 12 luni",
+        "referencesBadge": "Referință",
+        "collaborationClaim": "Livrăm migrarea sub feature flag",
+        "collaborationClaimB": "Lansăm în schimb regiune cu regiune",
+        "collaborationRole": "Recenzent"
       }
     },
     "builders": {
@@ -674,16 +759,25 @@
       "subtitle": "Pentru cei care urăsc gândirea superficială.",
       "founders": {
         "title": "Fondatori",
+        "question": "Ridicăm runda acum sau încă un an pe cont propriu?",
+        "nodeA": "Rezervele acoperă 14 luni",
+        "nodeB": "Încă un an pe cont propriu",
         "description": "Ia decizii mai bune. Documentează raționamentul. Nu mai relua aceleași argumente în fiecare trimestru.",
         "useCases": ["Strategie de produs", "Analiză de piață", "Arhitectură tehnică"]
       },
       "researchers": {
         "title": "Cercetători",
+        "question": "Se replică efectul în afara laboratorului?",
+        "nodeA": "Replicare pe teren, n=2400",
+        "nodeB": "Efectul se confirmă pe teren",
         "description": "Mapează literatura. Construiește cadre. Transformă lucrările în grafuri structurate de cunoaștere care chiar au sens.",
         "useCases": ["Sinteză literatură", "Mapare ipoteze", "Rețele de citări"]
       },
       "engineers": {
         "title": "Ingineri",
+        "question": "Monolit sau servicii pentru v3?",
+        "nodeA": "Monolitul ține sarcină 10x",
+        "nodeB": "v3 rămâne monolit",
         "description": "Proiectează sisteme. Depanează logică. Documentează deciziile arhitecturale care contează cu adevărat.",
         "useCases": ["Proiectare sisteme", "Fluxuri de debugging", "Decizii tehnice"]
       }
@@ -728,21 +822,33 @@
     },
     "howItWorks": {
       "title": "Trei pași.",
-      "subtitle": "Atât."
+      "subtitle": "Atât.",
+      "steps": {
+        "ask": {
+          "title": "Întreabă",
+          "description": "Deschide un fir. Nodul central al întrebării așteaptă deja pe canvas."
+        },
+        "argue": {
+          "title": "Argumentează",
+          "description": "Așază afirmațiile în jur. Citează, conectează, susține: raționamentul prinde formă."
+        },
+        "decide": {
+          "title": "Decide",
+          "description": "Respinge ce pică, urmărește cum se propagă consecințele, fixează răspunsul care rezistă."
+        }
+      },
+      "vignettes": {
+        "question": "Rescriem aplicația mobilă?",
+        "pro": "Crash-urile s-au dublat într-un an",
+        "con": "O rescriere costă două trimestre",
+        "answer": "Reconstruim modul cu modul"
+      }
     },
     "cta": {
       "title1": "Nu mai vorbi.",
       "title2": "Începe să construiești.",
-      "subtitle": "Alătură-te cercetătorilor, fondatorilor și inginerilor care chiar livrează.",
+      "subtitle": "Pentru cercetători, fondatori și ingineri care chiar livrează.",
       "button": "Începe gratuit"
-    },
-    "footer": {
-      "copyright": "© 2026 Uniscept",
-      "links": {
-        "twitter": "Twitter",
-        "github": "GitHub",
-        "docs": "Documentație"
-      }
     }
   }
 }

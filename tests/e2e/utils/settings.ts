@@ -5,7 +5,7 @@ import { getWorkspaceRow, openWorkspacePanel, runRowAction } from './sidebar';
 
 const { settings, sidebar, workspaceSettings } = COPY.platform;
 
-const getUserMenuTrigger = (page: Page): Locator => page.locator('aside [aria-haspopup="dialog"]').last();
+const getUserMenuTrigger = (page: Page): Locator => page.locator('aside footer [aria-haspopup="dialog"]');
 
 export const getSettingsModal = (page: Page): Locator =>
   page.getByRole('dialog').filter({ has: page.getByRole('button', { name: settings.close }) });

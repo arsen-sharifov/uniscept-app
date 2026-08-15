@@ -9,7 +9,7 @@ import { useMounted, useViewportChange } from '@hooks';
 
 import { choosePlacement, computeTooltipPosition } from './utils';
 
-export interface ISmartTooltipProps {
+interface ISmartTooltipProps {
   content: ReactNode;
   children: ReactNode;
   placement?: TTooltipPlacement;
@@ -117,7 +117,7 @@ export const SmartTooltip = ({
               opacity: pos ? 1 : 0,
             }}
             className={clsx(
-              'pointer-events-none z-[60] max-w-xs rounded-lg border border-[color:var(--border)] bg-[color:var(--surface-elevated)]/95 px-2.5 py-1.5 text-xs font-medium text-[color:var(--text)] shadow-[0_8px_24px_-8px_rgba(0,0,0,0.18),0_2px_6px_-2px_rgba(0,0,0,0.08)] ring-1 ring-[color:var(--accent-soft)] backdrop-blur-md transition-opacity duration-150',
+              'pointer-events-none z-[60] max-w-xs rounded-md bg-[color:var(--text-strong)] px-2 py-1 font-grotesk text-xs text-[color:var(--surface)] shadow-[var(--shadow-pip)] transition-opacity duration-150 motion-reduce:transition-none',
               panelClassName,
             )}
           >
@@ -126,11 +126,11 @@ export const SmartTooltip = ({
               aria-hidden="true"
               style={arrowStyle}
               className={clsx(
-                'pointer-events-none absolute h-2 w-2 rotate-45 border border-[color:var(--border)] bg-[color:var(--surface-elevated)]/95 ring-1 ring-[color:var(--accent-soft)]',
-                pos?.placement === 'top' && '-bottom-[5px] -translate-x-1/2 border-t-0 border-l-0',
-                pos?.placement === 'bottom' && '-top-[5px] -translate-x-1/2 border-r-0 border-b-0',
-                pos?.placement === 'left' && '-right-[5px] -translate-y-1/2 border-b-0 border-l-0',
-                pos?.placement === 'right' && '-left-[5px] -translate-y-1/2 border-t-0 border-r-0',
+                'pointer-events-none absolute h-2 w-2 rotate-45 bg-[color:var(--text-strong)]',
+                pos?.placement === 'top' && '-bottom-[5px] -translate-x-1/2',
+                pos?.placement === 'bottom' && '-top-[5px] -translate-x-1/2',
+                pos?.placement === 'left' && '-right-[5px] -translate-y-1/2',
+                pos?.placement === 'right' && '-left-[5px] -translate-y-1/2',
               )}
             />
           </div>,

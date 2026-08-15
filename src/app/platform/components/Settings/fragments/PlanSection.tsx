@@ -10,7 +10,7 @@ import { formatPlanPrice, mergePlansWithTranslations } from '@/lib/pricing';
 
 import { AVAILABLE_PLAN_IDS } from '../consts';
 
-export interface IPlanSectionProps {
+interface IPlanSectionProps {
   user: User | null;
 }
 
@@ -25,10 +25,10 @@ export const PlanSection = ({ user }: IPlanSectionProps) => {
     <div className="space-y-8">
       <section>
         <header className="mb-1 flex items-baseline justify-between">
-          <h3 className="text-[11px] font-semibold tracking-[0.18em] text-[color:var(--text-subtle)] uppercase">
+          <h3 className="font-mono-ui text-[10px] font-bold tracking-[0.14em] text-[color:var(--text-label)] uppercase">
             {planLabels.title}
           </h3>
-          <span className="text-[10.5px] tracking-[0.16em] text-[color:var(--text-faint)] uppercase">
+          <span className="font-mono-ui text-[10px] tracking-[0.14em] text-[color:var(--text-label)] uppercase">
             {planLabels.caption}
           </span>
         </header>
@@ -45,22 +45,23 @@ export const PlanSection = ({ user }: IPlanSectionProps) => {
                 key={plan.id}
                 data-locked={isLocked || undefined}
                 className={clsx(
-                  'group relative flex flex-col overflow-hidden rounded-2xl border text-left transition-[border-color,transform,box-shadow] duration-300 ease-out',
+                  'group relative flex flex-col overflow-hidden rounded-xl border text-left transition-[border-color,transform,box-shadow] duration-200 ease-out',
+                  'motion-reduce:transition-none motion-reduce:hover:translate-y-0',
                   isCurrent && 'border-[color:var(--border-active)] shadow-[0_18px_38px_-22px_var(--accent-glow)]',
-                  isLocked && !isCurrent && 'cursor-not-allowed border-[color:var(--border)] opacity-65',
+                  isLocked && !isCurrent && 'cursor-not-allowed border-[color:var(--border)] opacity-60',
                   !isLocked &&
                     !isCurrent &&
                     'border-[color:var(--border)] hover:-translate-y-0.5 hover:border-[color:var(--border-strong)] hover:shadow-[var(--shadow-card-hover)]',
                 )}
               >
                 {isCurrent && (
-                  <span className="absolute top-2.5 right-2.5 z-10 inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-[color:var(--accent)] to-[color:var(--accent-2)] px-2 py-0.5 text-[9.5px] font-semibold tracking-[0.14em] text-[color:var(--on-accent)] uppercase shadow-[0_4px_12px_-6px_var(--accent-glow)]">
+                  <span className="absolute top-2.5 right-2.5 z-10 inline-flex items-center gap-1 rounded-md bg-[color:var(--accent)] px-2 py-0.5 font-mono-ui text-[10px] font-bold tracking-[0.14em] text-[color:var(--on-accent)] uppercase shadow-[0_4px_12px_-6px_var(--accent-glow)]">
                     <Sparkles className="h-2.5 w-2.5" strokeWidth={2.4} />
                     {planLabels.current}
                   </span>
                 )}
                 {isLocked && !isCurrent && (
-                  <span className="absolute top-2.5 right-2.5 z-10 inline-flex items-center gap-1 rounded-full bg-[color:var(--surface-elevated)] px-2 py-0.5 text-[9.5px] font-semibold tracking-[0.14em] text-[color:var(--text-subtle)] uppercase shadow-[inset_0_0_0_1px_var(--border-strong)]">
+                  <span className="absolute top-2.5 right-2.5 z-10 inline-flex items-center gap-1 rounded-md bg-[color:var(--surface-elevated)] px-2 py-0.5 font-mono-ui text-[10px] font-bold tracking-[0.14em] text-[color:var(--text-label)] uppercase ring-1 ring-[color:var(--border-strong)]">
                     <Lock className="h-2.5 w-2.5" strokeWidth={2.4} />
                     {planLabels.lockedBadge}
                   </span>
@@ -68,27 +69,24 @@ export const PlanSection = ({ user }: IPlanSectionProps) => {
 
                 <div
                   aria-hidden
-                  className="relative flex h-16 w-full items-center bg-[color:var(--surface-overlay)] px-4"
+                  className={clsx(
+                    'relative flex h-16 w-full items-center border-b px-4',
+                    isCurrent
+                      ? 'border-[color:var(--border-active)] bg-[color:var(--accent-soft)]'
+                      : 'border-[color:var(--border)] bg-[color:var(--surface-soft)]',
+                  )}
                 >
-                  <div
-                    className="pointer-events-none absolute inset-0 opacity-55"
-                    style={{
-                      background: isCurrent
-                        ? 'radial-gradient(140% 90% at 50% 0%, color-mix(in srgb, var(--accent-soft) 60%, transparent) 0%, transparent 70%)'
-                        : 'radial-gradient(140% 90% at 50% 0%, color-mix(in srgb, var(--surface-overlay) 60%, transparent) 0%, transparent 70%)',
-                    }}
-                  />
                   <span className="relative flex items-baseline gap-1">
                     <span
                       className={clsx(
-                        'font-serif text-[24px] leading-none tracking-tight italic',
+                        'font-grotesk text-[24px] leading-none font-semibold tracking-tight',
                         isLocked && !isCurrent ? 'text-[color:var(--text-muted)]' : 'text-[color:var(--text-strong)]',
                       )}
                     >
                       {formatPlanPrice(plan.price, planLabels.free)}
                     </span>
                     {periodLabel && (
-                      <span className="text-[10.5px] tracking-[0.14em] text-[color:var(--text-muted)] uppercase">
+                      <span className="font-mono-ui text-[10px] tracking-[0.14em] text-[color:var(--text-label)] uppercase">
                         /{periodLabel}
                       </span>
                     )}
@@ -99,13 +97,13 @@ export const PlanSection = ({ user }: IPlanSectionProps) => {
                   <div className="flex items-baseline justify-between gap-2">
                     <span
                       className={clsx(
-                        'truncate font-serif text-[16px] leading-none tracking-tight italic',
+                        'truncate font-grotesk text-[16px] leading-none font-semibold tracking-tight',
                         isLocked && !isCurrent ? 'text-[color:var(--text-muted)]' : 'text-[color:var(--text-strong)]',
                       )}
                     >
                       {plan.name}
                     </span>
-                    <span className="text-[10.5px] font-medium tracking-[0.16em] text-[color:var(--text-subtle)] uppercase">
+                    <span className="font-mono-ui text-[10px] font-bold tracking-[0.14em] text-[color:var(--text-label)] uppercase">
                       {plan.id}
                     </span>
                   </div>
@@ -118,15 +116,14 @@ export const PlanSection = ({ user }: IPlanSectionProps) => {
                     {plan.features.map((feature) => (
                       <li
                         key={feature}
-                        className={clsx(
-                          'flex items-start gap-1.5 text-[11.5px] leading-snug',
-                          isLocked && !isCurrent ? 'text-[color:var(--text-subtle)]' : 'text-[color:var(--text-muted)]',
-                        )}
+                        className="flex items-start gap-1.5 text-[11.5px] leading-snug text-[color:var(--text-muted)]"
                       >
                         <Check
                           className={clsx(
                             'mt-0.5 h-3 w-3 shrink-0',
-                            isLocked && !isCurrent ? 'text-[color:var(--text-faint)]' : 'text-[color:var(--accent)]',
+                            isLocked && !isCurrent
+                              ? 'text-[color:var(--text-muted)]'
+                              : 'text-[color:var(--accent-text)]',
                           )}
                           strokeWidth={2.4}
                           aria-hidden
@@ -136,16 +133,6 @@ export const PlanSection = ({ user }: IPlanSectionProps) => {
                     ))}
                   </ul>
                 </div>
-
-                <span
-                  aria-hidden
-                  className={clsx(
-                    'pointer-events-none absolute inset-x-0 bottom-0 h-px transition-opacity duration-300',
-                    isCurrent
-                      ? 'bg-gradient-to-r from-transparent via-[color:var(--accent)] to-transparent opacity-90'
-                      : 'opacity-0',
-                  )}
-                />
               </article>
             );
           })}
@@ -154,18 +141,18 @@ export const PlanSection = ({ user }: IPlanSectionProps) => {
 
       <section className="border-t border-[color:var(--border)] pt-6">
         <header className="mb-1 flex items-baseline justify-between">
-          <h3 className="text-[11px] font-semibold tracking-[0.18em] text-[color:var(--text-subtle)] uppercase">
+          <h3 className="font-mono-ui text-[10px] font-bold tracking-[0.14em] text-[color:var(--text-label)] uppercase">
             {planLabels.billingTitle}
           </h3>
-          <span className="text-[10.5px] tracking-[0.16em] text-[color:var(--text-faint)] uppercase">
+          <span className="font-mono-ui text-[10px] tracking-[0.14em] text-[color:var(--text-label)] uppercase">
             {planLabels.billingCaption}
           </span>
         </header>
         <p className="mb-4 max-w-md text-[12.5px] leading-relaxed text-[color:var(--text-muted)]">
           {planLabels.paidPlansNote}
         </p>
-        <div className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-elevated)] px-4 py-3">
-          <p className="text-[12.5px] leading-snug text-[color:var(--accent-strong)]">
+        <div className="rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-elevated)] px-4 py-3">
+          <p className="text-[12.5px] leading-snug text-[color:var(--accent-text)]">
             <Sparkles className="mr-1 inline h-3 w-3" strokeWidth={2.4} aria-hidden />
             {planLabels.earlyBirdNote}
           </p>

@@ -14,7 +14,7 @@ const meta: Meta<typeof Canvas> = {
     docs: {
       description: {
         component:
-          'Interactive node-based reasoning canvas powered by React Flow. In the app it hydrates from Supabase; in Storybook the store is mocked directly so every state — empty, populated, evaluated — is previewable. Stories stay interactive: add nodes with `N`, drag, connect, and use the toolbar.',
+          'Interactive node-based reasoning canvas powered by React Flow. In the app it hydrates from Supabase; in Storybook the store is mocked directly so every state — empty, populated, evaluated — is previewable. Stories stay interactive for dragging, connecting and right-click menus; the toolbar and its keyboard shortcuts live outside the Canvas component and are documented under Components/Toolbar.',
       },
     },
   },
@@ -41,7 +41,8 @@ export const Empty: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Hydrated but with no nodes — shows the empty-state hint with the `N` keyboard shortcut.',
+        story:
+          'A hydrated canvas with no nodes. The background pattern remains visible; save status appears only while loading or after an error.',
       },
     },
   },

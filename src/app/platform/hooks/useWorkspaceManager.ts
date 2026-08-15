@@ -141,7 +141,7 @@ export const useWorkspaceManager = () => {
   }, []);
 
   useEffect(() => {
-    usePermissionsStore.getState().clearAccess();
+    usePermissionsStore.getState().clearAccess(activeWorkspaceId);
     if (!activeWorkspaceId) return;
 
     let cancelled = false;
@@ -153,6 +153,7 @@ export const useWorkspaceManager = () => {
       })
       .catch((error) => {
         if (cancelled) return;
+        usePermissionsStore.getState().setAccess(activeWorkspaceId, null, null);
         event.error(error, { title: t.common.errorTitles.loadFailed, context: 'sidebar.loadPermissions' });
       });
 
@@ -654,11 +655,14 @@ export const useWorkspaceManager = () => {
     [navItems, activeWorkspaceId, router],
   );
 
+  const activeThread = threadIdParam ? findInTree(navItems, threadIdParam) : null;
+
   return {
     workspaces,
     activeWorkspaceId,
     navItems,
     activeThreadId: threadIdParam,
+    activeThreadName: activeThread?.name ?? null,
     editingItemId,
     clearEditingItemId: useCallback(() => {
       justCreatedIds.current.clear();

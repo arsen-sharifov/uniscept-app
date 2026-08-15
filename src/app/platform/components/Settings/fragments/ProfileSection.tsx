@@ -15,7 +15,7 @@ import { PickerCard } from './PickerCard';
 import { SettingsInput } from '../SettingsInput';
 import { SettingsPrimaryButton } from '../SettingsPrimaryButton';
 
-export interface IProfileSectionProps {
+interface IProfileSectionProps {
   user: User | null;
   onUpdateProfile: (update: IUserProfileUpdate) => Promise<void>;
   onUpdateEmail: (email: string) => Promise<void>;
@@ -72,7 +72,7 @@ export const ProfileSection = ({ user, onUpdateProfile, onUpdateEmail }: IProfil
 
   return (
     <div className="space-y-4">
-      <section className="relative overflow-hidden rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-elevated)] px-5 py-2.5">
+      <section className="relative overflow-hidden rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-elevated)] px-5 py-2.5">
         <div
           aria-hidden
           className="pointer-events-none absolute -top-16 -right-20 h-40 w-40 rounded-full bg-[color:var(--accent-soft)] opacity-50 blur-3xl"
@@ -85,14 +85,14 @@ export const ProfileSection = ({ user, onUpdateProfile, onUpdateEmail }: IProfil
             className="shadow-[0_18px_38px_-22px_var(--accent-glow)]"
           />
           <div className="min-w-0 flex-1">
-            <p className="truncate font-serif text-[18px] leading-tight tracking-tight text-[color:var(--text-strong)] italic">
+            <p className="truncate font-grotesk text-[18px] leading-tight font-semibold tracking-tight text-[color:var(--text-strong)]">
               {trimmedName || profile.unnamed}
             </p>
             <p className="mt-0.5 truncate text-[12px] tracking-tight text-[color:var(--text-muted)]">{userEmail}</p>
           </div>
           <div className="flex shrink-0 items-center gap-3">
             <BadgeConstellation pips={constellationPips} />
-            <span className="text-[10.5px] tracking-[0.16em] text-[color:var(--text-subtle)] uppercase">
+            <span className="font-mono-ui text-[10px] tracking-[0.14em] text-[color:var(--text-label)] uppercase">
               {earnedCount}/{BADGES.length}
             </span>
           </div>
@@ -103,10 +103,10 @@ export const ProfileSection = ({ user, onUpdateProfile, onUpdateEmail }: IProfil
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
             <header className="mb-1.5 flex items-baseline justify-between">
-              <h3 className="text-[11px] font-semibold tracking-[0.18em] text-[color:var(--text-subtle)] uppercase">
+              <h3 className="font-mono-ui text-[10px] font-bold tracking-[0.14em] text-[color:var(--text-label)] uppercase">
                 {profile.displayName}
               </h3>
-              <span className="text-[10.5px] tracking-[0.14em] text-[color:var(--text-faint)] uppercase">
+              <span className="font-mono-ui text-[10px] tracking-[0.14em] text-[color:var(--text-label)] uppercase">
                 {trimmedName.length}/{MAX_NAME_LENGTH}
               </span>
             </header>
@@ -121,11 +121,11 @@ export const ProfileSection = ({ user, onUpdateProfile, onUpdateEmail }: IProfil
           </div>
           <div>
             <header className="mb-1.5 flex items-baseline justify-between">
-              <h3 className="text-[11px] font-semibold tracking-[0.18em] text-[color:var(--text-subtle)] uppercase">
+              <h3 className="font-mono-ui text-[10px] font-bold tracking-[0.14em] text-[color:var(--text-label)] uppercase">
                 {profile.email}
               </h3>
               {emailChanged && !emailIsValid && (
-                <span className="text-[10.5px] tracking-[0.14em] text-[color:var(--status-error)] uppercase">
+                <span className="font-mono-ui text-[10px] tracking-[0.14em] text-[color:var(--status-error)] uppercase">
                   {profile.emailInvalid}
                 </span>
               )}
@@ -157,10 +157,10 @@ export const ProfileSection = ({ user, onUpdateProfile, onUpdateEmail }: IProfil
 
       <section className="border-t border-[color:var(--border)] pt-3.5">
         <header className="mb-3 flex items-baseline justify-between">
-          <h3 className="text-[11px] font-semibold tracking-[0.18em] text-[color:var(--text-subtle)] uppercase">
+          <h3 className="font-mono-ui text-[10px] font-bold tracking-[0.14em] text-[color:var(--text-label)] uppercase">
             {profile.avatarTitle}
           </h3>
-          <span className="text-[10.5px] tracking-[0.16em] text-[color:var(--text-faint)] uppercase">
+          <span className="font-mono-ui text-[10px] tracking-[0.14em] text-[color:var(--text-label)] uppercase">
             {AVATAR_ICONS.length + 1} {profile.avatarOptions}
           </span>
         </header>
@@ -172,7 +172,7 @@ export const ProfileSection = ({ user, onUpdateProfile, onUpdateEmail }: IProfil
             onSelect={() => setAvatarIcon(null)}
             variant="initials"
           >
-            <span className="font-mono text-[17px] font-semibold tracking-[0.06em] text-[color:var(--text-strong)]">
+            <span className="font-mono-ui text-[17px] font-semibold tracking-[0.06em] text-[color:var(--text-strong)]">
               {initialsPreview}
             </span>
           </PickerCard>
@@ -192,10 +192,10 @@ export const ProfileSection = ({ user, onUpdateProfile, onUpdateEmail }: IProfil
 
       <section className="border-t border-[color:var(--border)] pt-3.5">
         <header className="mb-3 flex items-baseline justify-between">
-          <h3 className="text-[11px] font-semibold tracking-[0.18em] text-[color:var(--text-subtle)] uppercase">
+          <h3 className="font-mono-ui text-[10px] font-bold tracking-[0.14em] text-[color:var(--text-label)] uppercase">
             {profile.badgesTitle}
           </h3>
-          <span className="text-[10.5px] tracking-[0.16em] text-[color:var(--text-faint)] uppercase">
+          <span className="font-mono-ui text-[10px] tracking-[0.14em] text-[color:var(--text-label)] uppercase">
             {earnedCount}/{BADGES.length}
           </span>
         </header>
@@ -215,7 +215,7 @@ export const ProfileSection = ({ user, onUpdateProfile, onUpdateEmail }: IProfil
 
       <section className="flex items-center justify-end gap-3 border-t border-[color:var(--border)] pt-3.5">
         <div className="min-w-0 flex-1 truncate text-[11.5px] leading-snug">
-          {save.success && <span className="text-[color:var(--accent-strong)]">{profile.saved}</span>}
+          {save.success && <span className="text-[color:var(--status-success)]">{profile.saved}</span>}
           {save.error && <span className="text-[color:var(--status-error)]">{save.error}</span>}
           {emailChange.error && <span className="text-[color:var(--status-error)]">{emailChange.error}</span>}
         </div>

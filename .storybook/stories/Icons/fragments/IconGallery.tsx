@@ -45,17 +45,17 @@ export const IconGallery = ({ size, color, strokeWidth, absoluteStrokeWidth, onC
             <button
               type="button"
               onClick={() => handleSearch('')}
-              className="font-mono text-[9.5px] tracking-[0.2em] text-[color:var(--text-subtle)] uppercase hover:text-[color:var(--text)]"
+              className="font-mono-ui text-[9.5px] tracking-[0.2em] text-[color:var(--text-subtle)] uppercase hover:text-[color:var(--text)]"
             >
               Clear
             </button>
           )}
         </label>
-        <span className="font-mono text-[10px] tracking-[0.18em] text-[color:var(--text-subtle)] uppercase">
+        <span className="font-mono-ui text-[10px] tracking-[0.18em] text-[color:var(--text-subtle)] uppercase">
           {filtered.length}/{iconEntries.length} icons
         </span>
-        <span className="ml-auto font-mono text-[10px] tracking-[0.18em] text-[color:var(--text-faint)] uppercase">
-          click any tile to copy <code className="font-mono">&lt;Name /&gt;</code>
+        <span className="ml-auto font-mono-ui text-[10px] tracking-[0.18em] text-[color:var(--text-faint)] uppercase">
+          click any tile to copy <code className="font-mono-ui">&lt;Name /&gt;</code>
         </span>
       </header>
 
@@ -68,7 +68,7 @@ export const IconGallery = ({ size, color, strokeWidth, absoluteStrokeWidth, onC
       >
         {filtered.length === 0 ? (
           <div className="flex h-full items-center justify-center text-[12.5px] text-[color:var(--text-muted)]">
-            No icons match <code className="ml-1 font-mono">{search}</code>.
+            No icons match <code className="ml-1 font-mono-ui">{search}</code>.
           </div>
         ) : (
           <div style={{ height: totalRows * GALLERY_ROW_HEIGHT, position: 'relative' } as CSSProperties}>

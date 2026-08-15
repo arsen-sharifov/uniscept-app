@@ -16,7 +16,7 @@ import { DragOverlayContent } from '../dnd/DragOverlayContent';
 import { DragSelectOverlay } from '../dnd/DragSelectOverlay';
 import { SortableNavItem } from '../dnd/SortableNavItem';
 
-export interface INavItemsProps {
+interface INavItemsProps {
   items: TNavItem[];
   activeItemId?: string;
   selectedIds: Set<string>;

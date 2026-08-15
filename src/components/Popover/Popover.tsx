@@ -101,7 +101,10 @@ export const Popover = ({
         tabIndex={0}
         aria-expanded={open}
         aria-haspopup="dialog"
-        className={triggerClassName}
+        className={clsx(
+          'rounded-lg focus-visible:ring-2 focus-visible:ring-[color:var(--ring-focus)] focus-visible:outline-none',
+          triggerClassName,
+        )}
         onClick={() => onOpenChange(!open)}
         onKeyDown={handleTriggerKeyDown}
       >
@@ -116,7 +119,7 @@ export const Popover = ({
             aria-modal="false"
             tabIndex={-1}
             className={clsx(
-              'overflow-hidden rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-elevated)]/95 text-[color:var(--text)] shadow-2xl shadow-black/20 backdrop-blur-2xl outline-none',
+              'overflow-hidden rounded-xl border border-[color:var(--border)] bg-[color:var(--surface)] text-[color:var(--text)] shadow-[var(--shadow-modal)] outline-none',
               panelClassName,
             )}
           >

@@ -42,7 +42,7 @@ export const ColorChip = ({ variable, label, role }: IColorChipProps) => {
         className="relative h-20 w-full"
         style={{
           backgroundImage:
-            'linear-gradient(45deg, rgba(0,0,0,0.045) 25%, transparent 25%, transparent 75%, rgba(0,0,0,0.045) 75%), linear-gradient(45deg, rgba(0,0,0,0.045) 25%, transparent 25%, transparent 75%, rgba(0,0,0,0.045) 75%)',
+            'linear-gradient(45deg, var(--surface-overlay) 25%, transparent 25%, transparent 75%, var(--surface-overlay) 75%), linear-gradient(45deg, var(--surface-overlay) 25%, transparent 25%, transparent 75%, var(--surface-overlay) 75%)',
           backgroundSize: '10px 10px',
           backgroundPosition: '0 0, 5px 5px',
         }}

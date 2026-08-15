@@ -1,58 +1,137 @@
-import Link from 'next/link';
+'use client';
 
+import { clsx } from 'clsx';
+import { ArrowRight } from 'lucide-react';
+import Link from 'next/link';
+import { useRef } from 'react';
+
+import { isAffected } from '@/components/Canvas/utils';
 import { useTranslations } from '@/i18n';
+
+import { HeroStage } from './components';
+import { DESKTOP_QUERY, HERO_LOG_LINES, HERO_VISIBLE_LOG_LINES, LANDING_SURFACE_CLASSES } from './consts';
+import { useHeroCascade, useMediaQuery } from './hooks';
 
 export const Hero = () => {
   const t = useTranslations();
+  const lightRef = useRef<HTMLDivElement>(null);
+  const cascade = useHeroCascade();
+  const desktop = useMediaQuery(DESKTOP_QUERY);
+  const { phase, claims, statuses, refutedIds } = cascade;
+
+  const statements = claims.filter((claim) => claim.kind === 'statement' && (desktop || !claim.desktopOnly));
+  const visibleLogLines = HERO_LOG_LINES.filter((line) => line.phases.includes(phase)).slice(-HERO_VISIBLE_LOG_LINES);
+
+  const counters = [
+    {
+      id: 'valid',
+      value: statements.filter((claim) => statuses.get(claim.id) === 'valid').length,
+      label: t.landing.hero.demo.counterValid,
+    },
+    { id: 'refuted', value: refutedIds.size, label: t.landing.hero.demo.counterRefuted },
+    {
+      id: 'affected',
+      value: statements.filter((claim) => isAffected(statuses.get(claim.id))).length,
+      label: t.landing.hero.demo.counterAffected,
+    },
+  ];
 
   return (
-    <section className="relative flex min-h-screen items-center justify-center overflow-hidden px-6 pt-16">
-      <div className="absolute inset-0 -z-10 noise-texture" />
-      <div className="absolute inset-0 -z-10 dot-pattern" />
+    <section
+      id="top"
+      data-phase={phase}
+      className="hero-stage relative z-[1] flex min-h-svh snap-start flex-col justify-center overflow-hidden pt-20"
+    >
+      <div aria-hidden className="hero-quiet absolute inset-0 z-0" />
 
-      <div className="pointer-events-none absolute top-[10%] left-[5%] h-[30rem] w-[30rem] rounded-full bg-gradient-to-br from-emerald-400/20 to-cyan-400/20 blur-3xl" />
-      <div className="pointer-events-none absolute right-[5%] bottom-[15%] h-[28rem] w-[28rem] rounded-full bg-gradient-to-br from-purple-400/20 to-pink-400/20 blur-3xl" />
-      <div className="pointer-events-none absolute top-1/2 left-1/2 h-[32rem] w-[32rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-br from-cyan-400/10 to-emerald-400/10 blur-3xl" />
-
-      <div className="relative z-10 mx-auto max-w-6xl text-center">
-        <div className="mb-8 animate-fade-in-up">
-          <h1 className="mb-6 text-7xl leading-[1.05] font-black tracking-tight text-black sm:text-8xl lg:text-[9rem]">
-            {t.landing.hero.title}
-            <br />
-            <span className="gradient-text-animated">{t.landing.hero.titleAccent}</span>
+      <div className="relative mx-auto grid w-full max-w-7xl items-center gap-12 px-6 py-10 lg:grid-cols-[1fr_1.05fr] lg:gap-10 lg:px-8">
+        <div>
+          <h1 className="font-grotesk text-[clamp(2.9rem,5vw,5.25rem)] leading-[0.98] font-extrabold tracking-[-0.03em] text-balance text-[color:var(--hero-title)]">
+            {t.landing.hero.title}{' '}
+            <span className="text-[color:var(--hero-accent-text)]">{t.landing.hero.titleAccent}</span>
           </h1>
-        </div>
 
-        <div className="animate-fade-in-up">
-          <p className="mx-auto max-w-3xl text-xl leading-relaxed text-black/60 sm:text-2xl">
+          <p className="mt-7 max-w-xl font-grotesk text-lg leading-relaxed text-[color:var(--hero-ground-muted)] lg:text-xl">
             {t.landing.hero.subtitle1}
             <br />
             {t.landing.hero.subtitle2}
           </p>
-          <p className="mx-auto mt-4 max-w-2xl text-xl font-bold text-black sm:text-2xl">{t.landing.hero.tagline}</p>
-        </div>
+          <p className="mt-3 font-grotesk text-lg font-semibold text-[color:var(--hero-ground-text)] lg:text-xl">
+            {t.landing.hero.tagline}
+          </p>
 
-        <div className="mt-12 flex animate-fade-in-up items-center justify-center gap-4">
-          <Link
-            href="/signup"
-            className="group relative overflow-hidden rounded-xl bg-black px-8 py-3.5 text-base font-semibold text-white shadow-2xl transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-emerald-500/25"
-          >
-            <span className="relative z-10">{t.landing.hero.ctaPrimary}</span>
-            <div className="absolute inset-0 animate-shimmer" />
-          </Link>
-          <button
-            onClick={() => document.getElementById('problem')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
-            className="cursor-pointer rounded-xl border-2 border-black/10 bg-white px-8 py-3.5 text-base font-semibold text-black backdrop-blur-sm transition-all duration-300 ease-in-out hover:scale-105 hover:border-black/20 hover:shadow-xl"
-          >
-            {t.landing.hero.ctaSecondary}
-          </button>
-        </div>
-
-        <div data-reveal className="mt-24 scroll-reveal">
-          <div className="relative mx-auto max-w-4xl">
-            <div className="absolute top-0 -left-20 h-32 w-32 rounded-2xl bg-gradient-to-br from-emerald-500 to-cyan-500 opacity-20 blur-xl" />
-            <div className="absolute -right-20 bottom-0 h-32 w-32 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 opacity-20 blur-xl" />
+          <div className="mt-10 flex flex-wrap items-center gap-3">
+            <Link
+              href="/signup"
+              className="inline-flex items-center gap-2 rounded-lg bg-[color:var(--hero-lime)] px-6 py-3.5 font-grotesk text-[15px] font-bold tracking-tight text-[color:var(--hero-lime-ink)] shadow-[0_12px_36px_-10px_var(--hero-lime-glow)] transition-colors duration-200 hover:bg-[color:var(--hero-lime-strong)] focus-visible:ring-2 focus-visible:ring-[color:var(--hero-lime-glow)] focus-visible:outline-none"
+            >
+              {t.landing.hero.ctaPrimary}
+              <ArrowRight aria-hidden className="h-4 w-4" strokeWidth={2.5} />
+            </Link>
+            <button
+              type="button"
+              onClick={() => document.getElementById('problem')?.scrollIntoView({ block: 'start' })}
+              className="landing-glass cursor-pointer rounded-lg border border-[color:var(--hero-hairline-strong)] bg-[color:var(--hero-chip-bg)] px-6 py-3.5 font-grotesk text-[15px] font-semibold tracking-tight text-[color:var(--hero-ground-text)] transition-colors duration-200 hover:bg-[color:var(--hero-chip-hover)] focus-visible:ring-2 focus-visible:ring-[color:var(--hero-lime-glow)] focus-visible:outline-none"
+            >
+              {t.landing.hero.ctaSecondary}
+            </button>
           </div>
+        </div>
+
+        <div
+          role="group"
+          aria-label={t.landing.hero.demo.ariaDemo}
+          onMouseMove={(event) => {
+            const light = lightRef.current;
+            if (!light) return;
+
+            const rect = event.currentTarget.getBoundingClientRect();
+            light.style.setProperty('--px', `${event.clientX - rect.left}px`);
+            light.style.setProperty('--py', `${event.clientY - rect.top}px`);
+          }}
+          className={clsx(
+            LANDING_SURFACE_CLASSES.sheet,
+            'group/panel relative animate-node-drop overflow-hidden [animation-fill-mode:backwards] motion-reduce:animate-none',
+          )}
+        >
+          <div className="flex h-10 items-center gap-2 border-b border-[color:var(--hero-hairline)] px-3.5">
+            <span className="h-2 w-2 rounded-full bg-[color:var(--hero-lime)] shadow-[0_0_8px_var(--hero-lime-glow)]" />
+            <span className="font-mono-ui text-[10.5px] tracking-[0.04em] text-[color:var(--hero-ground-muted)] lowercase">
+              uniscept · {t.landing.hero.demo.threadBand} · T-001
+            </span>
+            <span className="ml-auto hidden items-center gap-1.5 sm:flex">
+              {counters.map((counter) => (
+                <span
+                  key={counter.id}
+                  data-tone={counter.id}
+                  className="hero-counter rounded border px-1.5 py-0.5 font-mono-ui text-[9px] font-bold tracking-[0.1em] uppercase"
+                >
+                  <span className="tabular-nums">{String(counter.value).padStart(2, '0')}</span> {counter.label}
+                </span>
+              ))}
+            </span>
+          </div>
+
+          <HeroStage cascade={cascade} />
+
+          <div className="flex min-h-16 flex-col justify-center gap-1 border-t border-[color:var(--hero-hairline)] px-3.5 py-2.5">
+            {visibleLogLines.map((line) => (
+              <p
+                key={line.id}
+                className="font-mono-ui text-[11px] leading-relaxed text-[color:var(--hero-ground-text)]"
+              >
+                <span className="text-[color:var(--hero-accent-text)]">❯</span>
+                <span className="mx-1.5 text-[color:var(--hero-ground-muted)]">{line.time}</span>
+                {t.landing.hero.demo.log[line.id]}
+              </p>
+            ))}
+          </div>
+
+          <div
+            ref={lightRef}
+            aria-hidden
+            className="panel-light pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover/panel:opacity-100"
+          />
         </div>
       </div>
     </section>

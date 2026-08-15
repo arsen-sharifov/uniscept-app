@@ -8,11 +8,11 @@ import type { TWorkspaceSettingsSection } from '@interfaces';
 import { Modal } from '@/components';
 import { useTranslations } from '@/i18n';
 
-import { GeneralSection, MembersSection, RolesSection } from './fragments';
+import { GeneralSection, MembersSection, RolesSection, WorkspaceSettingsSkeleton } from './fragments';
 import { useWorkspaceSettings } from './hooks';
 import { WorkspaceSettingsSidebar } from './WorkspaceSettingsSidebar';
 
-export interface IWorkspaceSettingsProps {
+interface IWorkspaceSettingsProps {
   workspaceId: string;
   workspaceName: string;
   onRename: (id: string, name: string) => Promise<void> | void;
@@ -33,11 +33,7 @@ export const WorkspaceSettings = ({
 
   const renderSection = () => {
     if (settings.loading) {
-      return (
-        <div role="status" aria-label={t.common.loading} className="flex h-40 items-center justify-center">
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-[color:var(--accent)] border-t-transparent" />
-        </div>
-      );
+      return <WorkspaceSettingsSkeleton section={activeSection} />;
     }
 
     if (activeSection === 'general') {
@@ -84,20 +80,20 @@ export const WorkspaceSettings = ({
 
   return (
     <Modal open onClose={onClose} width="max-w-[960px]" overflowHidden>
-      <div className="relative flex h-[80vh] bg-[color:var(--surface)] text-[color:var(--text)]">
+      <div className="relative flex h-[86vh] rounded-2xl font-grotesk text-[color:var(--text)]">
         <WorkspaceSettingsSidebar activeSection={activeSection} onSectionChange={setActiveSection} />
 
         <button
           type="button"
           onClick={onClose}
           aria-label={t.platform.workspaceSettings.close}
-          className="absolute top-4 right-4 z-10 cursor-pointer rounded-lg p-1.5 text-[color:var(--text-subtle)] transition-colors hover:bg-[color:var(--surface-overlay)] hover:text-[color:var(--text)]"
+          className="absolute top-4 right-4 z-10 cursor-pointer rounded-lg p-1.5 text-[color:var(--text-muted)] transition-[color,background-color,scale] duration-150 hover:bg-[color:var(--surface-overlay)] hover:text-[color:var(--text-strong)] focus-visible:ring-2 focus-visible:ring-[color:var(--ring-focus)] focus-visible:outline-none active:scale-95 motion-reduce:transition-none"
         >
           <X className="h-4 w-4" aria-hidden />
         </button>
 
-        <div className="flex-1 overflow-y-auto bg-[color:var(--surface)] px-10 py-8">
-          <h2 className="mb-6 text-lg font-bold text-[color:var(--text-strong)]">
+        <div className="min-w-0 flex-1 [scrollbar-width:none] overflow-y-auto px-10 py-8 [&::-webkit-scrollbar]:hidden">
+          <h2 className="mb-6 font-grotesk text-lg font-semibold tracking-tight text-[color:var(--text-strong)]">
             {t.platform.workspaceSettings.sections[activeSection]}
           </h2>
 

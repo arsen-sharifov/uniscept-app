@@ -27,7 +27,7 @@ export const ColorsGroup = ({ id, index, title, description, tokens, query }: IC
       title={title}
       description={description}
       trailing={
-        <span className="font-mono text-[9.5px] tracking-[0.18em] text-[color:var(--text-subtle)] uppercase">
+        <span className="font-mono-ui text-[9.5px] tracking-[0.18em] text-[color:var(--text-subtle)] uppercase">
           {filtered.length}/{tokens.length}
         </span>
       }

@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 
 import { bareNode, measuredNode } from '@mocks/canvas';
-import { findNearestHandlePair, isHandleId } from '@/lib/canvas';
+import { findNearestHandlePair, findNearestSides, getHandleAnchor, isHandleId } from '@/lib/canvas';
 
 describe('isHandleId', () => {
   describe('GIVEN one of the four handle ids', () => {
@@ -78,6 +78,45 @@ describe('findNearestHandlePair', () => {
           sourceHandle: 'bottom',
           targetHandle: 'top',
         });
+      });
+    });
+  });
+});
+
+describe('getHandleAnchor', () => {
+  describe('GIVEN a rect', () => {
+    describe('WHEN each side anchor is resolved', () => {
+      test('THEN it sits at the middle of that side', () => {
+        const rect = { x: 10, y: 20, width: 100, height: 40 };
+
+        expect(getHandleAnchor(rect, 'top')).toEqual({ x: 60, y: 20 });
+        expect(getHandleAnchor(rect, 'right')).toEqual({ x: 110, y: 40 });
+        expect(getHandleAnchor(rect, 'bottom')).toEqual({ x: 60, y: 60 });
+        expect(getHandleAnchor(rect, 'left')).toEqual({ x: 10, y: 40 });
+      });
+    });
+  });
+});
+
+describe('findNearestSides', () => {
+  describe('GIVEN a wide target sitting below and left of the source with its top edge nearest the source side', () => {
+    describe('WHEN the nearest sides are searched', () => {
+      test('THEN it leaves the source sideways and enters the target from the top', () => {
+        const source = { x: 195, y: 55, width: 260, height: 75 };
+        const target = { x: 15, y: 240, width: 335, height: 110 };
+
+        expect(findNearestSides(source, target)).toEqual({ sourceHandle: 'left', targetHandle: 'top' });
+      });
+    });
+  });
+
+  describe('GIVEN a target directly below the source', () => {
+    describe('WHEN the nearest sides are searched', () => {
+      test('THEN it connects bottom to top', () => {
+        const source = { x: 0, y: 0, width: 100, height: 40 };
+        const target = { x: 0, y: 300, width: 100, height: 40 };
+
+        expect(findNearestSides(source, target)).toEqual({ sourceHandle: 'bottom', targetHandle: 'top' });
       });
     });
   });

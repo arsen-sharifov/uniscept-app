@@ -40,8 +40,8 @@ export const ReferenceNode = ({ data, selected }: NodeProps<TReferenceNode>) => 
     <div
       onDoubleClick={navigate}
       className={clsx(
-        'group/ref relative flex max-w-[280px] min-w-[200px] flex-col overflow-visible rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-elevated)] shadow-[0_2px_10px_-5px_rgba(15,23,42,0.18)] transition-shadow duration-200 hover:shadow-[0_5px_16px_-6px_rgba(15,23,42,0.28)]',
-        selected && 'ring-2 ring-[color:var(--border-active)]',
+        'group/ref relative flex max-w-[280px] min-w-[200px] flex-col overflow-visible rounded-xl border border-[color:var(--border-strong)] bg-[color:var(--surface-elevated)] shadow-[var(--shadow-pip)] transition-[box-shadow,border-color,transform] duration-200 hover:-translate-y-px hover:border-[color:var(--ref-border)] hover:shadow-[var(--shadow-card-hover)] motion-reduce:transition-none motion-reduce:hover:translate-y-0',
+        selected && 'shadow-[var(--shadow-card-hover)] ring-[1.5px] ring-[color:var(--selection)]',
       )}
     >
       {HANDLE_POSITIONS.map(({ id: handleId, position }) => (
@@ -52,36 +52,36 @@ export const ReferenceNode = ({ data, selected }: NodeProps<TReferenceNode>) => 
           position={position}
           isConnectable={canEditCanvas}
           className={clsx(
-            '!h-2.5 !w-2.5 !rounded-full !border !border-[color:var(--surface)] !bg-[color:var(--ref)] !opacity-0 !shadow-[0_0_0_3px_var(--ref-soft)] !transition-opacity',
+            '!h-2.5 !w-2.5 !rounded-full !border !border-[color:var(--surface)] !bg-[color:var(--accent)] !opacity-0 !shadow-[0_0_0_3px_var(--accent-soft)] !transition-opacity !duration-200',
             canEditCanvas ? 'group-hover/ref:!opacity-100' : '!pointer-events-none',
           )}
         />
       ))}
 
-      <NodeBand
-        tone="reference"
-        label={t.platform.canvas.reference.badge}
-        trailing={
-          canNavigate && (
-            <button
-              type="button"
-              onClick={navigate}
-              onMouseDown={(event) => event.stopPropagation()}
-              aria-label={t('platform.canvas.reference.openLabel', { name: sourceNodeLabel })}
-              className="nodrag flex h-4 w-4 items-center justify-center rounded transition-transform duration-150 group-hover/ref:translate-x-px group-hover/ref:-translate-y-px"
-            >
-              <ArrowUpRight className="h-3 w-3" strokeWidth={2.25} />
-            </button>
-          )
-        }
-      />
+      <div className="flex flex-col gap-1.5 px-4 py-3">
+        <NodeBand
+          tone="reference"
+          label={t.platform.canvas.reference.badge}
+          trailing={
+            canNavigate && (
+              <button
+                type="button"
+                onClick={navigate}
+                onMouseDown={(event) => event.stopPropagation()}
+                aria-label={t('platform.canvas.reference.openLabel', { name: sourceNodeLabel })}
+                className="nodrag flex h-4 w-4 items-center justify-center rounded-md transition-transform duration-150 group-hover/ref:translate-x-px group-hover/ref:-translate-y-px focus-visible:ring-2 focus-visible:ring-[color:var(--ring-focus)] focus-visible:outline-none motion-reduce:transition-none motion-reduce:group-hover/ref:translate-x-0 motion-reduce:group-hover/ref:translate-y-0"
+              >
+                <ArrowUpRight className="h-3 w-3" strokeWidth={2.25} />
+              </button>
+            )
+          }
+        />
 
-      <div className="flex flex-col gap-1 px-4 py-3">
-        <p className="truncate text-[13px] font-medium tracking-tight text-[color:var(--text-strong)] select-none">
+        <p className="truncate font-grotesk text-[13px] font-medium tracking-tight text-[color:var(--text-strong)] select-none">
           {sourceNodeLabel}
         </p>
 
-        <p className="flex items-center gap-1 truncate text-[10.5px] text-[color:var(--text-muted)]">
+        <p className="flex items-center gap-1 truncate font-mono-ui text-[10.5px] tracking-[0.04em] text-[color:var(--text-label)]">
           <span className="truncate text-[color:var(--text-subtle)]">
             {sourceWorkspaceName || t.platform.canvas.reference.workspaceFallback}
           </span>

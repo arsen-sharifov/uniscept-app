@@ -15,15 +15,15 @@ export const ThemesAtlas = ({ activeTheme }: IThemesAtlasProps) => {
   return (
     <AtlasFrame
       tag="Themes"
-      title="Six themes. One semantic vocabulary."
-      intro="Every theme rebinds the same set of tokens — accent stays accent, danger stays danger. Switch the toolbar Theme to retune everything below. The hero card mirrors your active choice; the strip beside it lets you compare the rest."
+      title="Eight themes. One semantic vocabulary."
+      intro="Every theme rebinds the same set of tokens — accent stays accent, danger stays danger. Daybreak and Eclipse are the pair the product ships under; Auto follows the browser and resolves to one of them. Switch the toolbar Theme to retune everything below. The hero card mirrors your active choice; the strip beside it lets you compare the rest."
       sections={THEMES_SECTIONS}
       utilities={
         <div className="flex flex-col items-end gap-1">
-          <span className="font-mono text-[9.5px] tracking-[0.22em] text-[color:var(--text-subtle)] uppercase">
+          <span className="font-mono-ui text-[9.5px] tracking-[0.22em] text-[color:var(--text-subtle)] uppercase">
             active
           </span>
-          <span className="font-serif text-[22px] leading-none tracking-[-0.01em] text-[color:var(--text-strong)] italic">
+          <span className="font-grotesk text-[22px] leading-none font-semibold tracking-[-0.01em] text-[color:var(--text-strong)]">
             {hero.name}
           </span>
         </div>
@@ -51,7 +51,7 @@ export const ThemesAtlas = ({ activeTheme }: IThemesAtlasProps) => {
         title="Tokens"
         description="Every CSS variable resolved against the active theme."
         trailing={
-          <span className="font-mono text-[9.5px] tracking-[0.18em] text-[color:var(--text-subtle)] uppercase">
+          <span className="font-mono-ui text-[9.5px] tracking-[0.18em] text-[color:var(--text-subtle)] uppercase">
             {COLOR_GROUPS.reduce((acc, g) => acc + g.tokens.length, 0)} variables
           </span>
         }
@@ -60,10 +60,10 @@ export const ThemesAtlas = ({ activeTheme }: IThemesAtlasProps) => {
           {COLOR_GROUPS.map((group) => (
             <div key={group.id} className="space-y-3">
               <div className="flex items-baseline justify-between gap-3">
-                <h3 className="font-serif text-[18px] leading-none tracking-[-0.01em] text-[color:var(--text-strong)] italic">
+                <h3 className="font-grotesk text-[18px] leading-none font-semibold tracking-[-0.01em] text-[color:var(--text-strong)]">
                   {group.title}
                 </h3>
-                <span className="font-mono text-[9.5px] tracking-[0.18em] text-[color:var(--text-subtle)] uppercase">
+                <span className="font-mono-ui text-[9.5px] tracking-[0.18em] text-[color:var(--text-subtle)] uppercase">
                   {group.tokens.length}
                 </span>
               </div>
@@ -88,13 +88,13 @@ export const ThemesAtlas = ({ activeTheme }: IThemesAtlasProps) => {
             className="grid items-center gap-x-4 border-b border-[color:var(--border)] bg-[color:var(--surface-soft)] px-4 py-2.5"
             style={{ gridTemplateColumns: '130px repeat(5, minmax(0, 1fr))' }}
           >
-            <span className="font-mono text-[9.5px] font-semibold tracking-[0.22em] text-[color:var(--text-subtle)] uppercase">
+            <span className="font-mono-ui text-[9.5px] font-semibold tracking-[0.22em] text-[color:var(--text-subtle)] uppercase">
               Theme
             </span>
             {CONTRAST_PAIRS.map((p) => (
               <span
                 key={p.caption}
-                className="truncate font-mono text-[9.5px] font-semibold tracking-[0.22em] text-[color:var(--text-subtle)] uppercase"
+                className="truncate font-mono-ui text-[9.5px] font-semibold tracking-[0.22em] text-[color:var(--text-subtle)] uppercase"
               >
                 {p.caption}
               </span>
@@ -111,10 +111,10 @@ export const ThemesAtlas = ({ activeTheme }: IThemesAtlasProps) => {
                 style={{ gridTemplateColumns: '130px repeat(5, minmax(0, 1fr))' }}
               >
                 <div className="flex flex-col gap-0.5">
-                  <span className="font-serif text-[15px] leading-none tracking-[-0.01em] text-[color:var(--text-strong)] italic">
+                  <span className="font-grotesk text-[15px] leading-none font-semibold tracking-[-0.01em] text-[color:var(--text-strong)]">
                     {theme.name}
                   </span>
-                  <span className="font-mono text-[8.5px] tracking-[0.2em] text-[color:var(--text-subtle)] uppercase">
+                  <span className="font-mono-ui text-[8.5px] tracking-[0.2em] text-[color:var(--text-subtle)] uppercase">
                     {theme.mode}
                   </span>
                 </div>
@@ -157,6 +157,18 @@ export const ThemesAtlas = ({ activeTheme }: IThemesAtlasProps) => {
             title="Three semantic tones"
             code="--status-success / --status-warning / --status-error"
             note="Bound per theme. Use the *-bg / *-border / *-soft companions for surfaces."
+          />
+          <ReferenceCard
+            kicker="Glass"
+            title="Overlays and rails float"
+            code="bg-[color:var(--surface-glass)] backdrop-blur-xl"
+            note="The translucent fill behind modals, popovers, context menus, the sidebar, and the toolbar rail. Every theme binds it to its own ground, so the same markup blurs whatever that world is made of."
+          />
+          <ReferenceCard
+            kicker="Atmosphere"
+            title="Perimeter glows sit behind the shell"
+            code="style={{ backgroundImage: 'var(--app-atmosphere)' }}"
+            note="A static, non-animated layer of radial glows painted behind the whole shell and never across the canvas sheet. Each theme tints it with its own light."
           />
         </div>
       </Section>

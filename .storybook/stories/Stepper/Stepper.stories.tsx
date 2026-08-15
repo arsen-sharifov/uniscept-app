@@ -20,7 +20,7 @@ const meta: Meta<typeof Stepper> = {
     docs: {
       description: {
         component:
-          'Step progress indicator. Each step shows its label, a check mark once completed, and a connecting line to the next. `currentStep` is 1-based and wired through `useArgs` — the Controls slider drives the visual state live.',
+          'Step progress indicator. Each step shows a circular mono badge — `--accent` fill on `--on-accent` ink once reached — a `font-grotesk` label, a check mark once completed, and a connecting line to the next. `currentStep` is 1-based; set it from the Controls number field, or open the Interactive story, which drives it through `useArgs`.',
       },
     },
   },
@@ -94,7 +94,7 @@ export const ManySteps: Story = {
     docs: {
       description: {
         story:
-          'Eight-step flow with `currentStep=5`. Verifies how the connector lines, labels and active pill behave when the container has to accommodate a higher count.',
+          'Eight-step flow with `currentStep=5`. Verifies how the connector lines, labels and step badges behave when the container has to accommodate a higher count.',
       },
     },
   },

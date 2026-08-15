@@ -20,53 +20,38 @@ export const BehaviorCard = ({ diorama, label, description, checked, onChange }:
     onClick={() => onChange(!checked)}
     data-state={checked ? 'on' : 'off'}
     className={clsx(
-      'group relative flex w-full flex-col overflow-hidden rounded-2xl border text-left',
-      'transition-[border-color,transform,box-shadow] duration-300 ease-out',
+      'group relative flex w-full cursor-pointer flex-col overflow-hidden rounded-xl border text-left',
+      'transition-[border-color,background-color,transform,box-shadow] duration-200 ease-out',
       'focus-visible:ring-2 focus-visible:ring-[color:var(--ring-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--surface)] focus-visible:outline-none',
-      'hover:-translate-y-0.5',
+      'hover:-translate-y-0.5 active:translate-y-0',
+      'motion-reduce:transition-none motion-reduce:hover:translate-y-0',
       checked
-        ? 'border-[color:var(--border-active)] shadow-[0_18px_38px_-22px_var(--accent-glow)]'
+        ? 'border-[color:var(--border-active)] bg-[color:var(--accent-soft)]'
         : 'border-[color:var(--border)] hover:border-[color:var(--border-strong)] hover:shadow-[var(--shadow-card-hover)]',
     )}
   >
-    <div className="relative h-20 w-full overflow-hidden bg-[color:var(--surface-overlay)]">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 opacity-60"
-        style={{
-          background:
-            'radial-gradient(120% 80% at 50% 0%, color-mix(in srgb, var(--accent-soft) 40%, transparent) 0%, transparent 70%)',
-        }}
-      />
+    <div className="relative h-20 w-full overflow-hidden border-b border-[color:var(--border)] bg-[color:var(--surface-soft)]">
       {diorama}
     </div>
 
-    <div className="flex flex-col gap-1 bg-[color:var(--surface-elevated)] px-3.5 pt-2.5 pb-3">
+    <div className={clsx('flex flex-col gap-1 px-3.5 pt-2.5 pb-3', !checked && 'bg-[color:var(--surface-elevated)]')}>
       <div className="flex items-baseline justify-between gap-2">
-        <span className="truncate font-serif text-[16px] leading-none tracking-tight text-[color:var(--text-strong)] italic">
+        <span className="truncate font-grotesk text-[16px] leading-none font-semibold tracking-tight text-[color:var(--text-strong)]">
           {label}
         </span>
         <span
           aria-hidden={!checked}
           className={clsx(
-            'flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[color:var(--accent)] text-[color:var(--on-accent)] transition-[opacity,transform] duration-300 ease-out',
+            'flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[color:var(--accent)] text-[color:var(--on-accent)] shadow-[var(--shadow-pip)] transition-[opacity,transform] duration-200 ease-out motion-reduce:transition-none',
             checked ? 'scale-100 opacity-100' : 'scale-50 opacity-0',
           )}
         >
           <Check className="h-2.5 w-2.5" strokeWidth={3} />
         </span>
       </div>
-      <span className="text-[10.5px] font-medium tracking-[0.16em] text-[color:var(--text-subtle)] uppercase">
+      <span className="font-mono-ui text-[10px] font-bold tracking-[0.14em] text-[color:var(--text-label)] uppercase">
         {description}
       </span>
     </div>
-
-    <span
-      aria-hidden
-      className={clsx(
-        'pointer-events-none absolute inset-x-0 bottom-0 h-px transition-opacity duration-300',
-        checked ? 'bg-gradient-to-r from-transparent via-[color:var(--accent)] to-transparent opacity-90' : 'opacity-0',
-      )}
-    />
   </button>
 );

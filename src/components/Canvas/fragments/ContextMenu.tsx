@@ -318,7 +318,7 @@ export const ContextMenu = ({ menu, onClose }: IContextMenuProps) => {
       aria-label={t.platform.canvas.context.ariaLabel}
       onKeyDown={handleKeyDown}
       style={{ left: menu.x, top: menu.y }}
-      className="fixed z-50 flex w-52 animate-rise-down flex-col rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-elevated)]/95 p-1 text-[color:var(--text)] shadow-[0_18px_48px_-16px_rgba(15,23,42,0.42)] backdrop-blur-2xl motion-reduce:animate-none"
+      className="fixed z-50 flex w-56 animate-rise-down flex-col rounded-xl border border-[color:var(--border)] bg-[color:var(--surface)] p-1 font-grotesk text-[color:var(--text)] shadow-[var(--shadow-modal)] select-none motion-reduce:animate-none"
     >
       {items}
     </div>

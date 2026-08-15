@@ -13,7 +13,7 @@ const RootError = ({ error, reset }: IRouteError) => {
   }, [error]);
 
   return (
-    <div className="flex h-screen w-screen items-center justify-center bg-[color:var(--app-bg)]">
+    <div className="flex h-screen w-screen items-center justify-center bg-[color:var(--app-bg)] px-6">
       <ErrorFallback onReset={reset} />
     </div>
   );

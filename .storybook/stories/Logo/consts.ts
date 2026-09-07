@@ -11,4 +11,14 @@ export const SIZES: readonly ILogoSize[] = [
   { label: '6xl', className: 'text-6xl' },
 ];
 
-export const THEMES: readonly TTheme[] = ['daybreak', 'eclipse', 'graphite', 'solstice', 'aurora', 'auto'];
+export const THEMES: readonly TTheme[] = [
+  'daybreak',
+  'eclipse',
+  'graphite',
+  'solstice',
+  'aurora',
+  'tide',
+  'orchid',
+  'bloom',
+  'auto',
+];

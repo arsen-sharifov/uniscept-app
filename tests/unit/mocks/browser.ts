@@ -22,28 +22,55 @@ export const stubAnimationFrame = () => {
   });
 
   return {
-    flush: () => {
+    flush: (now = 0) => {
       const pending = [...frames.values()];
       frames.clear();
-      pending.forEach((callback) => callback(0));
+      pending.forEach((callback) => callback(now));
+    },
+    pending: () => frames.size,
+  };
+};
+
+export const stubMediaQueries = () => {
+  const queries = new Map<string, MediaQueryList>();
+
+  const getQuery = (media: string): MediaQueryList => {
+    const existing = queries.get(media);
+    if (existing) return existing;
+
+    const query = new EventTarget() as MediaQueryList;
+    Object.defineProperties(query, {
+      media: { value: media },
+      matches: { configurable: true, value: false },
+    });
+    queries.set(media, query);
+
+    return query;
+  };
+
+  vi.stubGlobal('matchMedia', getQuery);
+
+  return {
+    change: (media: string, matches: boolean) => {
+      const query = getQuery(media);
+      Object.defineProperty(query, 'matches', { configurable: true, value: matches });
+      query.dispatchEvent(new Event('change'));
     },
   };
 };
 
-export const stubIntersectionObserver = () => {
+export const stubResizeObserver = () => {
   const observe = vi.fn();
-  const unobserve = vi.fn();
   const disconnect = vi.fn();
-  const callbacks: IntersectionObserverCallback[] = [];
+  const callbacks: ResizeObserverCallback[] = [];
 
   vi.stubGlobal(
-    'IntersectionObserver',
+    'ResizeObserver',
     class {
       observe = observe;
-      unobserve = unobserve;
       disconnect = disconnect;
 
-      constructor(callback: IntersectionObserverCallback) {
+      constructor(callback: ResizeObserverCallback) {
         callbacks.push(callback);
       }
     },
@@ -51,14 +78,98 @@ export const stubIntersectionObserver = () => {
 
   return {
     observe,
-    unobserve,
     disconnect,
-    intersect: (targets: Element[], isIntersecting = true) =>
-      callbacks.forEach((callback) =>
-        callback(
-          targets.map((target) => ({ target, isIntersecting }) as IntersectionObserverEntry),
-          {} as IntersectionObserver,
-        ),
-      ),
+    resize: () => callbacks.forEach((callback) => callback([], {} as ResizeObserver)),
   };
+};
+
+export const stubIntersectionObserver = () => {
+  const observers = new Map<IntersectionObserverCallback, Set<Element>>();
+
+  vi.stubGlobal(
+    'IntersectionObserver',
+    class {
+      targets = new Set<Element>();
+      observe = (target: Element) => this.targets.add(target);
+      disconnect = () => this.targets.clear();
+
+      constructor(callback: IntersectionObserverCallback) {
+        observers.set(callback, this.targets);
+      }
+    },
+  );
+
+  return {
+    intersect: () => {
+      observers.forEach((targets, callback) => {
+        const entries = [...targets].map((target) => ({ target, isIntersecting: true }) as IntersectionObserverEntry);
+        if (entries.length > 0) callback(entries, {} as IntersectionObserver);
+      });
+    },
+  };
+};
+
+export const stubWorker = () => {
+  const construct = vi.fn();
+  const postMessage = vi.fn();
+  const terminate = vi.fn();
+  const workers: Worker[] = [];
+
+  vi.stubGlobal(
+    'Worker',
+    class {
+      postMessage = postMessage;
+      terminate = terminate;
+      onmessage: Worker['onmessage'] = null;
+      onerror: Worker['onerror'] = null;
+
+      constructor() {
+        construct();
+        workers.push(this as unknown as Worker);
+      }
+    },
+  );
+
+  return {
+    construct,
+    postMessage,
+    terminate,
+    message: (data: unknown) =>
+      workers.forEach((worker) => worker.onmessage?.call(worker, new MessageEvent('message', { data }))),
+    fail: () => workers.forEach((worker) => worker.onerror?.call(worker, new ErrorEvent('error'))),
+  };
+};
+
+export const stubOffscreenCanvas = () => {
+  const original = Object.getOwnPropertyDescriptor(HTMLCanvasElement.prototype, 'transferControlToOffscreen');
+  const transfer = vi.fn(() => ({}) as OffscreenCanvas);
+
+  Object.defineProperty(HTMLCanvasElement.prototype, 'transferControlToOffscreen', {
+    configurable: true,
+    value: transfer,
+  });
+
+  return {
+    transfer,
+    restore: () => {
+      if (original) {
+        Object.defineProperty(HTMLCanvasElement.prototype, 'transferControlToOffscreen', original);
+
+        return;
+      }
+
+      Reflect.deleteProperty(HTMLCanvasElement.prototype, 'transferControlToOffscreen');
+    },
+  };
+};
+
+export const setElementLayout = (
+  element: HTMLElement,
+  layout: Partial<
+    Pick<HTMLElement, 'offsetLeft' | 'offsetTop' | 'offsetWidth' | 'offsetHeight' | 'offsetParent' | 'clientHeight'>
+  >,
+) => {
+  Object.entries(layout).forEach(([property, value]) => {
+    Object.defineProperty(element, property, { configurable: true, value });
+  });
 };

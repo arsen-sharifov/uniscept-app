@@ -29,6 +29,7 @@ import {
 } from '@api/client';
 import { canvasNode } from '@mocks/canvas';
 import { TRANSLATIONS } from '@mocks/i18n';
+import { routeParams, router } from '@mocks/navigation';
 import { EDIT_ACCESS, FULL_ACCESS } from '@mocks/roles';
 import { folderInput, folderItem, myInvitation, threadInput, threadItem, workspaceItem } from '@mocks/sidebar';
 import { primeSupabase } from '@mocks/supabase';
@@ -36,10 +37,7 @@ import { useWorkspaceManager } from '@/app/platform/hooks';
 import { event } from '@/lib/events';
 import { useCanvasStore, usePermissionsStore } from '@/lib/stores';
 
-vi.mock('next/navigation', () => ({
-  useRouter: () => router,
-  useParams: () => routeParams,
-}));
+vi.mock('next/navigation', () => import('@mocks/navigation'));
 vi.mock('@api/client', async () => ({
   ...(await import('@mocks/canvasApi')),
   ...(await import('@mocks/userApi')),
@@ -48,11 +46,6 @@ vi.mock('@api/client', async () => ({
 vi.mock('@/i18n', () => import('@mocks/i18n'));
 vi.mock('@/lib/events', () => import('@mocks/events'));
 vi.mock('@/lib/supabase', () => import('@mocks/supabase'));
-
-const routerPush = vi.fn();
-const routerReplace = vi.fn();
-const router = { push: routerPush, replace: routerReplace };
-const routeParams: { workspaceId?: string; threadId?: string } = {};
 
 const USER_RESPONSE = { data: { user: { id: 'user-1' } }, error: null } as never;
 
@@ -137,7 +130,7 @@ describe('useWorkspaceManager', () => {
       });
 
       test('THEN the router is redirected to the first thread', () => {
-        expect(routerReplace).toHaveBeenCalledExactlyOnceWith('/platform/ws-1/t1');
+        expect(router.replace).toHaveBeenCalledExactlyOnceWith('/platform/ws-1/t1');
       });
 
       test('THEN the pending invitations are exposed', () => {
@@ -173,8 +166,41 @@ describe('useWorkspaceManager', () => {
       });
 
       test('THEN no redirect happens', () => {
-        expect(routerReplace).not.toHaveBeenCalled();
-        expect(routerPush).not.toHaveBeenCalled();
+        expect(router.replace).not.toHaveBeenCalled();
+        expect(router.push).not.toHaveBeenCalled();
+      });
+    });
+  });
+
+  describe('GIVEN workspace permissions that fail to load', () => {
+    beforeEach(() => {
+      primeApi({ workspaceId: 'ws-1', threadId: 't1' });
+      vi.mocked(getMyWorkspacePermissions).mockRejectedValue(new Error('permissions unavailable'));
+      manager = renderHook(() => useWorkspaceManager()).result;
+    });
+
+    describe('WHEN the permission request fails', () => {
+      beforeEach(async () => {
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(0);
+        });
+      });
+
+      test('THEN access resolves without any grant', () => {
+        expect(usePermissionsStore.getState()).toMatchObject({
+          workspaceId: 'ws-1',
+          resolved: true,
+          isOwner: false,
+          canEditCanvas: false,
+          canComment: false,
+        });
+      });
+
+      test('THEN the load failure reaches the feedback boundary', () => {
+        expect(event.error).toHaveBeenCalledExactlyOnceWith(expect.any(Error), {
+          title: TRANSLATIONS.common.errorTitles.loadFailed,
+          context: 'sidebar.loadPermissions',
+        });
       });
     });
   });
@@ -236,7 +262,7 @@ describe('useWorkspaceManager', () => {
 
       test('THEN the creation reaches the api, the router and the toaster', () => {
         expect(createWorkspace).toHaveBeenCalledExactlyOnceWith('New Workspace');
-        expect(routerPush).toHaveBeenCalledExactlyOnceWith('/platform');
+        expect(router.push).toHaveBeenCalledExactlyOnceWith('/platform');
         expect(event.success).toHaveBeenCalledExactlyOnceWith(TRANSLATIONS.platform.sidebar.workspaceCreated);
       });
     });
@@ -291,7 +317,7 @@ describe('useWorkspaceManager', () => {
       });
 
       test('THEN the user is routed home and notified', () => {
-        expect(routerPush).toHaveBeenCalledWith('/platform');
+        expect(router.push).toHaveBeenCalledWith('/platform');
         expect(event.success).toHaveBeenCalledExactlyOnceWith(TRANSLATIONS.platform.sidebar.workspaceDeleted);
       });
     });
@@ -331,7 +357,7 @@ describe('useWorkspaceManager', () => {
         expect(deleteWorkspaces).toHaveBeenCalledExactlyOnceWith(['ws-2']);
         expect(event.warning).toHaveBeenCalledExactlyOnceWith(TRANSLATIONS.platform.sidebar.workspacesDeleteSkipped);
         expect(event.success).not.toHaveBeenCalled();
-        expect(routerPush).not.toHaveBeenCalled();
+        expect(router.push).not.toHaveBeenCalled();
       });
     });
 
@@ -348,7 +374,7 @@ describe('useWorkspaceManager', () => {
         expect(manager.current.activeWorkspaceId).toBe('ws-2');
         expect(deleteWorkspaces).toHaveBeenCalledExactlyOnceWith(['ws-1']);
         expect(getFolders).toHaveBeenLastCalledWith('ws-2');
-        expect(routerPush).toHaveBeenCalledWith('/platform');
+        expect(router.push).toHaveBeenCalledWith('/platform');
         expect(event.success).toHaveBeenCalledExactlyOnceWith(TRANSLATIONS.platform.sidebar.workspacesDeleted);
       });
     });
@@ -365,7 +391,7 @@ describe('useWorkspaceManager', () => {
         expect(manager.current.activeWorkspaceId).toBe('ws-2');
         expect(manager.current.loading).toBe(false);
         expect(getFolders).toHaveBeenLastCalledWith('ws-2');
-        expect(routerPush).toHaveBeenCalledExactlyOnceWith('/platform/ws-2/t1');
+        expect(router.push).toHaveBeenCalledExactlyOnceWith('/platform/ws-2/t1');
       });
     });
   });
@@ -423,7 +449,7 @@ describe('useWorkspaceManager', () => {
       test('THEN the workspace stays and the failure surfaces', () => {
         expect(manager.current.workspaces).toEqual(workspaceList());
         expect(manager.current.activeWorkspaceId).toBe('ws-1');
-        expect(routerPush).not.toHaveBeenCalled();
+        expect(router.push).not.toHaveBeenCalled();
         expect(event.success).not.toHaveBeenCalled();
         expect(event.error).toHaveBeenCalledExactlyOnceWith(expect.any(Error), {
           title: TRANSLATIONS.common.errorTitles.deleteFailed,
@@ -456,7 +482,7 @@ describe('useWorkspaceManager', () => {
       test('THEN the previous workspace is restored', () => {
         expect(manager.current.activeWorkspaceId).toBe('ws-1');
         expect(manager.current.loading).toBe(false);
-        expect(routerPush).not.toHaveBeenCalled();
+        expect(router.push).not.toHaveBeenCalled();
         expect(event.error).toHaveBeenCalledExactlyOnceWith(expect.any(Error), {
           title: TRANSLATIONS.common.errorTitles.loadFailed,
           context: 'sidebar.selectWorkspace',
@@ -495,7 +521,7 @@ describe('useWorkspaceManager', () => {
 
       test('THEN the creation reaches the api and opens the thread', () => {
         expect(createThread).toHaveBeenCalledExactlyOnceWith('ws-1', undefined);
-        expect(routerPush).toHaveBeenCalledExactlyOnceWith('/platform/ws-1/t-new');
+        expect(router.push).toHaveBeenCalledExactlyOnceWith('/platform/ws-1/t-new');
         expect(event.success).toHaveBeenCalledExactlyOnceWith(TRANSLATIONS.platform.sidebar.threadCreated);
       });
     });
@@ -603,7 +629,7 @@ describe('useWorkspaceManager', () => {
       });
 
       test('THEN the user is routed away from the deleted thread', () => {
-        expect(routerPush).toHaveBeenCalledExactlyOnceWith('/platform');
+        expect(router.push).toHaveBeenCalledExactlyOnceWith('/platform');
       });
     });
 
@@ -619,7 +645,7 @@ describe('useWorkspaceManager', () => {
         expect(manager.current.navItems).toEqual([threadItem('t1')]);
         expect(deleteFolder).toHaveBeenCalledExactlyOnceWith('f1');
         expect(event.success).toHaveBeenCalledExactlyOnceWith(TRANSLATIONS.platform.sidebar.folderDeleted);
-        expect(routerPush).not.toHaveBeenCalled();
+        expect(router.push).not.toHaveBeenCalled();
       });
     });
 
@@ -675,7 +701,7 @@ describe('useWorkspaceManager', () => {
       });
 
       test('THEN the user is routed home', () => {
-        expect(routerPush).toHaveBeenCalledExactlyOnceWith('/platform');
+        expect(router.push).toHaveBeenCalledExactlyOnceWith('/platform');
       });
     });
 
@@ -685,7 +711,7 @@ describe('useWorkspaceManager', () => {
       });
 
       test('THEN the router opens the thread', () => {
-        expect(routerPush).toHaveBeenCalledExactlyOnceWith('/platform/ws-1/t2');
+        expect(router.push).toHaveBeenCalledExactlyOnceWith('/platform/ws-1/t2');
       });
     });
 
@@ -695,7 +721,7 @@ describe('useWorkspaceManager', () => {
       });
 
       test('THEN no navigation happens', () => {
-        expect(routerPush).not.toHaveBeenCalled();
+        expect(router.push).not.toHaveBeenCalled();
       });
     });
   });
@@ -721,7 +747,7 @@ describe('useWorkspaceManager', () => {
 
       test('THEN the tree stays and the failure surfaces', () => {
         expect(manager.current.navItems).toEqual(INITIAL_TREE);
-        expect(routerPush).not.toHaveBeenCalled();
+        expect(router.push).not.toHaveBeenCalled();
         expect(event.success).not.toHaveBeenCalled();
         expect(event.error).toHaveBeenCalledExactlyOnceWith(expect.any(Error), {
           title: TRANSLATIONS.common.errorTitles.createFailed,
@@ -851,7 +877,7 @@ describe('useWorkspaceManager', () => {
       test('THEN the joined workspace opens', () => {
         expect(manager.current.activeWorkspaceId).toBe('ws-9');
         expect(getFolders).toHaveBeenLastCalledWith('ws-9');
-        expect(routerPush).toHaveBeenCalledExactlyOnceWith('/platform/ws-9/t1');
+        expect(router.push).toHaveBeenCalledExactlyOnceWith('/platform/ws-9/t1');
       });
     });
 

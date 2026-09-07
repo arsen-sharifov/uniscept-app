@@ -89,8 +89,9 @@ export const QuestionNode = ({ id, data, selected }: NodeProps<TCanvasNode>) => 
   return (
     <div
       className={clsx(
-        'group/question relative flex max-w-[380px] min-w-[260px] flex-col overflow-visible rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-elevated)] shadow-[0_2px_10px_-5px_rgba(15,23,42,0.18)] transition-shadow duration-200 hover:shadow-[0_5px_16px_-6px_rgba(15,23,42,0.28)]',
-        selected && 'ring-2 ring-[color:var(--border-active)]',
+        'group/question relative flex max-w-[380px] min-w-[260px] flex-col overflow-visible rounded-xl border bg-[color:var(--surface-elevated)] shadow-[var(--shadow-pip)] transition-[box-shadow,border-color,transform] duration-200 hover:-translate-y-px hover:shadow-[var(--shadow-card-hover)] motion-reduce:transition-none motion-reduce:hover:translate-y-0',
+        isEditing ? 'border-[color:var(--border-active)]' : 'border-[color:var(--border-strong)]',
+        selected && 'shadow-[var(--shadow-card-hover)] ring-[1.5px] ring-[color:var(--selection)]',
         isPending && 'animate-node-pulse ring-2 ring-[color:var(--ref-border)] motion-reduce:animate-none',
       )}
     >
@@ -102,15 +103,15 @@ export const QuestionNode = ({ id, data, selected }: NodeProps<TCanvasNode>) => 
           position={position}
           isConnectable={canEditCanvas}
           className={clsx(
-            '!h-2.5 !w-2.5 !rounded-full !border !border-[color:var(--surface)] !bg-[color:var(--question)] !opacity-0 !shadow-[0_0_0_3px_var(--question-soft)] !transition-opacity',
+            '!h-2.5 !w-2.5 !rounded-full !border !border-[color:var(--surface)] !bg-[color:var(--accent)] !opacity-0 !shadow-[0_0_0_3px_var(--accent-soft)] !transition-opacity !duration-200',
             canEditCanvas ? 'group-hover/question:!opacity-100' : '!pointer-events-none',
           )}
         />
       ))}
 
-      <NodeBand tone="question" label={t.platform.canvas.question.badge} />
+      <div className="flex flex-col gap-2 px-5 pt-3.5 pb-4">
+        <NodeBand tone="question" label={t.platform.canvas.question.badge} />
 
-      <div className="flex flex-col gap-2 px-5 py-4">
         {isEditing ? (
           <textarea
             ref={inputRef}
@@ -122,14 +123,14 @@ export const QuestionNode = ({ id, data, selected }: NodeProps<TCanvasNode>) => 
             rows={1}
             placeholder={t.platform.canvas.question.placeholder}
             aria-label={t.platform.canvas.question.ariaLabel}
-            className="nodrag field-sizing-content w-full resize-none overflow-hidden rounded-lg bg-[color:var(--question-soft)] px-2 py-1 text-[15px] leading-relaxed font-medium tracking-tight text-[color:var(--text-strong)] ring-1 ring-[color:var(--question-border)] outline-none placeholder:text-[color:var(--text-muted)]"
+            className="nodrag field-sizing-content w-full resize-none overflow-hidden bg-transparent font-grotesk text-[17px] leading-[1.45] font-semibold tracking-tight break-words text-[color:var(--text-strong)] caret-[color:var(--accent)] outline-none placeholder:text-[color:var(--text-muted)]"
           />
         ) : (
           <p
             ref={hasLabel ? labelRefCallback : undefined}
             className={clsx(
-              'text-[15px] leading-relaxed font-medium tracking-tight break-words whitespace-pre-wrap select-none',
-              hasLabel ? 'text-[color:var(--text-strong)]' : 'text-[color:var(--text-muted)]',
+              'font-grotesk text-[17px] leading-[1.45] font-semibold tracking-tight break-words whitespace-pre-wrap select-none',
+              hasLabel ? 'text-[color:var(--text-strong)]' : 'text-[color:var(--text-subtle)]',
               hasLabel && !expanded && 'line-clamp-8',
             )}
           >
@@ -145,7 +146,7 @@ export const QuestionNode = ({ id, data, selected }: NodeProps<TCanvasNode>) => 
               setExpanded((prev) => !prev);
             }}
             onMouseDown={(event) => event.stopPropagation()}
-            className="nodrag inline-flex w-fit items-center gap-0.5 rounded-md text-[10.5px] font-medium tracking-tight text-[color:var(--question)] transition-opacity hover:opacity-80"
+            className="nodrag inline-flex w-fit items-center gap-1 rounded-md font-mono-ui text-[10px] tracking-[0.04em] text-[color:var(--text-muted)] transition-colors duration-150 hover:text-[color:var(--accent-text)] focus-visible:ring-2 focus-visible:ring-[color:var(--ring-focus)] focus-visible:outline-none motion-reduce:transition-none"
           >
             <ChevronDown
               className={clsx('h-3 w-3 transition-transform duration-200', expanded && 'rotate-180')}

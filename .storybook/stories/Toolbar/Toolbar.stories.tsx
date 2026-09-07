@@ -18,7 +18,7 @@ const meta: Meta<typeof Toolbar> = {
     docs: {
       description: {
         component:
-          'Vertical toolbar fixed to the right edge of the canvas. Tool icons are grouped into logical clusters separated by dividers. `activeTool` is bound to the Controls panel via `useArgs` — clicking a tool updates the live state and fires the `onToolClick` action.',
+          'Vertical tool rail floating clear of the right edge of the canvas — a glass panel on `--surface-glass` over `backdrop-blur-2xl`. Tool icons are grouped into logical clusters, each group after the first opening with a hairline top border. `activeTool` is bound to the Controls panel via `useArgs` — clicking a tool updates the live state and fires the `onToolClick` action.',
       },
     },
   },
@@ -29,7 +29,7 @@ const meta: Meta<typeof Toolbar> = {
   argTypes: {
     groups: {
       description:
-        'Array of tool groups rendered top-to-bottom. Each group has an `id`, optional `label`, and a `tools` array of `IToolItem` (id, icon, label, description, shortcut, kind, disabled). Groups are separated by dividers.',
+        'Array of tool groups rendered top-to-bottom. Each group has an `id`, optional `label`, and a `tools` array of `IToolItem` (id, icon, label, description, shortcut, kind, disabled). Every group after the first opens with a hairline top border.',
       table: {
         category: ARG_CATEGORIES.CONTENT,
         type: { summary: 'IToolGroup[]', detail: '{ id: string; label?: string; tools: IToolItem[] }[]' },
@@ -114,7 +114,7 @@ export const ReadOnly: Story = {
     docs: {
       description: {
         story:
-          'Viewer permissions — every canvas-mutating tool is disabled and its tooltip swaps the shortcut for the "no permission" reason, matching the production state driven by the permissions store.',
+          'Viewer permissions — every canvas-mutating tool is disabled, matching the production state driven by the permissions store. The tooltip keeps showing the label and shortcut; `IToolItem` carries no reason field.',
       },
     },
   },
@@ -123,9 +123,7 @@ export const ReadOnly: Story = {
       buildCanvasToolGroups(t.platform.canvas.tools).map((group) => ({
         ...group,
         tools: group.tools.map((tool) =>
-          READ_ONLY_DISABLED_TOOL_IDS.has(tool.id)
-            ? { ...tool, disabled: true, disabledReason: t.common.noPermission }
-            : tool,
+          READ_ONLY_DISABLED_TOOL_IDS.has(tool.id) ? { ...tool, disabled: true } : tool,
         ),
       })),
   }),
@@ -135,7 +133,7 @@ export const Empty: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'No groups passed — only the floating help button remains.',
+        story: 'No groups passed — the glass rail still renders, holding only the help button in its footer.',
       },
     },
   },
@@ -181,7 +179,7 @@ export const DenseGroups: Story = {
     docs: {
       description: {
         story:
-          'Full default group set with several tools marked `disabled` (Pan, ZoomOut, Delete, InvalidPath, Undo, Redo). Demonstrates how the toolbar stretches vertically to fill the viewport while preserving group dividers.',
+          'Full default group set with several tools marked `disabled` (Pan, ZoomOut, Delete, InvalidPath, Undo, Redo). Demonstrates how a densely filled rail distributes inside its fixed full-height frame while the group hairlines hold.',
       },
     },
   },
@@ -198,7 +196,7 @@ export const MinimalSingleGroup: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'A single group with three tools — no dividers are drawn because dividers only appear between groups.',
+        story: 'A single group with three tools — no hairline is drawn, since only groups after the first carry one.',
       },
     },
   },

@@ -118,7 +118,7 @@
         "declineFailed": "No se pudo rechazar la invitación"
       },
       "workspaceSettings": "Configuración del espacio de trabajo",
-      "workspaces": "Espacios de trabajo",
+      "workspaces": "Espacios",
       "noWorkspaceSelected": "Ningún espacio seleccionado",
       "noWorkspaces": "No hay espacios de trabajo. Crea uno para empezar.",
       "newWorkspace": "Nuevo espacio",
@@ -250,6 +250,7 @@
         "answerBadge": "Respuesta",
         "validBadge": "Válido",
         "invalidBadge": "Inválido",
+        "affectedBadge": "Afectada",
         "defaultLabel": "Nuevo nodo",
         "showMore": "Mostrar más",
         "showLess": "Mostrar menos",
@@ -280,10 +281,8 @@
         "deleteTitle": "Eliminar comentario"
       },
       "save": {
-        "saving": "Guardando…",
         "retrying": "Reintentando…",
         "retryAttempt": "Intento {n, number}",
-        "saved": "Guardado",
         "offline": "Sin conexión",
         "offlinePending": "{count, plural, one {# pendiente} other {# pendientes}}",
         "errorTitle": "No se ha podido guardar",
@@ -383,7 +382,7 @@
         "badges": {
           "badgeFounder": "Fundador",
           "founderUnlock": "Se unió durante la beta temprana.",
-          "badgeFirstSteps": "Primeros pasos",
+          "badgeFirstSteps": "Primer paso",
           "firstStepsUnlock": "Crea tu primer lienzo.",
           "badgeArchitect": "Arquitecto",
           "architectUnlock": "Construye un lienzo con 25 o más nodos.",
@@ -446,21 +445,26 @@
       },
       "appearance": {
         "theme": "Tema",
-        "themeIntro": "Seis estados",
-        "themeBlurb": "Elige una paleta que combine con tu forma de pensar. Cada una repinta el espacio, del lienzo a la barra de herramientas.",
-        "themeDaybreak": "Amanecer",
+        "themeIntro": "Ocho paletas",
+        "themeBlurb": "Daybreak y Eclipse son la pareja de serie; Auto sigue a tu sistema y elige entre ellas. Las otras seis repintan todo, del lienzo a la barra de herramientas.",
+        "themeDaybreak": "Daybreak",
         "themeEclipse": "Eclipse",
-        "themeGraphite": "Grafito",
-        "themeSolstice": "Solsticio",
-        "themeAurora": "Aurora",
+        "themeGraphite": "Paper",
+        "themeSolstice": "Carbon",
+        "themeAurora": "Ember",
         "themeAuto": "Auto",
-        "daybreakDesc": "Papel nítido, luz suave",
-        "eclipseDesc": "Tinta nocturna, brillo cian",
-        "graphiteDesc": "Monocromo puro",
-        "solsticeDesc": "Pergamino cálido, ámbar",
-        "auroraDesc": "Cristal iridiscente",
-        "autoDesc": "Sigue tu sistema",
-        "defaultBadge": "Predeterminado",
+        "daybreakDesc": "Bruma verde, acción lima",
+        "eclipseDesc": "Verde casi negro, acción lima",
+        "graphiteDesc": "Blanco neutro puro, acción tinta",
+        "solsticeDesc": "Negro puro, acción blanca",
+        "auroraDesc": "Carbón cálido, acción turquesa",
+        "themeTide": "Tide",
+        "tideDesc": "Gris azulado frío, acción celeste",
+        "themeOrchid": "Orchid",
+        "orchidDesc": "Ciruela profunda, acción chartreuse",
+        "themeBloom": "Bloom",
+        "bloomDesc": "Porcelana cálida, acción magenta",
+        "autoDesc": "Empareja Daybreak y Eclipse",
         "adaptive": "Adaptable",
         "canvas": "Lienzo",
         "canvasIntro": "Cuatro texturas",
@@ -639,11 +643,78 @@
       "subtitle2": "Cada reunión es amnesia estructurada.",
       "tagline": "Construye conocimiento. No caos.",
       "ctaPrimary": "Empezar",
-      "ctaSecondary": "Saber más"
+      "ctaSecondary": "Saber más",
+      "demo": {
+        "threadBand": "Pregunta abierta",
+        "demoTag": "Demo",
+        "ariaDemo": "Demo interactiva del argumento",
+        "statusQuestion": "Pregunta",
+        "statusValid": "Válida",
+        "statusRefuted": "Refutada",
+        "statusAffected": "Afectada",
+        "statusAnswer": "Respuesta",
+        "statusClaim": "Afirmación",
+        "counterValid": "válidas",
+        "counterRefuted": "refutadas",
+        "counterAffected": "afectadas",
+        "log": {
+          "opened": "Hilo T-001 abierto · 7 afirmaciones citadas",
+          "refuted": "P-02 refutada en revisión",
+          "tainted": "2 conclusiones dependientes contaminadas",
+          "rerouted": "P-05 fijada · dependencia muerta redirigida",
+          "restored": "C-02 restaurada como respuesta"
+        },
+        "claims": {
+          "q": "¿Reconstruimos el núcleo legacy para v2?",
+          "p1": "El núcleo legacy bloquea cada punto del roadmap",
+          "p2": "El equipo puede congelar features seis meses",
+          "p3": "Tres seniors aún conocen el núcleo de punta a punta",
+          "p5": "Una migración strangler lo reconstruye sin congelar",
+          "c1": "Reconstruir el núcleo vale su costo",
+          "c2": "Comprometer la reconstrucción el próximo trimestre"
+        }
+      }
     },
     "problem": {
       "title": "El problema",
-      "subtitle": "Las herramientas superficiales producen pensamiento superficial."
+      "subtitle": "Las herramientas superficiales producen pensamiento superficial.",
+      "stream": {
+        "channel": "#product-decisions",
+        "live": "live",
+        "stamp": "Enterrada",
+        "decision": "DECISIÓN: lanzamos la reescritura v2 en Q4",
+        "lines": [
+          "ok, subo el hotfix",
+          "¿alguien revisó staging?",
+          "espera, ¿en qué config estamos?",
+          "ver hilo ↑",
+          "reenvío el enlace del doc",
+          "¿quién lleva retención ahora?",
+          "¿almuerzo primero?",
+          "reinicio el pod de demo",
+          "¿alguien reexplica el plan?"
+        ]
+      },
+      "exhibits": {
+        "chat": {
+          "medium": "Chat",
+          "claim": "Las decisiones se hunden a mitad del hilo.",
+          "detail": "El argumento que lo zanjó está cuatrocientos mensajes arriba, repartido en tres canales.",
+          "verdict": "Sin estructura"
+        },
+        "meetings": {
+          "medium": "Reuniones",
+          "claim": "Las conclusiones salen de la sala. Las razones no.",
+          "detail": "Una semana después el mismo debate arranca de cero, con las mismas diapositivas.",
+          "verdict": "Sin rastro"
+        },
+        "docs": {
+          "medium": "Docs",
+          "claim": "Los docs recuerdan el texto, no la lógica.",
+          "detail": "El acta dice qué se decidió, nunca sobre qué se apoyaba.",
+          "verdict": "Inverificable"
+        }
+      }
     },
     "product": {
       "title": "Esto es un motor de razonamiento.",
@@ -652,21 +723,35 @@
       "features": {
         "structured": {
           "title": "Razonamiento estructurado",
-          "description": "Descompón problemas complejos en nodos y conexiones lógicas. Haz explícito el razonamiento implícito. Mira la arquitectura de tu pensamiento.",
-          "tags": ["Mapeo visual", "Flujo lógico", "Estructura clara"]
+          "description": "Las afirmaciones se vuelven nodos y el apoyo, aristas dirigidas. La forma del argumento por fin es visible."
         },
         "validation": {
           "title": "Validación de caminos",
-          "description": "Marca los caminos de razonamiento como válidos o inválidos. Sigue lo que funciona. Construye sobre la verdad."
+          "description": "Marca una afirmación refutada y cada conclusión que se apoya en ella se recalcula al instante. Nada sobrevive en silencio."
         },
         "references": {
           "title": "Referencias cruzadas",
-          "description": "Enlaza canvases sin duplicar. Reutiliza conclusiones. Deja que el conocimiento se acumule."
+          "description": "Referencia una conclusión validada de otro lienzo. Demuéstrala una vez, apóyate en ella donde importe."
         },
         "collaboration": {
           "title": "Colaboración en equipo",
-          "description": "Acceso por roles. Comentarios contextuales. Actualizaciones en tiempo real. Pensad juntos, decidid más rápido, construid más sólido."
+          "description": "Roles del espacio, comentarios por nodo, permisos a medida. Discutan a la vista, decidan con registro."
         }
+      },
+      "vignettes": {
+        "structuredQuestion": "¿Dónde lanzamos primero?",
+        "structuredClaimA": "UE: la regulación está lista",
+        "structuredClaimB": "EE. UU.: mercado temprano mayor",
+        "validationPremise": "Los costos se mantienen a escala",
+        "validationConclusion": "La economía unitaria se sostiene",
+        "validationSafe": "La retención se mantiene a escala",
+        "referencesCanvasA": "Lienzo · Precios",
+        "referencesCanvasB": "Lienzo · Estrategia",
+        "referencesSource": "Retorno del CAC en menos de 12 meses",
+        "referencesBadge": "Referencia",
+        "collaborationClaim": "Lanzar la migración tras un flag",
+        "collaborationClaimB": "Desplegar mejor región por región",
+        "collaborationRole": "Revisor"
       }
     },
     "builders": {
@@ -674,16 +759,25 @@
       "subtitle": "Para quienes odian el pensamiento superficial.",
       "founders": {
         "title": "Fundadores",
+        "question": "¿Levantamos ronda ahora o un año más a pulmón?",
+        "nodeA": "La caja cubre 14 meses",
+        "nodeB": "Un año más a pulmón",
         "description": "Toma mejores decisiones. Documenta tu razonamiento. Deja de repetir los mismos argumentos cada trimestre.",
         "useCases": ["Estrategia de producto", "Análisis de mercado", "Arquitectura técnica"]
       },
       "researchers": {
         "title": "Investigadores",
+        "question": "¿El efecto se replica fuera del laboratorio?",
+        "nodeA": "Replicación de campo, n=2400",
+        "nodeB": "El efecto se sostiene en campo",
         "description": "Mapea la literatura. Construye marcos. Convierte los artículos en grafos de conocimiento estructurados que tengan sentido.",
         "useCases": ["Síntesis literaria", "Mapeo de hipótesis", "Redes de citas"]
       },
       "engineers": {
         "title": "Ingenieros",
+        "question": "¿Monolito o servicios para la v3?",
+        "nodeA": "El monolito aguanta carga 10x",
+        "nodeB": "La v3 sigue monolítica",
         "description": "Diseña sistemas. Depura lógica. Documenta las decisiones arquitectónicas que importan de verdad.",
         "useCases": ["Diseño de sistemas", "Flujos de depuración", "Decisiones técnicas"]
       }
@@ -733,21 +827,33 @@
     },
     "howItWorks": {
       "title": "Tres pasos.",
-      "subtitle": "Eso es todo."
+      "subtitle": "Eso es todo.",
+      "steps": {
+        "ask": {
+          "title": "Pregunta",
+          "description": "Abre un hilo. El nodo central de la pregunta ya espera en el lienzo."
+        },
+        "argue": {
+          "title": "Argumenta",
+          "description": "Coloca afirmaciones alrededor. Cita, conecta, respalda: el razonamiento toma forma."
+        },
+        "decide": {
+          "title": "Decide",
+          "description": "Refuta lo que falla, mira propagarse las consecuencias y fija la respuesta que resiste."
+        }
+      },
+      "vignettes": {
+        "question": "¿Reescribimos la app móvil?",
+        "pro": "Los crashes se duplicaron en un año",
+        "con": "Reescribir cuesta dos trimestres",
+        "answer": "Reconstruir módulo a módulo"
+      }
     },
     "cta": {
       "title1": "Deja de hablar.",
       "title2": "Empieza a construir.",
-      "subtitle": "Únete a investigadores, fundadores e ingenieros que de verdad entregan.",
+      "subtitle": "Para investigadores, fundadores e ingenieros que de verdad entregan.",
       "button": "Empezar gratis"
-    },
-    "footer": {
-      "copyright": "© 2026 Uniscept",
-      "links": {
-        "twitter": "Twitter",
-        "github": "GitHub",
-        "docs": "Documentación"
-      }
     }
   }
 }

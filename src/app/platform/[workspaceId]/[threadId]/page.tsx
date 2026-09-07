@@ -16,7 +16,7 @@ const ThreadPage = () => {
   if (!workspaceId || !threadId) return null;
 
   return (
-    <div className="h-screen w-screen">
+    <div className="h-full w-full">
       <ReactFlowProvider>
         <Canvas
           workspaceId={workspaceId}

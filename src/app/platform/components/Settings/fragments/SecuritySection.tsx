@@ -12,7 +12,7 @@ import { useTranslations } from '@/i18n';
 import { SettingsInput } from '../SettingsInput';
 import { SettingsPrimaryButton } from '../SettingsPrimaryButton';
 
-export interface ISecuritySectionProps {
+interface ISecuritySectionProps {
   onChangePassword: (payload: IChangePasswordPayload) => Promise<TChangePasswordResult>;
   onDeleteAccount: () => Promise<void>;
 }
@@ -89,10 +89,10 @@ export const SecuritySection = ({ onChangePassword, onDeleteAccount }: ISecurity
     <div className="space-y-8">
       <section>
         <header className="mb-1 flex items-baseline justify-between">
-          <h3 className="text-[11px] font-semibold tracking-[0.18em] text-[color:var(--text-subtle)] uppercase">
+          <h3 className="font-mono-ui text-[10px] font-bold tracking-[0.14em] text-[color:var(--text-label)] uppercase">
             {security.changePassword}
           </h3>
-          <span className="text-[10.5px] tracking-[0.16em] text-[color:var(--text-faint)] uppercase">
+          <span className="font-mono-ui text-[10px] tracking-[0.14em] text-[color:var(--text-label)] uppercase">
             {security.passwordCaption}
           </span>
         </header>
@@ -100,16 +100,16 @@ export const SecuritySection = ({ onChangePassword, onDeleteAccount }: ISecurity
           {security.passwordBlurb}
         </p>
 
-        <div className="relative overflow-hidden rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-elevated)] p-5">
+        <div className="relative overflow-hidden rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-elevated)] p-5">
           <div className="flex items-center gap-3">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[color:var(--surface-overlay)] text-[color:var(--accent)] shadow-[inset_0_0_0_1px_var(--border-strong)]">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[color:var(--surface-overlay)] text-[color:var(--accent-text)] ring-1 ring-[color:var(--border-strong)]">
               <ShieldCheck className="h-4 w-4" strokeWidth={1.8} />
             </span>
             <div className="min-w-0 flex-1">
-              <p className="font-serif text-[16px] leading-none tracking-tight text-[color:var(--text-strong)] italic">
+              <p className="font-grotesk text-[16px] leading-none font-semibold tracking-tight text-[color:var(--text-strong)]">
                 {security.passwordCardTitle}
               </p>
-              <p className="mt-1 text-[10.5px] font-medium tracking-[0.16em] text-[color:var(--text-subtle)] uppercase">
+              <p className="mt-1 font-mono-ui text-[10px] font-bold tracking-[0.14em] text-[color:var(--text-label)] uppercase">
                 {security.passwordCardCaption}
               </p>
             </div>
@@ -119,7 +119,7 @@ export const SecuritySection = ({ onChangePassword, onDeleteAccount }: ISecurity
             <div>
               <label
                 htmlFor={currentPasswordId}
-                className="mb-1 block text-[10.5px] font-medium tracking-[0.16em] text-[color:var(--text-subtle)] uppercase"
+                className="mb-1 block font-mono-ui text-[10px] font-bold tracking-[0.14em] text-[color:var(--text-label)] uppercase"
               >
                 {security.currentPassword}
               </label>
@@ -136,7 +136,7 @@ export const SecuritySection = ({ onChangePassword, onDeleteAccount }: ISecurity
               <div>
                 <label
                   htmlFor={newPasswordId}
-                  className="mb-1 block text-[10.5px] font-medium tracking-[0.16em] text-[color:var(--text-subtle)] uppercase"
+                  className="mb-1 block font-mono-ui text-[10px] font-bold tracking-[0.14em] text-[color:var(--text-label)] uppercase"
                 >
                   {security.newPassword}
                 </label>
@@ -153,7 +153,7 @@ export const SecuritySection = ({ onChangePassword, onDeleteAccount }: ISecurity
               <div>
                 <label
                   htmlFor={confirmPasswordId}
-                  className="mb-1 block text-[10.5px] font-medium tracking-[0.16em] text-[color:var(--text-subtle)] uppercase"
+                  className="mb-1 block font-mono-ui text-[10px] font-bold tracking-[0.14em] text-[color:var(--text-label)] uppercase"
                 >
                   {security.confirmPassword}
                 </label>
@@ -173,7 +173,7 @@ export const SecuritySection = ({ onChangePassword, onDeleteAccount }: ISecurity
           <div className="mt-4 flex items-center justify-end gap-3">
             <div className="min-w-0 flex-1 truncate text-[11.5px] leading-snug">
               {passwordAction.success && (
-                <span className="text-[color:var(--accent-strong)]">{security.passwordUpdated}</span>
+                <span className="text-[color:var(--status-success)]">{security.passwordUpdated}</span>
               )}
               {passwordAction.error && <span className="text-[color:var(--status-error)]">{passwordAction.error}</span>}
             </div>
@@ -186,10 +186,10 @@ export const SecuritySection = ({ onChangePassword, onDeleteAccount }: ISecurity
 
       <section className="border-t border-[color:var(--border)] pt-6">
         <header className="mb-1 flex items-baseline justify-between">
-          <h3 className="text-[11px] font-semibold tracking-[0.18em] text-[color:var(--status-error)] uppercase">
+          <h3 className="font-mono-ui text-[10px] font-bold tracking-[0.14em] text-[color:var(--status-error)] uppercase">
             {security.dangerZone}
           </h3>
-          <span className="text-[10.5px] tracking-[0.16em] text-[color:var(--status-error)] uppercase">
+          <span className="font-mono-ui text-[10px] tracking-[0.14em] text-[color:var(--status-error)] uppercase">
             {security.dangerZoneCaption}
           </span>
         </header>
@@ -197,16 +197,16 @@ export const SecuritySection = ({ onChangePassword, onDeleteAccount }: ISecurity
           {security.dangerZoneBlurb}
         </p>
 
-        <div className="relative overflow-hidden rounded-2xl border border-[color:var(--status-error-border)] bg-[color:var(--status-error-bg)] p-5">
+        <div className="relative overflow-hidden rounded-xl border border-[color:var(--status-error-border)] bg-[color:var(--status-error-bg)] p-5">
           <div className="flex items-center gap-3">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[color:var(--status-error-soft)] text-[color:var(--status-error)] shadow-[inset_0_0_0_1px_var(--status-error-border)]">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[color:var(--status-error-soft)] text-[color:var(--status-error)] ring-1 ring-[color:var(--status-error-border)]">
               <ShieldAlert className="h-4 w-4" strokeWidth={1.8} />
             </span>
             <div className="min-w-0 flex-1">
-              <p className="font-serif text-[16px] leading-none tracking-tight text-[color:var(--text-strong)] italic">
+              <p className="font-grotesk text-[16px] leading-none font-semibold tracking-tight text-[color:var(--text-strong)]">
                 {security.deleteAccount}
               </p>
-              <p className="mt-1 text-[10.5px] font-medium tracking-[0.16em] text-[color:var(--status-error)]/80 uppercase">
+              <p className="mt-1 font-mono-ui text-[10px] font-bold tracking-[0.14em] text-[color:var(--status-error)]/80 uppercase">
                 {security.deleteAccountCaption}
               </p>
             </div>
@@ -214,7 +214,7 @@ export const SecuritySection = ({ onChangePassword, onDeleteAccount }: ISecurity
               <button
                 type="button"
                 onClick={() => setShowDeleteConfirm(true)}
-                className="shrink-0 cursor-pointer rounded-xl border border-[color:var(--status-error-border)] bg-transparent px-4 py-2 text-[12px] font-medium tracking-tight text-[color:var(--status-error)] transition-colors hover:bg-[color:var(--status-error-soft)]"
+                className="shrink-0 cursor-pointer rounded-lg border border-[color:var(--status-error-border)] bg-transparent px-4 py-2 text-[12px] font-medium tracking-tight text-[color:var(--status-error)] transition-colors duration-200 ease-out hover:bg-[color:var(--status-error-soft)] focus-visible:ring-2 focus-visible:ring-[color:var(--ring-focus)] focus-visible:outline-none active:translate-y-px motion-reduce:transition-none"
               >
                 {security.deleteAccount}
               </button>
@@ -229,14 +229,14 @@ export const SecuritySection = ({ onChangePassword, onDeleteAccount }: ISecurity
                   type="button"
                   onClick={handleDelete}
                   disabled={deleteAction.loading}
-                  className="cursor-pointer rounded-xl bg-[color:var(--status-error)] px-5 py-2 text-[13px] font-medium text-[color:var(--on-accent)] shadow-[0_8px_22px_-12px_var(--status-error-soft)] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="cursor-pointer rounded-lg bg-[color:var(--status-error)] px-5 py-2 text-[13px] font-medium text-[color:var(--on-status)] shadow-[0_10px_28px_-12px_var(--status-error-soft)] transition-[opacity,transform,box-shadow] duration-200 ease-out hover:opacity-90 focus-visible:ring-2 focus-visible:ring-[color:var(--ring-focus)] focus-visible:outline-none active:translate-y-px disabled:cursor-not-allowed disabled:bg-[color:var(--surface-overlay)] disabled:text-[color:var(--text-subtle)] disabled:shadow-none disabled:active:translate-y-0 motion-reduce:transition-none"
                 >
                   {deleteAction.loading ? security.deleting : security.deleteButton}
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowDeleteConfirm(false)}
-                  className="cursor-pointer rounded-xl bg-[color:var(--surface-overlay)] px-5 py-2 text-[13px] font-medium text-[color:var(--text)] transition-colors hover:bg-[color:var(--border)]"
+                  className="cursor-pointer rounded-lg border border-[color:var(--border-strong)] px-5 py-2 text-[13px] font-medium text-[color:var(--text)] transition-colors duration-200 ease-out hover:bg-[color:var(--surface-overlay)] focus-visible:ring-2 focus-visible:ring-[color:var(--ring-focus)] focus-visible:outline-none active:translate-y-px motion-reduce:transition-none"
                 >
                   {security.cancel}
                 </button>

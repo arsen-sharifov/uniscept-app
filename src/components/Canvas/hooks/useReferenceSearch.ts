@@ -2,42 +2,42 @@
 
 import { useEffect, useMemo, useState } from 'react';
 
-import type { INodeReference } from '@interfaces';
+import type { IReferenceSearchInput, IReferenceSearchResponse, IReferenceSearchResult } from '@interfaces';
 import { searchReferenceTargets } from '@api/client';
 import { useTranslations } from '@/i18n';
 import { event } from '@/lib/events';
 import { useCanvasStore } from '@/lib/stores';
 
-interface IUseReferenceSearchInput {
-  workspaceId: string;
-  threadId: string;
-}
-
-export const useReferenceSearch = ({ workspaceId, threadId }: IUseReferenceSearchInput): INodeReference[] => {
+export const useReferenceSearch = ({ workspaceId, threadId }: IReferenceSearchInput): IReferenceSearchResult => {
   const t = useTranslations();
   const isPanelOpen = useCanvasStore((s) => s.referenceSearchPosition !== null);
-  const [nodes, setNodes] = useState<INodeReference[]>([]);
+  const [response, setResponse] = useState<IReferenceSearchResponse | null>(null);
+  const request = useMemo(() => (isPanelOpen ? { workspaceId, threadId } : null), [workspaceId, threadId, isPanelOpen]);
 
   useEffect(() => {
-    if (!isPanelOpen) return;
+    if (!request) return;
 
     let cancelled = false;
 
-    searchReferenceTargets(workspaceId, threadId)
-      .then((results) => {
-        if (!cancelled) setNodes(results);
+    searchReferenceTargets(request.workspaceId, request.threadId)
+      .then((nodes) => {
+        if (cancelled) return;
+
+        setResponse({ request, nodes });
       })
       .catch((error) => {
         if (cancelled) return;
 
-        setNodes([]);
+        setResponse({ request, nodes: [] });
         event.error(error, { title: t.common.errorTitles.searchFailed, context: 'canvas.referenceSearch' });
       });
 
     return () => {
       cancelled = true;
     };
-  }, [workspaceId, threadId, isPanelOpen, t]);
+  }, [request, t]);
 
-  return useMemo(() => (isPanelOpen ? nodes : []), [isPanelOpen, nodes]);
+  const currentResponse = request !== null && response?.request === request ? response : null;
+
+  return { nodes: currentResponse?.nodes ?? [], loading: isPanelOpen && currentResponse === null };
 };

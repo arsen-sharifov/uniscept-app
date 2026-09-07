@@ -13,7 +13,7 @@ const meta: Meta<typeof ResolutionBar> = {
     docs: {
       description: {
         component:
-          'The resolved indicator for a discussion (flow stage ⑥). It is derived purely from the canvas: once a node is marked as the answer, a “Resolved” pill appears at the top; with no answer it renders nothing. The store is mocked so each state previews in isolation.',
+          'A discussion is resolved when at least one answer has a valid effective status. The decision-colored pill stays hidden if every answer is unvalidated, refuted or affected by an invalid dependency. The store is mocked so each state previews in isolation.',
       },
     },
   },
@@ -28,7 +28,7 @@ export const Resolved: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'A node is marked as the answer — the “Resolved” pill appears at the top of the canvas.',
+        story: 'A valid answer has no invalid dependencies, so the “Resolved” pill appears at the top of the canvas.',
       },
     },
   },

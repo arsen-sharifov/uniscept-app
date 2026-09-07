@@ -19,7 +19,7 @@ const meta: Meta<typeof Modal> = {
     docs: {
       description: {
         component:
-          'Portal-based modal with backdrop blur, Escape key handling, and focus restoration. The `open` arg is wired through `useArgs` so the Controls panel toggles the real state.',
+          'Portal-based modal built as a `--surface-panel` sheet (the `app-panel` material) over a `--scrim` backdrop, with Escape key handling and focus restoration. The `open` arg is wired through `useArgs` so the Controls panel toggles the real state.',
       },
     },
   },
@@ -68,7 +68,7 @@ export const Default: Story = {
         <h2 className="text-lg font-bold text-[color:var(--text-strong)]">Default modal</h2>
         <p className="mt-2 text-[13px] text-[color:var(--text-muted)]">
           Click the backdrop, press Escape, or use the × button to close. Each route fires{' '}
-          <code className="font-mono text-[11px]">onClose</code> — check the Actions tab.
+          <code className="font-mono-ui text-[11px]">onClose</code> — check the Actions tab.
         </p>
       </div>
     ),
@@ -97,7 +97,7 @@ export const CustomWidth: Story = {
       <div className="p-8">
         <h2 className="text-lg font-bold text-[color:var(--text-strong)]">Wide modal</h2>
         <p className="mt-2 text-[13px] text-[color:var(--text-muted)]">
-          The container takes any Tailwind class. Here it’s <code className="font-mono text-[11px]">max-w-3xl</code>.
+          The container takes any Tailwind class. Here it’s <code className="font-mono-ui text-[11px]">max-w-3xl</code>.
         </p>
       </div>
     ),
@@ -117,7 +117,7 @@ export const Scrollable: Story = {
         <div className="mt-4 space-y-3">
           {Array.from({ length: 30 }).map((_, i) => (
             <p key={i} className="text-[13px] leading-relaxed text-[color:var(--text)]">
-              <span className="font-mono text-[11px] text-[color:var(--text-subtle)]">
+              <span className="font-mono-ui text-[11px] text-[color:var(--text-subtle)]">
                 ¶ {String(i + 1).padStart(2, '0')}
               </span>{' '}
               — Long-form paragraph used to test the scroll behaviour inside the modal container. Each line wraps
@@ -136,8 +136,8 @@ export const OverflowHidden: Story = {
     overflowHidden: true,
     children: (
       <div className="relative">
-        <div className="bg-gradient-to-br from-[color:var(--accent)] to-[color:var(--accent-2)] p-8 text-[color:var(--on-accent)]">
-          <h2 className="text-lg font-bold">Edge-to-edge artwork</h2>
+        <div className="bg-[color:var(--accent)] p-8 text-[color:var(--on-accent)]">
+          <h2 className="font-grotesk text-lg font-semibold">Edge-to-edge artwork</h2>
           <p className="mt-1 text-[13px] opacity-85">
             `overflowHidden` clips children to the border-radius and hides the default × button — you must provide your
             own close affordance.
@@ -234,7 +234,7 @@ export const FormCase: Story = {
               </div>
             </header>
             <label className="mt-5 block">
-              <span className="block font-mono text-[10px] tracking-[0.18em] text-[color:var(--text-subtle)] uppercase">
+              <span className="block font-mono-ui text-[10px] tracking-[0.18em] text-[color:var(--text-subtle)] uppercase">
                 Email
               </span>
               <input
@@ -245,7 +245,7 @@ export const FormCase: Story = {
               />
             </label>
             <label className="mt-3 block">
-              <span className="block font-mono text-[10px] tracking-[0.18em] text-[color:var(--text-subtle)] uppercase">
+              <span className="block font-mono-ui text-[10px] tracking-[0.18em] text-[color:var(--text-subtle)] uppercase">
                 Role
               </span>
               <select

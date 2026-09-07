@@ -29,7 +29,7 @@ export const Table = ({ columns, children }: ITableProps) => {
           <span
             key={col.id}
             className={clsx(
-              'truncate font-mono text-[9.5px] font-semibold tracking-[0.22em] text-[color:var(--text-subtle)] uppercase',
+              'truncate font-mono-ui text-[9.5px] font-semibold tracking-[0.22em] text-[color:var(--text-subtle)] uppercase',
               col.align === 'right' && 'text-right',
             )}
           >

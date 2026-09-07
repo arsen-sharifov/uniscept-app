@@ -8,7 +8,7 @@ import type { IWorkspaceMember } from '@interfaces';
 import { useFocusTrap } from '@hooks';
 import { useTranslations } from '@/i18n';
 
-export interface IOwnershipTransferDialogProps {
+interface IOwnershipTransferDialogProps {
   member: IWorkspaceMember;
   onConfirm: () => void;
   onCancel: () => void;
@@ -44,7 +44,7 @@ export const OwnershipTransferDialog = ({ member, onConfirm, onCancel }: IOwners
       onClick={(clickEvent) => {
         if (clickEvent.target === clickEvent.currentTarget) onCancel();
       }}
-      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/55 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-[color:var(--scrim)] p-4 backdrop-blur-sm transition-opacity duration-200 ease-out motion-reduce:transition-none starting:opacity-0"
     >
       <div
         ref={panelRef}
@@ -53,36 +53,38 @@ export const OwnershipTransferDialog = ({ member, onConfirm, onCancel }: IOwners
         aria-labelledby={titleId}
         aria-describedby={descId}
         tabIndex={-1}
-        className="w-full max-w-md rounded-2xl bg-[color:var(--surface)] p-6 text-[color:var(--text)] shadow-[var(--shadow-modal)] outline-none"
+        className="app-panel w-full max-w-md rounded-xl border border-[color:var(--border)] p-6 font-grotesk text-[color:var(--text)] transition-all duration-200 ease-out outline-none motion-reduce:transition-none starting:translate-y-2 starting:scale-95 starting:opacity-0"
       >
-        <div className="flex items-start gap-3">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[color:var(--status-error-soft)] text-[color:var(--status-error)]">
+        <div className="flex items-center gap-3">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[color:var(--status-warning-border)] bg-[color:var(--status-warning-bg)] text-[color:var(--status-warning)]">
             <Crown className="h-5 w-5" aria-hidden />
           </span>
-          <div className="min-w-0">
-            <p className="text-[10.5px] font-semibold tracking-[0.16em] text-[color:var(--status-error)] uppercase">
-              {members.transferCritical}
-            </p>
-            <h3 id={titleId} className="text-base font-semibold text-[color:var(--text-strong)]">
-              {members.transferTitle}
-            </h3>
-          </div>
+          <h3 id={titleId} className="min-w-0 font-grotesk text-base font-semibold text-[color:var(--text-strong)]">
+            {members.transferTitle}
+          </h3>
         </div>
-        <p id={descId} className="mt-3 text-sm leading-relaxed text-[color:var(--text-muted)]">
-          {members.transferConfirmPrefix} &ldquo;{displayName}&rdquo;{members.transferConfirmSuffix}
-        </p>
+        <div className="mt-4 rounded-xl border border-[color:var(--status-warning-border)] bg-[color:var(--status-warning-bg)] p-3.5">
+          <p className="font-mono-ui text-[10px] font-bold tracking-[0.14em] text-[color:var(--status-warning)] uppercase">
+            {members.transferCritical}
+          </p>
+          <p id={descId} className="mt-1.5 font-grotesk text-sm leading-relaxed text-[color:var(--text-muted)]">
+            {members.transferConfirmPrefix} &ldquo;
+            <span className="font-medium text-[color:var(--text-strong)]">{displayName}</span>&rdquo;
+            {members.transferConfirmSuffix}
+          </p>
+        </div>
         <div className="mt-5 flex justify-end gap-2">
           <button
             type="button"
             onClick={onCancel}
-            className="cursor-pointer rounded-xl px-4 py-2 text-sm font-medium text-[color:var(--text-muted)] transition-colors hover:bg-[color:var(--surface-overlay)] hover:text-[color:var(--text-strong)]"
+            className="cursor-pointer rounded-lg border border-[color:var(--border-strong)] px-4 py-2 font-grotesk text-sm font-medium text-[color:var(--text-muted)] transition-[color,background-color,scale] duration-150 hover:bg-[color:var(--surface-overlay)] hover:text-[color:var(--text-strong)] focus-visible:ring-2 focus-visible:ring-[color:var(--ring-focus)] focus-visible:outline-none active:scale-95 motion-reduce:transition-none"
           >
             {members.cancel}
           </button>
           <button
             type="button"
             onClick={onConfirm}
-            className="cursor-pointer rounded-xl bg-[color:var(--status-error)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[color:var(--status-error-border)]"
+            className="cursor-pointer rounded-lg bg-[color:var(--status-error)] px-4 py-2 font-grotesk text-sm font-medium text-[color:var(--on-status)] transition-[opacity,scale] duration-150 hover:opacity-90 focus-visible:ring-2 focus-visible:ring-[color:var(--ring-focus)] focus-visible:outline-none active:scale-95 motion-reduce:transition-none"
           >
             {members.transferConfirm}
           </button>

@@ -250,6 +250,7 @@
         "answerBadge": "Answer",
         "validBadge": "Valid",
         "invalidBadge": "Invalid",
+        "affectedBadge": "Affected",
         "defaultLabel": "New node",
         "showMore": "Show more",
         "showLess": "Show less",
@@ -280,10 +281,8 @@
         "deleteTitle": "Delete comment"
       },
       "save": {
-        "saving": "Saving…",
         "retrying": "Retrying…",
         "retryAttempt": "Attempt {n, number}",
-        "saved": "Saved",
         "offline": "Offline",
         "offlinePending": "{count, plural, one {# change pending} other {# changes pending}}",
         "errorTitle": "Couldn't save",
@@ -446,21 +445,26 @@
       },
       "appearance": {
         "theme": "Theme",
-        "themeIntro": "Six moods",
-        "themeBlurb": "Pick a palette that matches how you think. Each one repaints the workspace from the canvas to the toolbar.",
+        "themeIntro": "Eight palettes",
+        "themeBlurb": "Daybreak and Eclipse are the shipped pair; Auto follows your system and picks between them. The other six repaint everything from the canvas to the toolbar.",
         "themeDaybreak": "Daybreak",
         "themeEclipse": "Eclipse",
-        "themeGraphite": "Graphite",
-        "themeSolstice": "Solstice",
-        "themeAurora": "Aurora",
+        "themeGraphite": "Paper",
+        "themeSolstice": "Carbon",
+        "themeAurora": "Ember",
         "themeAuto": "Auto",
-        "daybreakDesc": "Crisp paper, soft daylight",
-        "eclipseDesc": "Inked midnight, cyan glow",
-        "graphiteDesc": "Pure monochrome",
-        "solsticeDesc": "Warm parchment, amber",
-        "auroraDesc": "Iridescent glass",
-        "autoDesc": "Follows your system",
-        "defaultBadge": "Default",
+        "daybreakDesc": "Green mist, lime action",
+        "eclipseDesc": "Near-black green, lime action",
+        "graphiteDesc": "True neutral white, ink action",
+        "solsticeDesc": "True black, white action",
+        "auroraDesc": "Warm coal, teal action",
+        "themeTide": "Tide",
+        "tideDesc": "Cool blue-grey, sky action",
+        "themeOrchid": "Orchid",
+        "orchidDesc": "Deep plum, chartreuse action",
+        "themeBloom": "Bloom",
+        "bloomDesc": "Warm porcelain, magenta action",
+        "autoDesc": "Pairs Daybreak and Eclipse",
         "adaptive": "Adaptive",
         "canvas": "Canvas",
         "canvasIntro": "Four textures",
@@ -639,11 +643,78 @@
       "subtitle2": "Every meeting is structured amnesia.",
       "tagline": "Build knowledge. Not chaos.",
       "ctaPrimary": "Get Started",
-      "ctaSecondary": "Learn More"
+      "ctaSecondary": "Learn More",
+      "demo": {
+        "threadBand": "Open question",
+        "demoTag": "Demo",
+        "ariaDemo": "Interactive argument demo",
+        "statusQuestion": "Question",
+        "statusValid": "Valid",
+        "statusRefuted": "Refuted",
+        "statusAffected": "Affected",
+        "statusAnswer": "Answer",
+        "statusClaim": "Claim",
+        "counterValid": "valid",
+        "counterRefuted": "refuted",
+        "counterAffected": "affected",
+        "log": {
+          "opened": "Thread T-001 opened · 7 claims cited",
+          "refuted": "P-02 refuted in review",
+          "tainted": "2 downstream conclusions tainted",
+          "rerouted": "P-05 pinned · dead dependency rerouted",
+          "restored": "C-02 restored as the answer"
+        },
+        "claims": {
+          "q": "Do we rebuild the legacy core for v2?",
+          "p1": "The legacy core blocks every roadmap item",
+          "p2": "The team can freeze features for six months",
+          "p3": "Three seniors still know the core end to end",
+          "p5": "A strangler migration rebuilds it with zero freeze",
+          "c1": "Rebuilding the core is worth the cost",
+          "c2": "Commit to the rebuild next quarter"
+        }
+      }
     },
     "problem": {
       "title": "The Problem",
-      "subtitle": "Shallow tools breed shallow thinking."
+      "subtitle": "Shallow tools breed shallow thinking.",
+      "stream": {
+        "channel": "#product-decisions",
+        "live": "live",
+        "stamp": "Buried",
+        "decision": "DECISION: we ship the v2 rewrite in Q4",
+        "lines": [
+          "ok pushing the hotfix",
+          "did anyone check staging?",
+          "wait, which config are we on",
+          "see thread ↑",
+          "resending the doc link",
+          "who owns retention now?",
+          "lunch first?",
+          "restarting the demo pod",
+          "can someone re-explain the plan"
+        ]
+      },
+      "exhibits": {
+        "chat": {
+          "medium": "Chat",
+          "claim": "Decisions scroll away mid-thread.",
+          "detail": "The argument that settled it is four hundred messages up, split across three channels.",
+          "verdict": "Unstructured"
+        },
+        "meetings": {
+          "medium": "Meetings",
+          "claim": "Conclusions leave the room. Reasons don't.",
+          "detail": "A week later the same debate restarts from zero, with the same slides.",
+          "verdict": "Untraced"
+        },
+        "docs": {
+          "medium": "Docs",
+          "claim": "Docs remember text, not logic.",
+          "detail": "The write-up says what was decided, never what it rested on.",
+          "verdict": "Unverifiable"
+        }
+      }
     },
     "product": {
       "title": "This is a reasoning engine.",
@@ -652,21 +723,35 @@
       "features": {
         "structured": {
           "title": "Structured reasoning",
-          "description": "Break down complex problems into nodes and logical connections. Make implicit reasoning explicit. See the architecture of your thinking.",
-          "tags": ["Visual Mapping", "Logical Flow", "Clear Structure"]
+          "description": "Claims become nodes, support becomes directed edges. The shape of the argument is finally visible."
         },
         "validation": {
           "title": "Path validation",
-          "description": "Mark reasoning paths as valid or invalid. Track what works. Build on truth."
+          "description": "Mark one claim refuted and every conclusion resting on it recomputes instantly. Nothing quietly survives."
         },
         "references": {
           "title": "Cross-references",
-          "description": "Link canvases without duplication. Reuse conclusions. Let knowledge compound."
+          "description": "Reference a validated conclusion from another canvas. Earn it once, rely on it everywhere it matters."
         },
         "collaboration": {
           "title": "Team collaboration",
-          "description": "Role-based access. Contextual comments. Real-time updates. Think together, decide faster, build stronger."
+          "description": "Workspace roles, per-node comments, custom permissions. Argue in the open, decide on the record."
         }
+      },
+      "vignettes": {
+        "structuredQuestion": "Where do we launch first?",
+        "structuredClaimA": "EU: regulation is ready",
+        "structuredClaimB": "US: larger early market",
+        "validationPremise": "Costs stay flat at scale",
+        "validationConclusion": "Unit economics hold",
+        "validationSafe": "Retention holds at scale",
+        "referencesCanvasA": "Canvas · Pricing",
+        "referencesCanvasB": "Canvas · Strategy",
+        "referencesSource": "CAC payback under 12 months",
+        "referencesBadge": "Reference",
+        "collaborationClaim": "Ship the migration behind a flag",
+        "collaborationClaimB": "Roll out region by region instead",
+        "collaborationRole": "Reviewer"
       }
     },
     "builders": {
@@ -674,16 +759,25 @@
       "subtitle": "People who hate shallow thinking.",
       "founders": {
         "title": "Founders",
+        "question": "Do we raise now or bootstrap another year?",
+        "nodeA": "Runway covers 14 months",
+        "nodeB": "Bootstrap through next year",
         "description": "Make better decisions. Document your reasoning. Stop rehashing the same arguments every quarter.",
         "useCases": ["Product strategy", "Market analysis", "Technical architecture"]
       },
       "researchers": {
         "title": "Researchers",
+        "question": "Does the effect replicate outside the lab?",
+        "nodeA": "Field replication, n=2,400",
+        "nodeB": "Effect holds outside the lab",
         "description": "Map literature. Build frameworks. Turn papers into structured knowledge graphs that actually make sense.",
         "useCases": ["Literature synthesis", "Hypothesis mapping", "Citation networks"]
       },
       "engineers": {
         "title": "Engineers",
+        "question": "Monolith or services for v3?",
+        "nodeA": "The monolith scales to 10x",
+        "nodeB": "v3 stays a monolith",
         "description": "Design systems. Debug logic. Document architectural decisions that actually matter and won't be lost.",
         "useCases": ["System design", "Debugging workflows", "Tech decisions"]
       }
@@ -728,21 +822,33 @@
     },
     "howItWorks": {
       "title": "Three steps.",
-      "subtitle": "That's it."
+      "subtitle": "That's it.",
+      "steps": {
+        "ask": {
+          "title": "Ask",
+          "description": "Open a thread. The central question node is already waiting on the canvas."
+        },
+        "argue": {
+          "title": "Argue",
+          "description": "Lay claims around it. Cite, connect, support: the reasoning takes shape."
+        },
+        "decide": {
+          "title": "Decide",
+          "description": "Refute what fails, watch consequences propagate, pin the answer that survives."
+        }
+      },
+      "vignettes": {
+        "question": "Rebuild the mobile app?",
+        "pro": "Crash rate doubled in a year",
+        "con": "A rewrite costs two quarters",
+        "answer": "Rebuild it module by module"
+      }
     },
     "cta": {
       "title1": "Stop talking.",
       "title2": "Start building.",
-      "subtitle": "Join researchers, founders, and engineers who actually ship.",
+      "subtitle": "For researchers, founders, and engineers who actually ship.",
       "button": "Get Started Free"
-    },
-    "footer": {
-      "copyright": "© 2026 Uniscept",
-      "links": {
-        "twitter": "Twitter",
-        "github": "GitHub",
-        "docs": "Docs"
-      }
     }
   }
 }

@@ -31,6 +31,12 @@ export const PANE_SELECTOR = '.react-flow__pane';
 
 export const VIEWPORT_SELECTOR = '.react-flow__viewport';
 
+export const SAVE_STATE_SELECTOR = '[data-canvas-save]';
+
+export const SAVE_STATE_ATTRIBUTE = 'data-canvas-save';
+
+export const SAVE_STATE_SAVED = 'saved';
+
 export const CONTEXT_MENU_TIMEOUT_MS = 2_000;
 
 export const CONTEXT_MENU_ATTEMPTS = 3;

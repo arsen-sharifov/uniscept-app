@@ -95,7 +95,7 @@ export const SizeBenchmark: Story = {
               strokeWidth={args.strokeWidth}
               absoluteStrokeWidth={args.absoluteStrokeWidth}
             />
-            <span className="font-mono text-[10px] tracking-[0.18em] text-[color:var(--text-subtle)] uppercase">
+            <span className="font-mono-ui text-[10px] tracking-[0.18em] text-[color:var(--text-subtle)] uppercase">
               {px}px
             </span>
           </div>

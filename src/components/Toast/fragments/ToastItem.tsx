@@ -78,7 +78,7 @@ export const ToastItem = ({ toast, onDismiss }: IToastItemProps) => {
       onBlur={resumeTimer}
       onTransitionEnd={handleTransitionEnd}
       className={clsx(
-        'relative flex w-full items-start gap-2.5 overflow-hidden rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-elevated)]/95 py-3 pr-3 pl-4 tracking-tight shadow-[0_16px_40px_-16px_rgba(15,23,42,0.45)] backdrop-blur-xl transition-[transform,opacity] duration-200 ease-out motion-reduce:transition-none starting:translate-x-4 starting:opacity-0',
+        'relative flex w-full items-start gap-2.5 overflow-hidden rounded-xl border border-[color:var(--border)] bg-[color:var(--surface)] py-3 pr-3 pl-4 shadow-[var(--shadow-modal)] transition-[translate,opacity] duration-200 ease-out motion-reduce:transition-none starting:translate-x-4 starting:opacity-0',
         leaving ? 'pointer-events-none translate-x-4 opacity-0' : 'pointer-events-auto translate-x-0 opacity-100',
       )}
     >
@@ -93,11 +93,11 @@ export const ToastItem = ({ toast, onDismiss }: IToastItemProps) => {
 
       <div className="min-w-0 flex-1">
         {toast.title && (
-          <p className="text-[13px] leading-5 font-medium text-[color:var(--text-strong)]">{toast.title}</p>
+          <p className="font-grotesk text-sm leading-5 font-semibold text-[color:var(--text-strong)]">{toast.title}</p>
         )}
         <p
           className={clsx(
-            'text-[13px] leading-5 break-words',
+            'font-grotesk text-[13px] leading-5 break-words',
             toast.title
               ? 'mt-0.5 font-normal text-[color:var(--text-muted)]'
               : 'font-medium text-[color:var(--text-strong)]',
@@ -111,7 +111,7 @@ export const ToastItem = ({ toast, onDismiss }: IToastItemProps) => {
         type="button"
         onClick={() => setLeaving(true)}
         aria-label={t.common.close}
-        className="-mt-0.5 -mr-1 shrink-0 rounded-lg p-1 text-[color:var(--text-muted)] transition-colors hover:text-[color:var(--text)]"
+        className="-mt-0.5 -mr-1 shrink-0 cursor-pointer rounded-lg p-1 text-[color:var(--text-muted)] transition-colors duration-200 ease-out hover:bg-[color:var(--surface-overlay)] hover:text-[color:var(--text-strong)] focus-visible:ring-2 focus-visible:ring-[color:var(--ring-focus)] focus-visible:outline-none active:bg-[color:var(--border)] motion-reduce:transition-none"
       >
         <X className="h-3.5 w-3.5" strokeWidth={2.25} />
       </button>

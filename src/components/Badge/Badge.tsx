@@ -1,7 +1,7 @@
 import { clsx } from 'clsx';
 import { Lock, type LucideIcon } from 'lucide-react';
 
-export interface IBadgeProps {
+interface IBadgeProps {
   icon: LucideIcon;
   label: string;
   unlock: string;
@@ -17,42 +17,27 @@ export const Badge = ({ icon: Icon, label, unlock, earned }: IBadgeProps) => {
       aria-label={description}
       title={description}
       className={clsx(
-        'group relative flex w-full flex-col overflow-hidden rounded-2xl border text-left transition-[border-color,transform,box-shadow] duration-300 ease-out',
-        'hover:-translate-y-0.5',
+        'group relative flex w-full flex-col overflow-hidden rounded-xl border text-left transition-[border-color,translate] duration-200 ease-out motion-reduce:transition-none',
+        'hover:-translate-y-0.5 hover:shadow-[var(--shadow-card-hover)]',
         earned
-          ? 'border-[color:var(--border-active)] shadow-[0_18px_38px_-22px_var(--accent-glow)]'
-          : 'border-[color:var(--border)] hover:border-[color:var(--border-strong)] hover:shadow-[var(--shadow-card-hover)]',
+          ? 'border-[color:var(--border-active)]'
+          : 'border-[color:var(--border)] hover:border-[color:var(--border-strong)]',
       )}
     >
       <div
         aria-hidden
-        className="relative flex h-11 w-full items-center justify-center bg-[color:var(--surface-overlay)]"
+        className={clsx(
+          'relative flex h-11 w-full items-center justify-center',
+          earned ? 'bg-[color:var(--accent-soft)]' : 'bg-[color:var(--surface-overlay)]',
+        )}
       >
-        <div
-          className="pointer-events-none absolute inset-0 opacity-55"
-          style={{
-            background: earned
-              ? 'radial-gradient(140% 90% at 50% 0%, color-mix(in srgb, var(--accent-soft) 55%, transparent) 0%, transparent 70%)'
-              : 'radial-gradient(140% 90% at 50% 0%, color-mix(in srgb, var(--surface-overlay) 80%, transparent) 0%, transparent 70%)',
-          }}
-        />
         <span
           className={clsx(
-            'relative flex h-8 w-8 items-center justify-center rounded-full transition-transform duration-300 ease-out group-hover:scale-105',
+            'relative flex h-8 w-8 items-center justify-center rounded-full transition-transform duration-200 ease-out group-hover:scale-105 motion-reduce:transition-none',
             earned
-              ? 'text-[color:var(--on-accent)]'
-              : 'bg-[color:var(--surface-elevated)] text-[color:var(--text-faint)]',
+              ? 'bg-[color:var(--accent)] text-[color:var(--on-accent)]'
+              : 'border border-[color:var(--border-strong)] bg-[color:var(--surface-overlay)] text-[color:var(--text-subtle)]',
           )}
-          style={
-            earned
-              ? {
-                  background:
-                    'radial-gradient(120% 120% at 30% 20%, color-mix(in srgb, var(--accent) 85%, white 15%) 0%, var(--accent) 45%, var(--accent-2) 100%)',
-                  boxShadow:
-                    '0 6px 14px -6px var(--accent-glow), inset 0 1px 0 0 color-mix(in srgb, white 35%, transparent), inset 0 -1px 0 0 color-mix(in srgb, black 20%, transparent)',
-                }
-              : { boxShadow: 'inset 0 0 0 1px var(--border-strong)' }
-          }
         >
           <Icon className="h-3.5 w-3.5" strokeWidth={1.8} />
           {!earned && (
@@ -66,7 +51,7 @@ export const Badge = ({ icon: Icon, label, unlock, earned }: IBadgeProps) => {
       <div className="flex flex-col gap-1 bg-[color:var(--surface-elevated)] px-1.5 pt-1.5 pb-2">
         <span
           className={clsx(
-            'block truncate text-center font-serif text-[12.5px] leading-none tracking-tight italic',
+            'block truncate text-center font-grotesk text-[12.5px] leading-none font-semibold tracking-tight',
             earned ? 'text-[color:var(--text-strong)]' : 'text-[color:var(--text-muted)]',
           )}
         >
@@ -74,15 +59,9 @@ export const Badge = ({ icon: Icon, label, unlock, earned }: IBadgeProps) => {
         </span>
       </div>
 
-      <span
-        aria-hidden
-        className={clsx(
-          'pointer-events-none absolute inset-x-0 bottom-0 h-px transition-opacity duration-300',
-          earned
-            ? 'bg-gradient-to-r from-transparent via-[color:var(--accent)] to-transparent opacity-90'
-            : 'opacity-0',
-        )}
-      />
+      {earned && (
+        <span aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[3px] bg-[color:var(--accent)]" />
+      )}
     </div>
   );
 };

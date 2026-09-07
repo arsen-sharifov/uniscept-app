@@ -21,7 +21,7 @@ const meta: Meta<typeof Avatar> = {
     docs: {
       description: {
         component:
-          'Gradient circle showing a chosen icon or derived initials. `getInitials()` derives up to two characters; whitespace-only and empty names fall back to "U".',
+          'Ringed `--accent-soft` disc showing a chosen icon or mono initials in `--accent-text`. `getInitials()` derives up to two characters; whitespace-only and empty names fall back to "U".',
       },
     },
   },
@@ -72,7 +72,7 @@ export const Variants: Story = {
         children: (
           <div className="flex items-center gap-3">
             <Avatar name={c.name} />
-            <code className="font-mono text-[11px] text-[color:var(--text-muted)]">{`"${c.name || ' '}"`}</code>
+            <code className="font-mono-ui text-[11px] text-[color:var(--text-muted)]">{`"${c.name || ' '}"`}</code>
           </div>
         ),
       }))}
@@ -85,7 +85,7 @@ export const CyrillicAndDiacritics: Story = {
     docs: {
       description: {
         story:
-          'Extended coverage for non-Latin scripts. Confirms initials, casing, and fit inside the gradient circle across Cyrillic, Greek, CJK, and RTL inputs.',
+          'Extended coverage for non-Latin scripts. Confirms initials, casing, and fit inside the disc across Cyrillic, Greek, CJK, and RTL inputs.',
       },
     },
   },
@@ -101,7 +101,7 @@ export const CyrillicAndDiacritics: Story = {
         children: (
           <div className="flex items-center gap-3">
             <Avatar name={c.name} />
-            <code className="font-mono text-[11px] text-[color:var(--text-muted)]">{`"${c.name}"`}</code>
+            <code className="font-mono-ui text-[11px] text-[color:var(--text-muted)]">{`"${c.name}"`}</code>
           </div>
         ),
       }))}

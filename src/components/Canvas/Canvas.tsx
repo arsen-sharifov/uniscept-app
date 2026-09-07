@@ -10,6 +10,7 @@ import {
   ReactFlow,
   useReactFlow,
 } from '@xyflow/react';
+import { clsx } from 'clsx';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { type MouseEvent as ReactMouseEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
@@ -46,6 +47,7 @@ import {
   DEFAULT_EDGE_OPTIONS,
   EDGE_DEFAULT_STROKE_WIDTH,
   EDGE_TONES,
+  ELIGIBLE_ACTION_BY_TOOL,
   FRESH_FIT_PADDING,
   NODE_DRAG_THRESHOLD,
   PAN_BUTTONS_ALL,
@@ -61,7 +63,7 @@ import {
   ZOOM_MAX,
   ZOOM_MIN,
 } from './consts';
-import { AlignmentGuides, ContextMenu, ResolutionBar, SaveStatus } from './fragments';
+import { AlignmentGuides, CanvasSkeleton, ContextMenu, ResolutionBar, SaveStatus } from './fragments';
 import {
   useCanvasPattern,
   useCanvasSync,
@@ -78,6 +80,7 @@ import {
   computeAlignmentGuides,
   computeEffectiveStatuses,
   computeEligibleIds,
+  isAffected,
   isCanvasNodeData,
   resolveBidirectionalEdgeTone,
   resolveEdgeTone,
@@ -116,7 +119,7 @@ export const Canvas = ({
 }: ICanvasProps) => {
   const t = useTranslations();
   const { saveState, loadError } = useCanvasSync(threadId);
-  const referenceNodes = useReferenceSearch({ workspaceId, threadId });
+  const referenceSearch = useReferenceSearch({ workspaceId, threadId });
 
   const canEditCanvas = usePermissionsStore((s) => s.canEditCanvas);
   const canComment = usePermissionsStore((s) => s.canComment);
@@ -228,41 +231,50 @@ export const Canvas = ({
     if (!hydrated || arriving) return;
     if (storeThreadId !== threadId) return;
     if (focusedQuestionThreadId.current === threadId) return;
-    focusedQuestionThreadId.current = threadId;
 
     const { nodes: loadedNodes, setEditingNodeId } = useCanvasStore.getState();
     const onlyNode = loadedNodes.length === 1 ? loadedNodes[0] : null;
     const freshQuestion = onlyNode?.type === ECanvasNodeType.Question ? onlyNode : null;
-    if (!freshQuestion) return;
+    if (!freshQuestion) {
+      focusedQuestionThreadId.current = threadId;
 
-    requestAnimationFrame(() => {
+      return;
+    }
+
+    const frame = requestAnimationFrame(() => {
+      focusedQuestionThreadId.current = threadId;
       void fitView({ duration: 0, padding: FRESH_FIT_PADDING, maxZoom: defaultZoom / 100 });
     });
 
     if (isCanvasNodeData(freshQuestion.data) && freshQuestion.data.label.trim().length === 0) {
       setEditingNodeId(freshQuestion.id);
     }
+
+    return () => cancelAnimationFrame(frame);
   }, [hydrated, threadId, storeThreadId, arriving, fitView, defaultZoom]);
 
   const effectiveStatusById = useMemo(() => computeEffectiveStatuses(nodes, edges), [nodes, edges]);
 
-  const eligibleAction =
-    activeTool === ECanvasTool.ValidPath ? 'valid' : activeTool === ECanvasTool.Answer ? 'answer' : null;
+  const eligibleAction = ELIGIBLE_ACTION_BY_TOOL[activeTool] ?? null;
 
   const eligibleIds = useMemo(
     () => (eligibleAction ? computeEligibleIds(nodes, edges, eligibleAction) : NO_ELIGIBLE_IDS),
     [nodes, edges, eligibleAction],
   );
 
-  const displayNodes = useMemo(
-    () =>
-      eligibleIds.size === 0
-        ? nodes
-        : nodes.map((node) =>
-            eligibleIds.has(node.id) ? { ...node, data: { ...node.data, eligibleHint: true } } : node,
-          ),
-    [nodes, eligibleIds],
-  );
+  const displayNodes = useMemo(() => {
+    const decorated = nodes.map((node) => {
+      const eligibleHint = eligibleIds.has(node.id) || undefined;
+      const status = effectiveStatusById.get(node.id);
+      const effectiveStatus = isAffected(status) ? status : undefined;
+
+      if (!eligibleHint && !effectiveStatus) return node;
+
+      return { ...node, data: { ...node.data, eligibleHint, effectiveStatus } };
+    });
+
+    return decorated.some((node, index) => node !== nodes[index]) ? decorated : nodes;
+  }, [nodes, eligibleIds, effectiveStatusById]);
 
   const styledEdges = useMemo(() => {
     const directionsByPair = new Map<string, Set<string>>();
@@ -292,7 +304,7 @@ export const Canvas = ({
         {
           ...edge,
           type: 'default',
-          className: bidirectional ? 'edge-bidirectional' : undefined,
+          className: clsx(`edge-tone-${tone}`, bidirectional && 'edge-bidirectional'),
           style: {
             ...edge.style,
             stroke: edgePalette[tone].stroke,
@@ -404,7 +416,7 @@ export const Canvas = ({
   );
 
   return (
-    <div data-canvas-tool={activeTool} className="relative h-full w-full">
+    <div data-canvas-tool={activeTool} data-canvas-save={saveState.status} className="relative h-full w-full">
       <svg aria-hidden width="0" height="0" style={{ position: 'absolute', overflow: 'hidden' }}>
         <defs>
           {EDGE_TONES.map((tone) => (
@@ -459,7 +471,7 @@ export const Canvas = ({
             color={dotColor}
           />
         )}
-        <ReferenceSearchPanel nodes={referenceNodes} />
+        <ReferenceSearchPanel nodes={referenceSearch.nodes} loading={referenceSearch.loading} />
       </ReactFlow>
 
       {smartGuides && <AlignmentGuides guides={alignmentGuides} />}
@@ -481,7 +493,7 @@ export const Canvas = ({
             cy={cursorScreen.y}
             r={RUBBER_LINE_DOT_RADIUS}
             fill={rubberDotFill}
-            stroke="white"
+            className="stroke-[color:var(--surface)]"
             strokeWidth={RUBBER_LINE_DOT_STROKE_WIDTH}
           />
         </svg>
@@ -505,13 +517,15 @@ export const Canvas = ({
         </>
       )}
 
+      {!hydrated && !loadError && <CanvasSkeleton />}
+
       {loadError && !hydrated && (
         <div
           role="alert"
           aria-live="assertive"
           className="absolute inset-0 z-20 flex items-center justify-center bg-[color:var(--app-bg)]/55 backdrop-blur-sm"
         >
-          <div className="flex max-w-sm flex-col items-center gap-2 rounded-2xl border border-[color:var(--status-warning-border)] bg-[color:var(--status-warning-bg)] px-5 py-4 text-center shadow-[0_18px_48px_-16px_var(--status-warning-soft)] backdrop-blur-md">
+          <div className="flex max-w-sm flex-col items-center gap-2 rounded-2xl border border-[color:var(--status-warning-border)] bg-[color:var(--status-warning-bg)] px-5 py-4 text-center font-grotesk shadow-[var(--shadow-modal)] backdrop-blur-xl">
             <span className="text-[12.5px] font-semibold tracking-tight text-[color:var(--status-warning)]">
               {t.platform.canvas.loadError.title}
             </span>
@@ -521,7 +535,7 @@ export const Canvas = ({
             <button
               type="button"
               onClick={() => router.refresh()}
-              className="mt-1 inline-flex items-center gap-1.5 rounded-full bg-[color:var(--status-warning-soft)] px-3 py-1 text-[11px] font-medium text-[color:var(--status-warning)] transition-colors hover:bg-[color:var(--status-warning-border)]"
+              className="mt-1 inline-flex items-center gap-1.5 rounded-full bg-[color:var(--status-warning-soft)] px-3 py-1 font-mono-ui text-[10.5px] tracking-[0.04em] text-[color:var(--status-warning)] lowercase transition-colors duration-150 hover:bg-[color:var(--status-warning-border)] focus-visible:ring-2 focus-visible:ring-[color:var(--ring-focus)] focus-visible:outline-none motion-reduce:transition-none"
             >
               {t.platform.canvas.loadError.retry}
             </button>

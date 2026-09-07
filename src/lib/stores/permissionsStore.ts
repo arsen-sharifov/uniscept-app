@@ -7,6 +7,7 @@ import type { IWorkspaceAccess } from '@interfaces';
 interface IPermissionsState {
   userId: string | null;
   workspaceId: string | null;
+  resolved: boolean;
   isOwner: boolean;
   canEditCanvas: boolean;
   canComment: boolean;
@@ -18,7 +19,7 @@ interface IPermissionsState {
 
 interface IPermissionsStore extends IPermissionsState {
   setAccess: (workspaceId: string, userId: string | null, access: IWorkspaceAccess | null) => void;
-  clearAccess: () => void;
+  clearAccess: (pendingWorkspaceId?: string | null) => void;
 }
 
 const NO_ACCESS = {
@@ -34,11 +35,12 @@ const NO_ACCESS = {
 const INITIAL: IPermissionsState = {
   userId: null,
   workspaceId: null,
+  resolved: false,
   ...NO_ACCESS,
 };
 
 export const usePermissionsStore = create<IPermissionsStore>()((set) => ({
   ...INITIAL,
-  setAccess: (workspaceId, userId, access) => set({ workspaceId, userId, ...(access ?? NO_ACCESS) }),
-  clearAccess: () => set(INITIAL),
+  setAccess: (workspaceId, userId, access) => set({ workspaceId, userId, resolved: true, ...(access ?? NO_ACCESS) }),
+  clearAccess: (pendingWorkspaceId = null) => set({ ...INITIAL, workspaceId: pendingWorkspaceId }),
 }));

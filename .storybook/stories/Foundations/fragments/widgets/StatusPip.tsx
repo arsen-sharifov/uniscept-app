@@ -10,7 +10,7 @@ interface IStatusPipProps {
 export const StatusPip = ({ label, tone }: IStatusPipProps) => (
   <span
     className={clsx(
-      'flex items-center justify-center rounded-md px-2 py-1 font-mono text-[9.5px] font-semibold tracking-[0.18em] uppercase ring-1',
+      'flex items-center justify-center rounded-md px-2 py-1 font-mono-ui text-[9.5px] font-semibold tracking-[0.18em] uppercase ring-1',
       tone === 'success' &&
         'bg-[color:var(--status-success-bg)] text-[color:var(--status-success)] ring-[color:var(--status-success-border)]',
       tone === 'warning' &&

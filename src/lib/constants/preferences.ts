@@ -2,7 +2,17 @@ import type { IPreferences, TCanvasPattern, TDefaultZoom, TTheme } from '@interf
 
 import { DEFAULT_LOCALE } from '@/i18n';
 
-export const THEME_VALUES: readonly TTheme[] = ['daybreak', 'eclipse', 'graphite', 'solstice', 'aurora', 'auto'];
+export const THEME_VALUES: readonly TTheme[] = [
+  'daybreak',
+  'eclipse',
+  'graphite',
+  'solstice',
+  'aurora',
+  'tide',
+  'orchid',
+  'bloom',
+  'auto',
+];
 
 export const CANVAS_PATTERN_VALUES: readonly TCanvasPattern[] = ['dots', 'lines', 'cross', 'none'];
 

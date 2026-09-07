@@ -2,7 +2,7 @@ import { BaseEdge, type EdgeProps, getBezierPath, Position } from '@xyflow/react
 
 import type { TCanvasEdge } from '@interfaces';
 
-import { ARROW_LENGTH } from './consts';
+import { ARROW_LENGTH, EDGE_CURVATURE } from './consts';
 
 const retractAlongPosition = (x: number, y: number, position: Position): { x: number; y: number } => {
   switch (position) {
@@ -44,6 +44,7 @@ export const CanvasEdge = ({
     targetY: target.y,
     sourcePosition: sourcePosition ?? Position.Bottom,
     targetPosition: targetPosition ?? Position.Top,
+    curvature: EDGE_CURVATURE,
   });
 
   const markerRef = `url(#canvas-arrow-${tone})`;

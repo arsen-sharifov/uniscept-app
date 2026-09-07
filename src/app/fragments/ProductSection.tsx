@@ -1,81 +1,62 @@
-import { CheckCircle, Link2, Map, Users } from 'lucide-react';
+'use client';
+
+import { clsx } from 'clsx';
+import type { ComponentType } from 'react';
+
+import type { TProductFeatureId } from '@interfaces';
 
 import { useTranslations } from '@/i18n';
 
-import { Section } from './components';
+import {
+  CollaborationVignette,
+  ReferencesVignette,
+  Section,
+  SectionHeading,
+  StructuredVignette,
+  TiltPanel,
+  ValidationVignette,
+} from './components';
+import { LANDING_SURFACE_CLASSES, PRODUCT_FEATURES } from './consts';
+
+const PRODUCT_VIGNETTES: Record<TProductFeatureId, ComponentType> = {
+  structured: StructuredVignette,
+  validation: ValidationVignette,
+  references: ReferencesVignette,
+  collaboration: CollaborationVignette,
+};
 
 export const ProductSection = () => {
   const t = useTranslations();
 
   return (
-    <Section id="product">
-      <div className="absolute top-1/3 right-[10%] h-96 w-96 rounded-full bg-gradient-to-br from-emerald-500/10 to-cyan-500/10 blur-3xl" />
-
-      <div className="mx-auto max-w-7xl">
-        <div data-reveal className="mb-20 max-w-3xl scroll-reveal">
-          <h2 className="mb-8 text-6xl leading-[1.1] font-black tracking-tight text-black">
-            {t.landing.product.title}
-          </h2>
-          <p className="text-2xl leading-relaxed text-black/60">{t.landing.product.subtitle1}</p>
-          <p className="mt-4 text-2xl leading-relaxed font-bold text-black">{t.landing.product.subtitle2}</p>
+    <Section id="product" tight>
+      <div className="mx-auto max-w-6xl">
+        <div className="mb-5 max-w-3xl">
+          <SectionHeading title={t.landing.product.title} subtitle={t.landing.product.subtitle1}>
+            <p className="mt-2 font-grotesk text-lg font-semibold text-[color:var(--hero-ground-text)] lg:text-xl">
+              {t.landing.product.subtitle2}
+            </p>
+          </SectionHeading>
         </div>
 
-        <div data-reveal className="grid scroll-reveal gap-5 md:grid-cols-3">
-          <div className="group relative card-3d overflow-hidden rounded-2xl border border-black/5 bg-white p-8 shadow-xl transition-all duration-300 ease-in-out hover:border-emerald-500/20 hover:shadow-2xl md:col-span-2">
-            <div className="mb-5 inline-flex rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-500 p-3">
-              <Map className="h-8 w-8 text-white" />
-            </div>
-            <h3 className="mb-3 text-2xl font-black text-black">{t.landing.product.features.structured.title}</h3>
-            <p className="mb-5 text-base leading-relaxed text-black/60">
-              {t.landing.product.features.structured.description}
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {t.landing.product.features.structured.tags.map((tag: string) => (
-                <span key={tag} className="rounded-lg bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
-                  {tag}
-                </span>
-              ))}
-            </div>
-          </div>
+        <div className="grid gap-4 lg:grid-cols-12">
+          {PRODUCT_FEATURES.map((feature) => {
+            const Vignette = PRODUCT_VIGNETTES[feature.id];
 
-          <div className="group relative card-3d overflow-hidden rounded-2xl border border-black/5 bg-gradient-to-br from-white to-emerald-50/30 p-7 shadow-xl transition-all duration-300 ease-in-out hover:shadow-2xl">
-            <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 blur-2xl transition-all duration-500 ease-in-out group-hover:scale-150" />
-            <div className="relative">
-              <div className="mb-5 inline-flex rounded-xl bg-emerald-500/10 p-2.5">
-                <CheckCircle className="h-7 w-7 text-emerald-600" />
-              </div>
-              <h3 className="mb-2 text-xl font-black text-black">{t.landing.product.features.validation.title}</h3>
-              <p className="text-sm leading-relaxed text-black/60">
-                {t.landing.product.features.validation.description}
-              </p>
-            </div>
-          </div>
-
-          <div className="group relative card-3d overflow-hidden rounded-2xl border border-black/5 bg-gradient-to-br from-white to-purple-50/30 p-7 shadow-xl transition-all duration-300 ease-in-out hover:shadow-2xl">
-            <div className="absolute right-0 bottom-0 h-40 w-40 rounded-full bg-gradient-to-br from-purple-500/20 to-pink-500/20 blur-2xl transition-all duration-500 ease-in-out group-hover:scale-150" />
-            <div className="relative">
-              <div className="mb-5 inline-flex rounded-xl bg-purple-500/10 p-2.5">
-                <Link2 className="h-7 w-7 text-purple-600" />
-              </div>
-              <h3 className="mb-2 text-xl font-black text-black">{t.landing.product.features.references.title}</h3>
-              <p className="text-sm leading-relaxed text-black/60">
-                {t.landing.product.features.references.description}
-              </p>
-            </div>
-          </div>
-
-          <div className="group relative card-3d overflow-hidden rounded-2xl border border-black/5 bg-gradient-to-br from-white to-blue-50/30 p-7 shadow-xl transition-all duration-300 ease-in-out hover:shadow-2xl md:col-span-2">
-            <div className="absolute top-0 left-0 h-40 w-40 rounded-full bg-gradient-to-br from-blue-500/20 to-cyan-500/20 blur-2xl transition-all duration-500 ease-in-out group-hover:scale-150" />
-            <div className="relative">
-              <div className="mb-5 inline-flex rounded-xl bg-blue-500/10 p-2.5">
-                <Users className="h-7 w-7 text-blue-600" />
-              </div>
-              <h3 className="mb-2 text-xl font-black text-black">{t.landing.product.features.collaboration.title}</h3>
-              <p className="max-w-xl text-sm leading-relaxed text-black/60">
-                {t.landing.product.features.collaboration.description}
-              </p>
-            </div>
-          </div>
+            return (
+              <TiltPanel key={feature.id} className={feature.span}>
+                <article className={clsx(LANDING_SURFACE_CLASSES.panel, 'h-full p-6')}>
+                  <Vignette />
+                  <h3 className="mt-4 font-grotesk text-lg font-semibold tracking-tight text-[color:var(--hero-title)]">
+                    {t.landing.product.features[feature.id].title}
+                  </h3>
+                  <p className="mt-1.5 font-grotesk text-[14px] leading-normal text-[color:var(--hero-ground-muted)]">
+                    {t.landing.product.features[feature.id].description}
+                  </p>
+                </article>
+              </TiltPanel>
+            );
+          })}
         </div>
       </div>
     </Section>

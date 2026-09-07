@@ -16,7 +16,7 @@ const meta: Meta<typeof ContextMenu> = {
     docs: {
       description: {
         component:
-          'Right-click menu rendered above the canvas. Its content depends on what was right-clicked — empty pane, a regular reasoning node, a reference node, or an edge. The menu reads the target node from the store, so the relevant node is mocked per story.',
+          'Right-click menu rendered above the canvas as an opaque `--surface` panel. Its content depends on what was right-clicked — empty pane, a regular reasoning node, a reference node, or an edge. The menu reads the target node from the store, so the relevant node is mocked per story.',
       },
     },
   },
@@ -43,8 +43,7 @@ export const PaneMenu: Story = {
   parameters: {
     docs: {
       description: {
-        story:
-          'Right-click on empty canvas — quick affordances for adding a node, dropping a reference, and opening canvas-wide comments.',
+        story: 'Right-click on empty canvas — two affordances: add a node (`N`) and drop a reference (`R`).',
       },
     },
   },
@@ -56,7 +55,8 @@ export const NodeMenu: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Right-click on a regular reasoning node — status toggles, comment shortcut, duplicate, and delete.',
+        story:
+          'Right-click on a regular reasoning node — status toggles, mark as answer (`A`), comment shortcut, duplicate, and delete. This fixture has no validated parent, so the valid and answer entries render disabled with their hint.',
       },
     },
   },

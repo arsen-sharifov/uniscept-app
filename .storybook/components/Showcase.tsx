@@ -15,11 +15,11 @@ export const Showcase = ({ title, caption, columns = 3, items }: IShowcaseProps)
   <div data-visual-target className="mx-auto w-full max-w-[1120px] px-8 py-12">
     {title && (
       <header className="mb-6 flex items-baseline justify-between gap-4 border-b border-[color:var(--border)] pb-3">
-        <h2 className="font-serif text-[22px] leading-none tracking-tight text-[color:var(--text-strong)] italic">
+        <h2 className="font-grotesk text-[22px] leading-none font-semibold tracking-tight text-[color:var(--text-strong)]">
           {title}
         </h2>
         {caption && (
-          <span className="font-mono text-[10px] tracking-[0.2em] text-[color:var(--text-subtle)] uppercase">
+          <span className="font-mono-ui text-[10px] tracking-[0.2em] text-[color:var(--text-subtle)] uppercase">
             {caption}
           </span>
         )}
@@ -37,7 +37,7 @@ export const Showcase = ({ title, caption, columns = 3, items }: IShowcaseProps)
           <div className="flex items-baseline justify-between gap-2">
             <span className="truncate text-[12px] font-medium text-[color:var(--text-strong)]">{item.label}</span>
             {item.hint && (
-              <code className="shrink-0 rounded bg-[color:var(--surface-overlay)] px-1.5 py-0.5 font-mono text-[9px] tracking-[0.04em] text-[color:var(--text-muted)]">
+              <code className="shrink-0 rounded bg-[color:var(--surface-overlay)] px-1.5 py-0.5 font-mono-ui text-[9px] tracking-[0.04em] text-[color:var(--text-muted)]">
                 {item.hint}
               </code>
             )}

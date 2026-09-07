@@ -22,3 +22,5 @@ export const AUTO_SCROLL_INTERVAL_MS = 16;
 export const DND_MEASURING: MeasuringConfiguration = {
   droppable: { strategy: MeasuringStrategy.WhileDragging },
 };
+
+export const SKELETON_ROW_WIDTHS: readonly string[] = ['w-40', 'w-28', 'w-36', 'w-24', 'w-32', 'w-20'];

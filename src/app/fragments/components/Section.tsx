@@ -1,16 +1,30 @@
 import { clsx } from 'clsx';
 import type { ReactNode } from 'react';
 
-interface ISectionProps {
+import type { TLandingSectionGround } from '@interfaces';
+
+import { LANDING_SECTION_GROUND_CLASSES } from '../consts';
+
+export interface ISectionProps {
   id?: string;
+  ground?: TLandingSectionGround;
+  snap?: boolean;
+  tight?: boolean;
   children: ReactNode;
   className?: string;
 }
 
-export const Section = ({ id, children, className }: ISectionProps) => {
-  return (
-    <section id={id} className={clsx('relative overflow-hidden border-t border-black/5 px-6 py-24', className)}>
-      {children}
-    </section>
-  );
-};
+export const Section = ({ id, ground = 'field', snap = true, tight = false, children, className }: ISectionProps) => (
+  <section
+    id={id}
+    className={clsx(
+      'relative z-[1] flex flex-col justify-center overflow-hidden border-t border-[color:var(--hero-hairline-soft)] px-6',
+      tight ? 'pt-5 pb-11' : 'pt-12 pb-20 lg:pt-14 lg:pb-24',
+      snap ? 'min-h-[calc(100svh-5rem)] snap-start' : 'flex-1',
+      LANDING_SECTION_GROUND_CLASSES[ground],
+      className,
+    )}
+  >
+    {children}
+  </section>
+);

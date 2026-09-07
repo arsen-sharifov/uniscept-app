@@ -88,3 +88,9 @@ export const ROLE_ICONS: readonly IRoleIconOption[] = [
 export const ROLE_ICON_MAP: Record<string, LucideIcon> = Object.fromEntries(
   ROLE_ICONS.map((option) => [option.key, option.icon]),
 );
+
+export const WORKSPACE_SKELETON_META_ROWS: readonly string[] = ['w-36', 'w-24', 'w-28'];
+
+export const WORKSPACE_SKELETON_PEOPLE: readonly string[] = ['w-36', 'w-28', 'w-44'];
+
+export const WORKSPACE_SKELETON_ROLES: readonly string[] = ['w-24', 'w-32', 'w-28'];

@@ -26,7 +26,7 @@ const meta: Meta<typeof CanvasNode> = {
     docs: {
       description: {
         component:
-          'Primary reasoning card rendered inside React Flow. Holds the label, evaluation status, inline editing, and the per-node comments popover. The store is mocked directly so each visual state (selected, valid/invalid, pending connection, editing, with comments) is previewable in isolation.',
+          'Primary reasoning card rendered inside React Flow. Holds the label, evaluation status, inline editing, and the per-node comments popover (an opaque `--surface` panel). Every state is carried by the shared node band: a 3px tone strip across the top of the card plus a `font-mono-ui` uppercase status word in the same tone. The store is mocked directly so each visual state (selected, valid/invalid, pending connection, editing, with comments) is previewable in isolation.',
       },
     },
   },
@@ -58,7 +58,8 @@ export const Default: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Resting state — no selection, no status, no comments. Handles fade in on hover.',
+        story:
+          'Resting state — no selection, no comments. An unevaluated node carries no band; the strip and status word appear only once it is validated, refuted, affected or marked as the answer. Handles fade in on hover.',
       },
     },
   },
@@ -112,7 +113,7 @@ export const Valid: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Status set to `valid` — emerald inset ring and left accent bar.',
+        story: 'Status set to `valid` — 3px `--status-success` strip, check mark, and the VALID status word.',
       },
     },
   },
@@ -124,7 +125,7 @@ export const Invalid: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Status set to `invalid` — red inset ring and left accent bar.',
+        story: 'Status set to `invalid` — 3px `--status-error` strip, cross mark, and the INVALID status word.',
       },
     },
   },
@@ -137,7 +138,7 @@ export const Answer: Story = {
     docs: {
       description: {
         story:
-          'Marked as the discussion final answer — gold ring, accent bar, and the ANSWER badge. Deliberately distinct from valid (green).',
+          'Marked as the discussion final answer — 3px `--decision` strip, flag icon, and the ANSWER status word. Deliberately distinct from valid, which bands in `--status-success`.',
       },
     },
   },
@@ -174,7 +175,7 @@ export const PendingConnection: Story = {
     docs: {
       description: {
         story:
-          '`pendingConnection` equals this node id — cyan pulsing ring signals the connect tool is waiting for a target.',
+          '`pendingConnection` equals this node id — a pulsing `--ref-border` ring signals the connect tool is waiting for a target.',
       },
     },
   },

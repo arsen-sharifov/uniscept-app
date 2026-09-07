@@ -1,6 +1,6 @@
 import type { TLocale } from './i18n';
 
-export type TTheme = 'daybreak' | 'eclipse' | 'graphite' | 'solstice' | 'aurora' | 'auto';
+export type TTheme = 'daybreak' | 'eclipse' | 'graphite' | 'solstice' | 'aurora' | 'tide' | 'orchid' | 'bloom' | 'auto';
 
 export type TCanvasPattern = 'dots' | 'lines' | 'cross' | 'none';
 

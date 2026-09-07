@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { type SubmitEvent, useEffect, useState } from 'react';
 
@@ -8,6 +7,8 @@ import { signIn } from '@api/client';
 import { useTranslations } from '@/i18n';
 import { event } from '@/lib/events';
 import { createClient } from '@/lib/supabase/client';
+
+import { AuthButton, AuthHeading, AuthInput, AuthLabel, AuthLink } from '../fragments';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -55,62 +56,50 @@ const LoginPage = () => {
 
   return (
     <div className="w-full max-w-sm">
-      <div className="mb-8 text-center">
-        <h1 className="text-2xl font-bold text-black">{signInT.heading}</h1>
-        <p className="mt-1 text-sm text-black/50">{signInT.subtitle}</p>
-      </div>
+      <AuthHeading title={signInT.heading} subtitle={signInT.subtitle} />
 
       {emailSent && (
-        <div className="mb-4 rounded-lg bg-amber-500/10 px-4 py-3 text-center text-sm text-amber-600">
+        <div className="mb-4 rounded-lg border border-[color:var(--hero-tainted)]/35 bg-[color:var(--hero-tainted)]/10 px-4 py-3 text-center font-grotesk text-sm text-[color:var(--hero-tainted)]">
           {signInT.emailSent}
         </div>
       )}
 
       <form onSubmit={handleLogin} className="space-y-4">
         <div>
-          <label htmlFor="email" className="mb-1 block text-sm font-medium text-black/70">
+          <AuthLabel htmlFor="email" className="mb-1.5">
             {signInT.email}
-          </label>
-          <input
+          </AuthLabel>
+          <AuthInput
             id="email"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="w-full rounded-lg border border-black/10 bg-white px-4 py-2.5 text-sm transition-colors duration-200 outline-none focus:border-black/30"
             placeholder={placeholders.email}
           />
         </div>
 
         <div>
-          <label htmlFor="password" className="mb-1 block text-sm font-medium text-black/70">
+          <AuthLabel htmlFor="password" className="mb-1.5">
             {signInT.password}
-          </label>
-          <input
+          </AuthLabel>
+          <AuthInput
             id="password"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            className="w-full rounded-lg border border-black/10 bg-white px-4 py-2.5 text-sm transition-colors duration-200 outline-none focus:border-black/30"
             placeholder={placeholders.password}
           />
         </div>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full rounded-lg bg-black py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:bg-black/80 disabled:opacity-50"
-        >
+        <AuthButton type="submit" disabled={loading} className="w-full">
           {loading ? signInT.submitting : signInT.submit}
-        </button>
+        </AuthButton>
       </form>
 
-      <p className="mt-6 text-center text-sm text-black/50">
-        {signInT.noAccount}{' '}
-        <Link href="/signup" className="font-medium text-black transition-colors duration-200 hover:underline">
-          {signInT.signUpLink}
-        </Link>
+      <p className="mt-6 text-center font-grotesk text-sm text-[color:var(--hero-ground-muted)]">
+        {signInT.noAccount} <AuthLink href="/signup">{signInT.signUpLink}</AuthLink>
       </p>
     </div>
   );

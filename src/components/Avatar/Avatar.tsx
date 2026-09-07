@@ -5,7 +5,7 @@ import { AVATAR_ICON_BY_ID } from '@constants';
 
 import { ICON_SIZE_PX, SIZE_CLASS } from './consts';
 
-export interface IAvatarProps {
+interface IAvatarProps {
   name: string;
   icon?: TAvatarIcon | null;
   size?: TAvatarSize;
@@ -28,7 +28,7 @@ export const Avatar = ({ name, icon, size = 'lg', className }: IAvatarProps) => 
       role="img"
       aria-label={name || 'User'}
       className={clsx(
-        'relative flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-[color:var(--accent)] to-[color:var(--accent-2)] font-bold text-[color:var(--on-accent)] shadow-sm',
+        'relative flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-[color:var(--accent-soft)] font-mono-ui font-bold text-[color:var(--accent-text)] uppercase ring-1 ring-[color:var(--border-strong)]',
         SIZE_CLASS[size],
         className,
       )}

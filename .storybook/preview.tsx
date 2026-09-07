@@ -11,9 +11,12 @@ import '../src/app/globals.css';
 const THEME_OPTIONS: { value: TTheme; title: string }[] = [
   { value: 'daybreak', title: 'Daybreak' },
   { value: 'eclipse', title: 'Eclipse' },
-  { value: 'graphite', title: 'Graphite' },
-  { value: 'solstice', title: 'Solstice' },
-  { value: 'aurora', title: 'Aurora' },
+  { value: 'graphite', title: 'Paper' },
+  { value: 'solstice', title: 'Carbon' },
+  { value: 'aurora', title: 'Ember' },
+  { value: 'tide', title: 'Tide' },
+  { value: 'orchid', title: 'Orchid' },
+  { value: 'bloom', title: 'Bloom' },
   { value: 'auto', title: 'Auto' },
 ];
 

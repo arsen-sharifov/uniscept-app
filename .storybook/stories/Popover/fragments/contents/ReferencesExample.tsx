@@ -8,7 +8,7 @@ interface IReferencesExampleProps {
 
 export const ReferencesExample = ({ onSelect }: IReferencesExampleProps = {}) => (
   <div className="w-72 p-2">
-    <div className="px-2 pb-2 font-mono text-[9.5px] tracking-[0.24em] text-[color:var(--text-subtle)] uppercase">
+    <div className="px-2 pb-2 font-mono-ui text-[9.5px] tracking-[0.24em] text-[color:var(--text-subtle)] uppercase">
       Cross-canvas references
     </div>
     <ul className="space-y-0.5 text-[12.5px]">

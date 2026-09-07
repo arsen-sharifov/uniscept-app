@@ -1,81 +1,97 @@
-import { Zap, Lightbulb, Braces } from 'lucide-react';
+'use client';
+
+import { clsx } from 'clsx';
+import { HelpCircle } from 'lucide-react';
 
 import { useTranslations } from '@/i18n';
 
-import { Section } from './components';
+import { CanvasVignette, MiniNode, Section, SectionHeading, TiltPanel } from './components';
+import { HERO_BUILDER_THREADS, LANDING_SURFACE_CLASSES } from './consts';
 
 export const BuildersSection = () => {
   const t = useTranslations();
 
   return (
-    <Section>
-      <div className="absolute top-1/2 left-[10%] h-96 w-96 -translate-y-1/2 rounded-full bg-gradient-to-br from-purple-500/10 to-pink-500/10 blur-3xl" />
-
-      <div className="mx-auto max-w-7xl">
-        <div data-reveal className="mb-20 scroll-reveal text-center">
-          <h2 className="mb-6 text-5xl font-black tracking-tight text-black sm:text-6xl">{t.landing.builders.title}</h2>
-          <p className="text-xl text-black/60">{t.landing.builders.subtitle}</p>
+    <Section ground="deep">
+      <div className="mx-auto max-w-6xl">
+        <div className="mb-8 max-w-2xl">
+          <SectionHeading title={t.landing.builders.title} subtitle={t.landing.builders.subtitle} />
         </div>
 
-        <div data-reveal className="grid scroll-reveal gap-6 md:grid-cols-3">
-          <div className="group relative card-3d overflow-hidden rounded-2xl bg-gradient-to-br from-black to-gray-900 p-9 shadow-2xl transition-all duration-300 ease-in-out hover:scale-[1.02]">
-            <div className="absolute -top-20 -right-20 h-64 w-64 rounded-full bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 blur-3xl" />
-            <div className="relative">
-              <div className="mb-6 inline-flex rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-500 p-4">
-                <Zap className="h-8 w-8 text-white" />
-              </div>
-              <h3 className="mb-3 text-2xl font-black text-white">{t.landing.builders.founders.title}</h3>
-              <p className="mb-6 text-base leading-relaxed text-white/90">{t.landing.builders.founders.description}</p>
-              <div className="space-y-2.5">
-                {t.landing.builders.founders.useCases.map((useCase: string) => (
-                  <div key={useCase} className="flex items-center gap-3 text-white/80">
-                    <div className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                    <span className="text-sm font-medium">{useCase}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+        <div className="grid gap-6 lg:grid-cols-3">
+          {HERO_BUILDER_THREADS.map((thread, index) => {
+            const content = t.landing.builders[thread.id];
 
-          <div className="group relative card-3d overflow-hidden rounded-2xl border border-black/5 bg-gradient-to-br from-white to-purple-50/50 p-9 shadow-xl transition-all duration-300 ease-in-out hover:scale-[1.02] hover:shadow-2xl">
-            <div className="absolute bottom-0 -left-20 h-64 w-64 rounded-full bg-gradient-to-br from-purple-500/20 to-pink-500/20 blur-3xl" />
-            <div className="relative">
-              <div className="mb-6 inline-flex rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 p-4">
-                <Lightbulb className="h-8 w-8 text-white" />
-              </div>
-              <h3 className="mb-3 text-2xl font-black text-black">{t.landing.builders.researchers.title}</h3>
-              <p className="mb-6 text-base leading-relaxed text-black/70">
-                {t.landing.builders.researchers.description}
-              </p>
-              <div className="space-y-2.5">
-                {t.landing.builders.researchers.useCases.map((useCase: string) => (
-                  <div key={useCase} className="flex items-center gap-3 text-black/60">
-                    <div className="h-1.5 w-1.5 rounded-full bg-purple-500" />
-                    <span className="text-sm font-medium">{useCase}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+            return (
+              <div key={thread.id} className={clsx(index === 1 && 'md:translate-y-6')}>
+                <TiltPanel className="h-full">
+                  <article className={clsx(LANDING_SURFACE_CLASSES.card, 'flex h-full flex-col overflow-hidden')}>
+                    <div className="relative flex items-center gap-1.5 border-b border-[color:var(--hero-hairline)] px-3.5 py-2.5 select-none">
+                      <span
+                        aria-hidden
+                        className="sweep-strip absolute inset-x-0 top-0 h-[3px] bg-[color:var(--hero-question)] opacity-90"
+                      />
+                      <HelpCircle
+                        aria-hidden
+                        className="h-3 w-3 shrink-0 text-[color:var(--hero-question)]"
+                        strokeWidth={2.5}
+                      />
+                      <span className="font-mono-ui text-[9px] font-bold tracking-[0.16em] text-[color:var(--hero-question)] uppercase">
+                        {t.landing.hero.demo.statusQuestion}
+                      </span>
+                      <span className="code-pulse ml-auto font-mono-ui text-[9px] tracking-[0.08em] text-[color:var(--hero-card-subtle)] motion-reduce:animate-none">
+                        {thread.code}
+                      </span>
+                    </div>
 
-          <div className="group relative card-3d overflow-hidden rounded-2xl border border-black/5 bg-gradient-to-br from-white to-blue-50/50 p-9 shadow-xl transition-all duration-300 ease-in-out hover:scale-[1.02] hover:shadow-2xl">
-            <div className="absolute -top-20 -right-20 h-64 w-64 rounded-full bg-gradient-to-br from-blue-500/20 to-cyan-500/20 blur-3xl" />
-            <div className="relative">
-              <div className="mb-6 inline-flex rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 p-4">
-                <Braces className="h-8 w-8 text-white" />
+                    <div className="flex flex-1 flex-col p-6">
+                      <p className="font-grotesk text-lg leading-snug font-semibold tracking-tight text-[color:var(--hero-card-text)]">
+                        {content.question}
+                        <span
+                          aria-hidden
+                          className="type-caret ml-1 text-[color:var(--hero-accent-text)] motion-reduce:animate-none"
+                        >
+                          ▍
+                        </span>
+                      </p>
+
+                      <CanvasVignette edges={thread.edges} tones={thread.edgeTones} className="mt-4 h-28">
+                        <MiniNode
+                          nodeId={`bv-${thread.id[0]}-a`}
+                          tone={thread.nodeTones.a}
+                          label={content.nodeA}
+                          className="absolute top-2.5 left-2.5 w-32"
+                        />
+                        <MiniNode
+                          nodeId={`bv-${thread.id[0]}-b`}
+                          tone={thread.nodeTones.b}
+                          label={content.nodeB}
+                          className="absolute right-2.5 bottom-2.5 w-32"
+                        />
+                      </CanvasVignette>
+
+                      <h3 className="mt-4 font-mono-ui text-[10px] font-bold tracking-[0.16em] text-[color:var(--hero-card-subtle)] uppercase">
+                        {content.title}
+                      </h3>
+                      <p className="mt-2 flex-1 font-grotesk text-[14px] leading-relaxed text-[color:var(--hero-card-muted)]">
+                        {content.description}
+                      </p>
+                      <div className="mt-5 flex flex-wrap gap-1.5">
+                        {content.useCases.map((useCase) => (
+                          <span
+                            key={useCase}
+                            className="rounded border border-[color:var(--hero-hairline-strong)] px-1.5 py-0.5 font-mono-ui text-[9px] font-bold tracking-[0.1em] text-[color:var(--hero-card-muted)] uppercase"
+                          >
+                            {useCase}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </article>
+                </TiltPanel>
               </div>
-              <h3 className="mb-3 text-2xl font-black text-black">{t.landing.builders.engineers.title}</h3>
-              <p className="mb-6 text-base leading-relaxed text-black/70">{t.landing.builders.engineers.description}</p>
-              <div className="space-y-2.5">
-                {t.landing.builders.engineers.useCases.map((useCase: string) => (
-                  <div key={useCase} className="flex items-center gap-3 text-black/60">
-                    <div className="h-1.5 w-1.5 rounded-full bg-blue-500" />
-                    <span className="text-sm font-medium">{useCase}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+            );
+          })}
         </div>
       </div>
     </Section>

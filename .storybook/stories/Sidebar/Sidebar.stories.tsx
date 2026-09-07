@@ -21,7 +21,7 @@ const meta: Meta<typeof Sidebar> = {
     docs: {
       description: {
         component:
-          'Workspace navigation sidebar with a collapsible folder/thread tree (up to 3 levels deep). All 17 callbacks are wired to Storybook actions — open the Actions tab to inspect events while you click around.',
+          'Workspace navigation rail — a floating glass panel on `--surface-glass` over `backdrop-blur-2xl`, holding a collapsible folder/thread tree. The active row takes the standard selection pair: an `--accent-soft` fill and a 3px lime strip on its left edge. Sixteen callbacks are wired to Storybook actions — open the Actions tab to inspect events while you click around.',
       },
     },
   },

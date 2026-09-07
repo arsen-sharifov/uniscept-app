@@ -37,7 +37,7 @@ export const IconCell = ({ name, Icon, size, color, strokeWidth, absoluteStrokeW
         absoluteStrokeWidth={absoluteStrokeWidth}
         className="shrink-0 text-[color:var(--text)] transition-transform duration-150 group-hover:scale-110"
       />
-      <span className="w-full truncate text-center font-mono text-[9.5px] tracking-[0.04em] text-[color:var(--text-muted)]">
+      <span className="w-full truncate text-center font-mono-ui text-[9.5px] tracking-[0.04em] text-[color:var(--text-muted)]">
         {name}
       </span>
       <span

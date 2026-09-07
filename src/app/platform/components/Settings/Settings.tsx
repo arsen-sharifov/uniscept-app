@@ -15,11 +15,12 @@ import {
   PlanSection,
   ProfileSection,
   SecuritySection,
+  SettingsSkeleton,
 } from './fragments';
 import { useSettings } from './hooks';
 import { SettingsSidebar } from './SettingsSidebar';
 
-export interface ISettingsProps {
+interface ISettingsProps {
   onClose: () => void;
   preferences: IPreferences;
   updatePreference: TPreferenceUpdater;
@@ -37,12 +38,8 @@ export const Settings = ({ onClose, preferences, updatePreference, defaultSectio
   }, [defaultSection, onClose]);
 
   const renderSection = () => {
-    if (loading) {
-      return (
-        <div role="status" aria-label={t.common.loading} className="flex h-40 items-center justify-center">
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-[color:var(--accent)] border-t-transparent" />
-        </div>
-      );
+    if (loading && (activeSection === 'profile' || activeSection === 'plan')) {
+      return <SettingsSkeleton section={activeSection} />;
     }
 
     if (activeSection === 'profile') {
@@ -72,21 +69,21 @@ export const Settings = ({ onClose, preferences, updatePreference, defaultSectio
     <Modal open onClose={handleClose} width="max-w-[1100px]" overflowHidden>
       <div
         data-theme={preferences.theme}
-        className="flex h-[80vh] bg-[color:var(--surface)] text-[color:var(--text)] transition-[background-color,color] duration-300 ease-out"
+        className="flex h-[86vh] rounded-2xl font-grotesk text-[color:var(--text)] transition-[color] duration-200 ease-out motion-reduce:transition-none"
       >
         <SettingsSidebar activeSection={activeSection} onSectionChange={setActiveSection} />
 
-        <div className="relative flex-1 overflow-y-auto bg-[color:var(--surface)] px-10 py-8">
+        <div className="relative flex-1 [scrollbar-width:none] overflow-y-auto px-10 py-5 [&::-webkit-scrollbar]:hidden">
           <button
             type="button"
             onClick={handleClose}
             aria-label={t.platform.settings.close}
-            className="absolute top-4 right-4 cursor-pointer rounded-lg p-1.5 text-[color:var(--text-subtle)] transition-colors hover:bg-[color:var(--surface-overlay)] hover:text-[color:var(--text)]"
+            className="absolute top-4 right-4 z-10 cursor-pointer rounded-lg p-1.5 text-[color:var(--text-subtle)] transition-colors duration-200 ease-out hover:bg-[color:var(--surface-overlay)] hover:text-[color:var(--text-strong)] focus-visible:ring-2 focus-visible:ring-[color:var(--ring-focus)] focus-visible:outline-none active:bg-[color:var(--border)] motion-reduce:transition-none"
           >
             <X className="h-4 w-4" aria-hidden />
           </button>
 
-          <h2 className="mb-6 text-lg font-bold text-[color:var(--text-strong)]">
+          <h2 className="mb-6 font-grotesk text-lg font-semibold tracking-tight text-[color:var(--text-strong)]">
             {t.platform.settings.sections[activeSection]}
           </h2>
 

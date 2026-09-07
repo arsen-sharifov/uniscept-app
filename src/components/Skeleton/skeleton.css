@@ -1,0 +1,18 @@
+@theme inline {
+  --animate-skeleton-sweep: skeleton-sweep 1.5s ease-in-out infinite;
+}
+
+@layer base {
+  :where(.skeleton) {
+    border-radius: var(--radius-md, 0.375rem);
+  }
+}
+
+@keyframes skeleton-sweep {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}

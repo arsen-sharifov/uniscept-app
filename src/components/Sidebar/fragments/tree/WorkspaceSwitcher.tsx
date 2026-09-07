@@ -6,6 +6,7 @@ import { useState, type KeyboardEvent, type MouseEvent } from 'react';
 
 import type { IMyInvitation, IWorkspaceItem } from '@interfaces';
 
+import { getInitials } from '@/components/Avatar';
 import { Popover } from '@/components/Popover';
 import { useTranslations } from '@/i18n';
 import { roleLabel } from '@/lib/utils';
@@ -84,53 +85,51 @@ export const WorkspaceSwitcher = ({
         <button
           type="button"
           className={clsx(
-            'group flex w-full min-w-0 items-center gap-2 rounded-xl px-2 py-1.5 text-left transition-colors duration-150',
-            open ? 'bg-[color:var(--surface-overlay)]' : 'hover:bg-[color:var(--surface-overlay)]',
+            'group flex w-full min-w-0 cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-left transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-[color:var(--ring-focus)] focus-visible:outline-none active:bg-[color:var(--accent-soft)] motion-reduce:transition-none',
+            open
+              ? 'bg-[color:var(--surface-overlay)] ring-1 ring-[color:var(--border)] ring-inset'
+              : 'hover:bg-[color:var(--surface-overlay)]',
           )}
         >
           <span
-            className={clsx(
-              'flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-colors',
-              active
-                ? 'bg-gradient-to-br from-[color:var(--accent)] to-[color:var(--accent-2)] text-[color:var(--on-accent)] shadow-sm'
-                : 'bg-[color:var(--surface-overlay)] text-[color:var(--text-muted)]',
-            )}
+            aria-hidden
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-[color:var(--accent-soft)] font-mono-ui text-[11px] font-bold text-[color:var(--accent-text)] uppercase ring-1 ring-[color:var(--border-strong)]"
           >
-            <LayoutGrid className="h-3.5 w-3.5" />
+            {active ? getInitials(active.name) : <LayoutGrid className="h-3.5 w-3.5" strokeWidth={2} />}
           </span>
-          <span className="flex min-w-0 flex-1 flex-col leading-tight">
-            <span className="truncate text-[10px] font-medium tracking-wider text-[color:var(--text-subtle)] uppercase">
-              {t.platform.sidebar.workspaces}
-            </span>
-            <span
-              className={clsx(
-                'truncate text-sm',
-                active ? 'font-semibold text-[color:var(--text-strong)]' : 'font-medium text-[color:var(--text-muted)]',
-              )}
-              title={active?.name ?? t.platform.sidebar.noWorkspaceSelected}
-            >
-              {active?.name ?? t.platform.sidebar.noWorkspaceSelected}
-            </span>
+          <span
+            className={clsx(
+              'min-w-0 flex-1 truncate font-grotesk text-sm font-semibold',
+              active ? 'text-[color:var(--text-strong)]' : 'text-[color:var(--text-muted)]',
+            )}
+            title={active?.name ?? t.platform.sidebar.noWorkspaceSelected}
+          >
+            {active?.name ?? t.platform.sidebar.noWorkspaceSelected}
           </span>
-          <ChevronsUpDown className="h-3.5 w-3.5 shrink-0 text-[color:var(--text-subtle)] transition-colors group-hover:text-[color:var(--text)]" />
+          <ChevronsUpDown
+            className={clsx(
+              'h-3.5 w-3.5 shrink-0 transition-colors duration-150 group-hover:text-[color:var(--text-strong)] motion-reduce:transition-none',
+              open ? 'text-[color:var(--accent-text)]' : 'text-[color:var(--text-subtle)]',
+            )}
+          />
         </button>
       }
     >
       {invitations.length > 0 && (
         <div className="border-b border-[color:var(--border)] px-2 py-2">
-          <span className="mb-1.5 block px-1 text-[10px] font-semibold tracking-wider text-[color:var(--text-muted)] uppercase">
+          <span className="mb-1.5 block px-1 font-mono-ui text-[10px] font-bold tracking-[0.14em] text-[color:var(--text-label)] uppercase">
             {t.platform.sidebar.invitations.title}
           </span>
           <div className="space-y-1.5">
             {invitations.map((invitation) => (
               <div
                 key={invitation.id}
-                className="rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-overlay)] px-2.5 py-2"
+                className="rounded-xl border border-[color:var(--status-warning-border)] bg-[color:var(--status-warning-bg)] px-2.5 py-2"
               >
-                <p className="truncate text-xs font-semibold text-[color:var(--text-strong)]">
+                <p className="truncate font-grotesk text-xs font-semibold text-[color:var(--text-strong)]">
                   {invitation.workspaceName}
                 </p>
-                <p className="truncate text-[10px] text-[color:var(--text-muted)]">
+                <p className="truncate font-mono-ui text-[10px] text-[color:var(--text-label)] lowercase">
                   {roleLabel(invitation.roleKey, invitation.roleName, t)}
                 </p>
                 <div className="mt-1.5 flex gap-1.5">
@@ -140,14 +139,14 @@ export const WorkspaceSwitcher = ({
                       onAcceptInvitation?.(invitation);
                       setOpen(false);
                     }}
-                    className="flex-1 cursor-pointer rounded-lg bg-gradient-to-r from-[color:var(--accent)] to-[color:var(--accent-2)] px-2 py-1 text-[11px] font-medium text-[color:var(--on-accent)] transition-opacity hover:opacity-90"
+                    className="flex-1 cursor-pointer rounded-lg bg-[color:var(--accent)] px-2 py-1 font-grotesk text-[11px] font-semibold text-[color:var(--on-accent)] shadow-[0_10px_28px_-12px_var(--accent-glow)] transition-colors duration-150 hover:bg-[color:var(--accent-strong)] focus-visible:ring-2 focus-visible:ring-[color:var(--ring-focus)] focus-visible:outline-none active:bg-[color:var(--accent-strong)] motion-reduce:transition-none"
                   >
                     {t.platform.sidebar.invitations.accept}
                   </button>
                   <button
                     type="button"
                     onClick={() => onDeclineInvitation?.(invitation)}
-                    className="cursor-pointer rounded-lg px-2 py-1 text-[11px] font-medium text-[color:var(--text-muted)] transition-colors hover:bg-[color:var(--surface)] hover:text-[color:var(--text-strong)]"
+                    className="cursor-pointer rounded-lg border border-[color:var(--border-strong)] px-2 py-1 font-grotesk text-[11px] font-medium text-[color:var(--text-muted)] transition-colors duration-150 hover:bg-[color:var(--surface-overlay)] hover:text-[color:var(--text-strong)] focus-visible:ring-2 focus-visible:ring-[color:var(--ring-focus)] focus-visible:outline-none active:bg-[color:var(--surface-overlay)] active:text-[color:var(--text-strong)] motion-reduce:transition-none"
                   >
                     {t.platform.sidebar.invitations.decline}
                   </button>
@@ -158,12 +157,13 @@ export const WorkspaceSwitcher = ({
         </div>
       )}
 
-      <div className="flex items-center justify-between border-b border-[color:var(--border)] px-3 py-2">
-        <span className="text-[10px] font-semibold tracking-wider text-[color:var(--text-muted)] uppercase">
-          {t.platform.sidebar.workspaces}
-          <span className="ml-1.5 inline-flex items-center justify-center rounded-md bg-[color:var(--surface-overlay)] px-1.5 py-0.5 text-[10px] font-semibold text-[color:var(--text-muted)]">
-            {workspaces.length}
-          </span>
+      <div className="flex items-center justify-between gap-2 border-b border-[color:var(--border)] px-3 py-2">
+        <span
+          className="flex min-w-0 items-center gap-1.5 font-mono-ui text-[10px] font-bold tracking-[0.14em] text-[color:var(--text-label)] uppercase"
+          title={t.platform.sidebar.workspaces}
+        >
+          <span className="truncate">{t.platform.sidebar.workspaces}</span>
+          <span className="tabular-nums">{workspaces.length}</span>
         </span>
         <button
           type="button"
@@ -171,7 +171,7 @@ export const WorkspaceSwitcher = ({
             onCreateWorkspace?.();
             setOpen(false);
           }}
-          className="flex items-center gap-1 rounded-lg px-1.5 py-1 text-[11px] font-medium text-[color:var(--accent-text)] transition-colors hover:bg-[color:var(--accent-soft)]"
+          className="flex shrink-0 cursor-pointer items-center gap-1 rounded-lg px-1.5 py-1 font-grotesk text-[11px] font-medium whitespace-nowrap text-[color:var(--accent-text)] transition-colors duration-150 hover:bg-[color:var(--accent-soft)] focus-visible:ring-2 focus-visible:ring-[color:var(--ring-focus)] focus-visible:outline-none active:bg-[color:var(--accent-soft)] motion-reduce:transition-none"
           title={t.platform.sidebar.newWorkspace}
         >
           <Plus className="h-3 w-3" />
@@ -182,17 +182,19 @@ export const WorkspaceSwitcher = ({
       <div className="space-y-0.5 px-2 py-2">
         {workspaces.length === 0 ? (
           <div className="flex flex-col items-center px-3 py-6 text-center">
-            <div className="mb-2 flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[color:var(--accent)]/20 to-[color:var(--accent-2)]/20">
-              <LayoutGrid className="h-4 w-4 text-[color:var(--accent)]" />
+            <div className="mb-2 flex h-9 w-9 items-center justify-center rounded-xl border border-[color:var(--border-active)] bg-[color:var(--accent-soft)]">
+              <LayoutGrid className="h-4 w-4 text-[color:var(--accent-text)]" />
             </div>
-            <p className="mb-3 text-xs text-[color:var(--text-muted)]">{t.platform.sidebar.noWorkspaces}</p>
+            <p className="mb-3 font-grotesk text-xs text-[color:var(--text-muted)]">
+              {t.platform.sidebar.noWorkspaces}
+            </p>
             <button
               type="button"
               onClick={() => {
                 onCreateWorkspace?.();
                 setOpen(false);
               }}
-              className="rounded-xl bg-gradient-to-r from-[color:var(--accent)] to-[color:var(--accent-2)] px-3 py-1.5 text-xs font-medium text-[color:var(--on-accent)] shadow-sm transition-shadow hover:shadow-md"
+              className="cursor-pointer rounded-lg bg-[color:var(--accent)] px-3 py-1.5 font-grotesk text-xs font-semibold text-[color:var(--on-accent)] shadow-[0_10px_28px_-12px_var(--accent-glow)] transition-colors duration-150 hover:bg-[color:var(--accent-strong)] focus-visible:ring-2 focus-visible:ring-[color:var(--ring-focus)] focus-visible:outline-none active:bg-[color:var(--accent-strong)] motion-reduce:transition-none"
             >
               {t.platform.sidebar.newWorkspace}
             </button>
@@ -224,7 +226,7 @@ export const WorkspaceSwitcher = ({
       </div>
 
       {selectedIds.size > 0 && (
-        <div className="border-t border-[color:var(--border)] bg-[color:var(--accent-soft)] px-2 py-2">
+        <div className="border-t border-[color:var(--border)] px-2 py-2">
           <BulkActionsBar
             count={selectedIds.size}
             icon={LayoutGrid}

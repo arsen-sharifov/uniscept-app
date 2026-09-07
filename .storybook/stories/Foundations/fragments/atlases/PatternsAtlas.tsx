@@ -37,10 +37,10 @@ export const PatternsAtlas = ({ pattern, activeTheme }: IPatternsAtlasProps) => 
       sections={PATTERNS_SECTIONS}
       utilities={
         <div className="flex flex-col items-end gap-0.5">
-          <span className="font-mono text-[9.5px] tracking-[0.22em] text-[color:var(--text-subtle)] uppercase">
+          <span className="font-mono-ui text-[9.5px] tracking-[0.22em] text-[color:var(--text-subtle)] uppercase">
             stage
           </span>
-          <span className="font-serif text-[20px] leading-none tracking-[-0.01em] text-[color:var(--text-strong)] italic">
+          <span className="font-grotesk text-[20px] leading-none font-semibold tracking-[-0.01em] text-[color:var(--text-strong)]">
             {patternMeta.label} · {activeName}
           </span>
         </div>
@@ -82,15 +82,15 @@ export const PatternsAtlas = ({ pattern, activeTheme }: IPatternsAtlasProps) => 
                 <PatternMiniStage pattern={variant} />
                 <div className="flex items-baseline justify-between gap-2 px-3 py-2.5">
                   <div>
-                    <h4 className="font-serif text-[15px] leading-none tracking-[-0.01em] text-[color:var(--text-strong)] italic">
+                    <h4 className="font-grotesk text-[15px] leading-none font-semibold tracking-[-0.01em] text-[color:var(--text-strong)]">
                       {meta.label}
                     </h4>
-                    <code className="mt-0.5 block font-mono text-[9.5px] tracking-[0.06em] text-[color:var(--text-muted)]">
+                    <code className="mt-0.5 block font-mono-ui text-[9.5px] tracking-[0.06em] text-[color:var(--text-muted)]">
                       {variant}
                     </code>
                   </div>
                   {isActive && (
-                    <span className="font-mono text-[8.5px] font-semibold tracking-[0.22em] text-[color:var(--accent-text)] uppercase">
+                    <span className="font-mono-ui text-[8.5px] font-semibold tracking-[0.22em] text-[color:var(--accent-text)] uppercase">
                       active
                     </span>
                   )}
@@ -112,10 +112,10 @@ export const PatternsAtlas = ({ pattern, activeTheme }: IPatternsAtlasProps) => 
             <ThemedSurface key={theme.id} themeId={theme.id} className="overflow-hidden">
               <PatternMiniStage pattern={pattern} />
               <div className="flex items-baseline justify-between gap-2 px-3 py-2.5">
-                <span className="font-serif text-[15px] leading-none tracking-[-0.01em] text-[color:var(--text-strong)] italic">
+                <span className="font-grotesk text-[15px] leading-none font-semibold tracking-[-0.01em] text-[color:var(--text-strong)]">
                   {theme.name}
                 </span>
-                <span className="font-mono text-[8.5px] tracking-[0.22em] text-[color:var(--text-subtle)] uppercase">
+                <span className="font-mono-ui text-[8.5px] tracking-[0.22em] text-[color:var(--text-subtle)] uppercase">
                   {theme.mode}
                 </span>
               </div>
@@ -142,7 +142,7 @@ export const PatternsAtlas = ({ pattern, activeTheme }: IPatternsAtlasProps) => 
                 />
               </Cell>
               <Cell>
-                <span className="font-serif text-[15px] leading-none tracking-[-0.01em] text-[color:var(--text-strong)] italic">
+                <span className="font-grotesk text-[15px] leading-none font-semibold tracking-[-0.01em] text-[color:var(--text-strong)]">
                   {radius.label}
                 </span>
               </Cell>
@@ -150,7 +150,7 @@ export const PatternsAtlas = ({ pattern, activeTheme }: IPatternsAtlasProps) => 
                 <Copyable value={radius.className} />
               </Cell>
               <Cell>
-                <span className="font-mono text-[10.5px] tracking-[0.06em] text-[color:var(--text-muted)]">
+                <span className="font-mono-ui text-[10.5px] tracking-[0.06em] text-[color:var(--text-muted)]">
                   {radius.pixels}
                 </span>
               </Cell>
@@ -175,7 +175,7 @@ export const PatternsAtlas = ({ pattern, activeTheme }: IPatternsAtlasProps) => 
                 />
               </Cell>
               <Cell>
-                <span className="font-serif text-[14px] leading-none tracking-[-0.01em] text-[color:var(--text-strong)] italic">
+                <span className="font-grotesk text-[14px] leading-none font-semibold tracking-[-0.01em] text-[color:var(--text-strong)]">
                   {shadow.label}
                 </span>
               </Cell>
@@ -197,7 +197,7 @@ export const PatternsAtlas = ({ pattern, activeTheme }: IPatternsAtlasProps) => 
           {SPACING_TOKENS.map((space) => (
             <TableRow key={space.label}>
               <Cell>
-                <span className="font-serif text-[16px] leading-none tracking-[-0.01em] text-[color:var(--text-strong)] italic">
+                <span className="font-grotesk text-[16px] leading-none font-semibold tracking-[-0.01em] text-[color:var(--text-strong)]">
                   {space.label}
                 </span>
               </Cell>
@@ -205,12 +205,12 @@ export const PatternsAtlas = ({ pattern, activeTheme }: IPatternsAtlasProps) => 
                 <Copyable value={space.className} />
               </Cell>
               <Cell>
-                <span className="font-mono text-[10.5px] tracking-[0.06em] text-[color:var(--text-muted)]">
+                <span className="font-mono-ui text-[10.5px] tracking-[0.06em] text-[color:var(--text-muted)]">
                   {space.rem}
                 </span>
               </Cell>
               <Cell>
-                <span className="font-mono text-[10.5px] tracking-[0.06em] text-[color:var(--text-subtle)]">
+                <span className="font-mono-ui text-[10.5px] tracking-[0.06em] text-[color:var(--text-subtle)]">
                   {space.pixels}
                 </span>
               </Cell>

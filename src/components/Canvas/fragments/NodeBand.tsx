@@ -14,13 +14,26 @@ export const NodeBand = ({ tone, label, trailing }: INodeBandProps) => {
   const { icon: Icon, color } = NODE_BAND_TONES[tone];
 
   return (
-    <div
-      className="flex items-center gap-1.5 rounded-t-2xl px-3 py-1.5 text-[color:var(--surface-elevated)] select-none"
-      style={{ background: `linear-gradient(135deg, ${color}, color-mix(in oklab, ${color}, #000 24%))` }}
-    >
-      <Icon className="h-3 w-3 shrink-0" strokeWidth={2.5} />
-      <span className="flex-1 truncate text-[9px] font-semibold tracking-[0.16em] uppercase">{label}</span>
-      {trailing}
-    </div>
+    <>
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-0 overflow-hidden rounded-t-[11px] [transition-delay:inherit]"
+      >
+        <span
+          className="absolute inset-x-0 top-0 block h-[3px] transition-colors [transition-delay:inherit] duration-300 motion-reduce:transition-none"
+          style={{ backgroundColor: color }}
+        />
+      </span>
+      <div
+        className="flex items-center gap-1.5 transition-colors [transition-delay:inherit] duration-300 select-none motion-reduce:transition-none"
+        style={{ color }}
+      >
+        <Icon className="h-3 w-3 shrink-0" strokeWidth={2.5} />
+        <span className="min-w-0 flex-1 truncate font-mono-ui text-[9px] font-bold tracking-[0.16em] uppercase">
+          {label}
+        </span>
+        {trailing}
+      </div>
+    </>
   );
 };

@@ -95,6 +95,7 @@ export const buildCanvasTools = (t: TCanvasToolsTranslations): Record<ECanvasToo
     label: t.items.validPath.label,
     description: t.items.validPath.description,
     shortcut: 'Y',
+    tone: 'success',
   },
   [ECanvasTool.InvalidPath]: {
     id: ECanvasTool.InvalidPath,
@@ -102,6 +103,7 @@ export const buildCanvasTools = (t: TCanvasToolsTranslations): Record<ECanvasToo
     label: t.items.invalidPath.label,
     description: t.items.invalidPath.description,
     shortcut: 'X',
+    tone: 'error',
   },
   [ECanvasTool.Answer]: {
     id: ECanvasTool.Answer,
@@ -109,6 +111,7 @@ export const buildCanvasTools = (t: TCanvasToolsTranslations): Record<ECanvasToo
     label: t.items.answer.label,
     description: t.items.answer.description,
     shortcut: 'A',
+    tone: 'decision',
   },
   [ECanvasTool.CrossReference]: {
     id: ECanvasTool.CrossReference,

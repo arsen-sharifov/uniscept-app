@@ -18,6 +18,6 @@ export const InlineRenameInput = ({ value, onChange, onCommit, onKeyDown, inputR
     onBlur={onCommit}
     onKeyDown={onKeyDown}
     onClick={(event) => event.stopPropagation()}
-    className="min-w-0 flex-1 truncate border-0 bg-transparent p-0 underline decoration-[color:var(--accent)] decoration-2 underline-offset-[3px] caret-[color:var(--accent)] outline-none [font:inherit] selection:bg-[color:var(--accent-soft)]"
+    className="min-w-0 flex-1 truncate rounded-lg border border-[color:var(--border-strong)] bg-[color:var(--surface-soft)] px-2.5 py-1 font-grotesk text-sm text-[color:var(--text-strong)] caret-[color:var(--accent)] transition-colors duration-150 outline-none selection:bg-[color:var(--accent-soft)] selection:text-[color:var(--text-strong)] focus:border-[color:var(--accent)] focus:ring-2 focus:ring-[color:var(--ring-focus)] motion-reduce:transition-none"
   />
 );

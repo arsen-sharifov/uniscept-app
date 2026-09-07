@@ -14,7 +14,7 @@ const meta: Meta<typeof Tooltip> = {
     docs: {
       description: {
         component:
-          'Hover tooltip used for short helper copy. Defaults to an info icon trigger but accepts any element via `children`. Use `SmartTooltip` when the panel needs to flip away from the viewport edge.',
+          'Tooltip for short helper copy, opened on hover or keyboard focus. Defaults to an info icon trigger but accepts any element via `children`. Use `SmartTooltip` when the panel needs to flip away from the viewport edge.',
       },
     },
   },
@@ -25,7 +25,7 @@ const meta: Meta<typeof Tooltip> = {
   argTypes: {
     text: {
       control: 'text',
-      description: 'Tooltip content (wraps to a 192px column).',
+      description: 'Tooltip content (wraps at `max-w-64`, a 256px column).',
       table: { category: ARG_CATEGORIES.CONTENT },
     },
     position: {
@@ -161,7 +161,7 @@ export const LongText: Story = {
     docs: {
       description: {
         story:
-          'Verifies wrap behaviour when the tooltip copy overflows two lines. The panel is capped to 192px wide, so the text should break across multiple rows without horizontal scroll.',
+          'Verifies wrap behaviour when the tooltip copy overflows two lines. The panel is capped at `max-w-64` (256px), so the text should break across multiple rows without horizontal scroll.',
       },
     },
   },

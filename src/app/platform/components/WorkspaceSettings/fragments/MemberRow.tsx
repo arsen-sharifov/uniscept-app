@@ -1,5 +1,6 @@
 'use client';
 
+import { clsx } from 'clsx';
 import { Crown, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -49,7 +50,7 @@ export const MemberRow = ({
   const renderControl = () => {
     if (member.isOwner) {
       return (
-        <span className="inline-flex items-center gap-1.5 rounded-lg bg-[color:var(--accent-soft)] px-2.5 py-1 text-[12px] font-medium text-[color:var(--accent-text)]">
+        <span className="inline-flex items-center gap-1.5 rounded-md bg-[color:var(--accent-soft)] px-2.5 py-1 font-mono-ui text-[10px] font-bold tracking-[0.14em] text-[color:var(--accent-text)] uppercase">
           <Crown className="h-3.5 w-3.5" aria-hidden />
           {t.platform.workspaceSettings.roleNames.owner}
         </span>
@@ -57,8 +58,17 @@ export const MemberRow = ({
     }
 
     if (!canManage) {
+      const isBaseline = member.roleKey === 'member' || member.roleKey === 'viewer';
+
       return (
-        <span className="px-2.5 py-1 text-[12px] font-medium text-[color:var(--text-muted)]">
+        <span
+          className={clsx(
+            'inline-block max-w-36 truncate rounded-md px-2.5 py-1 font-mono-ui text-[10px] font-bold tracking-[0.14em] uppercase',
+            isBaseline
+              ? 'bg-[color:var(--surface-overlay)] text-[color:var(--text-muted)]'
+              : 'bg-[color:var(--accent-soft)] text-[color:var(--accent-text)]',
+          )}
+        >
           {roleLabel(member.roleKey, member.roleName, t)}
         </span>
       );
@@ -67,11 +77,11 @@ export const MemberRow = ({
     if (confirmingRemove) {
       return (
         <div className="flex items-center gap-2">
-          <span className="text-[12px] text-[color:var(--text-muted)]">{members.remove}?</span>
+          <span className="font-grotesk text-xs text-[color:var(--text-muted)]">{members.remove}?</span>
           <button
             type="button"
             onClick={() => setConfirmingRemove(false)}
-            className="cursor-pointer rounded-lg px-2 py-1 text-[12px] font-medium text-[color:var(--text-muted)] transition-colors hover:bg-[color:var(--surface-overlay)] hover:text-[color:var(--text-strong)]"
+            className="cursor-pointer rounded-lg border border-[color:var(--border-strong)] px-2.5 py-1 font-grotesk text-xs font-medium text-[color:var(--text-muted)] transition-[color,background-color,scale] duration-150 hover:bg-[color:var(--surface-overlay)] hover:text-[color:var(--text-strong)] focus-visible:ring-2 focus-visible:ring-[color:var(--ring-focus)] focus-visible:outline-none active:scale-95 motion-reduce:transition-none"
           >
             {members.cancel}
           </button>
@@ -81,7 +91,7 @@ export const MemberRow = ({
               setConfirmingRemove(false);
               onRemove(member.userId);
             }}
-            className="cursor-pointer rounded-lg bg-[color:var(--status-error)] px-2.5 py-1 text-[12px] font-medium text-white transition-colors hover:bg-[color:var(--status-error-border)]"
+            className="cursor-pointer rounded-lg bg-[color:var(--status-error)] px-2.5 py-1 font-grotesk text-xs font-medium text-[color:var(--on-status)] transition-[opacity,scale] duration-150 hover:opacity-90 focus-visible:ring-2 focus-visible:ring-[color:var(--ring-focus)] focus-visible:outline-none active:scale-95 motion-reduce:transition-none"
           >
             {members.removeConfirm}
           </button>
@@ -104,7 +114,7 @@ export const MemberRow = ({
             onClick={() => setConfirmingRemove(true)}
             title={members.remove}
             aria-label={members.remove}
-            className="cursor-pointer rounded-lg p-1.5 text-[color:var(--text-subtle)] transition-colors hover:bg-[color:var(--status-error-soft)] hover:text-[color:var(--status-error)]"
+            className="cursor-pointer rounded-lg p-1.5 text-[color:var(--text-subtle)] opacity-0 transition-[color,background-color,opacity] duration-150 group-focus-within:opacity-100 group-hover:opacity-100 hover:bg-[color:var(--status-error-bg)] hover:text-[color:var(--status-error)] focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-[color:var(--ring-focus)] focus-visible:outline-none active:bg-[color:var(--status-error-soft)] active:text-[color:var(--status-error)] motion-reduce:transition-none"
           >
             <Trash2 className="h-3.5 w-3.5" aria-hidden />
           </button>
@@ -114,18 +124,18 @@ export const MemberRow = ({
   };
 
   return (
-    <div className="flex items-center gap-3 py-2.5">
+    <div className="group flex items-center gap-3 px-3 py-2.5 transition-colors duration-150 hover:bg-[color:var(--surface-overlay)] motion-reduce:transition-none">
       <Avatar name={displayName} icon={member.avatarIcon} size="sm" />
       <div className="min-w-0 flex-1">
-        <p className="flex items-center gap-1.5 text-sm font-medium text-[color:var(--text-strong)]">
+        <p className="flex items-center gap-1.5 font-grotesk text-sm font-medium text-[color:var(--text-strong)]">
           <span className="truncate">{displayName}</span>
           {isSelf && (
-            <span className="shrink-0 rounded-md bg-[color:var(--surface-overlay)] px-1.5 py-0.5 text-[10px] font-medium tracking-wide text-[color:var(--text-muted)] uppercase">
+            <span className="shrink-0 rounded-md bg-[color:var(--surface-overlay)] px-1.5 py-0.5 font-mono-ui text-[10px] font-bold tracking-[0.14em] text-[color:var(--text-muted)] uppercase">
               {members.you}
             </span>
           )}
         </p>
-        <p className="truncate text-[12px] text-[color:var(--text-muted)]">{member.email}</p>
+        <p className="truncate font-mono-ui text-[10px] text-[color:var(--text-label)]">{member.email}</p>
       </div>
       <div className="shrink-0">{renderControl()}</div>
     </div>

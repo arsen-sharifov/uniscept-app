@@ -1,7 +1,7 @@
 import { act, cleanup, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
-import type { INodeReference } from '@interfaces';
+import type { INodeReference, IReferenceSearchResult } from '@interfaces';
 import { searchReferenceTargets } from '@api/client';
 import { nodeReference } from '@mocks/canvas';
 import { TRANSLATIONS } from '@mocks/i18n';
@@ -13,7 +13,7 @@ vi.mock('@api/client', () => import('@mocks/canvasApi'));
 vi.mock('@/i18n', () => import('@mocks/i18n'));
 vi.mock('@/lib/events', () => import('@mocks/events'));
 
-let search: { current: INodeReference[] };
+let search: { current: IReferenceSearchResult };
 
 beforeEach(() => {
   vi.useFakeTimers();
@@ -43,7 +43,7 @@ describe('useReferenceSearch', () => {
 
     describe('WHEN the search settles', () => {
       test('THEN the matching targets are exposed', () => {
-        expect(search.current).toEqual([nodeReference('r1'), nodeReference('r2')]);
+        expect(search.current.nodes).toEqual([nodeReference('r1'), nodeReference('r2')]);
       });
 
       test('THEN the api is queried once with the workspace and the excluded thread', () => {
@@ -57,8 +57,67 @@ describe('useReferenceSearch', () => {
       });
 
       test('THEN the exposed list empties without another search', () => {
-        expect(search.current).toEqual([]);
+        expect(search.current.nodes).toEqual([]);
         expect(searchReferenceTargets).toHaveBeenCalledTimes(1);
+      });
+    });
+  });
+
+  describe('GIVEN a previously loaded search that is opened again', () => {
+    beforeEach(async () => {
+      vi.mocked(searchReferenceTargets).mockResolvedValueOnce([nodeReference('previous')]);
+      useCanvasStore.getState().setReferenceSearchPosition({ x: 100, y: 200 });
+      search = renderHook(() => useReferenceSearch({ workspaceId: 'ws-1', threadId: 'thread-1' })).result;
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(0);
+      });
+
+      act(() => useCanvasStore.getState().setReferenceSearchPosition(null));
+      vi.mocked(searchReferenceTargets).mockReturnValue(new Promise(() => {}));
+    });
+
+    describe('WHEN the next search is still pending', () => {
+      beforeEach(() => {
+        act(() => useCanvasStore.getState().setReferenceSearchPosition({ x: 100, y: 200 }));
+      });
+
+      test('THEN stale targets remain unavailable until the refresh finishes', () => {
+        expect(search.current).toEqual({ nodes: [], loading: true });
+        expect(searchReferenceTargets).toHaveBeenCalledTimes(2);
+      });
+    });
+  });
+
+  describe('GIVEN loaded targets from another workspace', () => {
+    let changeWorkspace: (props: { workspaceId: string }) => void;
+
+    beforeEach(async () => {
+      vi.mocked(searchReferenceTargets).mockResolvedValueOnce([nodeReference('previous')]);
+      useCanvasStore.getState().setReferenceSearchPosition({ x: 100, y: 200 });
+
+      const view = renderHook(({ workspaceId }) => useReferenceSearch({ workspaceId, threadId: 'thread-1' }), {
+        initialProps: { workspaceId: 'ws-1' },
+      });
+
+      search = view.result;
+      changeWorkspace = view.rerender;
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(0);
+      });
+
+      vi.mocked(searchReferenceTargets).mockReturnValue(new Promise(() => {}));
+    });
+
+    describe('WHEN the workspace changes before its targets load', () => {
+      beforeEach(() => {
+        changeWorkspace({ workspaceId: 'ws-2' });
+      });
+
+      test('THEN targets from the previous workspace are unavailable', () => {
+        expect(search.current).toEqual({ nodes: [], loading: true });
+        expect(searchReferenceTargets).toHaveBeenLastCalledWith('ws-2', 'thread-1');
       });
     });
   });
@@ -75,7 +134,7 @@ describe('useReferenceSearch', () => {
 
     describe('WHEN the hook settles', () => {
       test('THEN no search reaches the api and the list stays empty', () => {
-        expect(search.current).toEqual([]);
+        expect(search.current.nodes).toEqual([]);
         expect(searchReferenceTargets).not.toHaveBeenCalled();
       });
     });
@@ -94,7 +153,7 @@ describe('useReferenceSearch', () => {
 
     describe('WHEN the failure settles', () => {
       test('THEN the list stays empty', () => {
-        expect(search.current).toEqual([]);
+        expect(search.current.nodes).toEqual([]);
       });
 
       test('THEN the failure routes to the events boundary with the localized title', () => {
@@ -132,7 +191,7 @@ describe('useReferenceSearch', () => {
 
       test('THEN the failure never reaches the events boundary', () => {
         expect(event.error).not.toHaveBeenCalled();
-        expect(search.current).toEqual([]);
+        expect(search.current.nodes).toEqual([]);
       });
     });
   });
@@ -169,7 +228,7 @@ describe('useReferenceSearch', () => {
       });
 
       test('THEN the fresh workspace results survive the late resolution', () => {
-        expect(search.current).toEqual([nodeReference('fresh')]);
+        expect(search.current.nodes).toEqual([nodeReference('fresh')]);
       });
 
       test('THEN each search is scoped to its own workspace', () => {

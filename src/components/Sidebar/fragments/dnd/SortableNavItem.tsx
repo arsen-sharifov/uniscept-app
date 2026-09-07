@@ -7,6 +7,7 @@ import { type KeyboardEvent, type MouseEvent } from 'react';
 
 import type { IFlattenedItem, TDropZone, TNavItemType } from '@interfaces';
 
+import { SelectionStrip } from '@/components/SelectionStrip';
 import { SmartTooltip } from '@/components/Tooltip';
 import { useTranslations } from '@/i18n';
 import { usePermissionsStore } from '@/lib/stores';
@@ -112,14 +113,12 @@ export const SortableNavItem = ({
         />
       )}
 
-      {isActive && (
-        <span className="pointer-events-none absolute top-1/2 left-0 z-10 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-gradient-to-b from-[color:var(--accent)] to-[color:var(--accent-2)]" />
-      )}
+      {isActive && <SelectionStrip className="z-10" />}
 
       <div
         className={clsx(
-          'relative flex min-h-7 min-w-0 items-stretch overflow-hidden',
-          isDragging && 'pointer-events-none opacity-40',
+          'relative flex min-h-8 min-w-0 items-stretch overflow-hidden',
+          isDragging && 'pointer-events-none rounded-lg opacity-40 shadow-[var(--shadow-card-hover)]',
         )}
       >
         <button
@@ -131,15 +130,16 @@ export const SortableNavItem = ({
           onClick={handleClick}
           onDoubleClick={(event) => event.preventDefault()}
           className={clsx(
-            'flex min-w-0 flex-1 items-center gap-2 rounded-lg px-1.5 py-1 text-sm leading-5 transition-colors duration-150',
+            'flex min-w-0 flex-1 items-center gap-2 rounded-lg px-2 py-1.5 font-grotesk text-sm leading-5 transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-[color:var(--ring-focus)] focus-visible:outline-none focus-visible:ring-inset active:bg-[color:var(--accent-soft)] active:text-[color:var(--text-strong)] motion-reduce:transition-none',
             isFolder && isEmpty ? 'cursor-default' : 'cursor-pointer',
+            isFolder && !isActive && 'font-medium',
             isActive
-              ? 'bg-[color:var(--accent-soft)] font-medium text-[color:var(--accent-text)]'
+              ? 'bg-[color:var(--accent-soft)] font-medium text-[color:var(--accent-text)] shadow-[0_6px_18px_-10px_var(--accent-glow)]'
               : 'text-[color:var(--text)] group-hover/item:bg-[color:var(--surface-overlay)] group-hover/item:text-[color:var(--text-strong)]',
             isSelected && !isActive && '!bg-[color:var(--accent-soft)] !text-[color:var(--text-strong)]',
             isSelected && 'ring-1 ring-[color:var(--border-active)] ring-inset',
             showFolderHighlight &&
-              'bg-[color:var(--accent-soft)] !text-[color:var(--accent-text)] ring-1 ring-[color:var(--border-active)] ring-inset',
+              'bg-[color:var(--accent-soft)] !text-[color:var(--accent-text)] !ring-2 !ring-[color:var(--accent)] ring-inset',
           )}
         >
           <span className="relative h-4 w-4 shrink-0">
@@ -147,16 +147,16 @@ export const SortableNavItem = ({
               isEmpty || item.collapsed ? (
                 <Folder
                   className={clsx(
-                    'absolute inset-0 h-4 w-4 transition-opacity duration-150',
-                    highlightIcon ? 'text-[color:var(--accent)]' : 'text-[color:var(--text-subtle)]',
+                    'absolute inset-0 h-4 w-4 transition-opacity duration-150 motion-reduce:transition-none',
+                    highlightIcon ? 'text-[color:var(--accent-text)]' : 'text-[color:var(--text-muted)]',
                     !isEditing && canManageStructure && 'group-hover/item:opacity-0',
                   )}
                 />
               ) : (
                 <FolderOpen
                   className={clsx(
-                    'absolute inset-0 h-4 w-4 transition-opacity duration-150',
-                    highlightIcon ? 'text-[color:var(--accent)]' : 'text-[color:var(--text-muted)]',
+                    'absolute inset-0 h-4 w-4 transition-opacity duration-150 motion-reduce:transition-none',
+                    highlightIcon ? 'text-[color:var(--accent-text)]' : 'text-[color:var(--text-muted)]',
                     !isEditing && canManageStructure && 'group-hover/item:opacity-0',
                   )}
                 />
@@ -164,8 +164,8 @@ export const SortableNavItem = ({
             ) : (
               <FileText
                 className={clsx(
-                  'absolute inset-0 h-4 w-4 transition-opacity duration-150',
-                  isActive ? 'text-[color:var(--accent)]' : 'text-[color:var(--text-subtle)]',
+                  'absolute inset-0 h-4 w-4 transition-opacity duration-150 motion-reduce:transition-none',
+                  isActive ? 'text-[color:var(--accent-text)]' : 'text-[color:var(--text-muted)]',
                   !isEditing && canManageStructure && 'group-hover/item:opacity-0',
                 )}
               />
@@ -198,7 +198,7 @@ export const SortableNavItem = ({
               aria-label={translations.platform.sidebar.resolved}
               title={translations.platform.sidebar.resolved}
               className={clsx(
-                'ml-auto flex shrink-0 items-center transition-opacity duration-150',
+                'ml-auto flex shrink-0 items-center transition-opacity duration-150 motion-reduce:transition-none',
                 canManageStructure && 'group-hover/item:opacity-0',
               )}
             >
@@ -208,7 +208,7 @@ export const SortableNavItem = ({
           {isSelected && !isEditing ? (
             <span
               aria-hidden="true"
-              className="ml-auto flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[color:var(--accent)] to-[color:var(--accent-2)] text-[color:var(--on-accent)] shadow-[0_1px_2px_-1px_var(--accent-glow)]"
+              className="ml-auto flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full bg-[color:var(--accent)] text-[color:var(--on-accent)] shadow-[var(--shadow-pip)]"
             >
               <Check strokeWidth={3.5} className="h-2 w-2" />
             </span>
@@ -219,10 +219,10 @@ export const SortableNavItem = ({
               <ChevronRight
                 aria-hidden="true"
                 className={clsx(
-                  'ml-auto h-3 w-3 shrink-0 transition-[transform,opacity,color] duration-150',
+                  'ml-auto h-3 w-3 shrink-0 transition-[transform,opacity,color] duration-150 motion-reduce:transition-none',
                   canManageStructure && 'group-hover/item:opacity-0',
                   !item.collapsed && 'rotate-90',
-                  highlightIcon ? 'text-[color:var(--accent)]' : 'text-[color:var(--text-subtle)]',
+                  highlightIcon ? 'text-[color:var(--accent-text)]' : 'text-[color:var(--text-subtle)]',
                 )}
               />
             )
@@ -235,7 +235,7 @@ export const SortableNavItem = ({
               <button
                 type="button"
                 onClick={() => onCreateThread?.(item.id)}
-                className="rounded-md p-1 text-[color:var(--text-muted)] transition-colors duration-150 hover:bg-[color:var(--surface-overlay)] hover:text-[color:var(--accent-text)]"
+                className="cursor-pointer rounded-lg p-1 text-[color:var(--text-muted)] transition-colors duration-150 hover:bg-[color:var(--surface-overlay)] hover:text-[color:var(--accent-text)] focus-visible:ring-2 focus-visible:ring-[color:var(--ring-focus)] focus-visible:outline-none active:bg-[color:var(--accent-soft)] active:text-[color:var(--accent-text)] motion-reduce:transition-none"
                 title={translations.platform.sidebar.newThread}
               >
                 <Plus className="h-3 w-3" />
@@ -244,7 +244,7 @@ export const SortableNavItem = ({
             <button
               type="button"
               onClick={() => startEditing(item.id, item.name)}
-              className="rounded-md p-1 text-[color:var(--text-muted)] transition-colors duration-150 hover:bg-[color:var(--surface-overlay)] hover:text-[color:var(--text-strong)]"
+              className="cursor-pointer rounded-lg p-1 text-[color:var(--text-muted)] transition-colors duration-150 hover:bg-[color:var(--surface-overlay)] hover:text-[color:var(--text-strong)] focus-visible:ring-2 focus-visible:ring-[color:var(--ring-focus)] focus-visible:outline-none active:bg-[color:var(--surface-overlay)] active:text-[color:var(--text-strong)] motion-reduce:transition-none"
               title={translations.platform.sidebar.rename}
             >
               <Pencil className="h-3 w-3" />
@@ -252,7 +252,7 @@ export const SortableNavItem = ({
             <button
               type="button"
               onClick={() => onRequestDelete?.(item.id, item.name, item.type)}
-              className="rounded-md p-1 text-[color:var(--text-muted)] transition-colors duration-150 hover:bg-red-500/10 hover:text-red-500"
+              className="cursor-pointer rounded-lg p-1 text-[color:var(--text-muted)] transition-colors duration-150 hover:bg-[color:var(--status-error-bg)] hover:text-[color:var(--status-error)] focus-visible:ring-2 focus-visible:ring-[color:var(--ring-focus)] focus-visible:outline-none active:bg-[color:var(--status-error-soft)] active:text-[color:var(--status-error)] motion-reduce:transition-none"
               title={translations.platform.sidebar.delete}
             >
               <Trash2 className="h-3 w-3" />

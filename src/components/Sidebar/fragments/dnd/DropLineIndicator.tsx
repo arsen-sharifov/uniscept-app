@@ -16,6 +16,6 @@ export const DropLineIndicator = ({ position, leftOffset }: IDropLineIndicatorPr
       position === 'before' ? '-top-[1px]' : '-bottom-[1px]',
     )}
   >
-    <div className="absolute top-1/2 left-0 h-1.5 w-1.5 -translate-y-1/2 rounded-full bg-[color:var(--accent)] shadow-[0_0_0_3px_var(--accent-soft)]" />
+    <div className="absolute top-1/2 left-0 h-1.5 w-1.5 -translate-y-1/2 rounded-full bg-[color:var(--accent)] ring-[3px] ring-[color:var(--accent-soft)]" />
   </div>
 );

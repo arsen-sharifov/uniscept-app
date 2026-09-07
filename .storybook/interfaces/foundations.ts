@@ -48,13 +48,12 @@ export interface IThemeMeta {
 export interface ITypeRow {
   token: string;
   sample: string;
-  family: 'sans' | 'serif' | 'mono';
+  family: 'grotesk' | 'mono' | 'base';
   classes: string;
   size: string;
   leading: string;
   tracking: string;
   weight: string;
   usage: string;
-  italic?: boolean;
   uppercase?: boolean;
 }

@@ -17,7 +17,9 @@ export const PlacementCell = ({ placement, label, trigger, content, onOpenChange
 
   return (
     <div className="flex flex-col items-center gap-3">
-      <span className="font-mono text-[10px] tracking-[0.18em] text-[color:var(--text-subtle)] uppercase">{label}</span>
+      <span className="font-mono-ui text-[10px] tracking-[0.18em] text-[color:var(--text-subtle)] uppercase">
+        {label}
+      </span>
       <Popover
         open={open}
         placement={placement}

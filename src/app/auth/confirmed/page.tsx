@@ -2,7 +2,8 @@
 
 import { CircleCheck } from 'lucide-react';
 
-import { LANDING_THEME } from '@constants';
+import { AuthButton, AuthHeading, AuthPanel } from '@/app/(auth)/fragments';
+import { LandingWorld } from '@/app/fragments/components';
 import { Logo } from '@/components';
 import { useTranslations } from '@/i18n';
 
@@ -10,25 +11,21 @@ const ConfirmedPage = () => {
   const { confirmed } = useTranslations().auth;
 
   return (
-    <div data-theme={LANDING_THEME} className="flex min-h-screen flex-col items-center justify-center bg-white px-6">
-      <Logo className="mb-12 text-2xl" />
+    <LandingWorld className="relative flex min-h-screen flex-col items-center justify-center px-6">
+      <Logo className="relative z-[1] mb-12 text-2xl text-[color:var(--hero-title)]" />
 
-      <div className="w-full max-w-sm text-center">
-        <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/10">
-          <CircleCheck className="h-8 w-8 text-emerald-500" />
+      <AuthPanel className="relative z-[1] w-full max-w-sm text-center">
+        <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full border border-[color:var(--hero-lime)]/40 bg-[color:var(--hero-lime)]/10">
+          <CircleCheck aria-hidden className="h-8 w-8 text-[color:var(--hero-accent-text)]" />
         </div>
 
-        <h1 className="mb-2 text-2xl font-bold text-black">{confirmed.heading}</h1>
-        <p className="text-sm leading-relaxed text-black/50">{confirmed.message}</p>
+        <AuthHeading title={confirmed.heading} subtitle={confirmed.message} />
 
-        <button
-          onClick={() => window.close()}
-          className="mt-8 w-full rounded-lg bg-black py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:bg-black/80"
-        >
+        <AuthButton onClick={() => window.close()} className="w-full">
           {confirmed.close}
-        </button>
-      </div>
-    </div>
+        </AuthButton>
+      </AuthPanel>
+    </LandingWorld>
   );
 };
 

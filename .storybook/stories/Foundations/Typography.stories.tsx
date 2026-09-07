@@ -9,7 +9,7 @@ const meta: Meta = {
     docs: {
       description: {
         component:
-          'Type system anchored on three families. Every Tailwind class is exactly what the product uses — click to copy.',
+          'Type system anchored on two voices: `font-grotesk` (Onest) for human content and `font-mono-ui` (JetBrains Mono) for system labels, meta and codes. Every Tailwind class is exactly what the product uses — click to copy.',
       },
     },
   },

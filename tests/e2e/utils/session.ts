@@ -13,7 +13,7 @@ export const signIn = async (page: Page, email: string, password: string): Promi
 };
 
 export const signOut = async (page: Page): Promise<void> => {
-  await page.locator('aside [aria-haspopup="dialog"]').last().click();
+  await page.locator('aside footer [aria-haspopup="dialog"]').click();
   await page.getByRole('dialog').getByRole('button', { name: COPY.platform.sidebar.signOut }).click();
   await page.waitForURL(/\/login$/);
 };

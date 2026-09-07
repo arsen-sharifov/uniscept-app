@@ -34,7 +34,7 @@ export const ThemeSpecimen = ({ theme, size }: IThemeSpecimenProps) => {
         <div className="flex items-baseline gap-2">
           <span
             className={clsx(
-              'font-mono font-semibold tracking-[0.24em] text-[color:var(--text-subtle)] uppercase',
+              'font-mono-ui font-semibold tracking-[0.24em] text-[color:var(--text-subtle)] uppercase',
               isHero ? 'text-[10.5px]' : 'text-[9.5px]',
             )}
           >
@@ -42,7 +42,7 @@ export const ThemeSpecimen = ({ theme, size }: IThemeSpecimenProps) => {
           </span>
           <span
             className={clsx(
-              'font-mono tracking-[0.18em] text-[color:var(--text-faint)] uppercase',
+              'font-mono-ui tracking-[0.18em] text-[color:var(--text-faint)] uppercase',
               isHero ? 'text-[10px]' : 'text-[9px]',
             )}
           >
@@ -54,7 +54,7 @@ export const ThemeSpecimen = ({ theme, size }: IThemeSpecimenProps) => {
 
       <h3
         className={clsx(
-          'relative mt-3 font-serif leading-[1] tracking-[-0.015em] text-[color:var(--text-strong)] italic',
+          'relative mt-3 font-grotesk leading-[1] font-semibold tracking-[-0.015em] text-[color:var(--text-strong)]',
           isHero ? 'text-[44px]' : 'text-[28px]',
         )}
       >
@@ -105,7 +105,7 @@ export const ThemeSpecimen = ({ theme, size }: IThemeSpecimenProps) => {
             </p>
             <div className="mt-2.5 flex items-center gap-1.5 text-[color:var(--text-subtle)]">
               <MessageCircle className="h-3 w-3" strokeWidth={2} />
-              <span className="font-mono text-[9px] tracking-[0.18em] uppercase">3 comments</span>
+              <span className="font-mono-ui text-[9px] tracking-[0.18em] uppercase">3 comments</span>
             </div>
           </div>
         </div>

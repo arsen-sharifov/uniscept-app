@@ -21,15 +21,17 @@ export const ToolTooltip = ({ tool, top, visible }: IToolTooltipProps) => {
       )}
       style={{ top }}
     >
-      <div className="relative flex -translate-y-1/2 items-center gap-2 rounded-lg bg-[color:var(--text-strong)] py-1.5 pr-1.5 pl-2.5 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.55)]">
-        <span className="text-[12px] font-medium tracking-tight text-[color:var(--surface)]">{tool?.label ?? ''}</span>
+      <div className="relative flex -translate-y-1/2 items-center gap-2 rounded-md bg-[color:var(--text-strong)] px-2 py-1 shadow-[var(--shadow-pip)]">
+        <span className="font-grotesk text-xs font-medium tracking-tight text-[color:var(--surface)]">
+          {tool?.label ?? ''}
+        </span>
 
         {tool?.shortcut && (
-          <div className="flex shrink-0 items-center gap-0.5 border-l border-[color:var(--surface)]/15 pl-1.5">
+          <div className="flex shrink-0 items-center gap-1 border-l border-[color:var(--surface)]/20 pl-2">
             {renderShortcut(tool.shortcut).map((token, idx) => (
               <kbd
                 key={idx}
-                className="flex h-4 min-w-[16px] items-center justify-center rounded-[4px] bg-[color:var(--surface)]/15 px-1 font-mono text-[9.5px] font-medium text-[color:var(--surface)]/85"
+                className="flex h-[18px] min-w-[18px] items-center justify-center rounded-md border border-[color:var(--surface)]/20 bg-[color:var(--surface)]/12 px-1.5 font-mono-ui text-[10px] font-medium text-[color:var(--surface)]"
               >
                 {token}
               </kbd>

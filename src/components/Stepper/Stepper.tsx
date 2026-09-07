@@ -1,7 +1,7 @@
 import { clsx } from 'clsx';
 import { Check } from 'lucide-react';
 
-export interface IStepperProps {
+interface IStepperProps {
   steps: string[];
   currentStep: number;
 }
@@ -26,10 +26,10 @@ export const Stepper = ({ steps, currentStep }: IStepperProps) => {
             <div className="flex items-center gap-2">
               <div
                 className={clsx(
-                  'flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold transition-all duration-200',
+                  'flex h-7 w-7 shrink-0 items-center justify-center rounded-full font-mono-ui text-xs font-bold transition-colors duration-200 motion-reduce:transition-none',
                   isActive
                     ? 'bg-[color:var(--accent)] text-[color:var(--on-accent)]'
-                    : 'border-2 border-[color:var(--border-strong)] text-[color:var(--text-subtle)]',
+                    : 'border border-[color:var(--border-strong)] text-[color:var(--text-subtle)]',
                 )}
               >
                 {isDone ? (
@@ -43,7 +43,7 @@ export const Stepper = ({ steps, currentStep }: IStepperProps) => {
               </div>
               <span
                 className={clsx(
-                  'text-sm font-medium transition-colors duration-200',
+                  'font-grotesk text-sm font-medium transition-colors duration-200 motion-reduce:transition-none',
                   isActive ? 'text-[color:var(--text-strong)]' : 'text-[color:var(--text-muted)]',
                 )}
               >
@@ -53,7 +53,7 @@ export const Stepper = ({ steps, currentStep }: IStepperProps) => {
             {!isLast && (
               <div
                 className={clsx(
-                  'mx-4 h-0.5 flex-1 rounded-full transition-colors duration-200',
+                  'mx-4 h-0.5 flex-1 rounded-full transition-colors duration-200 motion-reduce:transition-none',
                   isDone ? 'bg-[color:var(--accent)]' : 'bg-[color:var(--border)]',
                 )}
               />

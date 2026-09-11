@@ -50,7 +50,7 @@ Source of truth: Notion → **Uniscept Tech → Conventions** (internal). The to
 - **Prettier** (`.prettierrc`) — single quotes, semis, 2-space indent, 120-char width, Tailwind class sorting.
 - **commitlint** (`commitlint.config.mjs`) — `<type>(dev-<n>): <description>` enforced. No line-length caps.
 - **Husky** (`.husky/`) — `pre-commit` runs `lint-staged` + `type-check`; `commit-msg` runs commitlint; `pre-push` runs `pnpm validate` and validates branch name (`main` or `dev-<n>`).
-- **CI** (`.github/workflows/ci.yml`) — `validate`, `audit`, `test` (unit + coverage gate), `e2e` (integration + build + e2e), `build-storybook`, and `visual` jobs on every PR to `main`; `version-check.yml` enforces semver bump on `package.json` changes.
+- **CI** (`.github/workflows/ci.yml`) — `validate`, `version` (semver bump), `audit`, `test` (unit + coverage gate), `e2e` (integration + build + e2e), `build-storybook`, and `visual` jobs on every PR to `main`.
 
 ## License
 

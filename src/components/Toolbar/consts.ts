@@ -1,4 +1,4 @@
-import type { TToolTone } from '@interfaces';
+import type { TCanvasExportFormat, TToolTone } from '@interfaces';
 
 import { ECanvasTool } from '@/components/tools';
 
@@ -15,6 +15,8 @@ export const TOOLTIP_DELAY_MS = 450;
 export const FLASH_DURATION_MS = 220;
 
 export const ICON_STROKE = 1.75;
+
+export const EXPORT_FORMATS: readonly TCanvasExportFormat[] = ['png', 'jpg', 'svg'];
 
 export const TOOL_KEY_MAP: Record<string, ECanvasTool> = {
   v: ECanvasTool.Select,

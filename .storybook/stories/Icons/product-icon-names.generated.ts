@@ -34,6 +34,7 @@ export const PRODUCT_ICON_NAMES = [
   'CreditCard',
   'Crown',
   'Dog',
+  'Download',
   'ExternalLink',
   'Eye',
   'Feather',

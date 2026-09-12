@@ -27,6 +27,7 @@ import { DEFAULT_PREFERENCES } from '@constants';
 import { useEscapeKey } from '@hooks';
 import { ECanvasTool } from '@/components/tools';
 import { useTranslations } from '@/i18n';
+import { ARROW_MARKER_ATTRIBUTES, ARROW_PATH_D } from '@/lib/canvas';
 import { useCanvasStore, usePermissionsStore } from '@/lib/stores';
 import { canEditNode } from '@/lib/utils';
 
@@ -37,8 +38,6 @@ import {
   ARRIVAL_CLEANUP_MS,
   ARRIVAL_FIT_DURATION_MS,
   ARRIVAL_FIT_PADDING,
-  ARROW_MARKER_ATTRIBUTES,
-  ARROW_PATH_D,
   BACKGROUND_COLOR_FALLBACK,
   BACKGROUND_DOT_GAP,
   BACKGROUND_SIZE_BY_PATTERN,
@@ -416,7 +415,12 @@ export const Canvas = ({
   );
 
   return (
-    <div data-canvas-tool={activeTool} data-canvas-save={saveState.status} className="relative h-full w-full">
+    <div
+      data-canvas-thread={threadId}
+      data-canvas-tool={activeTool}
+      data-canvas-save={saveState.status}
+      className="relative h-full w-full"
+    >
       <svg aria-hidden width="0" height="0" style={{ position: 'absolute', overflow: 'hidden' }}>
         <defs>
           {EDGE_TONES.map((tone) => (

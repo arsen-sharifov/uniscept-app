@@ -1,4 +1,5 @@
 export * from './canvas';
+export * from './canvasExport';
 export * from './components';
 export * from './error';
 export * from './geometry';

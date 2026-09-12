@@ -88,6 +88,7 @@ export const QuestionNode = ({ id, data, selected }: NodeProps<TCanvasNode>) => 
 
   return (
     <div
+      data-export-node
       className={clsx(
         'group/question relative flex max-w-[380px] min-w-[260px] flex-col overflow-visible rounded-xl border bg-[color:var(--surface-elevated)] shadow-[var(--shadow-pip)] transition-[box-shadow,border-color,transform] duration-200 hover:-translate-y-px hover:shadow-[var(--shadow-card-hover)] motion-reduce:transition-none motion-reduce:hover:translate-y-0',
         isEditing ? 'border-[color:var(--border-active)]' : 'border-[color:var(--border-strong)]',
@@ -140,6 +141,7 @@ export const QuestionNode = ({ id, data, selected }: NodeProps<TCanvasNode>) => 
 
         {!isEditing && hasLabel && (overflows || expanded) && (
           <button
+            data-export-omit
             type="button"
             onClick={(event) => {
               event.stopPropagation();

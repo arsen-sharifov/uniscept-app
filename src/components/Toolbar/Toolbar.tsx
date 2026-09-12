@@ -11,7 +11,7 @@ import { buildHelpTool } from '@/components/tools';
 import { useTranslations } from '@/i18n';
 
 import { ICON_STROKE, TOOLTIP_DELAY_MS } from './consts';
-import { ShortcutsHelp, ToolButton, ToolbarSkeleton, ToolTooltip } from './fragments';
+import { ExportMenu, ShortcutsHelp, ToolButton, ToolbarSkeleton, ToolTooltip } from './fragments';
 import { useToolbarShortcuts } from './hooks';
 import { isTypingTarget } from './utils';
 
@@ -23,13 +23,22 @@ interface IToolHoverState {
 const noop = () => {};
 
 export interface IToolbarProps {
+  threadId?: string;
+  threadName?: string;
   groups?: IToolGroup[];
   pendingGroupSizes?: number[];
   activeTool?: string;
   onToolClick?: (id: string) => void;
 }
 
-export const Toolbar = ({ groups = [], pendingGroupSizes = [], activeTool, onToolClick }: IToolbarProps) => {
+export const Toolbar = ({
+  groups = [],
+  pendingGroupSizes = [],
+  activeTool,
+  onToolClick,
+  threadId,
+  threadName,
+}: IToolbarProps) => {
   useToolbarShortcuts();
 
   const t = useTranslations();
@@ -136,6 +145,12 @@ export const Toolbar = ({ groups = [], pendingGroupSizes = [], activeTool, onToo
             </div>
           ))}
         </div>
+
+        {!pending && threadId && threadName && (
+          <div className="mx-2 border-t border-[color:var(--border)] py-2" onPointerEnter={hideHover}>
+            <ExportMenu key={threadId} threadId={threadId} threadName={threadName} />
+          </div>
+        )}
 
         <div className="mx-2 flex justify-center border-t border-[color:var(--border)] py-2">
           {pending ? (

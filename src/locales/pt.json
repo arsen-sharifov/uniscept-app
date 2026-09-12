@@ -95,7 +95,8 @@
       "moveFailed": "Não foi possível mover",
       "loadFailed": "Não foi possível carregar",
       "saveFailed": "Não foi possível guardar",
-      "searchFailed": "A pesquisa falhou"
+      "searchFailed": "A pesquisa falhou",
+      "exportFailed": "Não foi possível exportar"
     },
     "errorPages": {
       "notFoundTitle": "Página não encontrada",
@@ -167,6 +168,18 @@
       "noWorkspaceHintCta": "Crie ou selecione um espaço para começar."
     },
     "canvas": {
+      "export": {
+        "label": "Exportar tela",
+        "description": "O grafo inteiro, no tema atual, com uma pequena marca Uniscept.",
+        "loading": "Preparando exportação…",
+        "unavailable": "Abra uma tela para exportá-la.",
+        "tooLarge": "Este grafo é grande demais para uma imagem nítida. Escolha SVG para exportá-lo em qualquer tamanho.",
+        "formats": {
+          "png": "Imagem de alta qualidade",
+          "jpg": "Arquivo de imagem menor",
+          "svg": "Vetor editável"
+        }
+      },
       "referenceSearch": {
         "placeholder": "Pesquisar nós…",
         "noResults": "Nenhum nó encontrado",

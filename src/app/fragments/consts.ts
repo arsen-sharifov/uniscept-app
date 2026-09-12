@@ -1,5 +1,3 @@
-import type { XYPosition } from '@xyflow/react';
-
 import type {
   IHeroBuilderThread,
   IHeroClaim,
@@ -259,13 +257,6 @@ export const AURORA_RENDER_SCALE = 0.5;
 export const HERO_EDGE_CONTROL_MIN_PX = 28;
 export const HERO_EDGE_CONTROL_MAX_PX = 130;
 export const HERO_EDGE_CONTROL_RATIO = 0.42;
-
-export const HERO_SIDE_NORMALS: Record<THandleId, XYPosition> = {
-  top: { x: 0, y: -1 },
-  bottom: { x: 0, y: 1 },
-  left: { x: -1, y: 0 },
-  right: { x: 1, y: 0 },
-};
 
 export const AURORA_VERTEX_SHADER = `
 attribute vec2 position;

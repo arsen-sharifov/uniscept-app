@@ -3,5 +3,6 @@ export * from './useClickOutside';
 export * from './useEditorPreferences';
 export * from './useEscapeKey';
 export * from './useFocusTrap';
+export * from './useMenuKeyboardNavigation';
 export * from './useMounted';
 export * from './useViewportChange';

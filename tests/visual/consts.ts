@@ -215,6 +215,11 @@ export const VISUAL_CONFIG: IVisualConfig = {
       capture: 'aside',
     },
     {
+      name: 'toolbar-export-menu',
+      storyId: 'components-toolbar--export-menu',
+      capture: 'target',
+    },
+    {
       name: 'toast-open-states',
       storyId: 'components-toast--open-states',
       capture: 'toasts',

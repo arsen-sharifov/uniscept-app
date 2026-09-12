@@ -2,7 +2,15 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
 import { Canvas } from '@/components';
 
-import { denseCanvas, emptyCanvas, evaluatedCanvas, reasoningCanvas, resolvedCanvas } from './consts';
+import {
+  denseCanvas,
+  emptyCanvas,
+  evaluatedCanvas,
+  exportCanvasFixture,
+  reasoningCanvas,
+  resolvedCanvas,
+} from './consts';
+import { CanvasWithExport } from './fragments';
 import { ARG_CATEGORIES } from '../../consts';
 import { WithCanvasStage, WithReactFlow, withCanvasStore } from '../../decorators';
 
@@ -48,6 +56,27 @@ export const Empty: Story = {
   },
   args: { workspaceId: 'sb-workspace', threadId: 'sb-empty' },
   decorators: [withCanvasStore({ threadId: 'sb-empty', nodes: emptyCanvas.nodes, edges: emptyCanvas.edges })],
+};
+
+export const Export: Story = {
+  render: CanvasWithExport,
+  args: { workspaceId: 'sb-workspace', threadId: 'sb-export' },
+  decorators: [
+    withCanvasStore({
+      threadId: 'sb-export',
+      nodes: exportCanvasFixture.nodes,
+      edges: exportCanvasFixture.edges,
+      openCommentsNodeId: 'invalid',
+    }),
+  ],
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Exports the full graph, including negative positions, every node type, all edge tones, a bidirectional connection and long multilingual labels. The selection and open comment panel are excluded.',
+      },
+    },
+  },
 };
 
 export const WithNodes: Story = {

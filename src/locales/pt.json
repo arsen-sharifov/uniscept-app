@@ -167,6 +167,19 @@
       "noWorkspaceHintCta": "Crie ou selecione um espaço para começar."
     },
     "canvas": {
+      "export": {
+        "label": "Exportar tela",
+        "description": "O grafo inteiro, no tema atual, com uma pequena marca Uniscept.",
+        "loading": "Preparando exportação…",
+        "unavailable": "Abra uma tela para exportá-la.",
+        "error": "Não foi possível exportar a tela. Tente novamente.",
+        "tooLarge": "Este grafo é grande demais para uma imagem nítida. Escolha SVG para exportá-lo em qualquer tamanho.",
+        "formats": {
+          "png": "Imagem de alta qualidade",
+          "jpg": "Arquivo de imagem menor",
+          "svg": "Vetor editável"
+        }
+      },
       "referenceSearch": {
         "placeholder": "Pesquisar nós…",
         "noResults": "Nenhum nó encontrado",

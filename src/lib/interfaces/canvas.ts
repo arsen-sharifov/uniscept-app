@@ -105,6 +105,16 @@ export interface ICanvasEdgeData extends Record<string, unknown> {
 
 export type TCanvasEdge = Edge<ICanvasEdgeData>;
 
+export interface ICanvasEdgeGeometry {
+  sourceX: number;
+  sourceY: number;
+  targetX: number;
+  targetY: number;
+  sourceSide: THandleId;
+  targetSide: THandleId;
+  bidirectional?: boolean;
+}
+
 export type TEffectiveStatus = TNodeStatus | 'tainted' | 'tainted-valid';
 
 export interface IEdgePaletteEntry {

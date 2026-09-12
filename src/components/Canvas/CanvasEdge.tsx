@@ -1,25 +1,15 @@
-import { BaseEdge, type EdgeProps, getBezierPath, Position } from '@xyflow/react';
+import { BaseEdge, type EdgeProps, Position } from '@xyflow/react';
 
 import type { TCanvasEdge } from '@interfaces';
 
-import { ARROW_LENGTH, EDGE_CURVATURE } from './consts';
-
-const retractAlongPosition = (x: number, y: number, position: Position): { x: number; y: number } => {
-  switch (position) {
-    case Position.Top:
-      return { x, y: y - ARROW_LENGTH };
-    case Position.Right:
-      return { x: x + ARROW_LENGTH, y };
-    case Position.Bottom:
-      return { x, y: y + ARROW_LENGTH };
-    case Position.Left:
-    default:
-      return { x: x - ARROW_LENGTH, y };
-  }
-};
+import { getCanvasEdgePath } from '@/lib/canvas';
 
 export const CanvasEdge = ({
   id,
+  source: sourceId,
+  target: targetId,
+  sourceHandleId,
+  targetHandleId,
   sourceX,
   sourceY,
   targetX,
@@ -32,25 +22,28 @@ export const CanvasEdge = ({
   const tone = data?.tone ?? 'default';
   const bidirectional = data?.bidirectional === true;
 
-  const target = retractAlongPosition(targetX, targetY, targetPosition ?? Position.Top);
-  const source = bidirectional
-    ? retractAlongPosition(sourceX, sourceY, sourcePosition ?? Position.Bottom)
-    : { x: sourceX, y: sourceY };
-
-  const [path] = getBezierPath({
-    sourceX: source.x,
-    sourceY: source.y,
-    targetX: target.x,
-    targetY: target.y,
-    sourcePosition: sourcePosition ?? Position.Bottom,
-    targetPosition: targetPosition ?? Position.Top,
-    curvature: EDGE_CURVATURE,
+  const path = getCanvasEdgePath({
+    sourceX,
+    sourceY,
+    targetX,
+    targetY,
+    sourceSide: sourcePosition ?? Position.Bottom,
+    targetSide: targetPosition ?? Position.Top,
+    bidirectional,
   });
 
   const markerRef = `url(#canvas-arrow-${tone})`;
 
   return (
-    <>
+    <g
+      data-export-edge={id}
+      data-source={sourceId}
+      data-target={targetId}
+      data-source-handle={sourceHandleId ?? sourcePosition}
+      data-target-handle={targetHandleId ?? targetPosition}
+      data-tone={tone}
+      data-bidirectional={bidirectional || undefined}
+    >
       <BaseEdge
         id={id}
         path={path}
@@ -65,6 +58,6 @@ export const CanvasEdge = ({
           style={{ ...style, fill: 'none', pointerEvents: 'none' }}
         />
       )}
-    </>
+    </g>
   );
 };

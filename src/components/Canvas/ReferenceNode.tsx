@@ -38,6 +38,7 @@ export const ReferenceNode = ({ data, selected }: NodeProps<TReferenceNode>) => 
 
   return (
     <div
+      data-export-node
       onDoubleClick={navigate}
       className={clsx(
         'group/ref relative flex max-w-[280px] min-w-[200px] flex-col overflow-visible rounded-xl border border-[color:var(--border-strong)] bg-[color:var(--surface-elevated)] shadow-[var(--shadow-pip)] transition-[box-shadow,border-color,transform] duration-200 hover:-translate-y-px hover:border-[color:var(--ref-border)] hover:shadow-[var(--shadow-card-hover)] motion-reduce:transition-none motion-reduce:hover:translate-y-0',

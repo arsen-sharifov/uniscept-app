@@ -6,9 +6,16 @@ import type { IToolGroup } from '@interfaces';
 
 import { ECanvasTool, type IToolbarProps, Toolbar, buildCanvasToolGroups, buildCanvasTools } from '@/components';
 
-import { DENSE_DISABLED_TOOL_IDS, READ_ONLY_DISABLED_TOOL_IDS } from './consts';
-import { ToolbarWithState, type IToolbarWithStateProps } from './fragments';
+import {
+  DENSE_DISABLED_TOOL_IDS,
+  EXPORT_THREAD_ID,
+  EXPORT_THREAD_NAME,
+  READ_ONLY_DISABLED_TOOL_IDS,
+  exportMenuNodes,
+} from './consts';
+import { ToolbarWithExportMenu, ToolbarWithState, type IToolbarWithStateProps } from './fragments';
 import { ARG_CATEGORIES } from '../../consts';
+import { withCanvasStore } from '../../decorators';
 
 const meta: Meta<typeof Toolbar> = {
   title: 'Components/Toolbar',
@@ -27,6 +34,16 @@ const meta: Meta<typeof Toolbar> = {
     onToolClick: fn(),
   },
   argTypes: {
+    threadId: {
+      control: 'text',
+      description: 'Active thread identifier. Enables the canvas export action together with threadName.',
+      table: { category: ARG_CATEGORIES.CONTENT },
+    },
+    threadName: {
+      control: 'text',
+      description: 'Thread name used for downloaded exports.',
+      table: { category: ARG_CATEGORIES.CONTENT },
+    },
     groups: {
       description:
         'Array of tool groups rendered top-to-bottom. Each group has an `id`, optional `label`, and a `tools` array of `IToolItem` (id, icon, label, description, shortcut, kind, disabled). Every group after the first opens with a hairline top border.',
@@ -87,6 +104,21 @@ export const ConnectActive: Story = {
 export const AddNodeActive: Story = {
   args: { activeTool: ECanvasTool.AddNode },
   render: renderToolbar(),
+};
+
+export const ExportMenu: Story = {
+  name: 'Export menu',
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The export action sits in its own footer group above the help button and only appears while a canvas is open. Its menu opens to the left of the rail, naming what each format is for.',
+      },
+    },
+  },
+  args: { threadId: EXPORT_THREAD_ID, threadName: EXPORT_THREAD_NAME },
+  decorators: [withCanvasStore({ threadId: EXPORT_THREAD_ID, nodes: exportMenuNodes })],
+  render: ToolbarWithExportMenu,
 };
 
 export const WithDisabledTools: Story = {

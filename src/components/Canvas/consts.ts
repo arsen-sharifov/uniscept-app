@@ -29,8 +29,6 @@ export const HANDLE_POSITIONS: { id: THandleId; position: Position }[] = [
   { id: 'bottom', position: Position.Bottom },
 ];
 
-export const ARROW_LENGTH = 10;
-
 export const ARRIVAL_FIT_DURATION_MS = 700;
 export const ARRIVAL_FIT_PADDING = 0.25;
 export const ARRIVAL_CLEANUP_MS = 1600;
@@ -79,21 +77,7 @@ export const PAN_BUTTONS_MIDDLE: number[] = [1];
 
 export const EDGE_DEFAULT_STROKE_WIDTH = 1.75;
 
-export const EDGE_CURVATURE = 0.16;
-
 export const EDGE_TONES: readonly TEdgeTone[] = ['default', 'valid', 'invalid', 'tainted'];
-
-export const ARROW_MARKER_ATTRIBUTES = {
-  viewBox: '0 0 12 9',
-  markerWidth: 12,
-  markerHeight: 9,
-  refX: 0,
-  refY: 4.5,
-  orient: 'auto-start-reverse',
-  markerUnits: 'userSpaceOnUse',
-} as const;
-
-export const ARROW_PATH_D = 'M 0 0 L 12 4.5 L 0 9 L 2.4 4.5 Z';
 
 export const DEFAULT_EDGE_OPTIONS: DefaultEdgeOptions = {
   type: 'default',

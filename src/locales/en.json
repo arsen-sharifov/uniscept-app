@@ -167,6 +167,19 @@
       "noWorkspaceHintCta": "Create a workspace or select one to start working."
     },
     "canvas": {
+      "export": {
+        "label": "Export canvas",
+        "description": "The whole graph, in the current theme, with a small Uniscept mark.",
+        "loading": "Preparing export…",
+        "unavailable": "Open a canvas to export it.",
+        "error": "Could not export the canvas. Please try again.",
+        "tooLarge": "This graph is too large for a sharp image. Choose SVG to export it at any size.",
+        "formats": {
+          "png": "High-quality image",
+          "jpg": "Smaller image file",
+          "svg": "Editable vector"
+        }
+      },
       "referenceSearch": {
         "placeholder": "Search nodes…",
         "noResults": "No nodes found",

@@ -1,4 +1,4 @@
-import { ARROW_MARKER_ATTRIBUTES, ARROW_PATH_D } from '@/components/Canvas/consts';
+import { ARROW_MARKER_ATTRIBUTES, ARROW_PATH_D } from '@/lib/canvas/consts';
 
 import { HERO_EDGE_MARKER_TONES, HERO_EDGE_TONE_STROKES } from '../consts';
 

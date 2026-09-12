@@ -13,10 +13,10 @@ import {
   XCircle,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useRef, type KeyboardEvent, type ReactNode } from 'react';
+import { useCallback, useEffect, useRef, type ReactNode } from 'react';
 
 import { ECanvasNodeType, type TCanvasContextMenu } from '@interfaces';
-import { useClickOutside, useEscapeKey } from '@hooks';
+import { useClickOutside, useEscapeKey, useMenuKeyboardNavigation } from '@hooks';
 import { useTranslations } from '@/i18n';
 import { useCanvasStore, usePermissionsStore } from '@/lib/stores';
 import { canEditNode } from '@/lib/utils';
@@ -74,67 +74,11 @@ export const ContextMenu = ({ menu, onClose }: IContextMenuProps) => {
     [onClose],
   );
 
-  const getMenuItems = useCallback((): HTMLButtonElement[] => {
-    const container = containerRef.current;
-    if (!container) return [];
-
-    return Array.from(container.querySelectorAll<HTMLButtonElement>('[role="menuitem"]'));
-  }, []);
+  const { focusItem, handleKeyDown } = useMenuKeyboardNavigation(containerRef);
 
   useEffect(() => {
-    const items = getMenuItems();
-    if (items.length === 0) return;
-    const first = items[0];
-    if (!first) return;
-    first.tabIndex = 0;
-    first.focus();
-  }, [getMenuItems]);
-
-  const handleKeyDown = useCallback(
-    (event: KeyboardEvent<HTMLDivElement>) => {
-      const items = getMenuItems();
-      if (items.length === 0) return;
-      const currentIndex = items.findIndex((item) => item === document.activeElement);
-      const focusAt = (index: number) => {
-        items.forEach((item, i) => {
-          item.tabIndex = i === index ? 0 : -1;
-        });
-        items[index]?.focus();
-      };
-
-      if (event.key === 'ArrowDown') {
-        event.preventDefault();
-        focusAt(((currentIndex < 0 ? -1 : currentIndex) + 1) % items.length);
-
-        return;
-      }
-      if (event.key === 'ArrowUp') {
-        event.preventDefault();
-        focusAt(((currentIndex < 0 ? 0 : currentIndex) - 1 + items.length) % items.length);
-
-        return;
-      }
-      if (event.key === 'Home') {
-        event.preventDefault();
-        focusAt(0);
-
-        return;
-      }
-      if (event.key === 'End') {
-        event.preventDefault();
-        focusAt(items.length - 1);
-
-        return;
-      }
-      if (event.key === 'Enter' || event.key === ' ') {
-        if (currentIndex >= 0) {
-          event.preventDefault();
-          items[currentIndex]?.click();
-        }
-      }
-    },
-    [getMenuItems],
-  );
+    focusItem(0);
+  }, [focusItem]);
 
   const renderItems = (): ReactNode[] => {
     if (menu.type === 'pane') {

@@ -106,6 +106,8 @@ const WorkspaceLayout = ({ children }: { children: ReactNode }) => {
         </div>
       </main>
       <Toolbar
+        threadId={activeThreadId ?? undefined}
+        threadName={activeThreadName ?? undefined}
         groups={groups}
         pendingGroupSizes={pendingGroupSizes}
         activeTool={activeTool}

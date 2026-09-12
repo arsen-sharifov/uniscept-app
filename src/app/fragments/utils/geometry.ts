@@ -2,22 +2,12 @@
 
 import type { XYPosition } from '@xyflow/react';
 
-import type { IHeroEdge, IHeroEdgePath, IRect, THandleId } from '@interfaces';
+import type { IHeroEdge, IHeroEdgePath, IRect } from '@interfaces';
 
-import { ARROW_LENGTH } from '@/components/Canvas/consts';
-import { findNearestSides, getHandleAnchor } from '@/lib/canvas/utils';
+import { ARROW_LENGTH } from '@/lib/canvas/consts';
+import { findNearestSides, getHandleAnchor, offsetAlongSide } from '@/lib/canvas/utils';
 
-import {
-  HERO_EDGE_CONTROL_MAX_PX,
-  HERO_EDGE_CONTROL_MIN_PX,
-  HERO_EDGE_CONTROL_RATIO,
-  HERO_SIDE_NORMALS,
-} from '../consts';
-
-const offsetAlong = (point: XYPosition, side: THandleId, amount: number): XYPosition => ({
-  x: point.x + HERO_SIDE_NORMALS[side].x * amount,
-  y: point.y + HERO_SIDE_NORMALS[side].y * amount,
-});
+import { HERO_EDGE_CONTROL_MAX_PX, HERO_EDGE_CONTROL_MIN_PX, HERO_EDGE_CONTROL_RATIO } from '../consts';
 
 const translationInPixels = (value: string, size: number): number =>
   (Number.parseFloat(value) || 0) * (value.endsWith('%') ? size / 100 : 1);
@@ -45,15 +35,15 @@ export const measureLayoutRect = (element: HTMLElement, stage: HTMLElement): IRe
 export const buildEdgePath = (edge: IHeroEdge, source: IRect, target: IRect): IHeroEdgePath => {
   const { sourceHandle, targetHandle } = findNearestSides(source, target);
   const start = getHandleAnchor(source, sourceHandle);
-  const end = offsetAlong(getHandleAnchor(target, targetHandle), targetHandle, ARROW_LENGTH);
+  const end = offsetAlongSide(getHandleAnchor(target, targetHandle), targetHandle, ARROW_LENGTH);
 
   const distance = Math.hypot(end.x - start.x, end.y - start.y);
   const offset = Math.min(
     HERO_EDGE_CONTROL_MAX_PX,
     Math.max(HERO_EDGE_CONTROL_MIN_PX, distance * HERO_EDGE_CONTROL_RATIO),
   );
-  const controlA = offsetAlong(start, sourceHandle, offset);
-  const controlB = offsetAlong(end, targetHandle, offset);
+  const controlA = offsetAlongSide(start, sourceHandle, offset);
+  const controlB = offsetAlongSide(end, targetHandle, offset);
 
   return {
     ...edge,

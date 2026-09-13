@@ -95,7 +95,8 @@
       "moveFailed": "Impossible de déplacer",
       "loadFailed": "Impossible de charger",
       "saveFailed": "Impossible d'enregistrer",
-      "searchFailed": "La recherche a échoué"
+      "searchFailed": "La recherche a échoué",
+      "exportFailed": "Impossible d'exporter"
     },
     "errorPages": {
       "notFoundTitle": "Page introuvable",
@@ -167,6 +168,18 @@
       "noWorkspaceHintCta": "Créez ou sélectionnez un espace pour commencer."
     },
     "canvas": {
+      "export": {
+        "label": "Exporter le canevas",
+        "description": "Le graphe entier, dans le thème actuel, avec une petite marque Uniscept.",
+        "loading": "Préparation de l’export…",
+        "unavailable": "Ouvrez un canevas pour l’exporter.",
+        "tooLarge": "Ce graphe est trop grand pour une image nette. Choisissez SVG pour l’exporter à n’importe quelle taille.",
+        "formats": {
+          "png": "Image de haute qualité",
+          "jpg": "Fichier image plus léger",
+          "svg": "Vecteur modifiable"
+        }
+      },
       "referenceSearch": {
         "placeholder": "Rechercher des nœuds…",
         "noResults": "Aucun nœud trouvé",

@@ -116,6 +116,7 @@ export const CanvasNode = ({ id, data, selected }: NodeProps<TCanvasNode>) => {
 
   return (
     <div
+      data-export-node
       onAnimationEnd={isNew ? () => clearNewFlag(id) : undefined}
       style={wash ? { backgroundImage: `linear-gradient(${wash}, ${wash})` } : undefined}
       className={clsx(
@@ -128,6 +129,7 @@ export const CanvasNode = ({ id, data, selected }: NodeProps<TCanvasNode>) => {
     >
       {eligibleHint && (
         <span
+          data-export-omit
           aria-hidden
           className="pointer-events-none absolute -inset-[5px] animate-node-pulse rounded-[17px] border-2 border-dashed border-[color:var(--accent)]/55 motion-reduce:animate-none"
         />
@@ -198,6 +200,7 @@ export const CanvasNode = ({ id, data, selected }: NodeProps<TCanvasNode>) => {
 
         {!isEditing && (overflows || expanded) && (
           <button
+            data-export-omit
             type="button"
             onClick={(event) => {
               event.stopPropagation();
@@ -217,6 +220,7 @@ export const CanvasNode = ({ id, data, selected }: NodeProps<TCanvasNode>) => {
 
       {showComments && (
         <div
+          data-export-omit
           onClick={(event) => event.stopPropagation()}
           onMouseDown={(event) => event.stopPropagation()}
           className="nodrag absolute top-0 left-full z-50 ml-3 flex w-72 flex-col overflow-hidden rounded-xl border border-[color:var(--border)] bg-[color:var(--surface)] font-grotesk text-[color:var(--text)] shadow-[var(--shadow-modal)]"

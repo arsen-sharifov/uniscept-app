@@ -95,7 +95,8 @@
       "moveFailed": "Couldn't move",
       "loadFailed": "Couldn't load",
       "saveFailed": "Couldn't save",
-      "searchFailed": "Search failed"
+      "searchFailed": "Search failed",
+      "exportFailed": "Couldn't export"
     },
     "errorPages": {
       "notFoundTitle": "Page not found",
@@ -167,6 +168,18 @@
       "noWorkspaceHintCta": "Create a workspace or select one to start working."
     },
     "canvas": {
+      "export": {
+        "label": "Export canvas",
+        "description": "The whole graph, in the current theme, with a small Uniscept mark.",
+        "loading": "Preparing export…",
+        "unavailable": "Open a canvas to export it.",
+        "tooLarge": "This graph is too large for a sharp image. Choose SVG to export it at any size.",
+        "formats": {
+          "png": "High-quality image",
+          "jpg": "Smaller image file",
+          "svg": "Editable vector"
+        }
+      },
       "referenceSearch": {
         "placeholder": "Search nodes…",
         "noResults": "No nodes found",

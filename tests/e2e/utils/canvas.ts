@@ -1,4 +1,4 @@
-import { expect, type Locator, type Page } from '@playwright/test';
+import { type Download, expect, type Locator, type Page } from '@playwright/test';
 
 import {
   CANVAS_NODE_TYPE,
@@ -6,6 +6,7 @@ import {
   CONTEXT_MENU_TIMEOUT_MS,
   COPY,
   EDGE_SELECTOR,
+  EXPORT_TIMEOUT_MS,
   LABEL_EDITOR_ATTEMPTS,
   LABEL_EDITOR_TIMEOUT_MS,
   NODE_SELECTOR,
@@ -39,9 +40,24 @@ export const expectSaved = async (page: Page): Promise<void> => {
   await expect(page.locator(SAVE_STATE_SELECTOR)).toHaveAttribute(SAVE_STATE_ATTRIBUTE, SAVE_STATE_SAVED);
 };
 
+export const getToolbar = (page: Page): Locator => page.getByRole('complementary', { name: canvas.tools.ariaLabel });
+
 export const selectTool = async (page: Page, label: string): Promise<void> => {
-  const toolbar = page.getByRole('complementary', { name: canvas.tools.ariaLabel });
-  await toolbar.getByRole('button', { name: label, exact: true }).click();
+  await getToolbar(page).getByRole('button', { name: label, exact: true }).click();
+};
+
+export const downloadExport = async (page: Page, format: string): Promise<Download> => {
+  await getToolbar(page).getByRole('button', { name: canvas.export.label, exact: true }).click();
+
+  const menu = page.getByRole('menu', { name: canvas.export.label });
+  await expect(menu).toBeVisible();
+
+  const [download] = await Promise.all([
+    page.waitForEvent('download', { timeout: EXPORT_TIMEOUT_MS }),
+    menu.getByRole('menuitem', { name: format }).click(),
+  ]);
+
+  return download;
 };
 
 export const addNodeAt = async (page: Page, x: number, y: number): Promise<void> => {

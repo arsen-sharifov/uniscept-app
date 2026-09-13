@@ -95,7 +95,8 @@
       "moveFailed": "Nu s-a putut muta",
       "loadFailed": "Nu s-a putut încărca",
       "saveFailed": "Nu s-a putut salva",
-      "searchFailed": "Căutarea a eșuat"
+      "searchFailed": "Căutarea a eșuat",
+      "exportFailed": "Nu s-a putut exporta"
     },
     "errorPages": {
       "notFoundTitle": "Pagina nu a fost găsită",
@@ -167,6 +168,18 @@
       "noWorkspaceHintCta": "Creează unul sau selectează unul existent pentru a începe."
     },
     "canvas": {
+      "export": {
+        "label": "Exportă pânza",
+        "description": "Întregul graf, în tema curentă, cu o mică marcă Uniscept.",
+        "loading": "Se pregătește exportul…",
+        "unavailable": "Deschide o pânză pentru a o exporta.",
+        "tooLarge": "Acest graf este prea mare pentru o imagine clară. Alege SVG pentru a-l exporta la orice dimensiune.",
+        "formats": {
+          "png": "Imagine de înaltă calitate",
+          "jpg": "Fișier imagine mai mic",
+          "svg": "Vector editabil"
+        }
+      },
       "referenceSearch": {
         "placeholder": "Caută noduri…",
         "noResults": "Niciun nod găsit",

@@ -1,6 +1,6 @@
 import type { Edge } from '@xyflow/react';
 
-import { ECanvasNodeType, type IComment, type TCanvasNode, type TNodeStatus } from '@interfaces';
+import { ECanvasNodeType, type IComment, type TCanvasNode, type THandleId, type TNodeStatus } from '@interfaces';
 import type { ICanvasFixture } from '@story-interfaces';
 
 import { STORYBOOK_AUTHOR_ID } from '../consts';
@@ -31,12 +31,18 @@ export const createQuestionNode = (id: string, label: string, selected: boolean 
   data: { label, status: null, isAnswer: false, comments: [] },
 });
 
-export const createCanvasEdge = (id: string, source: string, target: string): Edge => ({
+export const createCanvasEdge = (
+  id: string,
+  source: string,
+  target: string,
+  sourceHandle: THandleId = 'bottom',
+  targetHandle: THandleId = 'top',
+): Edge => ({
   id,
   source,
   target,
-  sourceHandle: 'bottom',
-  targetHandle: 'top',
+  sourceHandle,
+  targetHandle,
   type: 'default',
 });
 

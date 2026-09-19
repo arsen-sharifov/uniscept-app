@@ -1,4 +1,4 @@
-import { COPY } from '../../consts';
+import { COPY, COPY_UK, LANDING_WORLD_SELECTOR } from '../../consts';
 import { expect, guestTest as test } from '../../fixtures';
 
 const { landing } = COPY;
@@ -44,6 +44,45 @@ test.describe('landing page', () => {
       test('THEN the sign-up flow opens on the plan step', async ({ page }) => {
         await expect(page).toHaveURL(/\/signup$/);
         await expect(page.getByRole('heading', { name: COPY.auth.signUp.planStep.heading })).toBeVisible();
+      });
+    });
+  });
+
+  test.describe('GIVEN a visitor whose browser speaks Ukrainian and runs a dark system scheme', () => {
+    test.use({ locale: 'uk-UA', colorScheme: 'dark' });
+
+    test.describe('WHEN the landing page opens with nothing picked yet', () => {
+      test.beforeEach(async ({ page }) => {
+        await page.goto('/');
+      });
+
+      test('THEN it speaks the language of the browser', async ({ page }) => {
+        await expect(page.locator('html')).toHaveAttribute('lang', 'uk');
+        await expect(page.getByRole('heading', { name: COPY_UK.landing.hero.title })).toBeVisible();
+      });
+
+      test('THEN it follows the dark scheme of the system', async ({ page }) => {
+        await expect(page.locator('html')).toHaveAttribute('data-theme', 'auto');
+        await expect(page.locator(LANDING_WORLD_SELECTOR)).toHaveCSS('color-scheme', 'dark');
+      });
+    });
+  });
+
+  test.describe('GIVEN a visitor whose browser asks only for unsupported languages and runs a light system scheme', () => {
+    test.use({ locale: 'de-DE', colorScheme: 'light' });
+
+    test.describe('WHEN the landing page opens with nothing picked yet', () => {
+      test.beforeEach(async ({ page }) => {
+        await page.goto('/');
+      });
+
+      test('THEN it falls back to English', async ({ page }) => {
+        await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+        await expect(page.getByRole('heading', { name: landing.hero.title })).toBeVisible();
+      });
+
+      test('THEN it follows the light scheme of the system', async ({ page }) => {
+        await expect(page.locator(LANDING_WORLD_SELECTOR)).toHaveCSS('color-scheme', 'light');
       });
     });
   });

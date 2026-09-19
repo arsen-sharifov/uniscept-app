@@ -1,0 +1,35 @@
+@theme inline {
+  --animate-spotlight-nudge: spotlight-nudge 620ms ease-out;
+  --animate-hint-ring: hint-ring 1.8s ease-in-out infinite;
+}
+
+[data-tour-focus],
+:has(> [data-tour-focus]) {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+@keyframes spotlight-nudge {
+  0% {
+    stroke-width: 2;
+    opacity: 1;
+  }
+  35% {
+    stroke-width: 5;
+    opacity: 0.55;
+  }
+  100% {
+    stroke-width: 2;
+    opacity: 1;
+  }
+}
+
+@keyframes hint-ring {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 var(--accent-glow);
+  }
+  50% {
+    box-shadow: 0 0 0 8px transparent;
+  }
+}

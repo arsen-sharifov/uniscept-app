@@ -1,6 +1,7 @@
 import { COPY, E2E_ACCOUNT_DOMAIN, E2E_ACCOUNT_PASSWORD } from '../../consts';
 import { expect, guestTest as test } from '../../fixtures';
 import {
+  declineTourOffer,
   deleteAccountByEmail,
   getWorkspaceRow,
   openWorkspacePanel,
@@ -39,6 +40,8 @@ test.describe('workspace join', () => {
         await page.getByLabel(accountStep.name).fill('Invited Teammate');
         await page.getByLabel(accountStep.password).fill(E2E_ACCOUNT_PASSWORD);
         await page.getByRole('button', { name: accountStep.join, exact: true }).click();
+        await page.waitForURL(/\/platform/);
+        await declineTourOffer(page);
       });
 
       test('THEN the platform opens with the shared workspace joined', async ({ page, workspace }) => {

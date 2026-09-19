@@ -1,0 +1,49 @@
+@theme inline {
+  --animate-mascot-blink: mascot-blink 5.4s ease-in-out infinite;
+  --animate-mascot-float: mascot-float 4.8s ease-in-out infinite;
+  --animate-mascot-sway: mascot-sway 3.6s ease-in-out infinite;
+  --animate-mascot-sway-alt: mascot-sway-alt 3.6s ease-in-out infinite;
+  --animate-mascot-sway-eager: mascot-sway 1.9s ease-in-out infinite;
+  --animate-mascot-sway-alt-eager: mascot-sway-alt 1.9s ease-in-out infinite;
+}
+
+@keyframes mascot-blink {
+  0%,
+  92%,
+  100% {
+    transform: scaleY(1);
+  }
+  95% {
+    transform: scaleY(0.12);
+  }
+}
+
+@keyframes mascot-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-1.5px);
+  }
+}
+
+@keyframes mascot-sway {
+  0%,
+  100% {
+    transform: rotate(-4deg);
+  }
+  50% {
+    transform: rotate(4deg);
+  }
+}
+
+@keyframes mascot-sway-alt {
+  0%,
+  100% {
+    transform: rotate(4deg);
+  }
+  50% {
+    transform: rotate(-4deg);
+  }
+}

@@ -12,6 +12,7 @@ import { getUser, signOut } from '@api/client';
 import { Avatar, Popover, Skeleton } from '@/components';
 import { useTranslations, clearLocale } from '@/i18n';
 import { event } from '@/lib/events';
+import { useOnboardingStore } from '@/lib/onboarding';
 import { isAvatarIcon } from '@/lib/utils';
 
 interface IUserMenuProps {
@@ -23,6 +24,7 @@ export const UserMenu = ({ onSettingsClick }: IUserMenuProps) => {
   const translations = useTranslations();
   const [open, setOpen] = useState(false);
   const [user, setUser] = useState<User | null>();
+  const forget = useOnboardingStore((state) => state.forget);
 
   useEffect(() => {
     let cancelled = false;
@@ -56,6 +58,7 @@ export const UserMenu = ({ onSettingsClick }: IUserMenuProps) => {
     } catch (error) {
       event.error(error, { toast: false, context: 'auth.signOut' });
     } finally {
+      forget();
       localStorage.removeItem(PREFERENCES_STORAGE_KEY);
       await clearLocale();
       router.push('/login');
@@ -84,6 +87,7 @@ export const UserMenu = ({ onSettingsClick }: IUserMenuProps) => {
       trigger={
         <button
           type="button"
+          data-tour="sidebarUserMenu"
           className={clsx(
             'group flex w-full min-w-0 items-center gap-2 rounded-xl px-2 py-1.5 text-left transition-colors',
             open ? 'bg-[color:var(--surface-overlay)]' : 'hover:bg-[color:var(--surface-overlay)]',
@@ -108,6 +112,7 @@ export const UserMenu = ({ onSettingsClick }: IUserMenuProps) => {
       <div className="space-y-0.5 p-1.5">
         <button
           type="button"
+          data-tour="userMenuSettings"
           onClick={() => {
             setOpen(false);
             onSettingsClick?.();

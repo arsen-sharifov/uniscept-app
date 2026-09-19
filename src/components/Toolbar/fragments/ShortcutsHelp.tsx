@@ -33,6 +33,7 @@ export const ShortcutsHelp = ({ open, groups, activeTool, onClose }: IShortcutsH
       <div aria-hidden className="absolute inset-0 bg-[color:var(--scrim)] backdrop-blur-sm" />
 
       <div
+        data-tour="shortcutsSheet"
         ref={dialogRef}
         role="dialog"
         aria-modal="true"
@@ -62,6 +63,7 @@ export const ShortcutsHelp = ({ open, groups, activeTool, onClose }: IShortcutsH
           <button
             type="button"
             autoFocus
+            data-tour="shortcutsClose"
             onClick={onClose}
             className="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-lg text-[color:var(--text-subtle)] transition-[background-color,color,box-shadow,transform] duration-150 ease-out outline-none hover:bg-[color:var(--surface-overlay)] hover:text-[color:var(--text-strong)] focus-visible:ring-2 focus-visible:ring-[color:var(--ring-focus)] active:scale-[0.94] motion-reduce:transition-none"
             aria-label={t.platform.canvas.shortcuts.closeAriaLabel}

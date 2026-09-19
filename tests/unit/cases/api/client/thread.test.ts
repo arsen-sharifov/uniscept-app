@@ -102,6 +102,22 @@ describe('createThread', () => {
     });
   });
 
+  describe('GIVEN a name chosen up front', () => {
+    describe('WHEN the thread is created', () => {
+      test('THEN the name is written with the row instead of the default', async () => {
+        const { queries } = primeSupabase([{ count: 0 }, { data: threadRow({ name: 'Example' }) }, { data: null }]);
+
+        await expect(createThread('ws-1', undefined, 'Example')).resolves.toMatchObject({ name: 'Example' });
+        expect(queries[1]!.insert).toHaveBeenCalledExactlyOnceWith({
+          workspace_id: 'ws-1',
+          folder_id: null,
+          position: 0,
+          name: 'Example',
+        });
+      });
+    });
+  });
+
   describe('GIVEN a question node insert that fails', () => {
     describe('WHEN the thread is created', () => {
       test('THEN the failure is swallowed and the thread is still returned', async () => {

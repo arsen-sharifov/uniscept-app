@@ -8,6 +8,7 @@ import {
   Footprints,
   Gavel,
   GitFork,
+  GraduationCap,
   Languages,
   Link2,
   type LucideIcon,
@@ -27,6 +28,7 @@ export const BADGES: readonly {
   unlockKey: TBadgeUnlockKey;
 }[] = [
   { id: 'founder', icon: Sparkles, labelKey: 'badgeFounder', unlockKey: 'founderUnlock' },
+  { id: 'initiate', icon: GraduationCap, labelKey: 'badgeInitiate', unlockKey: 'initiateUnlock' },
   { id: 'firstSteps', icon: Footprints, labelKey: 'badgeFirstSteps', unlockKey: 'firstStepsUnlock' },
   { id: 'architect', icon: Compass, labelKey: 'badgeArchitect', unlockKey: 'architectUnlock' },
   { id: 'connector', icon: Link2, labelKey: 'badgeConnector', unlockKey: 'connectorUnlock' },

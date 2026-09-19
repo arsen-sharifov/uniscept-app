@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest';
 
-import { getCanvasEdgePath, offsetAlongSide } from '@/lib/canvas';
+import { canvasEdge } from '@mocks/canvas';
+import { findLinkedNodeIds, getCanvasEdgePath, offsetAlongSide } from '@/lib/canvas';
 
 describe('offsetAlongSide', () => {
   describe('GIVEN a point on each side of a node', () => {
@@ -84,6 +85,28 @@ describe('getCanvasEdgePath', () => {
         } as const;
 
         expect(getCanvasEdgePath(geometry)).not.toBe(getCanvasEdgePath({ ...geometry, bidirectional: true }));
+      });
+    });
+  });
+});
+
+describe('findLinkedNodeIds', () => {
+  describe('GIVEN edges between a question and two claims', () => {
+    describe('WHEN the linked nodes are collected', () => {
+      test('THEN both ends of every edge are included once', () => {
+        const edges = [canvasEdge('e1', 'question', 'claim-a'), canvasEdge('e2', 'claim-a', 'claim-b')];
+
+        expect(findLinkedNodeIds(edges)).toEqual(new Set(['question', 'claim-a', 'claim-b']));
+      });
+    });
+  });
+
+  describe('GIVEN the same edges array read twice', () => {
+    describe('WHEN the linked nodes are collected again', () => {
+      test('THEN the cached set is returned instead of a new one', () => {
+        const edges = [canvasEdge('e1', 'question', 'claim-a')];
+
+        expect(findLinkedNodeIds(edges)).toBe(findLinkedNodeIds(edges));
       });
     });
   });

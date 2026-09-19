@@ -42,6 +42,11 @@ export interface IIntegrationInvitationRow {
   status: string;
 }
 
+export interface IIntegrationOnboardingRow {
+  offer_answered: boolean;
+  completed_guides: string[];
+}
+
 export interface IIntegrationRoleFlags {
   canEditCanvas?: boolean;
   canComment?: boolean;

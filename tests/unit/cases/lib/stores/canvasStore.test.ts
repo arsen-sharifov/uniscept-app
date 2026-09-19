@@ -48,6 +48,47 @@ describe('canvasStore', () => {
       });
     });
 
+    describe('WHEN they add a node under an id chosen up front', () => {
+      beforeEach(() => {
+        useCanvasStore.getState().addNode({ x: 0, y: 0 }, 'Scripted', 'preset-id');
+      });
+
+      test('THEN the node keeps that id', () => {
+        expect(useCanvasStore.getState().nodes.find((node) => node.id === 'preset-id')?.data.label).toBe('Scripted');
+      });
+    });
+
+    describe('WHEN a fit is asked for with room kept free and then without', () => {
+      let requestsBefore: number;
+      let padded: unknown;
+
+      beforeEach(() => {
+        requestsBefore = useCanvasStore.getState().fitRequest;
+        useCanvasStore.getState().requestFit({ bottom: '300px' });
+        padded = useCanvasStore.getState().fitPadding;
+        useCanvasStore.getState().requestFit();
+      });
+
+      test('THEN each request carries its own padding', () => {
+        expect(padded).toEqual({ bottom: '300px' });
+        expect(useCanvasStore.getState()).toMatchObject({ fitRequest: requestsBefore + 2, fitPadding: null });
+      });
+    });
+
+    describe('WHEN a fit was asked for and then another canvas is loaded', () => {
+      let requested: number;
+
+      beforeEach(() => {
+        useCanvasStore.getState().requestFit();
+        requested = useCanvasStore.getState().fitRequest;
+        useCanvasStore.getState().loadCanvas('another-thread', { nodes: [], edges: [] });
+      });
+
+      test('THEN the request counter is not rewound, so the switch does not fire a fit of its own', () => {
+        expect(useCanvasStore.getState().fitRequest).toBe(requested);
+      });
+    });
+
     describe('WHEN they connect the two nodes in the reverse direction', () => {
       beforeEach(() => {
         useCanvasStore.getState().setPendingConnection('foreign');

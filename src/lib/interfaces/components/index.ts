@@ -1,5 +1,6 @@
 export * from './avatar';
 export * from './badge';
+export * from './mascot';
 export * from './modal';
 export * from './popover';
 export * from './pricing';

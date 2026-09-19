@@ -47,8 +47,10 @@ import {
   EDGE_DEFAULT_STROKE_WIDTH,
   EDGE_TONES,
   ELIGIBLE_ACTION_BY_TOOL,
+  FIT_REQUEST_DURATION_MS,
   FRESH_FIT_PADDING,
   NODE_DRAG_THRESHOLD,
+  OPEN_COMMENTS_Z_INDEX,
   PAN_BUTTONS_ALL,
   PAN_BUTTONS_MIDDLE,
   RUBBER_LINE_DASH_ARRAY,
@@ -145,6 +147,7 @@ export const Canvas = ({
   const nodes = useCanvasStore((s) => s.nodes);
   const edges = useCanvasStore((s) => s.edges);
   const pendingConnection = useCanvasStore((s) => s.pendingConnection);
+  const openCommentsNodeId = useCanvasStore((s) => s.openCommentsNodeId);
   const closeAllOverlays = useCanvasStore((s) => s.closeAllOverlays);
   const middlePan = useCanvasStore((s) => s.middlePan);
   const onNodesChange = useCanvasStore((s) => s.onNodesChange);
@@ -198,7 +201,7 @@ export const Canvas = ({
     if (!arriving) return;
 
     const raf = requestAnimationFrame(() => {
-      void fitView({
+      fitView({
         duration: ARRIVAL_FIT_DURATION_MS,
         padding: ARRIVAL_FIT_PADDING,
         ...(arrivalNodeId && { nodes: [{ id: arrivalNodeId }] }),
@@ -221,7 +224,7 @@ export const Canvas = ({
     didInitViewport.current = true;
     if (arriving) return;
 
-    void setViewport({ x: 0, y: 0, zoom: defaultZoom / 100 });
+    setViewport({ x: 0, y: 0, zoom: defaultZoom / 100 });
   }, [hydrated, arriving, defaultZoom, setViewport]);
 
   const focusedQuestionThreadId = useRef<string | null>(null);
@@ -242,7 +245,7 @@ export const Canvas = ({
 
     const frame = requestAnimationFrame(() => {
       focusedQuestionThreadId.current = threadId;
-      void fitView({ duration: 0, padding: FRESH_FIT_PADDING, maxZoom: defaultZoom / 100 });
+      fitView({ duration: 0, padding: FRESH_FIT_PADDING, maxZoom: defaultZoom / 100 });
     });
 
     if (isCanvasNodeData(freshQuestion.data) && freshQuestion.data.label.trim().length === 0) {
@@ -251,6 +254,18 @@ export const Canvas = ({
 
     return () => cancelAnimationFrame(frame);
   }, [hydrated, threadId, storeThreadId, arriving, fitView, defaultZoom]);
+
+  useEffect(() => {
+    return useCanvasStore.subscribe((state, previous) => {
+      if (state.fitRequest === previous.fitRequest) return;
+
+      fitView({
+        duration: FIT_REQUEST_DURATION_MS,
+        padding: state.fitPadding ?? FRESH_FIT_PADDING,
+        maxZoom: defaultZoom / 100,
+      });
+    });
+  }, [fitView, defaultZoom]);
 
   const effectiveStatusById = useMemo(() => computeEffectiveStatuses(nodes, edges), [nodes, edges]);
 
@@ -266,14 +281,19 @@ export const Canvas = ({
       const eligibleHint = eligibleIds.has(node.id) || undefined;
       const status = effectiveStatusById.get(node.id);
       const effectiveStatus = isAffected(status) ? status : undefined;
+      const commentsOpen = node.id === openCommentsNodeId;
 
-      if (!eligibleHint && !effectiveStatus) return node;
+      if (!eligibleHint && !effectiveStatus && !commentsOpen) return node;
 
-      return { ...node, data: { ...node.data, eligibleHint, effectiveStatus } };
+      return {
+        ...node,
+        ...(commentsOpen && { zIndex: OPEN_COMMENTS_Z_INDEX }),
+        data: { ...node.data, eligibleHint, effectiveStatus },
+      };
     });
 
     return decorated.some((node, index) => node !== nodes[index]) ? decorated : nodes;
-  }, [nodes, eligibleIds, effectiveStatusById]);
+  }, [nodes, eligibleIds, effectiveStatusById, openCommentsNodeId]);
 
   const styledEdges = useMemo(() => {
     const directionsByPair = new Map<string, Set<string>>();
@@ -416,6 +436,7 @@ export const Canvas = ({
 
   return (
     <div
+      data-tour="canvas"
       data-canvas-thread={threadId}
       data-canvas-tool={activeTool}
       data-canvas-save={saveState.status}

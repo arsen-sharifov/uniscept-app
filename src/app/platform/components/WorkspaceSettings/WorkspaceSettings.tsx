@@ -8,6 +8,7 @@ import type { TWorkspaceSettingsSection } from '@interfaces';
 import { Modal } from '@/components';
 import { useTranslations } from '@/i18n';
 
+import { WORKSPACE_SECTION_ANCHORS } from './consts';
 import { GeneralSection, MembersSection, RolesSection, WorkspaceSettingsSkeleton } from './fragments';
 import { useWorkspaceSettings } from './hooks';
 import { WorkspaceSettingsSidebar } from './WorkspaceSettingsSidebar';
@@ -80,7 +81,10 @@ export const WorkspaceSettings = ({
 
   return (
     <Modal open onClose={onClose} width="max-w-[960px]" overflowHidden>
-      <div className="relative flex h-[86vh] rounded-2xl font-grotesk text-[color:var(--text)]">
+      <div
+        data-tour="workspaceSettingsModal"
+        className="relative flex h-[86vh] rounded-2xl font-grotesk text-[color:var(--text)]"
+      >
         <WorkspaceSettingsSidebar activeSection={activeSection} onSectionChange={setActiveSection} />
 
         <button
@@ -97,7 +101,7 @@ export const WorkspaceSettings = ({
             {t.platform.workspaceSettings.sections[activeSection]}
           </h2>
 
-          {renderSection()}
+          <div data-tour={WORKSPACE_SECTION_ANCHORS[activeSection]}>{renderSection()}</div>
         </div>
       </div>
     </Modal>

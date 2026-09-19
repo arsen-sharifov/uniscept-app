@@ -1,14 +1,18 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
-import { beforeEach, describe, expect, test, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { TRANSLATIONS } from '@mocks/i18n';
-import { getUser, USER_UNAVAILABLE } from '@mocks/userApi';
+import { router } from '@mocks/navigation';
+import { getUser, signOut, USER_UNAVAILABLE } from '@mocks/userApi';
 import { UserMenu } from '@/app/platform/components/UserMenu';
+import { useOnboardingStore } from '@/lib/onboarding';
 
 vi.mock('next/navigation', () => import('@mocks/navigation'));
 vi.mock('@api/client', () => import('@mocks/userApi'));
 vi.mock('@/i18n', () => import('@mocks/i18n'));
 vi.mock('@/lib/events', () => import('@mocks/events'));
+
+afterEach(() => useOnboardingStore.getState().forget());
 
 describe('UserMenu', () => {
   describe('GIVEN a failed profile request', () => {
@@ -46,6 +50,48 @@ describe('UserMenu', () => {
 
       test('THEN sign out remains available', () => {
         expect(screen.getByRole('button', { name: TRANSLATIONS.platform.sidebar.signOut })).toBeEnabled();
+      });
+    });
+  });
+
+  describe('GIVEN tour progress loaded for the signed-in account', () => {
+    beforeEach(() => {
+      getUser.mockResolvedValue(USER_UNAVAILABLE);
+      useOnboardingStore.getState().hydrate('user-1', { offerAnswered: true, completedGuides: ['base'] });
+    });
+
+    describe('WHEN the user signs out', () => {
+      beforeEach(async () => {
+        signOut.mockResolvedValue(undefined);
+        await act(async () => {
+          render(<UserMenu />);
+        });
+        fireEvent.click(screen.getByText(TRANSLATIONS.common.userAvatar));
+        await act(async () => {
+          fireEvent.click(screen.getByRole('button', { name: TRANSLATIONS.platform.sidebar.signOut }));
+        });
+      });
+
+      test('THEN the progress is forgotten before the sign-in page opens', () => {
+        expect(useOnboardingStore.getState()).toMatchObject({ loaded: false, userId: null, completedGuides: [] });
+        expect(router.push).toHaveBeenCalledExactlyOnceWith('/login');
+      });
+    });
+
+    describe('WHEN signing out fails on the api', () => {
+      beforeEach(async () => {
+        signOut.mockRejectedValue(new Error('network down'));
+        await act(async () => {
+          render(<UserMenu />);
+        });
+        fireEvent.click(screen.getByText(TRANSLATIONS.common.userAvatar));
+        await act(async () => {
+          fireEvent.click(screen.getByRole('button', { name: TRANSLATIONS.platform.sidebar.signOut }));
+        });
+      });
+
+      test('THEN the progress is forgotten all the same', () => {
+        expect(useOnboardingStore.getState()).toMatchObject({ loaded: false, userId: null, completedGuides: [] });
       });
     });
   });

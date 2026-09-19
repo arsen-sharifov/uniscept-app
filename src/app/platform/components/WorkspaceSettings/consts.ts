@@ -25,8 +25,22 @@ import type {
   IRoleIconOption,
   IWorkspaceRolePermissions,
   IWorkspaceSettingsSidebarGroup,
+  TTourAnchor,
   TWorkspaceRoleKey,
+  TWorkspaceSettingsSection,
 } from '@interfaces';
+
+export const WORKSPACE_SECTION_ANCHORS: Record<TWorkspaceSettingsSection, TTourAnchor> = {
+  general: 'workspaceSettingsGeneral',
+  members: 'workspaceSettingsMembers',
+  roles: 'workspaceSettingsRoles',
+};
+
+export const WORKSPACE_SECTION_NAV_ANCHORS: Record<TWorkspaceSettingsSection, TTourAnchor> = {
+  general: 'workspaceSettingsGeneralNav',
+  members: 'workspaceSettingsMembersNav',
+  roles: 'workspaceSettingsRolesNav',
+};
 
 export const WORKSPACE_SETTINGS_GROUPS = [
   {

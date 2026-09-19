@@ -138,7 +138,6 @@
       "structure": "Structură",
       "newThread": "Fir nou",
       "newFolder": "Folder nou",
-      "emptyState": "Selectează sau creează un fir pentru a începe",
       "signOut": "Deconectare",
       "deleteWorkspaceTitle": "Șterge spațiul",
       "deleteFolderTitle": "Șterge folderul",
@@ -191,7 +190,6 @@
       },
       "tools": {
         "ariaLabel": "Instrumente canvas",
-        "help": "Scurtături tastatură",
         "groups": {
           "navigate": "Navigare",
           "history": "Istoric",
@@ -333,6 +331,473 @@
         "activeBadge": "Activ"
       }
     },
+    "onboarding": {
+      "nodiName": "Nodi",
+      "nodiAlt": "Nodi, ghidul tău",
+      "nodiIntro": "Nodi este un nod de pe pânză care cunoaște aplicația ca pe propriul buzunar. Stă lângă fiecare card, iar inelul evidențiat arată unde să dai clic.",
+      "ergoName": "Ergo",
+      "ergoAlt": "Ergo, prietenul lui Nodi",
+      "menuLabel": "Ajutor",
+      "menuShortcuts": "Scurtături tastatură",
+      "menuGuides": "Tur și ghiduri",
+      "offerTitle": "Vrei un tur rapid?",
+      "offerBody": "Construiește prima pânză pas cu pas: un fir, o întrebare, câteva noduri și un verdict. Faci fiecare pas singur și poți ieși oricând.",
+      "offerAccept": "Începe turul",
+      "offerDecline": "Nu acum",
+      "offerLater": "Îl poți porni mai târziu din meniul Ajutor, la Tur și ghiduri.",
+      "continueHint": {
+        "afterTour": {
+          "title": "Continuă de aici",
+          "body": "Celelalte ghiduri te așteaptă la Tur și ghiduri, în acest meniu Ajutor. Alege oricare, când vrei."
+        },
+        "afterDecline": {
+          "title": "Turul te așteaptă aici",
+          "body": "Când ești gata, deschide Tur și ghiduri din acest meniu Ajutor."
+        },
+        "open": "Deschide ghidurile",
+        "dismiss": "Am înțeles"
+      },
+      "pickerTitle": "Tur și ghiduri",
+      "pickerBody": "Turul te poartă prin prima pânză. Ghidurile de după el acoperă fiecare câte o parte a aplicației, iar cele mai multe te lasă să o încerci pe bune. Termină-le pe toate pentru a primi insigna Inițiat.",
+      "pickerProgress": "{done} din {total} terminate",
+      "pickerLocked": "Termină prima pânză pentru a deschide acest ghid.",
+      "pickerStart": "Începe",
+      "pickerReplay": "Reia",
+      "stepCounter": "pasul {index} din {total}",
+      "stepNext": "Mai departe",
+      "stepDone": "deja făcut",
+      "stepWaiting": "e rândul tău",
+      "stepLostTarget": "ținta nu este pe ecran",
+      "blockedTitle": "Închide asta mai întâi",
+      "blockedBody": "Ceva este deschis peste acest pas. Închide-l și turul continuă.",
+      "blockedStatus": "așteptăm să se închidă",
+      "quit": "Părăsește turul",
+      "celebrationTitle": "Ai terminat toate ghidurile",
+      "celebrationBody": "Ai văzut tot: cum construiești o pânză, cum o evaluezi, cum legi firele între ele și ce găsești în setări. Insigna Inițiat este acum pe profilul tău.",
+      "celebrationClose": "Înapoi la treabă",
+      "emptyPlatformTitle": "Niciun fir deschis",
+      "emptyPlatformBody": "Un fir conține o întrebare și pânza unde o lămurești. Creează unul nou sau alege unul din lista din stânga.",
+      "emptyViewerBody": "Un fir conține o întrebare și pânza pe care se lămurește. Alege unul din lista din stânga.",
+      "emptyWorkspaceTitle": "Încă niciun spațiu",
+      "emptyWorkspaceBody": "Totul se află într-un spațiu de lucru: fire, membri și referințe. Creează-l pe primul pentru a începe.",
+      "emptyPlatformAction": "fă turul",
+      "hints": {
+        "needsWorkspace": "Ai nevoie mai întâi de un spațiu de lucru. Ghidul primei pânze începe chiar cu crearea lui.",
+        "needsCanvas": "Deschide un fir, ca pânza lui să fie pe ecran.",
+        "needsNode": "Adaugă cel puțin un nod pe această pânză.",
+        "needsBuildRights": "Deschide un spațiu în care poți crea fire, edita pânze și comenta."
+      },
+      "guides": {
+        "baseTitle": "Prima pânză",
+        "baseSummary": "Construiește o pânză întreagă, de la întrebare la răspuns.",
+        "canvasTitle": "Lucrul pe pânză",
+        "canvasSummary": "Instrumente, comentarii, referințe și export.",
+        "workspaceTitle": "Spații și structură",
+        "workspaceSummary": "Organizează firele și invită oameni.",
+        "settingsTitle": "Setări",
+        "settingsSummary": "Parcurge fiecare secțiune și fă aplicația a ta.",
+        "exampleTitle": "Urmărește un exemplu",
+        "exampleSummary": "Nodi și Ergo aleg un aparat de cafea pentru birou."
+      },
+      "steps": {
+        "baseIntro": {
+          "title": "Ce este o pânză",
+          "body": "Un fir se construiește în jurul unei singure întrebări, iar pânza lui este locul unde o lămurești: nodurile conțin afirmații, legăturile arată ce decurge din ce, iar verdictele marchează căile care rezistă. Hai să construim una împreună."
+        },
+        "baseWorkspace": {
+          "title": "Creează un spațiu de lucru",
+          "body": "Un spațiu conține firele, membrii și referințele tale. Nimic nu iese din el. Creează-l pe primul."
+        },
+        "baseOwnWorkspace": {
+          "title": "Creează-ți propriul spațiu",
+          "body": "Rolul tău în acest spațiu nu îți permite să construiești, așa că pânza va fi într-un spațiu al tău. Deschide comutatorul și creează un spațiu nou."
+        },
+        "baseThread": {
+          "title": "Creează un fir",
+          "body": "Un fir conține o întrebare și pânza ei. Folosește butonul din bara laterală."
+        },
+        "baseQuestion": {
+          "title": "Scrie întrebarea",
+          "body": "Nodul întrebării este deja pe pânză. Dă clic pe el, scrie întrebarea la care vrei cu adevărat un răspuns și apasă Enter."
+        },
+        "baseArgue": {
+          "title": "Cum se construiește un argument",
+          "body": "Fiecare afirmație se leagă de întrebare printr-o legătură. Un nod care nu este conectat la nimic nu influențează rezultatul."
+        },
+        "baseNode": {
+          "title": "Adaugă prima afirmație",
+          "body": "Alege instrumentul Adaugă nod și dă clic pe un loc liber. Un nod conține o singură idee: o afirmație, o premisă sau o obiecție."
+        },
+        "baseNodeText": {
+          "title": "Scrie afirmația",
+          "body": "Treci la instrumentul Selectează (tasta V), dă dublu clic pe nodul nou, înlocuiește textul provizoriu cu afirmația ta și apasă Enter."
+        },
+        "baseConnect": {
+          "title": "Leagă-l de întrebare",
+          "body": "Alege instrumentul Conectează, dă clic pe întrebare, apoi pe nodul tău. Săgeata arată ce decurge din ce."
+        },
+        "baseDirection": {
+          "title": "Direcția contează",
+          "body": "O legătură pornește de la un nod spre ce se construiește pe el: de la întrebare spre răspunsuri, de la o afirmație spre ce decurge din ea. Respinge un nod și tot ce se sprijină pe el devine îndoielnic."
+        },
+        "baseObjection": {
+          "title": "Adaugă o obiecție",
+          "body": "Adaugă un al doilea nod care contrazice prima afirmație și scrie-l la fel. O pânză cu o singură parte nu dovedește nimic."
+        },
+        "baseSecondLink": {
+          "title": "Leagă-l și pe acesta",
+          "body": "La fel ca înainte: instrumentul Conectează, întrebarea, apoi nodul nou. Acum două ramuri concurente pornesc din întrebare."
+        },
+        "baseValid": {
+          "title": "Marchează ramura care rezistă",
+          "body": "Alege instrumentul Marchează valid și dă clic pe afirmația în care crezi. Se aprinde toată calea din care face parte."
+        },
+        "baseInvalid": {
+          "title": "Marcheaz-o pe cea care nu rezistă",
+          "body": "Alege instrumentul Marchează invalid și dă clic pe cealaltă ramură. Rămâne pe pânză, marcată ca respinsă."
+        },
+        "baseVerdict": {
+          "title": "Nimic nu se șterge",
+          "body": "Valid, invalid și nedecis rămân unul lângă altul. Peste luni de zile vezi nu doar răspunsul, ci și fiecare încercare care nu a ținut."
+        },
+        "baseAnswerTool": {
+          "title": "Alege instrumentul Răspuns",
+          "body": "Un verdict spune că o cale rezistă. Răspunsul spune care nod închide întrebarea. Sunt lucruri diferite, iar răspunsul trebuie să fie legat de întrebare direct sau printr-un nod valid."
+        },
+        "baseAnswer": {
+          "title": "Marchează răspunsul",
+          "body": "Dă clic pe un nod de pe o cale validă. De acum firul este considerat rezolvat. Poți muta răspunsul pe alt nod mai târziu."
+        },
+        "baseResolvedMark": {
+          "title": "Firele rezolvate primesc o bifă",
+          "body": "Uită-te la bara laterală: lângă firul tău a apărut o bifă. O primește orice fir rezolvat, așa că întrebările deschise se văd dintr-o privire."
+        },
+        "baseResolved": {
+          "title": "Acesta este întregul ciclu",
+          "body": "Întrebare, afirmații, legături, verdicte, răspuns. Tot restul aplicației, precum comentariile, referințele și exportul, se construiește pe asta."
+        },
+        "structureWhat": {
+          "title": "Bara laterală este doar pentru ordine",
+          "body": "Folderele și imbricarea țin o listă lungă lizibilă. Nu schimbă nimic pe pânză: un fir funcționează la fel oriunde ar sta."
+        },
+        "structureFolder": {
+          "title": "Creează un folder",
+          "body": "Folderele sunt opționale. Grupează fire și nimic mai mult."
+        },
+        "structureNest": {
+          "title": "Pune un fir în el",
+          "body": "Creează un fir direct în folder sau trage unul existent înăuntru."
+        },
+        "structureSearch": {
+          "title": "Caută când lista crește",
+          "body": "Câmpul de căutare filtrează întregul arbore după nume, inclusiv folderele. Este cel mai rapid drum înapoi la un fir de care îți amintești vag."
+        },
+        "structureMove": {
+          "title": "Mută lucrurile oricând",
+          "body": "Trage firele și folderele pentru a le reordona sau a le muta. Pânza, comentariile și referințele rămân neschimbate."
+        },
+        "referencesWhat": {
+          "title": "Ce este o referință",
+          "body": "Uneori un fir se bazează pe o concluzie la care s-a ajuns deja în alt fir. O referință aduce acel nod ca un citat doar pentru citire, nu ca o copie, așa că originalul rămâne singura sursă."
+        },
+        "referencesThread": {
+          "title": "Creează un al doilea fir",
+          "body": "O referință are nevoie de un nod de pe altă pânză, iar nicio altă pânză din acest spațiu nu are încă noduri. Creează un fir nou din bara laterală: turul continuă acolo, iar tu vei face referire la un nod de pe această pânză."
+        },
+        "referencesTool": {
+          "title": "Alege instrumentul Referință încrucișată",
+          "body": "Aduce pe această pânză un nod de pe altă pânză din acest spațiu, fără a le contopi."
+        },
+        "referencesPlace": {
+          "title": "Așază-l pe pânză",
+          "body": "Dă clic pe un loc liber. Se deschide un panou de căutare cu nodurile din acest spațiu la care poți face referire."
+        },
+        "referencesPick": {
+          "title": "Alege nodul de referit",
+          "body": "Caută printre celelalte pânze din spațiu și alege un nod. Apare ca nod de referință doar pentru citire; ca să-l legi, trage o legătură de la marginea altui nod până la el."
+        },
+        "referencesBoundary": {
+          "title": "Rămâne în interiorul spațiului",
+          "body": "O referință poate indica doar pânze din acest spațiu și nu schimbă niciodată nodul la care trimite. Șterge referința, iar originalul rămâne neatins."
+        },
+        "commentsWhat": {
+          "title": "Discuția stă lângă raționament",
+          "body": "Un comentariu nu devine niciodată nod și nu poartă verdict. Este locul unde discuți despre un nod fără a atinge argumentul în sine."
+        },
+        "commentsOpen": {
+          "title": "Deschide comentariile unui nod",
+          "body": "Folosește butonul de comentarii de pe nod. Panoul se deschide lângă el."
+        },
+        "commentsWrite": {
+          "title": "Lasă un comentariu",
+          "body": "Scrie orice și trimite. Comentariile nu schimbă niciodată structura sau verdictele."
+        },
+        "commentsWho": {
+          "title": "Îl citește toată lumea din fir",
+          "body": "Comentariile aparțin nodului și sunt vizibile pentru oricine poate deschide firul. Cei cu drept de comentariu pot comenta chiar dacă nu pot edita pânza."
+        },
+        "workspacesWhat": {
+          "title": "Spațiul este granița",
+          "body": "Firele, folderele, membrii și referințele se află într-un singur spațiu și nu trec niciodată în altul. Poți face parte din mai multe și poți comuta liber între ele."
+        },
+        "workspacesSwitcher": {
+          "title": "Deschide comutatorul de spații",
+          "body": "Este numele spațiului curent, în partea de sus a barei laterale."
+        },
+        "workspacesSettings": {
+          "title": "Deschide setările spațiului",
+          "body": "Treci cu mouse-ul peste rândul spațiului și dă clic pe rotiță. Aceste setări se aplică doar acestui spațiu."
+        },
+        "workspacesGeneral": {
+          "title": "Secțiunea General",
+          "body": "Setările spațiului se deschid aici: numele, numărul de membri, rolul tău și data la care a fost creat spațiul."
+        },
+        "workspacesOwner": {
+          "title": "Există întotdeauna un singur proprietar",
+          "body": "Proprietatea se transferă, nu se împarte: proprietarul o predă din secțiunea Membri. Ștergerea spațiului cere permisiunea Gestionează spațiul de lucru, pe care o are doar proprietarul, dacă nu o acordă un rol personalizat."
+        },
+        "membersWhat": {
+          "title": "Rolurile se aplică întregului spațiu",
+          "body": "Accesul se stabilește o dată pentru spațiu, nu pentru fiecare pânză. Un rol decide dacă cineva poate edita pânzele, doar comenta sau doar citi."
+        },
+        "membersOpen": {
+          "title": "Deschide setările spațiului",
+          "body": "Deschide comutatorul de spații, apoi dă clic pe rotița de pe rând. Membrii și rolurile sunt acolo."
+        },
+        "membersSection": {
+          "title": "Deschide secțiunea Membri",
+          "body": "Aici inviți oameni și atribui roluri. Nu se trimite nimic cât timp doar te uiți."
+        },
+        "membersInvite": {
+          "title": "Invitațiile merg pe e-mail",
+          "body": "Introdu o adresă și alege rolul de la început. Poți retrage o invitație înainte de a fi acceptată și poți schimba un rol oricând."
+        },
+        "membersRoles": {
+          "title": "Deschide secțiunea Roluri",
+          "body": "Rolurile se definesc pentru fiecare spațiu. Proprietar, Membru și Vizualizator sunt predefinite și fixe; poți crea roluri proprii și decide exact ce permite fiecare."
+        },
+        "membersPermissions": {
+          "title": "Ce controlează un rol",
+          "body": "Editarea pânzei, comentariile, gestionarea firelor și folderelor, a membrilor, a rolurilor și a spațiului însuși. Un rol este doar acest set de comutatoare."
+        },
+        "settingsWhat": {
+          "title": "Aceste setări sunt ale tale",
+          "body": "Profilul tău este ce văd colegii lângă numele tău. Restul setărilor de aici sunt doar pentru tine și te urmează pe orice dispozitiv. Hai să parcurgem fiecare secțiune."
+        },
+        "settingsOpen": {
+          "title": "Deschide setările",
+          "body": "Dă clic pe numele tău din partea de jos a barei laterale, apoi pe Setări."
+        },
+        "settingsProfile": {
+          "title": "Schimbă ceva în profil",
+          "body": "Schimbă-ți numele sau alege alt avatar, apoi salvează. Poți reveni imediat după. Insignele câștigate apar și ele aici."
+        },
+        "settingsSecurity": {
+          "title": "Deschide secțiunea Securitate",
+          "body": "Aici sunt parola și ștergerea contului."
+        },
+        "settingsSecurityNote": {
+          "title": "Doar tu poți face asta",
+          "body": "Schimbarea parolei închide celelalte sesiuni. Ștergerea contului șterge și spațiile pe care le deții."
+        },
+        "settingsNotifications": {
+          "title": "Deschide secțiunea Notificări",
+          "body": "Comutatoarele sunt aici, dar livrarea nu este încă gata. Deocamdată nu se trimite nimic."
+        },
+        "settingsAppearance": {
+          "title": "Deschide secțiunea Aspect",
+          "body": "Limba interfeței, opt teme (Auto urmează sistemul cu Daybreak și Eclipse) și patru modele pentru pânză."
+        },
+        "settingsTheme": {
+          "title": "Încearcă altă temă",
+          "body": "Alege una, iar toată aplicația se schimbă pe loc, cu panoul încă deschis. Doar tu vezi schimbarea."
+        },
+        "settingsPattern": {
+          "title": "Schimbă modelul pânzei",
+          "body": "Puncte, linii, cruci sau o suprafață simplă. Se schimbă doar fundalul pânzei."
+        },
+        "settingsEditor": {
+          "title": "Deschide secțiunea Editor",
+          "body": "Această secțiune stabilește cum se comportă pânza în timp ce lucrezi."
+        },
+        "settingsTune": {
+          "title": "Schimbă una dintre opțiuni",
+          "body": "Aliniere la grilă, ghidaje inteligente sau zoomul cu care se deschide o pânză. Comută una, iar pânza reacționează imediat."
+        },
+        "settingsPlan": {
+          "title": "Deschide Plan și facturare",
+          "body": "Planul tău curent și ce include fiecare plan, de exemplu numărul de membri și de pânze."
+        },
+        "settingsScope": {
+          "title": "Acestea sunt toate secțiunile",
+          "body": "Profil, securitate, notificări, aspect, editor, plan. Colegii au propriile setări, chiar și pe același fir."
+        },
+        "exportWhat": {
+          "title": "Exportul este un instantaneu",
+          "body": "Fișierul arată pânza exact cum este acum și nu poate fi importat înapoi. Folosește-l pentru a partaja sau a tipări, nu pentru a muta lucrul între fire."
+        },
+        "exportMenu": {
+          "title": "Deschide meniul de export",
+          "body": "Butonul de export este în partea de jos a barei de instrumente."
+        },
+        "exportFormat": {
+          "title": "Alege un format",
+          "body": "PNG și JPG sunt imagini, SVG rămâne clar la orice dimensiune. Fișierul ajunge în descărcări."
+        },
+        "exportNote": {
+          "title": "Ce intră în fișier",
+          "body": "Noduri, legături, verdicte și răspunsul. Comentariile și bara de instrumente rămân pe dinafară."
+        },
+        "toolsWhat": {
+          "title": "Un singur instrument la un moment dat",
+          "body": "Un singur instrument este activ, iar un clic pe pânză face ce face acel instrument. Să știi ce instrument ții în mână este jumătate din pricepere."
+        },
+        "toolsSheet": {
+          "title": "Deschide fișa de scurtături",
+          "body": "Meniul Ajutor este în partea de jos a barei de instrumente, iar Scurtături tastatură este primul element din el."
+        },
+        "toolsSheetRead": {
+          "title": "O tastă pentru fiecare instrument",
+          "body": "Aceleași cinci grupuri ca în bara de instrumente: navigare, istoric, construire, decizie, legături. Fiecare instrument are o tastă, iar tastele funcționează și cât timp fișa este deschisă."
+        },
+        "toolsClose": {
+          "title": "Închide fișa",
+          "body": "Dă clic pe X din colț sau apasă Escape. Fișa acoperă bara de instrumente, iar turul merge acolo în continuare."
+        },
+        "toolsSelect": {
+          "title": "Selectează",
+          "body": "Instrumentul neutru: selectează și trage noduri, fără a schimba altceva. Tasta V."
+        },
+        "toolsPan": {
+          "title": "Deplasare",
+          "body": "Trage pentru a muta zona vizibilă, nu un nod. Tasta H."
+        },
+        "toolsZoom": {
+          "title": "Zoom",
+          "body": "Un clic mărește zona pe care ai dat clic, iar cu Shift micșorează. Tastele plus și minus."
+        },
+        "toolsUndo": {
+          "title": "Anulează și refă",
+          "body": "Istoricul are butoanele lui, așa că experimentele nu costă nimic: orice pas poate fi anulat și refăcut."
+        },
+        "toolsAdd": {
+          "title": "Adaugă nod",
+          "body": "Un clic pe un loc liber adaugă un nod cu o etichetă provizorie. Tasta N."
+        },
+        "toolsConnect": {
+          "title": "Conectează",
+          "body": "Dă clic pe nodul de la care pornește raționamentul, apoi pe cel la care duce. Săgeata arată direcția. Tasta C."
+        },
+        "toolsDelete": {
+          "title": "Șterge",
+          "body": "Un clic elimină un nod sau o legătură. Nodul întrebării nu poate fi șters. Tasta D."
+        },
+        "toolsValid": {
+          "title": "Marchează valid",
+          "body": "Un verdict asupra căii care intră în acest nod: pasul rezistă. Tasta Y."
+        },
+        "toolsInvalid": {
+          "title": "Marchează invalid",
+          "body": "Verdictul opus: pasul nu rezistă, iar tot ce se sprijină pe el devine îndoielnic. Tasta X."
+        },
+        "toolsAnswer": {
+          "title": "Răspuns",
+          "body": "Marchează nodul care închide firul. Un singur răspuns pe fir, pe care îl poți muta mai târziu. Tasta A."
+        },
+        "toolsReference": {
+          "title": "Referință încrucișată",
+          "body": "Aduce un nod de pe altă pânză ca un citat doar pentru citire. Tasta R. Referințele au partea lor mai departe în acest ghid."
+        },
+        "exampleIntro": {
+          "title": "Fă cunoștință cu Ergo",
+          "body": "Biroul nostru are nevoie de un aparat de cafea, iar eu și Ergo nu cădem de acord care să fie. O lămurim pe o pânză, cum ar face doi colegi. Apasă Mai departe ca să urmărești."
+        },
+        "exampleHello": {
+          "title": "Salut, sunt Ergo",
+          "body": "Pânza e făcută exact pentru o întrebare cu mai multe răspunsuri posibile: fiecare variantă crește ca ramură proprie din întrebare, cu argumentele sub ea."
+        },
+        "exampleThread": {
+          "title": "Pun întrebarea",
+          "body": "Creez un fir și scriu întrebarea în nodul întrebării: ce aparat de cafea să luăm pentru birou?"
+        },
+        "exampleCapsule": {
+          "title": "Eu aleg capsulele",
+          "body": "Cu Adaugă nod îmi pun răspunsul, un aparat cu capsule, și îl leg de întrebare cu Conectează. Sub el pun argumentul meu: un singur buton, nimic de curățat."
+        },
+        "exampleBean": {
+          "title": "Eu aș lua boabe",
+          "body": "Răspunsul meu primește o ramură proprie: un espressor automat. Argumentul de sub el: boabele costă mult mai puțin pe ceașcă decât capsulele."
+        },
+        "exampleDoubt": {
+          "title": "O îndoială despre alegerea lui Nodi",
+          "body": "Un espressor automat costă mult mai mult la cumpărare. E o îndoială, nu un răspuns, așa că o las drept comentariu la nodul lui Nodi."
+        },
+        "examplePayback": {
+          "title": "Replica mea",
+          "body": "Corect, dar își scoate banii într-un an. Adaug asta ca al doilea argument sub răspunsul meu, exact unde a apărut îndoiala."
+        },
+        "exampleFilter": {
+          "title": "O a treia variantă",
+          "body": "Dacă prețul contează cel mai mult, mai există o cafetieră cu filtru, cea mai ieftină la cumpărare. Un al treilea răspuns înseamnă o a treia ramură."
+        },
+        "exampleStale": {
+          "title": "Nu asta",
+          "body": "Cafeaua de la filtru nu mai e bună după o oră pe plita caldă. Las asta drept comentariu la varianta cu cafetiera."
+        },
+        "exampleDropFilter": {
+          "title": "Ai dreptate",
+          "body": "Nimeni nu vrea cafea stătută. Îmi marchez varianta cu cafetiera cu Marchează invalid, iar argumentul de sub ea devine și el îndoielnic."
+        },
+        "exampleWaste": {
+          "title": "Încă ceva",
+          "body": "Capsulele se adună în fiecare săptămână într-un morman de plastic. Las asta drept comentariu la varianta cu capsule a lui Ergo."
+        },
+        "exampleDropCapsule": {
+          "title": "M-ai convins",
+          "body": "Prețul pe ceașcă și gunoiul cântăresc greu. Îmi marchez invalidă și varianta cu capsule."
+        },
+        "exampleValid": {
+          "title": "Ce a rămas rezistă",
+          "body": "Cu Marchează valid confirm ramura cu espressorul automat și ambele argumente de sub ea. Calea de la întrebare se aprinde."
+        },
+        "exampleAnswer": {
+          "title": "Răspunsul nostru",
+          "body": "Acum suntem de acord, așa că marchez espressorul automat cu Răspuns. Firul este considerat rezolvat."
+        },
+        "exampleResolved": {
+          "title": "O bifă în bara laterală",
+          "body": "Uită-te la bara laterală: lângă firul nostru a apărut o bifă. O primește orice fir rezolvat, așa că întrebările deschise se văd dintr-o privire."
+        },
+        "exampleWrap": {
+          "title": "Asta e toată ideea",
+          "body": "O întrebare, câte o ramură pentru fiecare răspuns, argumente sub fiecare, îndoieli în comentarii, verdicte și un singur răspuns acceptat de amândoi. Firele tale funcționează exact la fel."
+        },
+        "exampleKeep": {
+          "title": "Păstrezi exemplul?",
+          "body": "Rămâne în bara laterală ca un fir obișnuit pe care îl poți deschide și modifica. Păstrează-l ca să te uiți mai târziu sau șterge-l acum."
+        }
+      },
+      "example": {
+        "threadName": "Exemplu: aparatul de cafea pentru birou",
+        "question": "Ce aparat de cafea să luăm pentru birou?",
+        "keep": "Păstrează-l",
+        "remove": "Șterge-l",
+        "nodes": {
+          "capsule": "Un aparat cu capsule",
+          "oneButton": "Un singur buton, nimic de curățat",
+          "bean": "Un espressor automat",
+          "perCup": "Boabele costă mult mai puțin pe ceașcă decât capsulele",
+          "payback": "Își scoate banii într-un an",
+          "filter": "O cafetieră cu filtru",
+          "cheapest": "Cea mai ieftină la cumpărare"
+        },
+        "comments": {
+          "capsule": "Capsulele se adună în fiecare săptămână într-un morman de plastic.",
+          "bean": "Costă mult mai mult decât celelalte.",
+          "filter": "Cafeaua de la filtru nu mai e bună după o oră pe plita caldă."
+        }
+      }
+    },
     "settings": {
       "title": "Setări",
       "close": "Închide setările",
@@ -395,6 +860,8 @@
         "badges": {
           "badgeFounder": "Fondator",
           "founderUnlock": "Te-ai alăturat în beta-ul timpuriu.",
+          "badgeInitiate": "Inițiat",
+          "initiateUnlock": "Termină turul și toate ghidurile.",
           "badgeFirstSteps": "Primii pași",
           "firstStepsUnlock": "Creează primul tău canvas.",
           "badgeArchitect": "Arhitect",

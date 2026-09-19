@@ -5,17 +5,21 @@ import type { TLocale } from '@interfaces';
 
 import { createClient } from '@/lib/supabase/server';
 
-import { DEFAULT_LOCALE, LOCALE_COOKIE, LOCALES, LOCALE_LOCKED_PATHS } from './consts';
+import { LOCALE_COOKIE, LOCALES, PUBLIC_PATHS } from './consts';
+import { negotiateLocale } from './utils';
 
 const resolveLocale = async (): Promise<TLocale> => {
-  const pathname = (await headers()).get('x-pathname');
-  if (pathname && (LOCALE_LOCKED_PATHS.includes(pathname) || pathname.startsWith('/auth/'))) {
-    return DEFAULT_LOCALE;
-  }
-
   const cookieLocale = (await cookies()).get(LOCALE_COOKIE)?.value;
   if (cookieLocale && LOCALES.includes(cookieLocale as TLocale)) {
     return cookieLocale as TLocale;
+  }
+
+  const requestHeaders = await headers();
+  const browserLocale = negotiateLocale(requestHeaders.get('accept-language'));
+
+  const pathname = requestHeaders.get('x-pathname');
+  if (pathname && (PUBLIC_PATHS.includes(pathname) || pathname.startsWith('/auth/'))) {
+    return browserLocale;
   }
 
   try {
@@ -25,14 +29,14 @@ const resolveLocale = async (): Promise<TLocale> => {
     } = await supabase.auth.getUser();
 
     if (!user) {
-      return DEFAULT_LOCALE;
+      return browserLocale;
     }
 
     const { data } = await supabase.from('user_preferences').select('language').eq('user_id', user.id).maybeSingle();
 
-    return (data?.language as TLocale | undefined) ?? DEFAULT_LOCALE;
+    return (data?.language as TLocale | undefined) ?? browserLocale;
   } catch {
-    return DEFAULT_LOCALE;
+    return browserLocale;
   }
 };
 

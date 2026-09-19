@@ -51,4 +51,35 @@ test.describe('node comments', () => {
       });
     });
   });
+
+  test.describe('GIVEN a node with a newer node right where its comments open', () => {
+    test.beforeEach(async ({ page, workspace, account }) => {
+      const thread = await seedThread(workspace.id, 'Layers', account.id, { question: 'Which bet?' });
+      await seedNodes(thread.id, account.id, [{ label: 'Risky bet', x: 460, y: 440 }]);
+      await seedNodes(thread.id, account.id, [{ label: 'Safe bet', x: 720, y: 440 }]);
+      await page.goto(`/platform/${workspace.id}/${thread.id}`);
+      await waitForCanvas(page);
+    });
+
+    test.describe('WHEN the comments of the older node are opened', () => {
+      test.beforeEach(async ({ page }) => {
+        const node = getNode(page, 'Risky bet');
+        await node.hover();
+        await node.getByRole('button', { name: canvas.node.addComment }).click();
+        await expect(node.getByPlaceholder(canvas.node.addCommentPlaceholder)).toBeVisible();
+      });
+
+      test('THEN the panel sits on top of the newer node', async ({ page }) => {
+        const box = await getNode(page, 'Safe bet').boundingBox();
+        if (!box) throw new Error('The newer node is not on screen');
+
+        const topmostIsPanel = await page.evaluate(
+          ({ x, y }) => document.elementFromPoint(x, y)?.closest('[data-tour="canvasCommentsPanel"]') !== null,
+          { x: box.x + box.width / 2, y: box.y + box.height / 2 },
+        );
+
+        expect(topmostIsPanel).toBe(true);
+      });
+    });
+  });
 });

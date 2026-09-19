@@ -7,7 +7,7 @@ import type { TSettingsSection } from '@interfaces';
 import { SelectionStrip } from '@/components';
 import { useTranslations } from '@/i18n';
 
-import { SIDEBAR_GROUPS } from './consts';
+import { SECTION_NAV_ANCHORS, SIDEBAR_GROUPS } from './consts';
 
 interface ISettingsSidebarProps {
   activeSection: TSettingsSection;
@@ -19,7 +19,10 @@ export const SettingsSidebar = ({ activeSection, onSectionChange }: ISettingsSid
   const { groups, sections } = t.platform.settings;
 
   return (
-    <div className="w-52 shrink-0 overflow-y-auto border-r border-[color:var(--border)] bg-[color:var(--surface-overlay)] py-4 transition-[background-color,border-color] duration-200 ease-out">
+    <div
+      data-tour="settingsNav"
+      className="w-52 shrink-0 overflow-y-auto border-r border-[color:var(--border)] bg-[color:var(--surface-overlay)] py-4 transition-[background-color,border-color] duration-200 ease-out"
+    >
       {SIDEBAR_GROUPS.map((group, index) => (
         <div key={group.labelKey} className={clsx('px-3 py-3', index > 0 && 'border-t border-[color:var(--border)]')}>
           <span className="mb-2 block px-3 font-mono-ui text-[10px] font-bold tracking-[0.14em] text-[color:var(--text-label)] uppercase">
@@ -33,6 +36,7 @@ export const SettingsSidebar = ({ activeSection, onSectionChange }: ISettingsSid
                 <button
                   key={item.id}
                   type="button"
+                  data-tour={SECTION_NAV_ANCHORS[item.id]}
                   onClick={() => onSectionChange(item.id)}
                   aria-current={isActive ? 'page' : undefined}
                   className={clsx(

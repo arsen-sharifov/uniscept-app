@@ -65,6 +65,7 @@ export const SortableWorkspaceItem = ({
       ref={setNodeRef}
       style={getDragTransformStyle(transform, transition, isDragActive)}
       data-workspace-id={workspace.id}
+      data-tour={isActive ? 'sidebarWorkspaceRow' : undefined}
       className="group/item relative"
     >
       {dropIndicator && <DropLineIndicator position={dropIndicator} />}
@@ -135,6 +136,7 @@ export const SortableWorkspaceItem = ({
           <ItemActionsToolbar isActive={isActive} isSelected={isSelected}>
             <button
               type="button"
+              data-tour={isActive ? 'sidebarWorkspaceRowSettings' : undefined}
               onClick={() => onRequestSettings(workspace.id)}
               className="cursor-pointer rounded-lg p-1 text-[color:var(--text-muted)] transition-colors duration-150 hover:bg-[color:var(--surface-overlay)] hover:text-[color:var(--text-strong)] focus-visible:ring-2 focus-visible:ring-[color:var(--ring-focus)] focus-visible:outline-none active:bg-[color:var(--surface-overlay)] active:text-[color:var(--text-strong)] motion-reduce:transition-none"
               title={translations.platform.sidebar.workspaceSettings}

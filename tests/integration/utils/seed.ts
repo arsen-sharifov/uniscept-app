@@ -7,6 +7,7 @@ import type {
   IIntegrationAccount,
   IIntegrationInvitationRow,
   IIntegrationNodeRow,
+  IIntegrationOnboardingRow,
   IIntegrationRoleFlags,
   IIntegrationThread,
   IIntegrationWorkspace,
@@ -285,4 +286,16 @@ export const readWorkspaceOwner = async (workspaceId: string): Promise<string | 
   if (error) throw new Error(`Could not read the owner of ${workspaceId}: ${error.message}`);
 
   return data?.owner_id ?? null;
+};
+
+export const readOnboarding = async (userId: string): Promise<IIntegrationOnboardingRow | null> => {
+  const { data, error } = await getAdminClient()
+    .from('user_onboarding')
+    .select('offer_answered, completed_guides')
+    .eq('user_id', userId)
+    .maybeSingle<IIntegrationOnboardingRow>();
+
+  if (error) throw new Error(`Could not read the onboarding of ${userId}: ${error.message}`);
+
+  return data;
 };

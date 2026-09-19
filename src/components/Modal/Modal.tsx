@@ -17,9 +17,18 @@ interface IModalProps {
   className?: string;
   width?: string;
   overflowHidden?: boolean;
+  layerClassName?: string;
 }
 
-export const Modal = ({ open, onClose, children, className, width = 'max-w-lg', overflowHidden }: IModalProps) => {
+export const Modal = ({
+  open,
+  onClose,
+  children,
+  className,
+  width = 'max-w-lg',
+  overflowHidden,
+  layerClassName = 'z-50',
+}: IModalProps) => {
   const t = useTranslations();
   const overlayRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -83,7 +92,8 @@ export const Modal = ({ open, onClose, children, className, width = 'max-w-lg', 
       onClick={handleBackdropClick}
       onTransitionEnd={handleTransitionEnd}
       className={clsx(
-        'fixed inset-0 z-50 flex items-center justify-center bg-[color:var(--scrim)] transition-opacity duration-200 ease-out starting:opacity-0',
+        'fixed inset-0 flex items-center justify-center bg-[color:var(--scrim)] transition-opacity duration-200 ease-out starting:opacity-0',
+        layerClassName,
         open ? 'opacity-100' : 'pointer-events-none opacity-0',
       )}
     >

@@ -6,6 +6,7 @@ import { event } from '@mocks/events';
 import { TRANSLATIONS } from '@mocks/i18n';
 import { ExportMenu } from '@/components/Toolbar/fragments';
 import { exportCanvas } from '@/lib/canvas/export';
+import { useOnboardingStore } from '@/lib/onboarding';
 import { useCanvasStore } from '@/lib/stores';
 
 vi.mock('@/i18n', () => import('@mocks/i18n'));
@@ -32,6 +33,7 @@ beforeEach(() => {
 
 afterEach(() => {
   root.remove();
+  useOnboardingStore.getState().forget();
 });
 
 describe('ExportMenu', () => {
@@ -206,6 +208,37 @@ describe('ExportMenu', () => {
 
         await waitFor(() => expect(exportButton()).toHaveFocus());
         expect(exportButton()).toBeEnabled();
+      });
+    });
+  });
+
+  describe('GIVEN a guide that waits for an export', () => {
+    beforeEach(() => {
+      useOnboardingStore.getState().startGuide('canvas');
+    });
+
+    describe('WHEN a format is chosen and the file downloads', () => {
+      beforeEach(() => {
+        vi.mocked(exportCanvas).mockResolvedValue('downloaded');
+        openWithPointer();
+        chooseFormat('PNG');
+      });
+
+      test('THEN the guide learns that the canvas was exported', async () => {
+        await waitFor(() => expect(useOnboardingStore.getState().signals.has('canvasExported')).toBe(true));
+      });
+    });
+
+    describe('WHEN the graph is too large for a bitmap', () => {
+      beforeEach(() => {
+        vi.mocked(exportCanvas).mockResolvedValue('too-large');
+        openWithPointer();
+        chooseFormat('JPG');
+      });
+
+      test('THEN the guide does not count it as an export', async () => {
+        await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent(copy.tooLarge));
+        expect(useOnboardingStore.getState().signals.has('canvasExported')).toBe(false);
       });
     });
   });

@@ -58,6 +58,7 @@ export const RUBBER_LINE_DOT_STROKE_WIDTH = 1.5;
 
 export const CONNECTION_RADIUS = 32;
 export const NODE_DRAG_THRESHOLD = 3;
+export const OPEN_COMMENTS_Z_INDEX = 2000;
 
 export const ZOOM_STEP_FACTOR = 1.25;
 export const ZOOM_MIN = 0.2;
@@ -100,6 +101,7 @@ export const ARIA_LABEL_KEY_BY_STATUS: Record<TVisibleSaveStatus, 'errorTitle' |
 };
 
 export const FRESH_FIT_PADDING = 0.22;
+export const FIT_REQUEST_DURATION_MS = 240;
 
 export const NODE_BAND_TONES: Record<TNodeBandTone, { icon: LucideIcon; color: string }> = {
   question: { icon: HelpCircle, color: 'var(--question)' },

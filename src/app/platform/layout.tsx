@@ -2,8 +2,9 @@
 
 import { useEffect, useState, type ReactNode } from 'react';
 
-import { CanvasSkeleton, Sidebar, Toolbar, useToolbar } from '@/components';
+import { CanvasSkeleton, Sidebar, Toolbar, Tour, useToolbar } from '@/components';
 
+import { EmptyCanvas } from './components/EmptyCanvas';
 import { Settings } from './components/Settings';
 import { usePreferences } from './components/Settings/hooks';
 import { SheetChrome } from './components/SheetChrome';
@@ -102,6 +103,13 @@ const WorkspaceLayout = ({ children }: { children: ReactNode }) => {
         />
         <div className="relative min-h-0 flex-1">
           {children}
+          {!loading && !activeThreadId && (
+            <EmptyCanvas
+              hasWorkspace={activeWorkspaceId !== null}
+              onCreateThread={onCreateThread}
+              onCreateWorkspace={onCreateWorkspace}
+            />
+          )}
           {loading && <CanvasSkeleton />}
         </div>
       </main>
@@ -120,6 +128,14 @@ const WorkspaceLayout = ({ children }: { children: ReactNode }) => {
           updatePreference={updatePreference}
         />
       )}
+      <Tour
+        items={navItems}
+        workspaceId={activeWorkspaceId}
+        workspaceCount={workspaces.length}
+        threadId={activeThreadId ?? null}
+        onCreateExample={(name) => onCreateThread(undefined, name)}
+        onDeleteExample={onDeleteItem}
+      />
       {workspaceSettingsTarget && (
         <WorkspaceSettings
           workspaceId={workspaceSettingsTarget.id}

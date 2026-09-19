@@ -1,17 +1,15 @@
 'use client';
 
 import { clsx } from 'clsx';
-import { HelpCircle } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import type { IToolGroup, IToolItem } from '@interfaces';
 
 import { Skeleton } from '@/components/Skeleton';
-import { buildHelpTool } from '@/components/tools';
 import { useTranslations } from '@/i18n';
 
-import { ICON_STROKE, TOOLTIP_DELAY_MS } from './consts';
-import { ExportMenu, ShortcutsHelp, ToolButton, ToolbarSkeleton, ToolTooltip } from './fragments';
+import { TOOLTIP_DELAY_MS } from './consts';
+import { ExportMenu, HelpMenu, ShortcutsHelp, ToolButton, ToolbarSkeleton, ToolTooltip } from './fragments';
 import { useToolbarShortcuts } from './hooks';
 import { isTypingTarget } from './utils';
 
@@ -43,14 +41,11 @@ export const Toolbar = ({
 
   const t = useTranslations();
   const pending = pendingGroupSizes.length > 0;
-  const toolsTranslations = t.platform.canvas.tools;
-  const helpTool = useMemo(() => buildHelpTool(toolsTranslations), [toolsTranslations]);
   const [hover, setHover] = useState<IToolHoverState | null>(null);
-  const [helpOpen, setHelpOpen] = useState(false);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
 
   const showTimerRef = useRef<number | null>(null);
   const visibleRef = useRef(false);
-  const helpButtonRef = useRef<HTMLButtonElement>(null);
 
   const clearShowTimer = useCallback(() => {
     if (showTimerRef.current === null) return;
@@ -91,20 +86,13 @@ export const Toolbar = ({
     [showHover],
   );
 
-  const handleHelpEnter = useCallback(() => {
-    const rect = helpButtonRef.current?.getBoundingClientRect();
-    if (!rect) return;
-
-    showHover({ tool: helpTool, top: rect.top + rect.height / 2 });
-  }, [showHover, helpTool]);
-
   useEffect(() => {
     const onKey = (event: globalThis.KeyboardEvent) => {
       if (event.key !== '?') return;
       if (isTypingTarget(event.target)) return;
 
       event.preventDefault();
-      setHelpOpen((prev) => !prev);
+      setShortcutsOpen((prev) => !prev);
     };
 
     window.addEventListener('keydown', onKey);
@@ -115,6 +103,7 @@ export const Toolbar = ({
   return (
     <>
       <aside
+        data-tour="toolbar"
         aria-label={t.platform.canvas.tools.ariaLabel}
         onMouseLeave={hideHover}
         className="app-glass relative z-40 flex h-full w-14 shrink-0 flex-col items-stretch rounded-2xl border border-[color:var(--border)] transition-[background-color,border-color] duration-200 ease-out select-none motion-reduce:transition-none"
@@ -152,32 +141,25 @@ export const Toolbar = ({
           </div>
         )}
 
-        <div className="mx-2 flex justify-center border-t border-[color:var(--border)] py-2">
+        <div onPointerEnter={hideHover} className="mx-2 flex justify-center border-t border-[color:var(--border)] py-2">
           {pending ? (
             <span aria-hidden className="flex h-9 w-9 items-center justify-center">
               <Skeleton className="h-[17px] w-[17px]" />
             </span>
           ) : (
-            <button
-              ref={helpButtonRef}
-              type="button"
-              onClick={() => setHelpOpen(true)}
-              onPointerEnter={handleHelpEnter}
-              onPointerLeave={hideHover}
-              onFocus={handleHelpEnter}
-              onBlur={hideHover}
-              aria-label={t.platform.canvas.shortcuts.ariaLabel}
-              className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg text-[color:var(--text-muted)] transition-[background-color,color,box-shadow,transform] duration-200 ease-out outline-none hover:bg-[color:var(--surface-overlay)] hover:text-[color:var(--text)] focus-visible:ring-2 focus-visible:ring-[color:var(--ring-focus)] focus-visible:ring-offset-1 focus-visible:ring-offset-[color:var(--surface)] active:scale-[0.94] active:bg-[color:var(--surface-overlay)] motion-reduce:transition-none"
-            >
-              <HelpCircle className="h-[17px] w-[17px]" strokeWidth={ICON_STROKE} />
-            </button>
+            <HelpMenu onShortcuts={() => setShortcutsOpen(true)} />
           )}
         </div>
       </aside>
 
       <ToolTooltip tool={hover?.tool ?? null} top={hover?.top ?? -1000} visible={Boolean(hover)} />
 
-      <ShortcutsHelp open={helpOpen} groups={groups} activeTool={activeTool} onClose={() => setHelpOpen(false)} />
+      <ShortcutsHelp
+        open={shortcutsOpen}
+        groups={groups}
+        activeTool={activeTool}
+        onClose={() => setShortcutsOpen(false)}
+      />
     </>
   );
 };

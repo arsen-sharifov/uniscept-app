@@ -138,7 +138,6 @@
       "structure": "Structure",
       "newThread": "New thread",
       "newFolder": "New folder",
-      "emptyState": "Select or create a thread to get started",
       "signOut": "Sign Out",
       "deleteWorkspaceTitle": "Delete workspace",
       "deleteFolderTitle": "Delete folder",
@@ -191,7 +190,6 @@
       },
       "tools": {
         "ariaLabel": "Canvas tools",
-        "help": "Keyboard shortcuts",
         "groups": {
           "navigate": "Navigate",
           "history": "History",
@@ -333,6 +331,473 @@
         "activeBadge": "Active"
       }
     },
+    "onboarding": {
+      "nodiName": "Nodi",
+      "nodiAlt": "Nodi, your guide",
+      "nodiIntro": "Nodi is a canvas node that knows the app inside out. It stands beside each card, and the highlighted ring shows where to click.",
+      "ergoName": "Ergo",
+      "ergoAlt": "Ergo, Nodi's friend",
+      "menuLabel": "Help",
+      "menuShortcuts": "Keyboard shortcuts",
+      "menuGuides": "Tour and guides",
+      "offerTitle": "Want a quick tour?",
+      "offerBody": "Build your first canvas step by step: a thread, a question, a few nodes, and a verdict. You do every step yourself, and you can leave at any time.",
+      "offerAccept": "Start the tour",
+      "offerDecline": "Not now",
+      "offerLater": "You can start it later from Tour and guides in the Help menu.",
+      "continueHint": {
+        "afterTour": {
+          "title": "Keep learning from here",
+          "body": "The other guides wait under Tour and guides in this Help menu. Pick one whenever you like."
+        },
+        "afterDecline": {
+          "title": "The tour will wait here",
+          "body": "Open Tour and guides from this Help menu whenever you're ready."
+        },
+        "open": "Open guides",
+        "dismiss": "Got it"
+      },
+      "pickerTitle": "Tour and guides",
+      "pickerBody": "The tour walks you through your first canvas. The guides after it cover one part of the app each, and most have you try it for real. Finish them all for the Initiate badge.",
+      "pickerProgress": "{done} of {total} complete",
+      "pickerLocked": "Finish the first canvas to unlock this guide.",
+      "pickerStart": "Start",
+      "pickerReplay": "Run again",
+      "stepCounter": "step {index} of {total}",
+      "stepNext": "Next",
+      "stepDone": "already done",
+      "stepWaiting": "your turn",
+      "stepLostTarget": "the target is off screen",
+      "blockedTitle": "Close this first",
+      "blockedBody": "Something is open on top of this step. Close it and the tour will continue.",
+      "blockedStatus": "waiting for it to close",
+      "quit": "Leave the tour",
+      "celebrationTitle": "You finished every guide",
+      "celebrationBody": "You have seen it all: building a canvas, judging it, linking threads together, and the settings around them. The Initiate badge is now on your profile.",
+      "celebrationClose": "Back to work",
+      "emptyPlatformTitle": "No thread open",
+      "emptyPlatformBody": "A thread holds one question and the canvas where you work it out. Create a new one or pick one from the list on the left.",
+      "emptyViewerBody": "A thread holds one question and the canvas where it gets worked out. Pick one from the list on the left.",
+      "emptyWorkspaceTitle": "No workspace yet",
+      "emptyWorkspaceBody": "Everything lives in a workspace: threads, members, and references. Create your first one to get started.",
+      "emptyPlatformAction": "take the tour",
+      "hints": {
+        "needsWorkspace": "You need a workspace first. The first-canvas guide starts by creating one.",
+        "needsCanvas": "Open a thread so its canvas is on screen.",
+        "needsNode": "Add at least one node to this canvas.",
+        "needsBuildRights": "Open a workspace where you can create threads, edit canvases, and comment."
+      },
+      "guides": {
+        "baseTitle": "Your first canvas",
+        "baseSummary": "Build a whole canvas, from the question to the answer.",
+        "canvasTitle": "Working on a canvas",
+        "canvasSummary": "Tools, comments, references, and export.",
+        "workspaceTitle": "Workspaces and structure",
+        "workspaceSummary": "Organize your threads and invite people.",
+        "settingsTitle": "Settings",
+        "settingsSummary": "Walk through every section and make the app yours.",
+        "exampleTitle": "Watch an example",
+        "exampleSummary": "Nodi and Ergo pick an office coffee machine."
+      },
+      "steps": {
+        "baseIntro": {
+          "title": "What a canvas is",
+          "body": "A thread is built around one question, and its canvas is where you work it out: nodes hold claims, links show what follows from what, and verdicts mark which paths hold up. Let's build one together."
+        },
+        "baseWorkspace": {
+          "title": "Create a workspace",
+          "body": "A workspace holds your threads, members, and references. Nothing leaves it. Create your first one."
+        },
+        "baseOwnWorkspace": {
+          "title": "Start a workspace of your own",
+          "body": "Your role in this workspace does not let you build, so the canvas goes into one you own. Open the switcher and create a new workspace."
+        },
+        "baseThread": {
+          "title": "Create a thread",
+          "body": "A thread holds one question and the canvas for it. Use the button in the sidebar."
+        },
+        "baseQuestion": {
+          "title": "Write the question",
+          "body": "The question node is already on the canvas. Click it, type the question you actually want answered, and press Enter."
+        },
+        "baseArgue": {
+          "title": "How an argument is built",
+          "body": "Every claim connects to the question with a link. A node that is not connected to anything has no effect on the result."
+        },
+        "baseNode": {
+          "title": "Add your first claim",
+          "body": "Pick the Add node tool and click an empty spot. One node holds one idea: a claim, a premise, or an objection."
+        },
+        "baseNodeText": {
+          "title": "Write the claim",
+          "body": "Switch to the Select tool (key V), double-click your new node, replace the placeholder with your claim, and press Enter."
+        },
+        "baseConnect": {
+          "title": "Link it to the question",
+          "body": "Pick the Connect tool, click the question, then click your node. The arrow shows what follows from what."
+        },
+        "baseDirection": {
+          "title": "Direction matters",
+          "body": "A link points from a node to what builds on it: from the question to its answers, from a claim to what follows from it. Reject a node, and everything built on it turns doubtful."
+        },
+        "baseObjection": {
+          "title": "Add an objection",
+          "body": "Add a second node that argues against the first claim, and write it the same way. A canvas with only one side proves nothing."
+        },
+        "baseSecondLink": {
+          "title": "Link it too",
+          "body": "Same as before: the Connect tool, the question, then the new node. Now two competing branches hang off the question."
+        },
+        "baseValid": {
+          "title": "Mark the branch that holds",
+          "body": "Pick the Mark valid tool and click the claim you believe. The whole path it belongs to lights up."
+        },
+        "baseInvalid": {
+          "title": "Mark the one that does not",
+          "body": "Pick the Mark invalid tool and click the other branch. It stays on the canvas, marked as rejected."
+        },
+        "baseVerdict": {
+          "title": "Nothing gets erased",
+          "body": "Valid, invalid, and undecided all stay side by side. Months later you can still see not just the answer but every attempt that did not work."
+        },
+        "baseAnswerTool": {
+          "title": "Pick the Answer tool",
+          "body": "A verdict says a path holds. The answer says which node closes the question. They are different things, and the answer has to connect to the question directly or through a valid node."
+        },
+        "baseAnswer": {
+          "title": "Mark the answer",
+          "body": "Click a node on a valid path. The thread counts as resolved from now on. You can move the answer to another node later."
+        },
+        "baseResolvedMark": {
+          "title": "Resolved threads get a check",
+          "body": "Look at the sidebar: your thread now has a check next to it. Every resolved thread gets one, so open questions stand out at a glance."
+        },
+        "baseResolved": {
+          "title": "That is the whole loop",
+          "body": "Question, claims, links, verdicts, answer. Everything else in the app, like comments, references, and export, builds on this."
+        },
+        "structureWhat": {
+          "title": "The sidebar is just for filing",
+          "body": "Folders and nesting keep a long list readable. They change nothing on the canvas: a thread works the same wherever it sits."
+        },
+        "structureFolder": {
+          "title": "Create a folder",
+          "body": "Folders are optional. They group threads and nothing more."
+        },
+        "structureNest": {
+          "title": "Put a thread inside it",
+          "body": "Create a thread inside the folder, or drag an existing one in."
+        },
+        "structureSearch": {
+          "title": "Search when the list grows",
+          "body": "The search box filters the whole tree by name, folders included. It is the fastest way back to a thread you half remember."
+        },
+        "structureMove": {
+          "title": "Move things any time",
+          "body": "Drag threads and folders to reorder or re-file them. The canvas, comments, and references stay as they were."
+        },
+        "referencesWhat": {
+          "title": "What a reference is",
+          "body": "Sometimes a thread relies on a conclusion already reached in another one. A reference brings that node in as a read-only quote instead of a copy, so the original stays the only source."
+        },
+        "referencesThread": {
+          "title": "Create a second thread",
+          "body": "A reference needs a node on another canvas, and no other canvas in this workspace has one yet. Create a new thread in the sidebar: the tour continues there, and you will reference a node from this canvas."
+        },
+        "referencesTool": {
+          "title": "Pick the Cross-reference tool",
+          "body": "It brings a node from another canvas in this workspace onto this one, without merging the two."
+        },
+        "referencesPlace": {
+          "title": "Place it on the canvas",
+          "body": "Click an empty spot. A search panel opens with the nodes from this workspace that you can reference."
+        },
+        "referencesPick": {
+          "title": "Pick the node to reference",
+          "body": "Search the other canvases in this workspace and pick a node. It lands as a read-only reference node; to link it, drag a connection from another node's edge onto it."
+        },
+        "referencesBoundary": {
+          "title": "It stays inside the workspace",
+          "body": "A reference can only point at canvases in this workspace, and it never changes the node it points to. Delete the reference and the original is untouched."
+        },
+        "commentsWhat": {
+          "title": "Discussion lives beside the reasoning",
+          "body": "A comment never becomes a node and never carries a verdict. It is where you talk about a node without touching the argument itself."
+        },
+        "commentsOpen": {
+          "title": "Open a node's comments",
+          "body": "Use the comment button on a node. The panel opens beside it."
+        },
+        "commentsWrite": {
+          "title": "Leave a comment",
+          "body": "Write anything and send it. Comments never change the structure or the verdicts."
+        },
+        "commentsWho": {
+          "title": "Everyone on the thread can read it",
+          "body": "Comments belong to the node and are visible to everyone who can open the thread. People with comment rights can comment even if they cannot edit the canvas."
+        },
+        "workspacesWhat": {
+          "title": "A workspace is the boundary",
+          "body": "Threads, folders, members, and references all live inside one workspace and never cross into another. You can belong to several and switch between them freely."
+        },
+        "workspacesSwitcher": {
+          "title": "Open the workspace switcher",
+          "body": "It is the name of the current workspace at the top of the sidebar."
+        },
+        "workspacesSettings": {
+          "title": "Open the workspace settings",
+          "body": "Hover over the workspace row and click the gear. These settings apply to this workspace only."
+        },
+        "workspacesGeneral": {
+          "title": "The General section",
+          "body": "Workspace settings open here: the name, the number of members, your role, and when the workspace was created."
+        },
+        "workspacesOwner": {
+          "title": "There is always one owner",
+          "body": "Ownership is transferred, never shared: the owner hands it over from the Members section. Deleting the workspace takes the Manage workspace permission, which only the owner has unless a custom role grants it."
+        },
+        "membersWhat": {
+          "title": "Roles apply to the whole workspace",
+          "body": "Access is set once per workspace, not per canvas. A role decides whether someone can edit canvases, only comment, or only read."
+        },
+        "membersOpen": {
+          "title": "Open the workspace settings",
+          "body": "Open the workspace switcher, then click the gear on the row. Members and roles live there."
+        },
+        "membersSection": {
+          "title": "Open the Members section",
+          "body": "This is where you invite people and assign roles. Nothing is sent while you are just looking around."
+        },
+        "membersInvite": {
+          "title": "Invitations go by email",
+          "body": "Enter an address and pick a role up front. You can revoke an invitation before it is accepted, and change a role at any time."
+        },
+        "membersRoles": {
+          "title": "Open the Roles section",
+          "body": "Roles are defined per workspace. Owner, Member, and Viewer are built in and fixed; you can create your own roles and decide exactly what each one allows."
+        },
+        "membersPermissions": {
+          "title": "What a role controls",
+          "body": "Editing the canvas, commenting, managing threads and folders, members, roles, and the workspace itself. A role is just that set of switches."
+        },
+        "settingsWhat": {
+          "title": "These settings are yours",
+          "body": "Your profile is what teammates see next to your name. Everything else here is only for you and follows your account across devices. Let's go through every section."
+        },
+        "settingsOpen": {
+          "title": "Open your settings",
+          "body": "Click your name at the bottom of the sidebar, then Settings."
+        },
+        "settingsProfile": {
+          "title": "Change something in your profile",
+          "body": "Change your name or pick another avatar, then save. You can switch it back right after. The badges you earn show up here too."
+        },
+        "settingsSecurity": {
+          "title": "Open the Security section",
+          "body": "Your password and account deletion live here."
+        },
+        "settingsSecurityNote": {
+          "title": "Only you can do this",
+          "body": "Changing your password signs out your other sessions. Deleting your account also deletes the workspaces you own."
+        },
+        "settingsNotifications": {
+          "title": "Open the Notifications section",
+          "body": "The switches are here, but delivery is not built yet. Nothing is sent for now."
+        },
+        "settingsAppearance": {
+          "title": "Open the Appearance section",
+          "body": "The interface language, eight themes (Auto follows your system with Daybreak and Eclipse), and four canvas patterns."
+        },
+        "settingsTheme": {
+          "title": "Try another theme",
+          "body": "Pick one and the whole app changes right away, while the panel stays open. Only you see this change."
+        },
+        "settingsPattern": {
+          "title": "Change the canvas pattern",
+          "body": "Dots, lines, crosses, or a plain surface. Only the canvas background changes."
+        },
+        "settingsEditor": {
+          "title": "Open the Editor section",
+          "body": "This section controls how the canvas behaves while you work on it."
+        },
+        "settingsTune": {
+          "title": "Change one of them",
+          "body": "Snap to grid, smart guides, or the zoom a canvas opens at. Flip one and the canvas follows immediately."
+        },
+        "settingsPlan": {
+          "title": "Open Plan & Billing",
+          "body": "Your current plan and what each plan includes, like the number of members and canvases."
+        },
+        "settingsScope": {
+          "title": "That is every section",
+          "body": "Profile, security, notifications, appearance, editor, plan. Your teammates have their own settings, even on the same thread."
+        },
+        "exportWhat": {
+          "title": "Export is a snapshot",
+          "body": "The file shows the canvas exactly as it is right now, and it cannot be imported back. Use it to share or print, not to move work between threads."
+        },
+        "exportMenu": {
+          "title": "Open the export menu",
+          "body": "The export button is at the bottom of the toolbar."
+        },
+        "exportFormat": {
+          "title": "Pick a format",
+          "body": "PNG and JPG are images, SVG stays sharp at any size. The file goes to your downloads."
+        },
+        "exportNote": {
+          "title": "What goes into the file",
+          "body": "Nodes, links, verdicts, and the answer. Comments and the toolbar are left out."
+        },
+        "toolsWhat": {
+          "title": "One tool at a time",
+          "body": "Only one tool is active at once, and a click on the canvas does whatever that tool does. Knowing which tool you are holding is half the skill."
+        },
+        "toolsSheet": {
+          "title": "Open the shortcuts sheet",
+          "body": "Help is at the bottom of the toolbar, and Keyboard shortcuts is the first item in it."
+        },
+        "toolsSheetRead": {
+          "title": "One key per tool",
+          "body": "The same five groups as the toolbar: navigate, history, build, decide, link. Each tool has one key, and the keys keep working while the sheet is open."
+        },
+        "toolsClose": {
+          "title": "Close the sheet",
+          "body": "Click the cross in the corner or press Escape. The sheet covers the toolbar, and that is where the tour goes next."
+        },
+        "toolsSelect": {
+          "title": "Select",
+          "body": "The neutral tool: it selects and drags nodes and changes nothing else. Key V."
+        },
+        "toolsPan": {
+          "title": "Pan",
+          "body": "Drag to move the view instead of a node. Key H."
+        },
+        "toolsZoom": {
+          "title": "Zoom",
+          "body": "A click zooms in on the spot you clicked, and Shift zooms out. Keys plus and minus."
+        },
+        "toolsUndo": {
+          "title": "Undo and redo",
+          "body": "History has its own buttons, so experiments are free: any step can be taken back and redone."
+        },
+        "toolsAdd": {
+          "title": "Add node",
+          "body": "A click on an empty spot adds a node with a placeholder label. Key N."
+        },
+        "toolsConnect": {
+          "title": "Connect",
+          "body": "Click the node the reasoning starts from, then the one it leads to. The arrow shows the direction. Key C."
+        },
+        "toolsDelete": {
+          "title": "Delete",
+          "body": "A click removes a node or a link. The question node cannot be deleted. Key D."
+        },
+        "toolsValid": {
+          "title": "Mark valid",
+          "body": "A verdict on the path into this node: that step holds. Key Y."
+        },
+        "toolsInvalid": {
+          "title": "Mark invalid",
+          "body": "The opposite verdict: the step does not hold, and everything that rests on it becomes doubtful. Key X."
+        },
+        "toolsAnswer": {
+          "title": "Answer",
+          "body": "Marks the node that closes the thread. One answer per thread, and you can move it later. Key A."
+        },
+        "toolsReference": {
+          "title": "Cross-reference",
+          "body": "Brings a node from another canvas in as a read-only quote. Key R. References get their own part later in this guide."
+        },
+        "exampleIntro": {
+          "title": "Meet my friend Ergo",
+          "body": "Our office needs a coffee machine, and Ergo and I can't agree on which one. We'll settle it on a canvas the way two teammates would. Press Next to follow along."
+        },
+        "exampleHello": {
+          "title": "Hi, I'm Ergo",
+          "body": "A question with several possible answers is what a canvas is made for: each option grows its own branch from the question, with its reasons under it."
+        },
+        "exampleThread": {
+          "title": "I ask the question",
+          "body": "I create a thread and write the question on its question node: which coffee machine should we get for the office?"
+        },
+        "exampleCapsule": {
+          "title": "My pick: capsules",
+          "body": "With Add node I put down my answer, a capsule machine, and link it to the question with Connect. My reason goes under it: one button, nothing to clean."
+        },
+        "exampleBean": {
+          "title": "I'd go for beans",
+          "body": "My answer gets a branch of its own: a bean-to-cup machine. The reason under it: beans cost far less per cup than capsules."
+        },
+        "exampleDoubt": {
+          "title": "A doubt about Nodi's pick",
+          "body": "A bean-to-cup machine costs a lot more to buy. That's a doubt, not an answer, so I leave it as a comment on Nodi's node."
+        },
+        "examplePayback": {
+          "title": "My reply",
+          "body": "Fair, but it pays for itself within a year. I add that as a second reason under my answer, right where the doubt came up."
+        },
+        "exampleFilter": {
+          "title": "A third option",
+          "body": "If price is what matters, there's also a filter coffee maker, the cheapest to buy. A third answer means a third branch."
+        },
+        "exampleStale": {
+          "title": "Not that one",
+          "body": "Filter coffee goes stale on the hotplate within an hour. I leave that as a comment on the filter option."
+        },
+        "exampleDropFilter": {
+          "title": "Fair enough",
+          "body": "Nobody wants stale coffee. I mark my filter option with Mark invalid, and the reason under it turns doubtful too."
+        },
+        "exampleWaste": {
+          "title": "One more thing",
+          "body": "Capsules also pile up as plastic waste every week. I leave that as a comment on Ergo's capsule option."
+        },
+        "exampleDropCapsule": {
+          "title": "You've convinced me",
+          "body": "The cost per cup and the waste add up. I mark my capsule option invalid as well."
+        },
+        "exampleValid": {
+          "title": "What's left holds up",
+          "body": "With Mark valid I confirm the bean-to-cup branch and both reasons under it. The path from the question lights up."
+        },
+        "exampleAnswer": {
+          "title": "Our answer",
+          "body": "We agree now, so I mark the bean-to-cup machine with Answer. The thread counts as resolved."
+        },
+        "exampleResolved": {
+          "title": "A check in the sidebar",
+          "body": "Look at the sidebar: our thread now has a check next to it. Every resolved thread gets one, so open questions stand out at a glance."
+        },
+        "exampleWrap": {
+          "title": "That's the whole idea",
+          "body": "One question, a branch per answer, reasons under each, doubts in comments, verdicts, and one answer we both accept. Your own threads work the same way."
+        },
+        "exampleKeep": {
+          "title": "Keep the example?",
+          "body": "It stays in the sidebar as a normal thread you can open and change. Keep it to look around later, or delete it now."
+        }
+      },
+      "example": {
+        "threadName": "Example: the office coffee machine",
+        "question": "Which coffee machine should we get for the office?",
+        "keep": "Keep it",
+        "remove": "Delete it",
+        "nodes": {
+          "capsule": "A capsule machine",
+          "oneButton": "One button, nothing to clean",
+          "bean": "A bean-to-cup machine",
+          "perCup": "Beans cost far less per cup than capsules",
+          "payback": "It pays for itself within a year",
+          "filter": "A filter coffee maker",
+          "cheapest": "The cheapest to buy"
+        },
+        "comments": {
+          "capsule": "Capsules also pile up as plastic waste every week.",
+          "bean": "It costs a lot more to buy than the others.",
+          "filter": "Filter coffee goes stale on the hotplate within an hour."
+        }
+      }
+    },
     "settings": {
       "title": "Settings",
       "close": "Close settings",
@@ -395,6 +860,8 @@
         "badges": {
           "badgeFounder": "Founder",
           "founderUnlock": "Joined during the early beta.",
+          "badgeInitiate": "Initiate",
+          "initiateUnlock": "Finish the tour and every guide.",
           "badgeFirstSteps": "First Steps",
           "firstStepsUnlock": "Create your first canvas.",
           "badgeArchitect": "Architect",

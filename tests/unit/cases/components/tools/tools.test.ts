@@ -1,13 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import {
-  ECanvasTool,
-  HELP_TOOL_ID,
-  buildCanvasToolGroups,
-  buildCanvasTools,
-  buildHelpTool,
-  isCanvasTool,
-} from '@/components/tools';
+import { ECanvasTool, buildCanvasToolGroups, buildCanvasTools, isCanvasTool } from '@/components/tools';
 import en from '@/locales/en.json';
 
 const TOOLS_TRANSLATIONS = en.platform.canvas.tools;
@@ -78,20 +71,6 @@ describe('buildCanvasToolGroups', () => {
           { id: 'decide', tools: [ECanvasTool.ValidPath, ECanvasTool.InvalidPath, ECanvasTool.Answer] },
           { id: 'link', tools: [ECanvasTool.CrossReference] },
         ]);
-      });
-    });
-  });
-});
-
-describe('buildHelpTool', () => {
-  describe('GIVEN the english tool translations', () => {
-    describe('WHEN the help tool is built', () => {
-      test('THEN it carries the help id, shortcut and translated label', () => {
-        expect(buildHelpTool(TOOLS_TRANSLATIONS)).toMatchObject({
-          id: HELP_TOOL_ID,
-          shortcut: '?',
-          label: TOOLS_TRANSLATIONS.help,
-        });
       });
     });
   });

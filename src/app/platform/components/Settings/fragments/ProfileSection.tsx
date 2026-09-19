@@ -3,13 +3,13 @@
 import type { User } from '@supabase/supabase-js';
 import { useId, useMemo, useState } from 'react';
 
-import type { IUserMetadata, IUserProfileUpdate, TAvatarIcon, TBadgeId } from '@interfaces';
-import { AVATAR_ICONS, BADGES, DEFAULT_BADGES, EMAIL_PATTERN, MAX_NAME_LENGTH } from '@constants';
+import type { IUserMetadata, IUserProfileUpdate, TAvatarIcon } from '@interfaces';
+import { AVATAR_ICONS, BADGES, EMAIL_PATTERN, MAX_NAME_LENGTH } from '@constants';
 import { useAsyncAction } from '@hooks';
 import { Avatar, Badge, BadgeConstellation, getInitials } from '@/components';
 import { useTranslations } from '@/i18n';
 import { event } from '@/lib/events';
-import { isAvatarIcon, isBadgeId } from '@/lib/utils';
+import { isAvatarIcon, resolveEarnedBadges } from '@/lib/utils';
 
 import { PickerCard } from './PickerCard';
 import { SettingsInput } from '../SettingsInput';
@@ -31,11 +31,7 @@ export const ProfileSection = ({ user, onUpdateProfile, onUpdateEmail }: IProfil
   const storedAvatarIcon = metadata?.avatarIcon;
   const userAvatarIcon: TAvatarIcon | null = isAvatarIcon(storedAvatarIcon) ? storedAvatarIcon : null;
   const storedBadges = metadata?.badges;
-  const earnedBadges = useMemo<readonly TBadgeId[]>(() => {
-    const valid = Array.isArray(storedBadges) ? storedBadges.filter(isBadgeId) : [];
-
-    return valid.length > 0 ? valid : DEFAULT_BADGES;
-  }, [storedBadges]);
+  const earnedBadges = useMemo(() => resolveEarnedBadges(storedBadges), [storedBadges]);
 
   const [name, setName] = useState(userName);
   const [avatarIcon, setAvatarIcon] = useState<TAvatarIcon | null>(userAvatarIcon);

@@ -138,7 +138,6 @@
       "structure": "Estrutura",
       "newThread": "Novo tópico",
       "newFolder": "Nova pasta",
-      "emptyState": "Selecione ou crie um tópico para começar",
       "signOut": "Sair",
       "deleteWorkspaceTitle": "Eliminar espaço",
       "deleteFolderTitle": "Eliminar pasta",
@@ -191,7 +190,6 @@
       },
       "tools": {
         "ariaLabel": "Ferramentas do canvas",
-        "help": "Atalhos de teclado",
         "groups": {
           "navigate": "Navegação",
           "history": "Histórico",
@@ -333,6 +331,473 @@
         "activeBadge": "Ativo"
       }
     },
+    "onboarding": {
+      "nodiName": "Nodi",
+      "nodiAlt": "Nodi, o seu guia",
+      "nodiIntro": "O Nodi é um nó da tela que conhece a aplicação de cor e salteado. Fica ao lado de cada cartão, e o anel em destaque mostra onde clicar.",
+      "ergoName": "Ergo",
+      "ergoAlt": "Ergo, o amigo do Nodi",
+      "menuLabel": "Ajuda",
+      "menuShortcuts": "Atalhos de teclado",
+      "menuGuides": "Visita e guias",
+      "offerTitle": "Quer uma visita rápida?",
+      "offerBody": "Construa a sua primeira tela passo a passo: um tópico, uma pergunta, alguns nós e um veredicto. Cada passo fica a seu cargo, e pode sair a qualquer momento.",
+      "offerAccept": "Começar a visita",
+      "offerDecline": "Agora não",
+      "offerLater": "Pode iniciá-la mais tarde no menu Ajuda, em Visita e guias.",
+      "continueHint": {
+        "afterTour": {
+          "title": "Continue a partir daqui",
+          "body": "Os restantes guias esperam por si em Visita e guias, neste menu Ajuda. Escolha qualquer um quando quiser."
+        },
+        "afterDecline": {
+          "title": "A visita espera por si aqui",
+          "body": "Quando quiser, abra Visita e guias neste menu Ajuda."
+        },
+        "open": "Abrir guias",
+        "dismiss": "Entendido"
+      },
+      "pickerTitle": "Visita e guias",
+      "pickerBody": "A visita acompanha-o na sua primeira tela. Cada guia a seguir trata de uma parte da aplicação, e a maioria põe-no a experimentá-la a sério. Termine todos para ganhar a insígnia Iniciado.",
+      "pickerProgress": "{done} de {total} concluídos",
+      "pickerLocked": "Termine a primeira tela para desbloquear este guia.",
+      "pickerStart": "Começar",
+      "pickerReplay": "Repetir",
+      "stepCounter": "passo {index} de {total}",
+      "stepNext": "Seguinte",
+      "stepDone": "já feito",
+      "stepWaiting": "é a sua vez",
+      "stepLostTarget": "o alvo está fora do ecrã",
+      "blockedTitle": "Feche isto primeiro",
+      "blockedBody": "Há algo aberto por cima deste passo. Feche-o e a visita continua.",
+      "blockedStatus": "à espera que feche",
+      "quit": "Sair da visita",
+      "celebrationTitle": "Terminou todos os guias",
+      "celebrationBody": "Viu tudo: como construir uma tela, avaliá-la e ligar tópicos entre si, e onde ficam as definições. A insígnia Iniciado já está no seu perfil.",
+      "celebrationClose": "De volta ao trabalho",
+      "emptyPlatformTitle": "Nenhum tópico aberto",
+      "emptyPlatformBody": "Um tópico contém uma pergunta e a tela onde a resolve. Crie um novo ou escolha um da lista à esquerda.",
+      "emptyViewerBody": "Um tópico contém uma pergunta e a tela onde ela se resolve. Escolha um da lista à esquerda.",
+      "emptyWorkspaceTitle": "Ainda sem espaço",
+      "emptyWorkspaceBody": "Tudo fica num espaço de trabalho: tópicos, membros e referências. Crie o primeiro para começar.",
+      "emptyPlatformAction": "fazer a visita",
+      "hints": {
+        "needsWorkspace": "Precisa primeiro de um espaço de trabalho. O guia da primeira tela começa por criar um.",
+        "needsCanvas": "Abra um tópico para que a sua tela esteja no ecrã.",
+        "needsNode": "Adicione pelo menos um nó a esta tela.",
+        "needsBuildRights": "Abra um espaço onde possa criar tópicos, editar telas e comentar."
+      },
+      "guides": {
+        "baseTitle": "A sua primeira tela",
+        "baseSummary": "Construir uma tela inteira, da pergunta à resposta.",
+        "canvasTitle": "Trabalhar numa tela",
+        "canvasSummary": "Ferramentas, comentários, referências e exportação.",
+        "workspaceTitle": "Espaços e estrutura",
+        "workspaceSummary": "Organizar os tópicos e convidar pessoas.",
+        "settingsTitle": "Definições",
+        "settingsSummary": "Percorrer todas as secções e tornar a aplicação sua.",
+        "exampleTitle": "Ver um exemplo",
+        "exampleSummary": "O Nodi e o Ergo escolhem uma máquina de café para o escritório."
+      },
+      "steps": {
+        "baseIntro": {
+          "title": "O que é uma tela",
+          "body": "Um tópico constrói-se à volta de uma única pergunta, e a sua tela é onde a resolve: os nós contêm afirmações, as ligações mostram o que decorre de quê, e os veredictos marcam os caminhos que se sustentam. Vamos construir uma juntos."
+        },
+        "baseWorkspace": {
+          "title": "Crie um espaço de trabalho",
+          "body": "Um espaço contém os seus tópicos, membros e referências. Nada sai dele. Crie o primeiro."
+        },
+        "baseOwnWorkspace": {
+          "title": "Crie o seu próprio espaço",
+          "body": "A sua função neste espaço não lhe permite construir, por isso a tela vai para um espaço seu. Abra o seletor e crie um espaço novo."
+        },
+        "baseThread": {
+          "title": "Crie um tópico",
+          "body": "Um tópico contém uma pergunta e a sua tela. Use o botão na barra lateral."
+        },
+        "baseQuestion": {
+          "title": "Escreva a pergunta",
+          "body": "O nó da pergunta já está na tela. Clique nele, escreva a pergunta a que quer mesmo responder e prima Enter."
+        },
+        "baseArgue": {
+          "title": "Como se constrói um argumento",
+          "body": "Cada afirmação liga-se à pergunta por uma ligação. Um nó que não está ligado a nada não tem efeito no resultado."
+        },
+        "baseNode": {
+          "title": "Adicione a sua primeira afirmação",
+          "body": "Escolha a ferramenta Adicionar nó e clique num espaço vazio. Um nó contém uma só ideia: uma afirmação, uma premissa ou uma objeção."
+        },
+        "baseNodeText": {
+          "title": "Escreva a afirmação",
+          "body": "Mude para a ferramenta Selecionar (tecla V), faça duplo clique no novo nó, substitua o texto provisório pela sua afirmação e prima Enter."
+        },
+        "baseConnect": {
+          "title": "Ligue-o à pergunta",
+          "body": "Escolha a ferramenta Ligar, clique na pergunta e depois no seu nó. A seta mostra o que decorre de quê."
+        },
+        "baseDirection": {
+          "title": "A direção importa",
+          "body": "Uma ligação vai de um nó para o que se constrói sobre ele: da pergunta para as respostas, de uma afirmação para o que decorre dela. Rejeite um nó, e tudo o que assenta nele fica em dúvida."
+        },
+        "baseObjection": {
+          "title": "Adicione uma objeção",
+          "body": "Adicione um segundo nó que argumente contra a primeira afirmação e escreva-o da mesma forma. Uma tela com um só lado não prova nada."
+        },
+        "baseSecondLink": {
+          "title": "Ligue-o também",
+          "body": "Como antes: a ferramenta Ligar, a pergunta e depois o novo nó. Agora saem da pergunta dois ramos que competem entre si."
+        },
+        "baseValid": {
+          "title": "Marque o ramo que se sustenta",
+          "body": "Escolha a ferramenta Marcar válido e clique na afirmação em que acredita. Todo o caminho a que pertence acende-se."
+        },
+        "baseInvalid": {
+          "title": "Marque o que não se sustenta",
+          "body": "Escolha a ferramenta Marcar inválido e clique no outro ramo. Fica na tela, marcado como rejeitado."
+        },
+        "baseVerdict": {
+          "title": "Nada se apaga",
+          "body": "Válido, inválido e por decidir ficam lado a lado. Meses depois continua a ver não só a resposta, mas também cada tentativa que não resultou."
+        },
+        "baseAnswerTool": {
+          "title": "Escolha a ferramenta Resposta",
+          "body": "Um veredicto diz que um caminho se sustenta. A resposta diz qual nó fecha a pergunta. São coisas diferentes, e a resposta tem de estar ligada à pergunta diretamente ou através de um nó válido."
+        },
+        "baseAnswer": {
+          "title": "Marque a resposta",
+          "body": "Clique num nó de um caminho válido. A partir daqui o tópico conta como resolvido. Pode mover a resposta para outro nó mais tarde."
+        },
+        "baseResolvedMark": {
+          "title": "Os tópicos resolvidos ganham um visto",
+          "body": "Veja a barra lateral: apareceu um visto ao lado do seu tópico. Cada tópico resolvido recebe um, por isso as perguntas em aberto veem-se num relance."
+        },
+        "baseResolved": {
+          "title": "É este o ciclo completo",
+          "body": "Pergunta, afirmações, ligações, veredictos, resposta. Tudo o resto na aplicação, como comentários, referências e exportação, assenta nisto."
+        },
+        "structureWhat": {
+          "title": "A barra lateral serve só para arrumar",
+          "body": "Pastas e aninhamento mantêm uma lista longa legível. Não mudam nada na tela: um tópico funciona da mesma forma onde quer que esteja."
+        },
+        "structureFolder": {
+          "title": "Crie uma pasta",
+          "body": "As pastas são opcionais. Agrupam tópicos e nada mais."
+        },
+        "structureNest": {
+          "title": "Coloque um tópico dentro dela",
+          "body": "Crie um tópico diretamente na pasta ou arraste para lá um já existente."
+        },
+        "structureSearch": {
+          "title": "Pesquise quando a lista crescer",
+          "body": "A caixa de pesquisa filtra toda a árvore pelo nome, pastas incluídas. É o caminho mais rápido para um tópico de que só se lembra vagamente."
+        },
+        "structureMove": {
+          "title": "Mova as coisas quando quiser",
+          "body": "Arraste tópicos e pastas para os reordenar ou mudar de sítio. A tela, os comentários e as referências ficam como estavam."
+        },
+        "referencesWhat": {
+          "title": "O que é uma referência",
+          "body": "Às vezes um tópico apoia-se numa conclusão a que já se chegou noutro. Uma referência traz esse nó como uma citação só de leitura em vez de uma cópia, por isso o original continua a ser a única fonte."
+        },
+        "referencesThread": {
+          "title": "Crie um segundo tópico",
+          "body": "Uma referência precisa de um nó noutra tela, e nenhuma outra tela deste espaço tem nós ainda. Crie um tópico novo na barra lateral: a visita continua lá, e vai referenciar um nó desta tela."
+        },
+        "referencesTool": {
+          "title": "Escolha a ferramenta Referência cruzada",
+          "body": "Traz para esta tela um nó de outra tela deste espaço, sem fundir as duas."
+        },
+        "referencesPlace": {
+          "title": "Coloque-a na tela",
+          "body": "Clique num espaço vazio. Abre-se um painel de pesquisa com os nós deste espaço que pode referenciar."
+        },
+        "referencesPick": {
+          "title": "Escolha o nó a referenciar",
+          "body": "Pesquise nas outras telas deste espaço e escolha um nó. Aparece como um nó de referência só de leitura; para o ligar, arraste uma ligação da margem de outro nó até ele."
+        },
+        "referencesBoundary": {
+          "title": "Fica dentro do espaço",
+          "body": "Uma referência só pode apontar para telas deste espaço e nunca altera o nó para que aponta. Elimine a referência e o original fica intacto."
+        },
+        "commentsWhat": {
+          "title": "A discussão fica ao lado do raciocínio",
+          "body": "Um comentário nunca se torna um nó nem carrega um veredicto. É onde fala sobre um nó sem tocar no argumento em si."
+        },
+        "commentsOpen": {
+          "title": "Abra os comentários de um nó",
+          "body": "Use o botão de comentários no nó. O painel abre-se ao lado."
+        },
+        "commentsWrite": {
+          "title": "Deixe um comentário",
+          "body": "Escreva o que quiser e envie. Os comentários nunca alteram a estrutura nem os veredictos."
+        },
+        "commentsWho": {
+          "title": "Todos no tópico podem lê-lo",
+          "body": "Os comentários pertencem ao nó e são visíveis para quem puder abrir o tópico. Quem tem permissão para comentar pode fazê-lo mesmo sem poder editar a tela."
+        },
+        "workspacesWhat": {
+          "title": "O espaço é a fronteira",
+          "body": "Tópicos, pastas, membros e referências ficam num só espaço e nunca passam para outro. Pode pertencer a vários e alternar livremente entre eles."
+        },
+        "workspacesSwitcher": {
+          "title": "Abra o seletor de espaços",
+          "body": "É o nome do espaço atual, no topo da barra lateral."
+        },
+        "workspacesSettings": {
+          "title": "Abra as configurações do espaço",
+          "body": "Passe o cursor sobre a linha do espaço e clique na engrenagem. Estas configurações aplicam-se só a este espaço."
+        },
+        "workspacesGeneral": {
+          "title": "A secção Geral",
+          "body": "As configurações do espaço abrem aqui: o nome, o número de membros, a sua função e a data de criação do espaço."
+        },
+        "workspacesOwner": {
+          "title": "Há sempre um único proprietário",
+          "body": "A propriedade transfere-se, nunca se partilha: o proprietário cede-a na secção Membros. Eliminar o espaço exige a permissão Gerenciar o espaço de trabalho, que só o proprietário tem, a não ser que uma função personalizada a conceda."
+        },
+        "membersWhat": {
+          "title": "As funções aplicam-se a todo o espaço",
+          "body": "O acesso define-se uma vez por espaço, não por tela. Uma função decide se alguém pode editar telas, apenas comentar ou apenas ler."
+        },
+        "membersOpen": {
+          "title": "Abra as configurações do espaço",
+          "body": "Abra o seletor de espaços e depois clique na engrenagem da linha. Os membros e as funções estão lá."
+        },
+        "membersSection": {
+          "title": "Abra a secção Membros",
+          "body": "É aqui que convida pessoas e atribui funções. Nada é enviado enquanto só estiver a ver."
+        },
+        "membersInvite": {
+          "title": "Os convites vão por e-mail",
+          "body": "Introduza um endereço e escolha a função à partida. Pode revogar um convite antes de ser aceite, e mudar uma função a qualquer momento."
+        },
+        "membersRoles": {
+          "title": "Abra a secção Funções",
+          "body": "As funções definem-se por espaço. Proprietário, Membro e Visualizador vêm incluídos e não mudam; pode criar as suas próprias funções e decidir exatamente o que cada uma permite."
+        },
+        "membersPermissions": {
+          "title": "O que uma função controla",
+          "body": "Editar a tela, comentar, gerir tópicos e pastas, membros, funções e o próprio espaço. Uma função não é mais do que esse conjunto de interruptores."
+        },
+        "settingsWhat": {
+          "title": "Estas definições são suas",
+          "body": "O seu perfil é o que os colegas veem junto ao seu nome. Tudo o resto aqui é só para si e segue a sua conta em todos os dispositivos. Vamos percorrer cada secção."
+        },
+        "settingsOpen": {
+          "title": "Abra as suas definições",
+          "body": "Clique no seu nome no fundo da barra lateral e depois em Definições."
+        },
+        "settingsProfile": {
+          "title": "Altere algo no seu perfil",
+          "body": "Mude o nome ou escolha outro avatar e guarde. Pode voltar atrás logo a seguir. As insígnias que ganhar também aparecem aqui."
+        },
+        "settingsSecurity": {
+          "title": "Abra a secção Segurança",
+          "body": "A sua palavra-passe e a eliminação da conta estão aqui."
+        },
+        "settingsSecurityNote": {
+          "title": "Ninguém o pode fazer por si",
+          "body": "Mudar a palavra-passe termina as suas outras sessões. Eliminar a conta elimina também os espaços de que é proprietário."
+        },
+        "settingsNotifications": {
+          "title": "Abra a secção Notificações",
+          "body": "Os interruptores estão aqui, mas o envio ainda não está disponível. Por agora nada é enviado."
+        },
+        "settingsAppearance": {
+          "title": "Abra a secção Aparência",
+          "body": "O idioma da interface, oito temas (Auto segue o sistema com Daybreak e Eclipse) e quatro padrões de tela."
+        },
+        "settingsTheme": {
+          "title": "Experimente outro tema",
+          "body": "Escolha um e toda a aplicação muda de imediato, com o painel ainda aberto. Esta mudança só é visível para si."
+        },
+        "settingsPattern": {
+          "title": "Mude o padrão da tela",
+          "body": "Pontos, linhas, cruzes ou uma superfície lisa. Só o fundo da tela muda."
+        },
+        "settingsEditor": {
+          "title": "Abra a secção Editor",
+          "body": "Esta secção controla como a tela se comporta enquanto trabalha."
+        },
+        "settingsTune": {
+          "title": "Mude uma das opções",
+          "body": "Ajustar à grelha, guias inteligentes ou o zoom com que uma tela abre. Mude uma e a tela reage de imediato."
+        },
+        "settingsPlan": {
+          "title": "Abra Plano e faturação",
+          "body": "O seu plano atual e o que inclui cada plano, como o número de membros e de telas."
+        },
+        "settingsScope": {
+          "title": "São estas todas as secções",
+          "body": "Perfil, segurança, notificações, aparência, editor, plano. Os colegas têm as suas próprias definições, ainda que trabalhem no mesmo tópico."
+        },
+        "exportWhat": {
+          "title": "A exportação é um instantâneo",
+          "body": "O ficheiro mostra a tela exatamente como está agora, e não pode ser importado de volta. Use-o para partilhar ou imprimir, não para mover trabalho entre tópicos."
+        },
+        "exportMenu": {
+          "title": "Abra o menu de exportação",
+          "body": "O botão de exportar está no fundo da barra de ferramentas."
+        },
+        "exportFormat": {
+          "title": "Escolha um formato",
+          "body": "PNG e JPG são imagens, SVG mantém-se nítido em qualquer tamanho. O ficheiro vai para as suas transferências."
+        },
+        "exportNote": {
+          "title": "O que entra no ficheiro",
+          "body": "Nós, ligações, veredictos e a resposta. Os comentários e a barra de ferramentas ficam de fora."
+        },
+        "toolsWhat": {
+          "title": "Uma ferramenta de cada vez",
+          "body": "Só uma ferramenta está ativa de cada vez, e um clique na tela faz o que essa ferramenta faz. Saber que ferramenta tem na mão é metade da habilidade."
+        },
+        "toolsSheet": {
+          "title": "Abra a folha de atalhos",
+          "body": "O menu Ajuda está no fundo da barra de ferramentas, e Atalhos de teclado é o primeiro item."
+        },
+        "toolsSheetRead": {
+          "title": "Uma tecla por ferramenta",
+          "body": "Os mesmos cinco grupos da barra de ferramentas: navegação, histórico, construção, decidir, ligações. Cada ferramenta tem uma tecla, e as teclas continuam a funcionar com a folha aberta."
+        },
+        "toolsClose": {
+          "title": "Feche a folha",
+          "body": "Clique na cruz no canto ou prima Escape. A folha cobre a barra de ferramentas, e é para lá que a visita vai a seguir."
+        },
+        "toolsSelect": {
+          "title": "Selecionar",
+          "body": "A ferramenta neutra: seleciona e arrasta nós sem alterar mais nada. Tecla V."
+        },
+        "toolsPan": {
+          "title": "Deslocar",
+          "body": "Arraste para mover a vista em vez de um nó. Tecla H."
+        },
+        "toolsZoom": {
+          "title": "Zoom",
+          "body": "Um clique aproxima o ponto onde clicou, e com Shift afasta. Teclas mais e menos."
+        },
+        "toolsUndo": {
+          "title": "Anular e refazer",
+          "body": "O histórico tem os seus próprios botões, por isso experimentar não custa nada: qualquer passo pode ser anulado e refeito."
+        },
+        "toolsAdd": {
+          "title": "Adicionar nó",
+          "body": "Um clique num espaço vazio adiciona um nó com uma etiqueta provisória. Tecla N."
+        },
+        "toolsConnect": {
+          "title": "Ligar",
+          "body": "Clique no nó de onde parte o raciocínio e depois naquele a que leva. A seta mostra a direção. Tecla C."
+        },
+        "toolsDelete": {
+          "title": "Eliminar",
+          "body": "Um clique remove um nó ou uma ligação. O nó da pergunta não pode ser eliminado. Tecla D."
+        },
+        "toolsValid": {
+          "title": "Marcar válido",
+          "body": "Um veredicto sobre o caminho que chega a este nó: esse passo sustenta-se. Tecla Y."
+        },
+        "toolsInvalid": {
+          "title": "Marcar inválido",
+          "body": "O veredicto oposto: o passo não se sustenta, e tudo o que assenta nele fica em dúvida. Tecla X."
+        },
+        "toolsAnswer": {
+          "title": "Resposta",
+          "body": "Marca o nó que fecha o tópico. Uma resposta por tópico, e pode movê-la mais tarde. Tecla A."
+        },
+        "toolsReference": {
+          "title": "Referência cruzada",
+          "body": "Traz um nó de outra tela como uma citação só de leitura. Tecla R. As referências têm a sua própria parte mais à frente neste guia."
+        },
+        "exampleIntro": {
+          "title": "Apresento-lhe o Ergo",
+          "body": "O nosso escritório precisa de uma máquina de café, e eu e o Ergo não chegamos a acordo sobre qual. Vamos decidir numa tela, como fariam dois colegas. Carregue em Seguinte para acompanhar."
+        },
+        "exampleHello": {
+          "title": "Olá, sou o Ergo",
+          "body": "Uma pergunta com várias respostas possíveis é exatamente aquilo para que serve uma tela: cada opção cresce como um ramo próprio a partir da pergunta, com as razões por baixo."
+        },
+        "exampleThread": {
+          "title": "Faço a pergunta",
+          "body": "Crio um tópico e escrevo a pergunta no nó da pergunta: que máquina de café compramos para o escritório?"
+        },
+        "exampleCapsule": {
+          "title": "Eu quero cápsulas",
+          "body": "Com Adicionar nó coloco a minha resposta, uma máquina de cápsulas, e ligo-a à pergunta com Ligar. Por baixo fica a minha razão: um botão e nada para limpar."
+        },
+        "exampleBean": {
+          "title": "Eu preferia grão",
+          "body": "A minha resposta tem um ramo próprio: uma máquina automática de grão. A razão por baixo: o grão sai muito mais barato por chávena do que as cápsulas."
+        },
+        "exampleDoubt": {
+          "title": "Uma dúvida sobre a escolha do Nodi",
+          "body": "Uma máquina automática custa bastante mais. É uma dúvida, não uma resposta, por isso deixo-a como comentário no nó do Nodi."
+        },
+        "examplePayback": {
+          "title": "A minha réplica",
+          "body": "É verdade, mas paga-se a si mesma num ano. Acrescento isso como segunda razão por baixo da minha resposta, mesmo onde surgiu a dúvida."
+        },
+        "exampleFilter": {
+          "title": "Uma terceira opção",
+          "body": "Se o que conta é o preço, também há a máquina de café de filtro, a mais barata de comprar. Uma terceira resposta é um terceiro ramo."
+        },
+        "exampleStale": {
+          "title": "Essa não",
+          "body": "O café de filtro fica amargo na placa em menos de uma hora. Deixo isso como comentário na opção de filtro."
+        },
+        "exampleDropFilter": {
+          "title": "Está bem",
+          "body": "Ninguém quer café amargo. Marco a minha opção de filtro com Marcar inválido, e a razão por baixo dela também fica em dúvida."
+        },
+        "exampleWaste": {
+          "title": "Mais uma coisa",
+          "body": "E as cápsulas transformam-se num monte de lixo de plástico todas as semanas. Deixo isso como comentário na opção de cápsulas do Ergo."
+        },
+        "exampleDropCapsule": {
+          "title": "Convenceste-me",
+          "body": "O preço por chávena e o lixo pesam muito. Marco também como inválida a minha opção de cápsulas."
+        },
+        "exampleValid": {
+          "title": "O que resta aguenta-se",
+          "body": "Com Marcar válido confirmo o ramo da máquina automática e as duas razões por baixo dele. O caminho desde a pergunta acende-se."
+        },
+        "exampleAnswer": {
+          "title": "A nossa resposta",
+          "body": "Agora estamos de acordo, por isso marco a máquina automática com Resposta. O tópico passa a contar como resolvido."
+        },
+        "exampleResolved": {
+          "title": "Um visto na barra lateral",
+          "body": "Veja a barra lateral: apareceu um visto ao lado do nosso tópico. Cada tópico resolvido recebe um, por isso as perguntas em aberto veem-se num relance."
+        },
+        "exampleWrap": {
+          "title": "É esta a ideia toda",
+          "body": "Uma pergunta, um ramo por resposta, razões por baixo de cada uma, dúvidas em comentários, veredictos e uma resposta que ambos aceitamos. Os seus tópicos funcionam exatamente da mesma forma."
+        },
+        "exampleKeep": {
+          "title": "Manter o exemplo?",
+          "body": "Fica na barra lateral como um tópico normal que pode abrir e alterar. Mantenha-o para ver com calma mais tarde, ou elimine-o agora."
+        }
+      },
+      "example": {
+        "threadName": "Exemplo: a máquina de café do escritório",
+        "question": "Que máquina de café compramos para o escritório?",
+        "keep": "Manter",
+        "remove": "Eliminar",
+        "nodes": {
+          "capsule": "Uma máquina de cápsulas",
+          "oneButton": "Um botão e nada para limpar",
+          "bean": "Uma máquina automática de grão",
+          "perCup": "O grão sai muito mais barato por chávena do que as cápsulas",
+          "payback": "Paga-se a si mesma num ano",
+          "filter": "Uma máquina de café de filtro",
+          "cheapest": "A mais barata de comprar"
+        },
+        "comments": {
+          "capsule": "E as cápsulas transformam-se num monte de lixo de plástico todas as semanas.",
+          "bean": "Custa bastante mais do que as outras.",
+          "filter": "O café de filtro fica amargo na placa em menos de uma hora."
+        }
+      }
+    },
     "settings": {
       "title": "Definições",
       "close": "Fechar definições",
@@ -395,6 +860,8 @@
         "badges": {
           "badgeFounder": "Fundador",
           "founderUnlock": "Juntou-se durante o beta inicial.",
+          "badgeInitiate": "Iniciado",
+          "initiateUnlock": "Termina a visita e todos os guias.",
           "badgeFirstSteps": "Início",
           "firstStepsUnlock": "Cria o teu primeiro canvas.",
           "badgeArchitect": "Arquiteto",

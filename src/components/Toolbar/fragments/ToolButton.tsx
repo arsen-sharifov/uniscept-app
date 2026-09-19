@@ -5,7 +5,9 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import type { IToolItem } from '@interfaces';
 
-import { FLASH_DURATION_MS, ICON_STROKE, TOOL_TONES } from '../consts';
+import { isCanvasTool } from '@/components/tools';
+
+import { FLASH_DURATION_MS, ICON_STROKE, TOOL_ANCHORS, TOOL_TONES } from '../consts';
 import { toAriaShortcut } from '../utils';
 
 interface IToolButtonProps {
@@ -66,6 +68,7 @@ export const ToolButton = ({ tool, active, onClick, onPointerEnter, onPointerLea
       <button
         ref={buttonRef}
         type="button"
+        data-tour={isCanvasTool(tool.id) ? TOOL_ANCHORS[tool.id] : undefined}
         onClick={handleClick}
         onPointerEnter={handleEnter}
         onPointerLeave={onPointerLeave}

@@ -3,6 +3,7 @@ export * from './avatarIcons';
 export * from './badges';
 export * from './errors';
 export * from './modal';
+export * from './onboarding';
 export * from './preferences';
 export * from './themes';
 export * from './timing';

@@ -3,21 +3,21 @@ import { expect, type Locator, type Page } from '@playwright/test';
 import { COPY, PREFERENCES_ENDPOINT } from '../consts';
 import { getWorkspaceRow, openWorkspacePanel, runRowAction } from './sidebar';
 
-const { settings, sidebar, workspaceSettings } = COPY.platform;
+const { sidebar, workspaceSettings } = COPY.platform;
 
 const getUserMenuTrigger = (page: Page): Locator => page.locator('aside footer [aria-haspopup="dialog"]');
 
-export const getSettingsModal = (page: Page): Locator =>
-  page.getByRole('dialog').filter({ has: page.getByRole('button', { name: settings.close }) });
+export const getSettingsModal = (page: Page, copy = COPY): Locator =>
+  page.getByRole('dialog').filter({ has: page.getByRole('button', { name: copy.platform.settings.close }) });
 
 export const getWorkspaceSettingsModal = (page: Page): Locator =>
   page.getByRole('dialog').filter({ has: page.getByRole('button', { name: workspaceSettings.close }) });
 
-export const openSettings = async (page: Page): Promise<Locator> => {
+export const openSettings = async (page: Page, copy = COPY): Promise<Locator> => {
   await getUserMenuTrigger(page).click();
-  await page.getByRole('dialog').getByRole('button', { name: settings.title, exact: true }).click();
+  await page.getByRole('dialog').getByRole('button', { name: copy.platform.settings.title, exact: true }).click();
 
-  const modal = getSettingsModal(page);
+  const modal = getSettingsModal(page, copy);
   await expect(modal).toBeVisible();
 
   return modal;

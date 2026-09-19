@@ -1,7 +1,7 @@
 import { describe, expect, test, vi } from 'vitest';
 
 import { ECanvasNodeType } from '@interfaces';
-import { getCanvasContent, searchReferenceTargets } from '@api/client';
+import { countReferenceTargets, getCanvasContent, searchReferenceTargets } from '@api/client';
 import { canvasEdgeRow, canvasNodeRow, canvasNodeWithThreadRow, nodeCommentRow } from '@mocks/rows';
 import { primeSupabase } from '@mocks/supabase';
 
@@ -212,6 +212,66 @@ describe('searchReferenceTargets', () => {
         await searchReferenceTargets('ws-1');
 
         expect(neq).not.toHaveBeenCalled();
+      });
+    });
+  });
+});
+
+describe('countReferenceTargets', () => {
+  describe('GIVEN canvas nodes on other canvases of the workspace', () => {
+    describe('WHEN they are counted', () => {
+      test('THEN only the count is requested and returned', async () => {
+        const { queries } = primeSupabase([{ count: 3 }]);
+        const select = vi.spyOn(queries[0]!, 'select');
+
+        await expect(countReferenceTargets('ws-1', 'th-exclude')).resolves.toBe(3);
+        expect(select).toHaveBeenCalledExactlyOnceWith(expect.any(String), { count: 'exact', head: true });
+      });
+    });
+  });
+
+  describe('GIVEN an excluded thread', () => {
+    describe('WHEN reference targets are counted', () => {
+      test('THEN the exclusion filter is applied', async () => {
+        const { queries } = primeSupabase([{ count: 0 }]);
+        const neq = vi.spyOn(queries[0]!, 'neq');
+
+        await countReferenceTargets('ws-1', 'th-exclude');
+
+        expect(neq).toHaveBeenCalledExactlyOnceWith('thread_id', 'th-exclude');
+      });
+    });
+  });
+
+  describe('GIVEN no excluded thread', () => {
+    describe('WHEN reference targets are counted', () => {
+      test('THEN the exclusion filter is skipped', async () => {
+        const { queries } = primeSupabase([{ count: 2 }]);
+        const neq = vi.spyOn(queries[0]!, 'neq');
+
+        await countReferenceTargets('ws-1');
+
+        expect(neq).not.toHaveBeenCalled();
+      });
+    });
+  });
+
+  describe('GIVEN a count that comes back empty', () => {
+    describe('WHEN reference targets are counted', () => {
+      test('THEN zero is returned', async () => {
+        primeSupabase([{ data: null }]);
+
+        await expect(countReferenceTargets('ws-1')).resolves.toBe(0);
+      });
+    });
+  });
+
+  describe('GIVEN a failing count query', () => {
+    describe('WHEN reference targets are counted', () => {
+      test('THEN the error is rethrown', async () => {
+        primeSupabase([{ error: new Error('db down') }]);
+
+        await expect(countReferenceTargets('ws-1')).rejects.toThrow('db down');
       });
     });
   });

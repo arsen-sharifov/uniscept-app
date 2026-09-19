@@ -5,6 +5,7 @@ export * from './canvasNode';
 export * from './consts';
 export * from './folder';
 export * from './nodeComment';
+export * from './onboarding';
 export * from './preferences';
 export * from './thread';
 export * from './user';

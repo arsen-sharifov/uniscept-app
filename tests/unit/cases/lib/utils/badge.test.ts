@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest';
 
-import { isBadgeId } from '@/lib/utils';
+import { DEFAULT_BADGES } from '@constants';
+import { isBadgeId, resolveEarnedBadges } from '@/lib/utils';
 
 describe('isBadgeId', () => {
   describe('GIVEN a known badge id', () => {
@@ -24,6 +25,26 @@ describe('isBadgeId', () => {
       test('THEN it fails', () => {
         expect(isBadgeId(42)).toBe(false);
         expect(isBadgeId(null)).toBe(false);
+      });
+    });
+  });
+});
+
+describe('resolveEarnedBadges', () => {
+  describe('GIVEN stored badges with an unknown id among them', () => {
+    describe('WHEN they are resolved', () => {
+      test('THEN only the known badges are kept', () => {
+        expect(resolveEarnedBadges(['founder', 'legend', 'initiate'])).toEqual(['founder', 'initiate']);
+      });
+    });
+  });
+
+  describe('GIVEN nothing usable stored', () => {
+    describe('WHEN it is resolved', () => {
+      test('THEN the default badges stand in', () => {
+        expect(resolveEarnedBadges(undefined)).toBe(DEFAULT_BADGES);
+        expect(resolveEarnedBadges('founder')).toBe(DEFAULT_BADGES);
+        expect(resolveEarnedBadges(['legend'])).toBe(DEFAULT_BADGES);
       });
     });
   });

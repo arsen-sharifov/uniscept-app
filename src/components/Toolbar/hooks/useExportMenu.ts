@@ -1,12 +1,15 @@
 'use client';
 
-import { type MouseEvent, useEffect, useId, useRef, useState } from 'react';
+import { type MouseEvent, useState } from 'react';
 
-import type { IExportMenuModel, TCanvasExportFormat, TCanvasExportOutcome, TMenuOpener } from '@interfaces';
-import { useClickOutside, useEscapeKey, useMenuKeyboardNavigation } from '@hooks';
+import type { IExportMenuModel, TCanvasExportFormat, TCanvasExportOutcome } from '@interfaces';
+
 import { useTranslations } from '@/i18n';
 import { event } from '@/lib/events';
+import { useOnboardingStore } from '@/lib/onboarding';
 import { useCanvasStore } from '@/lib/stores';
+
+import { useToolbarMenu } from './useToolbarMenu';
 
 const runExport = async (
   threadId: string,
@@ -27,49 +30,11 @@ export const useExportMenu = (threadId: string, threadName: string): IExportMenu
   const activeThreadId = useCanvasStore((state) => state.threadId);
   const hasNodes = useCanvasStore((state) => state.nodes.length > 0);
 
-  const [opener, setOpener] = useState<TMenuOpener | null>(null);
   const [loading, setLoading] = useState(false);
   const [hint, setHint] = useState<string | null>(null);
-  const rootRef = useRef<HTMLDivElement>(null);
-  const buttonRef = useRef<HTMLButtonElement>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
-  const restoreFocusRef = useRef(false);
-  const menuId = useId();
+  const { close, toggle, ...menu } = useToolbarMenu(loading);
 
-  const open = opener !== null;
   const disabled = !hydrated || activeThreadId !== threadId || !hasNodes;
-
-  const close = (restoreFocus: boolean) => {
-    restoreFocusRef.current = restoreFocus;
-    setOpener(null);
-  };
-
-  const { focusItem, handleKeyDown } = useMenuKeyboardNavigation(menuRef, {
-    onOpen: () => setOpener('keyboard'),
-    onClose: () => close(false),
-  });
-
-  useClickOutside(rootRef, () => close(false), open);
-  useEscapeKey(() => close(true), open);
-
-  useEffect(() => {
-    if (opener === 'keyboard') focusItem(0);
-    if (opener === 'pointer') menuRef.current?.focus();
-  }, [opener, focusItem]);
-
-  useEffect(() => {
-    if (open || loading || !restoreFocusRef.current) return;
-
-    restoreFocusRef.current = false;
-    buttonRef.current?.focus();
-  }, [open, loading]);
-
-  const toggle = (click: MouseEvent<HTMLButtonElement>) => {
-    setHint(null);
-
-    if (open) close(false);
-    else setOpener(click.detail === 0 ? 'keyboard' : 'pointer');
-  };
 
   const exportFormat = async (format: TCanvasExportFormat) => {
     if (disabled || loading) return;
@@ -85,20 +50,21 @@ export const useExportMenu = (threadId: string, threadName: string): IExportMenu
 
     setLoading(false);
     if (outcome === 'too-large') setHint(t.platform.canvas.export.tooLarge);
-    if (outcome === 'downloaded' && menuRef.current) close(true);
+    if (outcome !== 'downloaded') return;
+
+    useOnboardingStore.getState().markSignal('canvasExported');
+    if (menu.menuRef.current) close(true);
   };
 
   return {
-    open,
+    ...menu,
     disabled,
     loading,
     hint,
-    menuId,
-    rootRef,
-    buttonRef,
-    menuRef,
-    toggle,
-    handleKeyDown,
+    toggle: (click: MouseEvent<HTMLButtonElement>) => {
+      setHint(null);
+      toggle(click);
+    },
     exportFormat,
   };
 };

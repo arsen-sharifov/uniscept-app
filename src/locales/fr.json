@@ -138,7 +138,6 @@
       "structure": "Structure",
       "newThread": "Nouveau fil",
       "newFolder": "Nouveau dossier",
-      "emptyState": "Sélectionnez ou créez un fil pour commencer",
       "signOut": "Déconnexion",
       "deleteWorkspaceTitle": "Supprimer l'espace",
       "deleteFolderTitle": "Supprimer le dossier",
@@ -191,7 +190,6 @@
       },
       "tools": {
         "ariaLabel": "Outils du canvas",
-        "help": "Raccourcis clavier",
         "groups": {
           "navigate": "Navigation",
           "history": "Historique",
@@ -333,6 +331,473 @@
         "activeBadge": "Actif"
       }
     },
+    "onboarding": {
+      "nodiName": "Nodi",
+      "nodiAlt": "Nodi, votre guide",
+      "nodiIntro": "Nodi est un nœud du canevas qui connaît l'application par cœur. Il se tient à côté de chaque carte, et l'anneau en surbrillance indique où cliquer.",
+      "ergoName": "Ergo",
+      "ergoAlt": "Ergo, l'ami de Nodi",
+      "menuLabel": "Aide",
+      "menuShortcuts": "Raccourcis clavier",
+      "menuGuides": "Visite et guides",
+      "offerTitle": "Envie d'une visite rapide ?",
+      "offerBody": "Construisez votre premier canevas étape par étape : un fil, une question, quelques nœuds et un verdict. Vous faites chaque étape vous-même, et vous pouvez quitter à tout moment.",
+      "offerAccept": "Commencer la visite",
+      "offerDecline": "Pas maintenant",
+      "offerLater": "Vous pourrez la lancer plus tard depuis le menu Aide, dans Visite et guides.",
+      "continueHint": {
+        "afterTour": {
+          "title": "Continuez à partir d'ici",
+          "body": "Les autres guides vous attendent dans Visite et guides, dans ce menu Aide. Choisissez-en un quand vous voulez."
+        },
+        "afterDecline": {
+          "title": "La visite vous attend ici",
+          "body": "Ouvrez Visite et guides depuis ce menu Aide quand vous le souhaitez."
+        },
+        "open": "Ouvrir les guides",
+        "dismiss": "Compris"
+      },
+      "pickerTitle": "Visite et guides",
+      "pickerBody": "La visite vous accompagne sur votre premier canevas. Les guides qui suivent couvrent chacun une partie de l'application, et la plupart vous la font essayer pour de vrai. Terminez-les tous pour obtenir l'insigne Initié.",
+      "pickerProgress": "{done} sur {total} terminés",
+      "pickerLocked": "Terminez le premier canevas pour débloquer ce guide.",
+      "pickerStart": "Commencer",
+      "pickerReplay": "Refaire",
+      "stepCounter": "étape {index} sur {total}",
+      "stepNext": "Suivant",
+      "stepDone": "déjà fait",
+      "stepWaiting": "à vous",
+      "stepLostTarget": "la cible est hors de l'écran",
+      "blockedTitle": "Fermez ceci d'abord",
+      "blockedBody": "Quelque chose est ouvert par-dessus cette étape. Fermez-le et la visite reprend.",
+      "blockedStatus": "en attente de la fermeture",
+      "quit": "Quitter la visite",
+      "celebrationTitle": "Vous avez terminé tous les guides",
+      "celebrationBody": "Vous avez tout vu : construire un canevas, l'évaluer, relier des fils entre eux, et les paramètres qui vont avec. L'insigne Initié figure maintenant sur votre profil.",
+      "celebrationClose": "Retour au travail",
+      "emptyPlatformTitle": "Aucun fil ouvert",
+      "emptyPlatformBody": "Un fil contient une question et le canevas où vous la travaillez. Créez-en un nouveau ou choisissez-en un dans la liste à gauche.",
+      "emptyViewerBody": "Un fil contient une question et le canevas où on la travaille. Choisissez-en un dans la liste à gauche.",
+      "emptyWorkspaceTitle": "Pas encore d'espace",
+      "emptyWorkspaceBody": "Tout se trouve dans un espace de travail : les fils, les membres et les références. Créez le premier pour commencer.",
+      "emptyPlatformAction": "faire la visite",
+      "hints": {
+        "needsWorkspace": "Il vous faut d'abord un espace de travail. Le guide du premier canevas commence par en créer un.",
+        "needsCanvas": "Ouvrez un fil pour que son canevas soit à l'écran.",
+        "needsNode": "Ajoutez au moins un nœud à ce canevas.",
+        "needsBuildRights": "Ouvrez un espace où vous pouvez créer des fils, modifier les canevas et commenter."
+      },
+      "guides": {
+        "baseTitle": "Votre premier canevas",
+        "baseSummary": "Construire un canevas complet, de la question à la réponse.",
+        "canvasTitle": "Travailler sur un canevas",
+        "canvasSummary": "Outils, commentaires, références et export.",
+        "workspaceTitle": "Espaces et structure",
+        "workspaceSummary": "Organiser vos fils et inviter des personnes.",
+        "settingsTitle": "Paramètres",
+        "settingsSummary": "Parcourir chaque section et régler l'application à votre goût.",
+        "exampleTitle": "Voir un exemple",
+        "exampleSummary": "Nodi et Ergo choisissent une machine à café pour le bureau."
+      },
+      "steps": {
+        "baseIntro": {
+          "title": "Ce qu'est un canevas",
+          "body": "Un fil se construit autour d'une seule question, et son canevas est l'endroit où vous la travaillez : les nœuds portent des affirmations, les liens montrent ce qui découle de quoi, et les verdicts marquent les chemins qui tiennent. Construisons-en un ensemble."
+        },
+        "baseWorkspace": {
+          "title": "Créez un espace de travail",
+          "body": "Un espace contient vos fils, vos membres et vos références. Rien n'en sort. Créez le premier."
+        },
+        "baseOwnWorkspace": {
+          "title": "Créez votre propre espace",
+          "body": "Votre rôle dans cet espace ne vous permet pas de construire, le canevas ira donc dans un espace à vous. Ouvrez le sélecteur et créez un nouvel espace."
+        },
+        "baseThread": {
+          "title": "Créez un fil",
+          "body": "Un fil contient une question et son canevas. Utilisez le bouton dans la barre latérale."
+        },
+        "baseQuestion": {
+          "title": "Écrivez la question",
+          "body": "Le nœud de la question est déjà sur le canevas. Cliquez dessus, tapez la question à laquelle vous voulez vraiment répondre et appuyez sur Entrée."
+        },
+        "baseArgue": {
+          "title": "Comment un argument se construit",
+          "body": "Chaque affirmation se relie à la question par un lien. Un nœud qui n'est relié à rien n'a aucun effet sur le résultat."
+        },
+        "baseNode": {
+          "title": "Ajoutez votre première affirmation",
+          "body": "Prenez l'outil Ajouter un nœud et cliquez sur un endroit vide. Un nœud porte une seule idée : une affirmation, une prémisse ou une objection."
+        },
+        "baseNodeText": {
+          "title": "Écrivez l'affirmation",
+          "body": "Passez à l'outil Sélectionner (touche V), double-cliquez sur votre nouveau nœud, remplacez le texte provisoire par votre affirmation et appuyez sur Entrée."
+        },
+        "baseConnect": {
+          "title": "Reliez-le à la question",
+          "body": "Prenez l'outil Connecter, cliquez sur la question, puis sur votre nœud. La flèche montre ce qui découle de quoi."
+        },
+        "baseDirection": {
+          "title": "Le sens compte",
+          "body": "Un lien va d'un nœud vers ce qui se construit dessus : de la question vers ses réponses, d'une affirmation vers ce qui en découle. Rejetez un nœud, et tout ce qui repose dessus devient douteux."
+        },
+        "baseObjection": {
+          "title": "Ajoutez une objection",
+          "body": "Ajoutez un deuxième nœud qui contredit la première affirmation, et écrivez-le de la même façon. Un canevas avec un seul camp ne prouve rien."
+        },
+        "baseSecondLink": {
+          "title": "Reliez-le aussi",
+          "body": "Comme avant : l'outil Connecter, la question, puis le nouveau nœud. Deux branches concurrentes partent maintenant de la question."
+        },
+        "baseValid": {
+          "title": "Marquez la branche qui tient",
+          "body": "Prenez l'outil Marquer valide et cliquez sur l'affirmation que vous croyez. Tout le chemin auquel elle appartient s'allume."
+        },
+        "baseInvalid": {
+          "title": "Marquez celle qui ne tient pas",
+          "body": "Prenez l'outil Marquer invalide et cliquez sur l'autre branche. Elle reste sur le canevas, marquée comme rejetée."
+        },
+        "baseVerdict": {
+          "title": "Rien n'est effacé",
+          "body": "Valide, invalide et indécis restent côte à côte. Des mois plus tard, vous voyez encore non seulement la réponse, mais aussi chaque tentative qui n'a pas tenu."
+        },
+        "baseAnswerTool": {
+          "title": "Prenez l'outil Réponse",
+          "body": "Un verdict dit qu'un chemin tient. La réponse dit quel nœud clôt la question. Ce sont deux choses différentes, et la réponse doit être reliée à la question directement ou par un nœud valide."
+        },
+        "baseAnswer": {
+          "title": "Marquez la réponse",
+          "body": "Cliquez sur un nœud d'un chemin valide. Le fil est désormais considéré comme résolu. Vous pourrez déplacer la réponse vers un autre nœud plus tard."
+        },
+        "baseResolvedMark": {
+          "title": "Les fils résolus reçoivent une coche",
+          "body": "Regardez la barre latérale : une coche est apparue à côté de votre fil. Chaque fil résolu en reçoit une, les questions encore ouvertes se repèrent donc d'un coup d'œil."
+        },
+        "baseResolved": {
+          "title": "Voilà toute la boucle",
+          "body": "Question, affirmations, liens, verdicts, réponse. Tout le reste de l'application, comme les commentaires, les références et l'export, s'appuie dessus."
+        },
+        "structureWhat": {
+          "title": "La barre latérale ne sert qu'au classement",
+          "body": "Les dossiers et l'imbrication gardent une longue liste lisible. Ils ne changent rien au canevas : un fil fonctionne pareil où qu'il soit rangé."
+        },
+        "structureFolder": {
+          "title": "Créez un dossier",
+          "body": "Les dossiers sont facultatifs. Ils regroupent des fils, rien de plus."
+        },
+        "structureNest": {
+          "title": "Placez-y un fil",
+          "body": "Créez un fil directement dans le dossier, ou glissez-y un fil existant."
+        },
+        "structureSearch": {
+          "title": "Cherchez quand la liste grandit",
+          "body": "Le champ de recherche filtre tout l'arbre par nom, dossiers compris. C'est le chemin le plus rapide vers un fil dont vous ne vous souvenez qu'à moitié."
+        },
+        "structureMove": {
+          "title": "Déplacez à tout moment",
+          "body": "Glissez les fils et les dossiers pour les réordonner ou les reclasser. Le canevas, les commentaires et les références restent tels quels."
+        },
+        "referencesWhat": {
+          "title": "Ce qu'est une référence",
+          "body": "Parfois un fil s'appuie sur une conclusion déjà atteinte dans un autre. Une référence amène ce nœud comme une citation en lecture seule plutôt qu'une copie, si bien que l'original reste la seule source."
+        },
+        "referencesThread": {
+          "title": "Créez un deuxième fil",
+          "body": "Une référence a besoin d'un nœud sur un autre canevas, et aucun autre canevas de cet espace n'en a encore. Créez un nouveau fil dans la barre latérale : la visite continue là-bas, et vous y référencerez un nœud de ce canevas."
+        },
+        "referencesTool": {
+          "title": "Prenez l'outil Référence croisée",
+          "body": "Il amène sur ce canevas un nœud d'un autre canevas de cet espace, sans fusionner les deux."
+        },
+        "referencesPlace": {
+          "title": "Placez-la sur le canevas",
+          "body": "Cliquez sur un endroit vide. Un panneau de recherche s'ouvre avec les nœuds de cet espace que vous pouvez référencer."
+        },
+        "referencesPick": {
+          "title": "Choisissez le nœud à référencer",
+          "body": "Cherchez dans les autres canevas de cet espace et choisissez un nœud. Il arrive comme un nœud de référence en lecture seule ; pour le relier, tirez un lien depuis le bord d'un autre nœud jusqu'à lui."
+        },
+        "referencesBoundary": {
+          "title": "Elle reste dans l'espace",
+          "body": "Une référence ne peut pointer que vers des canevas de cet espace, et elle ne modifie jamais le nœud qu'elle vise. Supprimez la référence, l'original reste intact."
+        },
+        "commentsWhat": {
+          "title": "La discussion a sa place à côté du raisonnement",
+          "body": "Un commentaire ne devient jamais un nœud et ne porte jamais de verdict. C'est là que vous parlez d'un nœud sans toucher à l'argument lui-même."
+        },
+        "commentsOpen": {
+          "title": "Ouvrez les commentaires d'un nœud",
+          "body": "Utilisez le bouton de commentaire sur un nœud. Le panneau s'ouvre à côté."
+        },
+        "commentsWrite": {
+          "title": "Laissez un commentaire",
+          "body": "Écrivez ce que vous voulez et envoyez. Les commentaires ne changent jamais la structure ni les verdicts."
+        },
+        "commentsWho": {
+          "title": "Tout le monde sur le fil peut le lire",
+          "body": "Les commentaires appartiennent au nœud et sont visibles par toute personne qui peut ouvrir le fil. Ceux qui ont le droit de commenter peuvent le faire même s'ils ne peuvent pas modifier le canevas."
+        },
+        "workspacesWhat": {
+          "title": "L'espace est la frontière",
+          "body": "Fils, dossiers, membres et références se trouvent dans un seul espace et ne passent jamais dans un autre. Vous pouvez appartenir à plusieurs et passer librement de l'un à l'autre."
+        },
+        "workspacesSwitcher": {
+          "title": "Ouvrez le sélecteur d'espaces",
+          "body": "C'est le nom de l'espace actuel, en haut de la barre latérale."
+        },
+        "workspacesSettings": {
+          "title": "Ouvrez les paramètres de l'espace",
+          "body": "Survolez la ligne de l'espace et cliquez sur l'engrenage. Ces paramètres ne concernent que cet espace."
+        },
+        "workspacesGeneral": {
+          "title": "La section Général",
+          "body": "Les paramètres de l'espace s'ouvrent ici : le nom, le nombre de membres, votre rôle et la date de création de l'espace."
+        },
+        "workspacesOwner": {
+          "title": "Il y a toujours un seul propriétaire",
+          "body": "La propriété se transfère, elle ne se partage pas : le propriétaire la cède depuis la section Membres. Supprimer l'espace demande l'autorisation Gérer l'espace de travail, que seul le propriétaire possède, sauf si un rôle personnalisé l'accorde."
+        },
+        "membersWhat": {
+          "title": "Les rôles valent pour tout l'espace",
+          "body": "L'accès se règle une fois par espace, pas par canevas. Un rôle décide si quelqu'un peut modifier les canevas, seulement commenter, ou seulement lire."
+        },
+        "membersOpen": {
+          "title": "Ouvrez les paramètres de l'espace",
+          "body": "Ouvrez le sélecteur d'espaces, puis cliquez sur l'engrenage de la ligne. Les membres et les rôles sont là."
+        },
+        "membersSection": {
+          "title": "Ouvrez la section Membres",
+          "body": "C'est ici que vous invitez des personnes et attribuez des rôles. Rien n'est envoyé tant que vous ne faites que regarder."
+        },
+        "membersInvite": {
+          "title": "Les invitations partent par e-mail",
+          "body": "Saisissez une adresse et choisissez un rôle dès le départ. Vous pouvez révoquer une invitation avant qu'elle soit acceptée, et changer un rôle à tout moment."
+        },
+        "membersRoles": {
+          "title": "Ouvrez la section Rôles",
+          "body": "Les rôles se définissent par espace. Propriétaire, Membre et Lecteur sont intégrés et fixes ; vous pouvez créer vos propres rôles et décider exactement ce que chacun autorise."
+        },
+        "membersPermissions": {
+          "title": "Ce qu'un rôle contrôle",
+          "body": "Modifier le canevas, commenter, gérer les fils et dossiers, les membres, les rôles et l'espace lui-même. Un rôle n'est rien d'autre que cet ensemble d'interrupteurs."
+        },
+        "settingsWhat": {
+          "title": "Ces paramètres sont les vôtres",
+          "body": "Votre profil est ce que vos coéquipiers voient à côté de votre nom. Tout le reste ici n'est que pour vous et suit votre compte sur tous vos appareils. Parcourons chaque section."
+        },
+        "settingsOpen": {
+          "title": "Ouvrez vos paramètres",
+          "body": "Cliquez sur votre nom en bas de la barre latérale, puis sur Paramètres."
+        },
+        "settingsProfile": {
+          "title": "Changez quelque chose dans votre profil",
+          "body": "Changez votre nom ou choisissez un autre avatar, puis enregistrez. Vous pourrez revenir en arrière juste après. Les insignes que vous gagnez apparaissent ici aussi."
+        },
+        "settingsSecurity": {
+          "title": "Ouvrez la section Sécurité",
+          "body": "Votre mot de passe et la suppression du compte se trouvent ici."
+        },
+        "settingsSecurityNote": {
+          "title": "Vous seul pouvez le faire",
+          "body": "Changer votre mot de passe déconnecte vos autres sessions. Supprimer votre compte supprime aussi les espaces que vous possédez."
+        },
+        "settingsNotifications": {
+          "title": "Ouvrez la section Notifications",
+          "body": "Les interrupteurs sont là, mais l'envoi n'est pas encore disponible. Rien n'est envoyé pour l'instant."
+        },
+        "settingsAppearance": {
+          "title": "Ouvrez la section Apparence",
+          "body": "La langue de l'interface, huit thèmes (Auto suit votre système avec Daybreak et Eclipse) et quatre motifs de canevas."
+        },
+        "settingsTheme": {
+          "title": "Essayez un autre thème",
+          "body": "Choisissez-en un et toute l'application change aussitôt, le panneau restant ouvert. Vous seul voyez ce changement."
+        },
+        "settingsPattern": {
+          "title": "Changez le motif du canevas",
+          "body": "Points, lignes, croix ou surface unie. Seul le fond du canevas change."
+        },
+        "settingsEditor": {
+          "title": "Ouvrez la section Éditeur",
+          "body": "Cette section règle le comportement du canevas pendant que vous travaillez."
+        },
+        "settingsTune": {
+          "title": "Changez l'un des réglages",
+          "body": "Aimanter à la grille, guides intelligents, ou le zoom d'ouverture d'un canevas. Basculez-en un et le canevas suit immédiatement."
+        },
+        "settingsPlan": {
+          "title": "Ouvrez Plan et facturation",
+          "body": "Votre plan actuel et ce que comprend chaque plan, comme le nombre de membres et de canevas."
+        },
+        "settingsScope": {
+          "title": "Voilà toutes les sections",
+          "body": "Profil, sécurité, notifications, apparence, éditeur, plan. Vos coéquipiers ont leurs propres paramètres, même s'ils travaillent sur le même fil."
+        },
+        "exportWhat": {
+          "title": "L'export est un instantané",
+          "body": "Le fichier montre le canevas exactement tel qu'il est maintenant, et il ne peut pas être réimporté. Servez-vous-en pour partager ou imprimer, pas pour déplacer du travail entre fils."
+        },
+        "exportMenu": {
+          "title": "Ouvrez le menu d'export",
+          "body": "Le bouton d'export est en bas de la barre d'outils."
+        },
+        "exportFormat": {
+          "title": "Choisissez un format",
+          "body": "PNG et JPG sont des images, SVG reste net à toute taille. Le fichier arrive dans vos téléchargements."
+        },
+        "exportNote": {
+          "title": "Ce qui entre dans le fichier",
+          "body": "Les nœuds, les liens, les verdicts et la réponse. Les commentaires et la barre d'outils n'y figurent pas."
+        },
+        "toolsWhat": {
+          "title": "Un outil à la fois",
+          "body": "Un seul outil est actif à la fois, et un clic sur le canevas fait ce que fait cet outil. Savoir quel outil vous tenez, c'est la moitié du savoir-faire."
+        },
+        "toolsSheet": {
+          "title": "Ouvrez la fiche des raccourcis",
+          "body": "Le menu Aide est en bas de la barre d'outils, et Raccourcis clavier en est le premier élément."
+        },
+        "toolsSheetRead": {
+          "title": "Une touche par outil",
+          "body": "Les mêmes cinq groupes que la barre d'outils : navigation, historique, construction, décider, liens. Chaque outil a une touche, et les touches continuent de fonctionner pendant que la fiche est ouverte."
+        },
+        "toolsClose": {
+          "title": "Fermez la fiche",
+          "body": "Cliquez sur la croix dans le coin ou appuyez sur Échap. La fiche couvre la barre d'outils, et c'est là que la visite se rend ensuite."
+        },
+        "toolsSelect": {
+          "title": "Sélectionner",
+          "body": "L'outil neutre : il sélectionne et déplace les nœuds sans rien changer d'autre. Touche V."
+        },
+        "toolsPan": {
+          "title": "Déplacer",
+          "body": "Glissez pour déplacer la vue plutôt qu'un nœud. Touche H."
+        },
+        "toolsZoom": {
+          "title": "Zoom",
+          "body": "Un clic zoome sur l'endroit cliqué, et Maj dézoome. Touches plus et moins."
+        },
+        "toolsUndo": {
+          "title": "Annuler et rétablir",
+          "body": "L'historique a ses propres boutons, donc les essais ne coûtent rien : chaque étape peut être annulée et rétablie."
+        },
+        "toolsAdd": {
+          "title": "Ajouter un nœud",
+          "body": "Un clic sur un endroit vide ajoute un nœud au libellé provisoire. Touche N."
+        },
+        "toolsConnect": {
+          "title": "Connecter",
+          "body": "Cliquez sur le nœud d'où part le raisonnement, puis sur celui où il mène. La flèche montre le sens. Touche C."
+        },
+        "toolsDelete": {
+          "title": "Supprimer",
+          "body": "Un clic retire un nœud ou un lien. Le nœud de la question ne peut pas être supprimé. Touche D."
+        },
+        "toolsValid": {
+          "title": "Marquer valide",
+          "body": "Un verdict sur le chemin qui mène à ce nœud : cette étape tient. Touche Y."
+        },
+        "toolsInvalid": {
+          "title": "Marquer invalide",
+          "body": "Le verdict inverse : l'étape ne tient pas, et tout ce qui repose dessus devient douteux. Touche X."
+        },
+        "toolsAnswer": {
+          "title": "Réponse",
+          "body": "Marque le nœud qui clôt le fil. Une seule réponse par fil, et vous pouvez la déplacer plus tard. Touche A."
+        },
+        "toolsReference": {
+          "title": "Référence croisée",
+          "body": "Amène un nœud d'un autre canevas comme une citation en lecture seule. Touche R. Les références ont leur propre partie plus loin dans ce guide."
+        },
+        "exampleIntro": {
+          "title": "Voici mon ami Ergo",
+          "body": "Notre bureau a besoin d'une machine à café, et Ergo et moi ne sommes pas d'accord sur laquelle. Nous allons trancher sur un canevas, comme deux collègues. Appuyez sur Suivant pour avancer avec nous."
+        },
+        "exampleHello": {
+          "title": "Bonjour, je suis Ergo",
+          "body": "Une question à plusieurs réponses possibles, c'est pile ce que sait faire un canevas : chaque option pousse sa propre branche depuis la question, avec ses raisons en dessous."
+        },
+        "exampleThread": {
+          "title": "Je pose la question",
+          "body": "Je crée un fil et j'écris la question dans son nœud de question : quelle machine à café prendre pour le bureau ?"
+        },
+        "exampleCapsule": {
+          "title": "Moi, je veux des capsules",
+          "body": "Avec Ajouter un nœud, je pose ma réponse, une machine à capsules, et je la relie à la question avec Connecter. Ma raison va en dessous : un seul bouton, rien à nettoyer."
+        },
+        "exampleBean": {
+          "title": "Moi, je prendrais du grain",
+          "body": "Ma réponse a sa propre branche : une machine à grain. Ma raison en dessous : le grain revient bien moins cher par tasse que les capsules."
+        },
+        "exampleDoubt": {
+          "title": "Un doute sur le choix de Nodi",
+          "body": "Une machine à grain coûte bien plus cher à l'achat. C'est un doute, pas une réponse, alors je le laisse en commentaire sur le nœud de Nodi."
+        },
+        "examplePayback": {
+          "title": "Ma réplique",
+          "body": "C'est vrai, mais elle est rentabilisée en un an. J'ajoute cette deuxième raison sous ma réponse, là où le doute a été soulevé."
+        },
+        "exampleFilter": {
+          "title": "Une troisième option",
+          "body": "Si c'est le prix qui compte, il y a aussi la cafetière filtre, la moins chère à l'achat. Une troisième réponse, c'est une troisième branche."
+        },
+        "exampleStale": {
+          "title": "Pas celle-là",
+          "body": "Le café filtre devient amer sur la plaque chauffante en moins d'une heure. Je le laisse en commentaire sur l'option de la cafetière."
+        },
+        "exampleDropFilter": {
+          "title": "D'accord",
+          "body": "Personne ne veut d'un café amer. Je marque mon option cafetière avec Marquer invalide, et la raison en dessous devient douteuse elle aussi."
+        },
+        "exampleWaste": {
+          "title": "Autre chose",
+          "body": "Les capsules font aussi une montagne de déchets plastiques chaque semaine. Je le laisse en commentaire sur l'option capsules d'Ergo."
+        },
+        "exampleDropCapsule": {
+          "title": "Tu m'as convaincu",
+          "body": "Le prix par tasse et les déchets pèsent lourd. Je marque aussi mon option capsules comme invalide."
+        },
+        "exampleValid": {
+          "title": "Ce qui reste tient",
+          "body": "Avec Marquer valide, je confirme la branche de la machine à grain et ses deux raisons. Le chemin depuis la question s'allume."
+        },
+        "exampleAnswer": {
+          "title": "Notre réponse",
+          "body": "Nous sommes d'accord maintenant, alors je marque la machine à grain avec Réponse. Le fil est considéré comme résolu."
+        },
+        "exampleResolved": {
+          "title": "Une coche dans la barre latérale",
+          "body": "Regardez la barre latérale : une coche est apparue à côté de notre fil. Chaque fil résolu en reçoit une, les questions encore ouvertes se repèrent donc d'un coup d'œil."
+        },
+        "exampleWrap": {
+          "title": "Voilà toute l'idée",
+          "body": "Une question, une branche par réponse, des raisons sous chacune, les doutes en commentaires, des verdicts et une réponse acceptée par tous les deux. Vos propres fils fonctionnent exactement de la même façon."
+        },
+        "exampleKeep": {
+          "title": "Garder l'exemple ?",
+          "body": "Il reste dans la barre latérale comme un fil ordinaire que vous pouvez ouvrir et modifier. Gardez-le pour y revenir plus tard, ou supprimez-le maintenant."
+        }
+      },
+      "example": {
+        "threadName": "Exemple : la machine à café du bureau",
+        "question": "Quelle machine à café prendre pour le bureau ?",
+        "keep": "Le garder",
+        "remove": "Le supprimer",
+        "nodes": {
+          "capsule": "Une machine à capsules",
+          "oneButton": "Un seul bouton, rien à nettoyer",
+          "bean": "Une machine à grain",
+          "perCup": "Le grain revient bien moins cher par tasse que les capsules",
+          "payback": "Elle est rentabilisée en un an",
+          "filter": "Une cafetière filtre",
+          "cheapest": "La moins chère à l'achat"
+        },
+        "comments": {
+          "capsule": "Les capsules font aussi une montagne de déchets plastiques chaque semaine.",
+          "bean": "Elle coûte bien plus cher à l'achat que les autres.",
+          "filter": "Le café filtre devient amer sur la plaque chauffante en moins d'une heure."
+        }
+      }
+    },
     "settings": {
       "title": "Paramètres",
       "close": "Fermer les paramètres",
@@ -395,6 +860,8 @@
         "badges": {
           "badgeFounder": "Fondateur",
           "founderUnlock": "Rejoint pendant la bêta initiale.",
+          "badgeInitiate": "Initié",
+          "initiateUnlock": "Terminez la visite et tous les guides.",
           "badgeFirstSteps": "Premiers pas",
           "firstStepsUnlock": "Créez votre premier canevas.",
           "badgeArchitect": "Architecte",

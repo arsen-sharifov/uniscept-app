@@ -22,6 +22,53 @@ const { appearance, editor, profile, sections, security } = settings;
 
 const NEW_PASSWORD = 'Uniscept-E2E-2!';
 
+test.describe('the interface language', () => {
+  test.describe('GIVEN a Ukrainian browser and an account that never picked a language', () => {
+    test.use({ locale: 'uk-UA' });
+
+    test.beforeEach(async ({ page, workspace }) => {
+      await page.goto('/platform');
+      await expect(getSidebar(page)).toContainText(workspace.name);
+    });
+
+    test.describe('WHEN the platform opens', () => {
+      test('THEN it speaks the language of the browser', async ({ page }) => {
+        await expect(page.locator('html')).toHaveAttribute('lang', 'uk');
+        await expect(getSidebar(page)).toContainText(COPY_UK.platform.sidebar.structure);
+      });
+    });
+
+    test.describe('WHEN the appearance settings are opened', () => {
+      test.beforeEach(async ({ page }) => {
+        const modal = await openSettings(page, COPY_UK);
+        await openSection(modal, COPY_UK.platform.settings.sections.appearance);
+      });
+
+      test('THEN the language in use is the one marked as picked', async ({ page }) => {
+        await expect(
+          page.getByRole('button', { name: COPY_UK.platform.settings.appearance.languages.uk, exact: true }),
+        ).toHaveAttribute('aria-pressed', 'true');
+      });
+    });
+
+    test.describe('WHEN another theme is picked and the page is reloaded', () => {
+      test.beforeEach(async ({ page }) => {
+        const modal = await openSettings(page, COPY_UK);
+        await openSection(modal, COPY_UK.platform.settings.sections.appearance);
+        const saved = waitForPreferencesSave(page);
+        await page.getByRole('radio', { name: COPY_UK.platform.settings.appearance.themeEclipse }).click();
+        await saved;
+        await page.reload();
+      });
+
+      test('THEN the interface keeps the language of the browser', async ({ page }) => {
+        await expect(page.locator('html')).toHaveAttribute('data-theme', 'eclipse');
+        await expect(getSidebar(page)).toContainText(COPY_UK.platform.sidebar.structure);
+      });
+    });
+  });
+});
+
 test.describe('appearance preferences', () => {
   test.describe('GIVEN the settings dialog on its appearance section', () => {
     test.beforeEach(async ({ page, workspace }) => {

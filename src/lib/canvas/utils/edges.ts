@@ -1,4 +1,4 @@
-import { type XYPosition, getBezierPath } from '@xyflow/react';
+import { type Edge, type XYPosition, getBezierPath } from '@xyflow/react';
 
 import type { ICanvasEdgeGeometry, THandleId } from '@interfaces';
 
@@ -31,4 +31,16 @@ export const getCanvasEdgePath = ({
     targetPosition: POSITION_BY_HANDLE[targetSide],
     curvature: EDGE_CURVATURE,
   })[0];
+};
+
+const linkedIdsByEdges = new WeakMap<readonly Edge[], ReadonlySet<string>>();
+
+export const findLinkedNodeIds = (edges: readonly Edge[]): ReadonlySet<string> => {
+  const cached = linkedIdsByEdges.get(edges);
+  if (cached) return cached;
+
+  const linked = new Set(edges.flatMap((edge) => [edge.source, edge.target]));
+  linkedIdsByEdges.set(edges, linked);
+
+  return linked;
 };

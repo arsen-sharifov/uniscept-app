@@ -3,7 +3,6 @@ import {
   ExternalLink,
   Flag,
   Hand,
-  HelpCircle,
   Link2,
   MousePointer2,
   PlusCircle,
@@ -32,8 +31,6 @@ export enum ECanvasTool {
   Undo = 'undo',
   Redo = 'redo',
 }
-
-export const HELP_TOOL_ID = 'help';
 
 const CANVAS_TOOL_VALUES = new Set<string>(Object.values(ECanvasTool));
 
@@ -169,10 +166,3 @@ export const buildCanvasToolGroups = (t: TCanvasToolsTranslations): IToolGroup[]
     },
   ];
 };
-
-export const buildHelpTool = (t: TCanvasToolsTranslations): IToolItem => ({
-  id: HELP_TOOL_ID,
-  icon: HelpCircle,
-  label: t.help,
-  shortcut: '?',
-});

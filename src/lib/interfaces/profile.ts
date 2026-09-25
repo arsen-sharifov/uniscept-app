@@ -24,6 +24,7 @@ export type TAvatarIconLabelKey = `avatarIcon${Capitalize<TAvatarIcon>}`;
 
 export type TBadgeId =
   | 'founder'
+  | 'initiate'
   | 'firstSteps'
   | 'architect'
   | 'connector'

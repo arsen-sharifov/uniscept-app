@@ -2,9 +2,15 @@ import type { Decorator } from '@storybook/nextjs-vite';
 import { ReactFlowProvider } from '@xyflow/react';
 import { useEffect } from 'react';
 
-import type { IMockCanvasState, IMockPermissionsState } from '@story-interfaces';
+import type { IMockCanvasState, IMockOnboardingState, IMockPermissionsState } from '@story-interfaces';
 
-import { mockCanvasStore, mockPermissionsStore, resetCanvasStore } from './utils';
+import {
+  mockCanvasStore,
+  mockOnboardingStore,
+  mockPermissionsStore,
+  resetCanvasStore,
+  resetOnboardingStore,
+} from './utils';
 
 export const WithPad: Decorator = (Story) => (
   <div className="flex min-h-screen w-full items-center justify-center p-12">
@@ -47,6 +53,17 @@ export const withPermissionsStore = (state: IMockPermissionsState = {}): Decorat
       mockPermissionsStore(state);
 
       return () => mockPermissionsStore();
+    }, []);
+
+    return <Story />;
+  };
+
+export const withOnboardingStore = (state: IMockOnboardingState = {}): Decorator =>
+  function WithOnboardingStore(Story) {
+    useEffect(() => {
+      mockOnboardingStore(state);
+
+      return resetOnboardingStore;
     }, []);
 
     return <Story />;

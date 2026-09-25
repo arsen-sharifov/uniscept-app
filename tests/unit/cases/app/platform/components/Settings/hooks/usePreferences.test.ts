@@ -4,10 +4,11 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import type { IPreferences } from '@interfaces';
 import { DEFAULT_PREFERENCES, PREFERENCES_DEBOUNCE_MS, PREFERENCES_STORAGE_KEY } from '@constants';
 import { getPreferences, upsertPreferences } from '@api/client';
-import { TRANSLATIONS } from '@mocks/i18n';
+import { DEFAULT_LOCALE, TRANSLATIONS } from '@mocks/i18n';
 import { PREFERENCES } from '@mocks/preferences';
 import { usePreferences } from '@/app/platform/components/Settings/hooks';
 import { event } from '@/lib/events';
+import { useOnboardingStore } from '@/lib/onboarding';
 
 vi.mock('@api/client', async () => ({
   ...(await import('@mocks/canvasApi')),
@@ -25,6 +26,8 @@ const PREFERENCE_ATTRIBUTES = [
   'data-smart-guides',
 ];
 
+const HYDRATED: IPreferences = { ...PREFERENCES, language: DEFAULT_LOCALE };
+
 let prefs: { current: ReturnType<typeof usePreferences> };
 
 beforeEach(() => {
@@ -38,6 +41,7 @@ afterEach(async () => {
   });
   localStorage.clear();
   PREFERENCE_ATTRIBUTES.forEach((attribute) => document.documentElement.removeAttribute(attribute));
+  useOnboardingStore.getState().forget();
   vi.useRealTimers();
   vi.restoreAllMocks();
 });
@@ -52,8 +56,8 @@ describe('usePreferences', () => {
     });
 
     describe('WHEN the hook mounts', () => {
-      test('THEN the stored preferences hydrate the state', () => {
-        expect(prefs.current.preferences).toEqual(PREFERENCES);
+      test('THEN the stored preferences hydrate the state, with the language the interface is shown in', () => {
+        expect(prefs.current.preferences).toEqual(HYDRATED);
       });
 
       test('THEN the document reflects every preference attribute', () => {
@@ -73,7 +77,7 @@ describe('usePreferences', () => {
       });
 
       test('THEN the local preferences stay without a save', () => {
-        expect(prefs.current.preferences).toEqual(PREFERENCES);
+        expect(prefs.current.preferences).toEqual(HYDRATED);
         expect(getPreferences).toHaveBeenCalledTimes(1);
         expect(upsertPreferences).not.toHaveBeenCalled();
       });
@@ -134,9 +138,9 @@ describe('usePreferences', () => {
       });
 
       test('THEN the state, the storage and the document update before any save', () => {
-        expect(prefs.current.preferences).toEqual({ ...PREFERENCES, theme: 'graphite' });
+        expect(prefs.current.preferences).toEqual({ ...HYDRATED, theme: 'graphite' });
         expect(JSON.parse(localStorage.getItem(PREFERENCES_STORAGE_KEY)!)).toEqual({
-          ...PREFERENCES,
+          ...HYDRATED,
           theme: 'graphite',
         });
         expect(document.documentElement.getAttribute('data-theme')).toBe('graphite');
@@ -152,8 +156,8 @@ describe('usePreferences', () => {
         });
       });
 
-      test('THEN a single save carries the merged payload', () => {
-        expect(upsertPreferences).toHaveBeenCalledExactlyOnceWith({ ...PREFERENCES, theme: 'graphite' });
+      test('THEN a single save carries the merged payload and the language the interface is shown in', () => {
+        expect(upsertPreferences).toHaveBeenCalledExactlyOnceWith({ ...HYDRATED, theme: 'graphite' });
       });
     });
 
@@ -175,7 +179,7 @@ describe('usePreferences', () => {
 
       test('THEN a single save carries the last value', () => {
         expect(prefs.current.preferences.theme).toBe('solstice');
-        expect(upsertPreferences).toHaveBeenCalledExactlyOnceWith({ ...PREFERENCES, theme: 'solstice' });
+        expect(upsertPreferences).toHaveBeenCalledExactlyOnceWith({ ...HYDRATED, theme: 'solstice' });
       });
     });
 
@@ -191,7 +195,7 @@ describe('usePreferences', () => {
           prefs.current.updatePreference('defaultZoom', 150);
         });
         await act(async () => {
-          prefs.current.updatePreference('language', 'en');
+          prefs.current.updatePreference('language', 'fr');
         });
         await act(async () => {
           prefs.current.updatePreference('smartGuides', true);
@@ -203,11 +207,11 @@ describe('usePreferences', () => {
 
       test('THEN a single save merges every change', () => {
         expect(upsertPreferences).toHaveBeenCalledExactlyOnceWith({
-          ...PREFERENCES,
+          ...HYDRATED,
           canvasPattern: 'cross',
           snapToGrid: false,
           defaultZoom: 150,
-          language: 'en',
+          language: 'fr',
           smartGuides: true,
         });
       });
@@ -254,6 +258,62 @@ describe('usePreferences', () => {
     });
   });
 
+  describe('GIVEN a guide in progress over loaded preferences', () => {
+    beforeEach(async () => {
+      localStorage.setItem(PREFERENCES_STORAGE_KEY, JSON.stringify(PREFERENCES));
+      vi.mocked(getPreferences).mockResolvedValue(null);
+      vi.mocked(upsertPreferences).mockResolvedValue(undefined);
+      useOnboardingStore.setState({ run: { guideId: 'settings', stepIndex: 0 } });
+
+      prefs = renderHook(() => usePreferences()).result;
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(0);
+      });
+    });
+
+    describe('WHEN the theme, the canvas pattern and the default zoom change', () => {
+      beforeEach(async () => {
+        await act(async () => {
+          prefs.current.updatePreference('theme', 'graphite');
+        });
+        await act(async () => {
+          prefs.current.updatePreference('canvasPattern', 'cross');
+        });
+        await act(async () => {
+          prefs.current.updatePreference('defaultZoom', 150);
+        });
+      });
+
+      test('THEN each change is recorded as its tour signal', () => {
+        expect(useOnboardingStore.getState().signals).toEqual(new Set(['themePicked', 'patternPicked', 'editorTuned']));
+      });
+    });
+
+    describe('WHEN a preference is set to its current value', () => {
+      beforeEach(async () => {
+        await act(async () => {
+          prefs.current.updatePreference('theme', PREFERENCES.theme);
+        });
+      });
+
+      test('THEN no tour signal is recorded', () => {
+        expect(useOnboardingStore.getState().signals.size).toBe(0);
+      });
+    });
+
+    describe('WHEN the language changes', () => {
+      beforeEach(async () => {
+        await act(async () => {
+          prefs.current.updatePreference('language', 'fr');
+        });
+      });
+
+      test('THEN no tour signal is recorded', () => {
+        expect(useOnboardingStore.getState().signals.size).toBe(0);
+      });
+    });
+  });
+
   describe('GIVEN a remote load that fails on the api', () => {
     beforeEach(async () => {
       vi.mocked(getPreferences).mockRejectedValue(new Error('db down'));
@@ -296,8 +356,8 @@ describe('usePreferences', () => {
       });
 
       test('THEN the change rolls back everywhere', () => {
-        expect(prefs.current.preferences).toEqual(PREFERENCES);
-        expect(JSON.parse(localStorage.getItem(PREFERENCES_STORAGE_KEY)!)).toEqual(PREFERENCES);
+        expect(prefs.current.preferences).toEqual(HYDRATED);
+        expect(JSON.parse(localStorage.getItem(PREFERENCES_STORAGE_KEY)!)).toEqual(HYDRATED);
         expect(document.documentElement.getAttribute('data-theme')).toBe('eclipse');
       });
 
@@ -346,14 +406,14 @@ describe('usePreferences', () => {
       test('THEN the newer value survives the stale failure', () => {
         expect(prefs.current.preferences.theme).toBe('solstice');
         expect(JSON.parse(localStorage.getItem(PREFERENCES_STORAGE_KEY)!)).toEqual({
-          ...PREFERENCES,
+          ...HYDRATED,
           theme: 'solstice',
         });
       });
 
       test('THEN the failure surfaces once and the newer save persists', () => {
         expect(upsertPreferences).toHaveBeenCalledTimes(2);
-        expect(upsertPreferences).toHaveBeenLastCalledWith({ ...PREFERENCES, theme: 'solstice' });
+        expect(upsertPreferences).toHaveBeenLastCalledWith({ ...HYDRATED, theme: 'solstice' });
         expect(event.error).toHaveBeenCalledExactlyOnceWith(expect.any(Error), {
           title: TRANSLATIONS.common.errorTitles.saveFailed,
           context: 'preferences.save',

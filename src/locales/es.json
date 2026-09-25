@@ -138,7 +138,6 @@
       "structure": "Estructura",
       "newThread": "Nuevo hilo",
       "newFolder": "Nueva carpeta",
-      "emptyState": "Selecciona o crea un hilo para empezar",
       "signOut": "Cerrar sesión",
       "deleteWorkspaceTitle": "Eliminar espacio",
       "deleteFolderTitle": "Eliminar carpeta",
@@ -191,7 +190,6 @@
       },
       "tools": {
         "ariaLabel": "Herramientas del canvas",
-        "help": "Atajos de teclado",
         "groups": {
           "navigate": "Navegar",
           "history": "Historial",
@@ -333,6 +331,473 @@
         "activeBadge": "Activo"
       }
     },
+    "onboarding": {
+      "nodiName": "Nodi",
+      "nodiAlt": "Nodi, tu guía",
+      "nodiIntro": "Nodi es un nodo del lienzo que conoce la aplicación a fondo. Se coloca junto a cada tarjeta, y el anillo resaltado muestra dónde hacer clic.",
+      "ergoName": "Ergo",
+      "ergoAlt": "Ergo, el amigo de Nodi",
+      "menuLabel": "Ayuda",
+      "menuShortcuts": "Atajos de teclado",
+      "menuGuides": "Recorrido y guías",
+      "offerTitle": "¿Quieres un recorrido rápido?",
+      "offerBody": "Construye tu primer lienzo paso a paso: un hilo, una pregunta, unos cuantos nodos y un veredicto. Cada paso lo das tú, y puedes salir en cualquier momento.",
+      "offerAccept": "Empezar el recorrido",
+      "offerDecline": "Ahora no",
+      "offerLater": "Puedes iniciarlo más tarde desde el menú Ayuda, en Recorrido y guías.",
+      "continueHint": {
+        "afterTour": {
+          "title": "Sigue desde aquí",
+          "body": "El resto de guías te espera en Recorrido y guías, en este menú Ayuda. Elige cualquiera cuando quieras."
+        },
+        "afterDecline": {
+          "title": "El recorrido te espera aquí",
+          "body": "Cuando quieras, abre Recorrido y guías desde este menú Ayuda."
+        },
+        "open": "Abrir guías",
+        "dismiss": "Entendido"
+      },
+      "pickerTitle": "Recorrido y guías",
+      "pickerBody": "El recorrido te acompaña por tu primer lienzo. Cada guía que sigue trata una parte de la aplicación, y la mayoría te hace probarla de verdad. Termínalas todas para ganar la insignia Iniciado.",
+      "pickerProgress": "{done} de {total} completadas",
+      "pickerLocked": "Termina el primer lienzo para desbloquear esta guía.",
+      "pickerStart": "Empezar",
+      "pickerReplay": "Repetir",
+      "stepCounter": "paso {index} de {total}",
+      "stepNext": "Siguiente",
+      "stepDone": "ya hecho",
+      "stepWaiting": "tu turno",
+      "stepLostTarget": "el objetivo no se ve",
+      "blockedTitle": "Cierra esto primero",
+      "blockedBody": "Hay algo abierto encima de este paso. Ciérralo y el recorrido continúa.",
+      "blockedStatus": "esperando a que se cierre",
+      "quit": "Salir del recorrido",
+      "celebrationTitle": "Has terminado todas las guías",
+      "celebrationBody": "Lo has visto todo: cómo construir un lienzo, evaluarlo y enlazar hilos entre sí, y dónde están los ajustes. La insignia Iniciado ya está en tu perfil.",
+      "celebrationClose": "Volver al trabajo",
+      "emptyPlatformTitle": "Ningún hilo abierto",
+      "emptyPlatformBody": "Un hilo contiene una pregunta y el lienzo donde la resuelves. Crea uno nuevo o elige uno de la lista de la izquierda.",
+      "emptyViewerBody": "Un hilo contiene una pregunta y el lienzo donde se resuelve. Elige uno de la lista de la izquierda.",
+      "emptyWorkspaceTitle": "Aún no hay espacio",
+      "emptyWorkspaceBody": "Todo está dentro de un espacio de trabajo: hilos, miembros y referencias. Crea el primero para empezar.",
+      "emptyPlatformAction": "hacer el recorrido",
+      "hints": {
+        "needsWorkspace": "Primero necesitas un espacio de trabajo. La guía del primer lienzo empieza creando uno.",
+        "needsCanvas": "Abre un hilo para que su lienzo esté en pantalla.",
+        "needsNode": "Añade al menos un nodo a este lienzo.",
+        "needsBuildRights": "Abre un espacio donde puedas crear hilos, editar lienzos y comentar."
+      },
+      "guides": {
+        "baseTitle": "Tu primer lienzo",
+        "baseSummary": "Construir un lienzo completo, de la pregunta a la respuesta.",
+        "canvasTitle": "Trabajar en un lienzo",
+        "canvasSummary": "Herramientas, comentarios, referencias y exportación.",
+        "workspaceTitle": "Espacios y estructura",
+        "workspaceSummary": "Organizar tus hilos e invitar a personas.",
+        "settingsTitle": "Ajustes",
+        "settingsSummary": "Recorrer cada sección y hacer tuya la aplicación.",
+        "exampleTitle": "Ver un ejemplo",
+        "exampleSummary": "Nodi y Ergo eligen una cafetera para la oficina."
+      },
+      "steps": {
+        "baseIntro": {
+          "title": "Qué es un lienzo",
+          "body": "Un hilo se construye alrededor de una sola pregunta, y su lienzo es donde la resuelves: los nodos contienen afirmaciones, los enlaces muestran qué se deduce de qué, y los veredictos marcan qué caminos se sostienen. Construyamos uno juntos."
+        },
+        "baseWorkspace": {
+          "title": "Crea un espacio de trabajo",
+          "body": "Un espacio contiene tus hilos, miembros y referencias. Nada sale de él. Crea el primero."
+        },
+        "baseOwnWorkspace": {
+          "title": "Crea tu propio espacio",
+          "body": "Tu rol en este espacio no te permite construir, así que el lienzo irá a un espacio tuyo. Abre el selector y crea un espacio nuevo."
+        },
+        "baseThread": {
+          "title": "Crea un hilo",
+          "body": "Un hilo contiene una pregunta y su lienzo. Usa el botón de la barra lateral."
+        },
+        "baseQuestion": {
+          "title": "Escribe la pregunta",
+          "body": "El nodo de la pregunta ya está en el lienzo. Haz clic en él, escribe la pregunta que de verdad quieres responder y pulsa Intro."
+        },
+        "baseArgue": {
+          "title": "Cómo se construye un argumento",
+          "body": "Cada afirmación se conecta a la pregunta con un enlace. Un nodo que no está conectado a nada no influye en el resultado."
+        },
+        "baseNode": {
+          "title": "Añade tu primera afirmación",
+          "body": "Elige la herramienta Añadir nodo y haz clic en un lugar vacío. Un nodo contiene una sola idea: una afirmación, una premisa o una objeción."
+        },
+        "baseNodeText": {
+          "title": "Escribe la afirmación",
+          "body": "Cambia a la herramienta Seleccionar (tecla V), haz doble clic en tu nodo nuevo, sustituye el texto provisional por tu afirmación y pulsa Intro."
+        },
+        "baseConnect": {
+          "title": "Enlázalo con la pregunta",
+          "body": "Elige la herramienta Conectar, haz clic en la pregunta y luego en tu nodo. La flecha muestra qué se deduce de qué."
+        },
+        "baseDirection": {
+          "title": "La dirección importa",
+          "body": "Un enlace va de un nodo a lo que se construye sobre él: de la pregunta a sus respuestas, de una afirmación a lo que se deduce de ella. Rechaza un nodo, y todo lo que descansa sobre él queda en duda."
+        },
+        "baseObjection": {
+          "title": "Añade una objeción",
+          "body": "Añade un segundo nodo que argumente contra la primera afirmación y escríbelo igual. Un lienzo con un solo lado no demuestra nada."
+        },
+        "baseSecondLink": {
+          "title": "Enlázalo también",
+          "body": "Igual que antes: la herramienta Conectar, la pregunta y luego el nodo nuevo. Ahora de la pregunta salen dos ramas que compiten."
+        },
+        "baseValid": {
+          "title": "Marca la rama que se sostiene",
+          "body": "Elige la herramienta Marcar válido y haz clic en la afirmación que crees. Se ilumina todo el camino al que pertenece."
+        },
+        "baseInvalid": {
+          "title": "Marca la que no se sostiene",
+          "body": "Elige la herramienta Marcar inválido y haz clic en la otra rama. Se queda en el lienzo, marcada como rechazada."
+        },
+        "baseVerdict": {
+          "title": "Nada se borra",
+          "body": "Lo válido, lo inválido y lo no decidido quedan uno junto a otro. Meses después sigues viendo no solo la respuesta, sino también cada intento que no funcionó."
+        },
+        "baseAnswerTool": {
+          "title": "Elige la herramienta Respuesta",
+          "body": "Un veredicto dice que un camino se sostiene. La respuesta dice qué nodo cierra la pregunta. Son cosas distintas, y la respuesta tiene que estar enlazada con la pregunta directamente o a través de un nodo válido."
+        },
+        "baseAnswer": {
+          "title": "Marca la respuesta",
+          "body": "Haz clic en un nodo de un camino válido. Desde ahora el hilo cuenta como resuelto. Más tarde puedes mover la respuesta a otro nodo."
+        },
+        "baseResolvedMark": {
+          "title": "Los hilos resueltos llevan una marca",
+          "body": "Mira la barra lateral: junto a tu hilo ha aparecido una marca. Cada hilo resuelto recibe una, así que las preguntas abiertas se ven de un vistazo."
+        },
+        "baseResolved": {
+          "title": "Ese es todo el ciclo",
+          "body": "Pregunta, afirmaciones, enlaces, veredictos, respuesta. Todo lo demás de la aplicación, como los comentarios, las referencias y la exportación, se apoya en esto."
+        },
+        "structureWhat": {
+          "title": "La barra lateral solo sirve para ordenar",
+          "body": "Las carpetas y el anidamiento mantienen legible una lista larga. No cambian nada en el lienzo: un hilo funciona igual esté donde esté."
+        },
+        "structureFolder": {
+          "title": "Crea una carpeta",
+          "body": "Las carpetas son opcionales. Agrupan hilos y nada más."
+        },
+        "structureNest": {
+          "title": "Mete un hilo dentro",
+          "body": "Crea un hilo directamente en la carpeta o arrastra uno existente hasta ella."
+        },
+        "structureSearch": {
+          "title": "Busca cuando la lista crezca",
+          "body": "El cuadro de búsqueda filtra todo el árbol por nombre, carpetas incluidas. Es el camino más rápido a un hilo que recuerdas a medias."
+        },
+        "structureMove": {
+          "title": "Mueve las cosas cuando quieras",
+          "body": "Arrastra hilos y carpetas para reordenarlos o reubicarlos. El lienzo, los comentarios y las referencias siguen igual."
+        },
+        "referencesWhat": {
+          "title": "Qué es una referencia",
+          "body": "A veces un hilo se apoya en una conclusión a la que ya se llegó en otro. Una referencia trae ese nodo como una cita de solo lectura en lugar de una copia, así el original sigue siendo la única fuente."
+        },
+        "referencesThread": {
+          "title": "Crea un segundo hilo",
+          "body": "Una referencia necesita un nodo en otro lienzo, y ningún otro lienzo de este espacio tiene nodos todavía. Crea un hilo nuevo desde la barra lateral: el recorrido continúa allí, y harás referencia a un nodo de este lienzo."
+        },
+        "referencesTool": {
+          "title": "Elige la herramienta Referencia cruzada",
+          "body": "Trae a este lienzo un nodo de otro lienzo de este espacio, sin fusionar los dos."
+        },
+        "referencesPlace": {
+          "title": "Colócala en el lienzo",
+          "body": "Haz clic en un lugar vacío. Se abre un panel de búsqueda con los nodos de este espacio a los que puedes hacer referencia."
+        },
+        "referencesPick": {
+          "title": "Elige el nodo a referenciar",
+          "body": "Busca en los otros lienzos de este espacio y elige un nodo. Aparece como un nodo de referencia de solo lectura; para enlazarlo, arrastra una conexión desde el borde de otro nodo hasta él."
+        },
+        "referencesBoundary": {
+          "title": "Se queda dentro del espacio",
+          "body": "Una referencia solo puede apuntar a lienzos de este espacio, y nunca cambia el nodo al que apunta. Elimina la referencia y el original queda intacto."
+        },
+        "commentsWhat": {
+          "title": "La discusión tiene su sitio junto al razonamiento",
+          "body": "Un comentario nunca se convierte en nodo ni lleva veredicto. Es donde hablas de un nodo sin tocar el argumento en sí."
+        },
+        "commentsOpen": {
+          "title": "Abre los comentarios de un nodo",
+          "body": "Usa el botón de comentarios del nodo. El panel se abre a su lado."
+        },
+        "commentsWrite": {
+          "title": "Deja un comentario",
+          "body": "Escribe lo que quieras y envíalo. Los comentarios nunca cambian la estructura ni los veredictos."
+        },
+        "commentsWho": {
+          "title": "Todos en el hilo pueden leerlo",
+          "body": "Los comentarios pertenecen al nodo y los ve cualquiera que pueda abrir el hilo. Quien tiene permiso para comentar puede hacerlo aunque no pueda editar el lienzo."
+        },
+        "workspacesWhat": {
+          "title": "El espacio es la frontera",
+          "body": "Hilos, carpetas, miembros y referencias están en un solo espacio y nunca pasan a otro. Puedes pertenecer a varios y cambiar entre ellos libremente."
+        },
+        "workspacesSwitcher": {
+          "title": "Abre el selector de espacios",
+          "body": "Es el nombre del espacio actual, en la parte superior de la barra lateral."
+        },
+        "workspacesSettings": {
+          "title": "Abre la configuración del espacio",
+          "body": "Pasa el cursor por la fila del espacio y haz clic en el engranaje. Esta configuración solo afecta a este espacio."
+        },
+        "workspacesGeneral": {
+          "title": "La sección General",
+          "body": "La configuración del espacio se abre aquí: el nombre, el número de miembros, tu rol y la fecha de creación del espacio."
+        },
+        "workspacesOwner": {
+          "title": "Siempre hay un solo propietario",
+          "body": "La propiedad se transfiere, nunca se comparte: el propietario la cede desde la sección Miembros. Eliminar el espacio requiere el permiso Gestionar el espacio de trabajo, que solo tiene el propietario salvo que un rol personalizado lo conceda."
+        },
+        "membersWhat": {
+          "title": "Los roles valen para todo el espacio",
+          "body": "El acceso se define una vez por espacio, no por lienzo. Un rol decide si alguien puede editar lienzos, solo comentar o solo leer."
+        },
+        "membersOpen": {
+          "title": "Abre la configuración del espacio",
+          "body": "Abre el selector de espacios y luego haz clic en el engranaje de la fila. Los miembros y los roles están ahí."
+        },
+        "membersSection": {
+          "title": "Abre la sección Miembros",
+          "body": "Aquí invitas a personas y asignas roles. No se envía nada mientras solo miras."
+        },
+        "membersInvite": {
+          "title": "Las invitaciones van por correo",
+          "body": "Escribe una dirección y elige el rol desde el principio. Puedes revocar una invitación antes de que se acepte, y cambiar un rol en cualquier momento."
+        },
+        "membersRoles": {
+          "title": "Abre la sección Roles",
+          "body": "Los roles se definen por espacio. Propietario, Miembro y Espectador vienen integrados y no cambian; puedes crear tus propios roles y decidir exactamente qué permite cada uno."
+        },
+        "membersPermissions": {
+          "title": "Qué controla un rol",
+          "body": "Editar el lienzo, comentar, gestionar hilos y carpetas, miembros, roles y el propio espacio. Un rol no es más que ese conjunto de interruptores."
+        },
+        "settingsWhat": {
+          "title": "Estos ajustes son tuyos",
+          "body": "Tu perfil es lo que tus compañeros ven junto a tu nombre. Todo lo demás aquí es solo para ti y sigue a tu cuenta en todos tus dispositivos. Recorramos cada sección."
+        },
+        "settingsOpen": {
+          "title": "Abre tus ajustes",
+          "body": "Haz clic en tu nombre en la parte inferior de la barra lateral y luego en Ajustes."
+        },
+        "settingsProfile": {
+          "title": "Cambia algo en tu perfil",
+          "body": "Cambia tu nombre o elige otro avatar y guarda. Puedes volver a dejarlo como estaba justo después. Las insignias que ganes también aparecen aquí."
+        },
+        "settingsSecurity": {
+          "title": "Abre la sección Seguridad",
+          "body": "Aquí están tu contraseña y la eliminación de la cuenta."
+        },
+        "settingsSecurityNote": {
+          "title": "Solo tú puedes hacerlo",
+          "body": "Cambiar la contraseña cierra tus otras sesiones. Eliminar la cuenta elimina también los espacios que te pertenecen."
+        },
+        "settingsNotifications": {
+          "title": "Abre la sección Notificaciones",
+          "body": "Los interruptores están aquí, pero el envío todavía no está disponible. Por ahora no se envía nada."
+        },
+        "settingsAppearance": {
+          "title": "Abre la sección Apariencia",
+          "body": "El idioma de la interfaz, ocho temas (Auto sigue a tu sistema con Daybreak y Eclipse) y cuatro patrones de lienzo."
+        },
+        "settingsTheme": {
+          "title": "Prueba otro tema",
+          "body": "Elige uno y toda la aplicación cambia al instante, con el panel aún abierto. Solo tú ves este cambio."
+        },
+        "settingsPattern": {
+          "title": "Cambia el patrón del lienzo",
+          "body": "Puntos, líneas, cruces o una superficie lisa. Solo cambia el fondo del lienzo."
+        },
+        "settingsEditor": {
+          "title": "Abre la sección Editor",
+          "body": "Esta sección controla cómo se comporta el lienzo mientras trabajas."
+        },
+        "settingsTune": {
+          "title": "Cambia uno de los ajustes",
+          "body": "Ajustar a la cuadrícula, guías inteligentes o el zoom con el que se abre un lienzo. Cambia uno y el lienzo responde de inmediato."
+        },
+        "settingsPlan": {
+          "title": "Abre Plan y facturación",
+          "body": "Tu plan actual y lo que incluye cada plan, como el número de miembros y de lienzos."
+        },
+        "settingsScope": {
+          "title": "Esas son todas las secciones",
+          "body": "Perfil, seguridad, notificaciones, apariencia, editor, plan. Tus compañeros tienen sus propios ajustes, incluso en el mismo hilo."
+        },
+        "exportWhat": {
+          "title": "La exportación es una instantánea",
+          "body": "El archivo muestra el lienzo exactamente como está ahora, y no se puede volver a importar. Úsalo para compartir o imprimir, no para mover trabajo entre hilos."
+        },
+        "exportMenu": {
+          "title": "Abre el menú de exportación",
+          "body": "El botón de exportar está en la parte inferior de la barra de herramientas."
+        },
+        "exportFormat": {
+          "title": "Elige un formato",
+          "body": "PNG y JPG son imágenes, SVG se mantiene nítido a cualquier tamaño. El archivo va a tus descargas."
+        },
+        "exportNote": {
+          "title": "Qué entra en el archivo",
+          "body": "Nodos, enlaces, veredictos y la respuesta. Los comentarios y la barra de herramientas se quedan fuera."
+        },
+        "toolsWhat": {
+          "title": "Una herramienta a la vez",
+          "body": "Solo hay una herramienta activa a la vez, y un clic en el lienzo hace lo que hace esa herramienta. Saber qué herramienta tienes en la mano es la mitad del oficio."
+        },
+        "toolsSheet": {
+          "title": "Abre la hoja de atajos",
+          "body": "El menú Ayuda está en la parte inferior de la barra de herramientas, y Atajos de teclado es su primer elemento."
+        },
+        "toolsSheetRead": {
+          "title": "Una tecla por herramienta",
+          "body": "Los mismos cinco grupos que la barra de herramientas: navegar, historial, construir, decidir, enlaces. Cada herramienta tiene una tecla, y las teclas siguen funcionando mientras la hoja está abierta."
+        },
+        "toolsClose": {
+          "title": "Cierra la hoja",
+          "body": "Haz clic en la cruz de la esquina o pulsa Escape. La hoja cubre la barra de herramientas, y ahí va el recorrido a continuación."
+        },
+        "toolsSelect": {
+          "title": "Seleccionar",
+          "body": "La herramienta neutral: selecciona y arrastra nodos sin cambiar nada más. Tecla V."
+        },
+        "toolsPan": {
+          "title": "Desplazar",
+          "body": "Arrastra para mover la vista en lugar de un nodo. Tecla H."
+        },
+        "toolsZoom": {
+          "title": "Zoom",
+          "body": "Un clic acerca al punto donde hiciste clic, y con Mayús aleja. Teclas más y menos."
+        },
+        "toolsUndo": {
+          "title": "Deshacer y rehacer",
+          "body": "El historial tiene sus propios botones, así que experimentar no cuesta nada: cualquier paso se puede deshacer y rehacer."
+        },
+        "toolsAdd": {
+          "title": "Añadir nodo",
+          "body": "Un clic en un lugar vacío añade un nodo con una etiqueta provisional. Tecla N."
+        },
+        "toolsConnect": {
+          "title": "Conectar",
+          "body": "Haz clic en el nodo del que parte el razonamiento y luego en el nodo al que lleva. La flecha muestra la dirección. Tecla C."
+        },
+        "toolsDelete": {
+          "title": "Eliminar",
+          "body": "Un clic quita un nodo o un enlace. El nodo de la pregunta no se puede eliminar. Tecla D."
+        },
+        "toolsValid": {
+          "title": "Marcar válido",
+          "body": "Un veredicto sobre el camino que llega a este nodo: ese paso se sostiene. Tecla Y."
+        },
+        "toolsInvalid": {
+          "title": "Marcar inválido",
+          "body": "El veredicto contrario: el paso no se sostiene, y todo lo que descansa sobre él queda en duda. Tecla X."
+        },
+        "toolsAnswer": {
+          "title": "Respuesta",
+          "body": "Marca el nodo que cierra el hilo. Una respuesta por hilo, y puedes moverla más tarde. Tecla A."
+        },
+        "toolsReference": {
+          "title": "Referencia cruzada",
+          "body": "Trae un nodo de otro lienzo como una cita de solo lectura. Tecla R. Las referencias tienen su propia parte más adelante en esta guía."
+        },
+        "exampleIntro": {
+          "title": "Te presento a Ergo",
+          "body": "Nuestra oficina necesita una cafetera, y Ergo y yo no nos ponemos de acuerdo en cuál. Lo decidiremos en un lienzo, como harían dos compañeros. Pulsa Siguiente para seguirnos."
+        },
+        "exampleHello": {
+          "title": "Hola, soy Ergo",
+          "body": "Una pregunta con varias respuestas posibles es justo aquello para lo que sirve un lienzo: cada opción crece como una rama propia desde la pregunta, con sus razones debajo."
+        },
+        "exampleThread": {
+          "title": "Planteo la pregunta",
+          "body": "Creo un hilo y escribo la pregunta en su nodo de pregunta: ¿qué cafetera compramos para la oficina?"
+        },
+        "exampleCapsule": {
+          "title": "Yo quiero cápsulas",
+          "body": "Con Añadir nodo coloco mi respuesta, una cafetera de cápsulas, y la enlazo a la pregunta con Conectar. Debajo va mi razón: un botón y nada que limpiar."
+        },
+        "exampleBean": {
+          "title": "Yo prefiero grano",
+          "body": "Mi respuesta tiene su propia rama: una cafetera superautomática. Mi razón debajo: el grano sale mucho más barato por taza que las cápsulas."
+        },
+        "exampleDoubt": {
+          "title": "Una duda sobre la elección de Nodi",
+          "body": "Una superautomática cuesta bastante más. Es una duda, no una respuesta, así que la dejo como comentario en el nodo de Nodi."
+        },
+        "examplePayback": {
+          "title": "Mi réplica",
+          "body": "Cierto, pero se amortiza en un año. Lo añado como segunda razón bajo mi respuesta, justo donde surgió la duda."
+        },
+        "exampleFilter": {
+          "title": "Una tercera opción",
+          "body": "Si lo que importa es el precio, también está la cafetera de goteo, la más barata de comprar. Una tercera respuesta es una tercera rama."
+        },
+        "exampleStale": {
+          "title": "Esa no",
+          "body": "El café de goteo se pone amargo en la placa en menos de una hora. Lo dejo como comentario en la opción de goteo."
+        },
+        "exampleDropFilter": {
+          "title": "De acuerdo",
+          "body": "Nadie quiere café amargo. Marco mi opción de goteo con Marcar inválido, y la razón que tiene debajo también queda en duda."
+        },
+        "exampleWaste": {
+          "title": "Una cosa más",
+          "body": "Además, las cápsulas acaban siendo un montón de plástico cada semana. Lo dejo como comentario en la opción de cápsulas de Ergo."
+        },
+        "exampleDropCapsule": {
+          "title": "Me has convencido",
+          "body": "El precio por taza y el plástico pesan mucho. Marco también como inválida mi opción de cápsulas."
+        },
+        "exampleValid": {
+          "title": "Lo que queda se sostiene",
+          "body": "Con Marcar válido confirmo la rama de la superautomática y sus dos razones. El camino desde la pregunta se ilumina."
+        },
+        "exampleAnswer": {
+          "title": "Nuestra respuesta",
+          "body": "Ahora estamos de acuerdo, así que marco la superautomática con Respuesta. El hilo cuenta como resuelto."
+        },
+        "exampleResolved": {
+          "title": "Una marca en la barra lateral",
+          "body": "Mira la barra lateral: junto a nuestro hilo ha aparecido una marca. Cada hilo resuelto recibe una, así que las preguntas abiertas se ven de un vistazo."
+        },
+        "exampleWrap": {
+          "title": "Esa es toda la idea",
+          "body": "Una pregunta, una rama por respuesta, razones debajo de cada una, las dudas en comentarios, veredictos y una respuesta que aceptamos los dos. Tus propios hilos funcionan exactamente igual."
+        },
+        "exampleKeep": {
+          "title": "¿Conservas el ejemplo?",
+          "body": "Se queda en la barra lateral como un hilo normal que puedes abrir y cambiar. Consérvalo para verlo con calma más tarde o elimínalo ahora."
+        }
+      },
+      "example": {
+        "threadName": "Ejemplo: la cafetera de la oficina",
+        "question": "¿Qué cafetera compramos para la oficina?",
+        "keep": "Conservarlo",
+        "remove": "Eliminarlo",
+        "nodes": {
+          "capsule": "Una cafetera de cápsulas",
+          "oneButton": "Un botón y nada que limpiar",
+          "bean": "Una cafetera superautomática",
+          "perCup": "El grano sale mucho más barato por taza que las cápsulas",
+          "payback": "Se amortiza en un año",
+          "filter": "Una cafetera de goteo",
+          "cheapest": "La más barata de comprar"
+        },
+        "comments": {
+          "capsule": "Además, las cápsulas acaban siendo un montón de plástico cada semana.",
+          "bean": "Cuesta bastante más que las otras.",
+          "filter": "El café de goteo se pone amargo en la placa en menos de una hora."
+        }
+      }
+    },
     "settings": {
       "title": "Ajustes",
       "close": "Cerrar ajustes",
@@ -395,6 +860,8 @@
         "badges": {
           "badgeFounder": "Fundador",
           "founderUnlock": "Se unió durante la beta temprana.",
+          "badgeInitiate": "Iniciado",
+          "initiateUnlock": "Termina el recorrido y todas las guías.",
           "badgeFirstSteps": "Primer paso",
           "firstStepsUnlock": "Crea tu primer lienzo.",
           "badgeArchitect": "Arquitecto",

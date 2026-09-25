@@ -106,6 +106,7 @@ export const ReferenceSearchPanelContent = ({
       ref={panelRef}
       role="dialog"
       aria-modal="true"
+      data-tour="canvasReferenceSearch"
       aria-label={t.platform.canvas.referenceSearch.placeholder}
       style={{ left: screenPos.x, top: screenPos.y }}
       className="fixed z-50 flex w-80 animate-rise-up flex-col overflow-hidden rounded-xl border border-[color:var(--border)] bg-[color:var(--surface)] font-grotesk text-[color:var(--text)] shadow-[var(--shadow-modal)] motion-reduce:animate-none"

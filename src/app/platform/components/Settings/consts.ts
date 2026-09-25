@@ -23,7 +23,41 @@ import {
   Waves,
 } from 'lucide-react';
 
-import type { ICanvasPatternOption, ISettingsSidebarGroup, IThemeOption } from '@interfaces';
+import type {
+  ICanvasPatternOption,
+  IPreferences,
+  ISettingsSidebarGroup,
+  IThemeOption,
+  TSettingsSection,
+  TTourAnchor,
+  TTourSignal,
+} from '@interfaces';
+
+export const PREFERENCE_SIGNALS: Partial<Record<keyof IPreferences, TTourSignal>> = {
+  theme: 'themePicked',
+  canvasPattern: 'patternPicked',
+  snapToGrid: 'editorTuned',
+  smartGuides: 'editorTuned',
+  defaultZoom: 'editorTuned',
+};
+
+export const SECTION_ANCHORS: Record<TSettingsSection, TTourAnchor> = {
+  profile: 'settingsProfile',
+  security: 'settingsSecurity',
+  notifications: 'settingsNotifications',
+  appearance: 'settingsAppearance',
+  editor: 'settingsEditor',
+  plan: 'settingsPlan',
+};
+
+export const SECTION_NAV_ANCHORS: Record<TSettingsSection, TTourAnchor> = {
+  profile: 'settingsProfileNav',
+  security: 'settingsSecurityNav',
+  notifications: 'settingsNotificationsNav',
+  appearance: 'settingsAppearanceNav',
+  editor: 'settingsEditorNav',
+  plan: 'settingsPlanNav',
+};
 
 export const SIDEBAR_GROUPS = [
   {

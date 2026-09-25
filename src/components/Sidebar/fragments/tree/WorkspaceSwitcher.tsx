@@ -84,6 +84,7 @@ export const WorkspaceSwitcher = ({
       trigger={
         <button
           type="button"
+          data-tour="sidebarWorkspaceSwitcher"
           className={clsx(
             'group flex w-full min-w-0 cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-left transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-[color:var(--ring-focus)] focus-visible:outline-none active:bg-[color:var(--accent-soft)] motion-reduce:transition-none',
             open
@@ -157,7 +158,10 @@ export const WorkspaceSwitcher = ({
         </div>
       )}
 
-      <div className="flex items-center justify-between gap-2 border-b border-[color:var(--border)] px-3 py-2">
+      <div
+        data-tour="sidebarWorkspacePanel"
+        className="flex items-center justify-between gap-2 border-b border-[color:var(--border)] px-3 py-2"
+      >
         <span
           className="flex min-w-0 items-center gap-1.5 font-mono-ui text-[10px] font-bold tracking-[0.14em] text-[color:var(--text-label)] uppercase"
           title={t.platform.sidebar.workspaces}
@@ -167,6 +171,7 @@ export const WorkspaceSwitcher = ({
         </span>
         <button
           type="button"
+          data-tour="sidebarWorkspaceCreate"
           onClick={() => {
             onCreateWorkspace?.();
             setOpen(false);
@@ -190,6 +195,7 @@ export const WorkspaceSwitcher = ({
             </p>
             <button
               type="button"
+              data-tour="sidebarWorkspaceCreate"
               onClick={() => {
                 onCreateWorkspace?.();
                 setOpen(false);

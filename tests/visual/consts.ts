@@ -205,6 +205,46 @@ export const VISUAL_CONFIG: IVisualConfig = {
       capture: 'target',
     },
     {
+      name: 'nodi-poses',
+      storyId: 'components-mascot--nodi-poses',
+      capture: 'target',
+    },
+    {
+      name: 'nodi-beside-the-window',
+      storyId: 'components-mascot--nodi-beside-the-window',
+      capture: 'viewport',
+    },
+    {
+      name: 'ergo-poses',
+      storyId: 'components-mascot--ergo-poses',
+      capture: 'target',
+    },
+    {
+      name: 'ergo-beside-the-window',
+      storyId: 'components-mascot--ergo-beside-the-window',
+      capture: 'viewport',
+    },
+    {
+      name: 'tour-offer',
+      storyId: 'components-tour--offer',
+      capture: 'viewport',
+    },
+    {
+      name: 'tour-guides-first-visit',
+      storyId: 'components-tour--guides-first-visit',
+      capture: 'viewport',
+    },
+    {
+      name: 'tour-guides-in-progress',
+      storyId: 'components-tour--guides-in-progress',
+      capture: 'viewport',
+    },
+    {
+      name: 'tour-celebration',
+      storyId: 'components-tour--celebration',
+      capture: 'viewport',
+    },
+    {
       name: 'sidebar-deep-nesting',
       storyId: 'components-sidebar--deep-nesting',
       capture: 'aside',

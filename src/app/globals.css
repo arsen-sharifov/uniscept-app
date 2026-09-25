@@ -2,6 +2,8 @@
 @import './styles/themes.css';
 @import './styles/landing.css';
 @import '../components/Canvas/canvas.css';
+@import '../components/Mascot/mascot.css';
+@import '../components/Tour/tour.css';
 
 @source '../**/*.{ts,tsx,js,jsx}';
 

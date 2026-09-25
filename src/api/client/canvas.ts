@@ -11,7 +11,7 @@ import { createClient } from '@/lib/supabase';
 
 import { getCanvasEdges } from './canvasEdge';
 import { getCanvasNodes } from './canvasNode';
-import { REFERENCE_SEARCH_LIMIT, REFERENCE_TARGET_SELECT } from './consts';
+import { REFERENCE_SEARCH_LIMIT, REFERENCE_TARGET_COUNT_SELECT, REFERENCE_TARGET_SELECT } from './consts';
 import { getNodeComments } from './nodeComment';
 import { rowToEdge, rowToNode, toNodeReference, toReferenceTargetMeta } from './utils';
 
@@ -88,4 +88,24 @@ export const searchReferenceTargets = async (
   if (error) throw error;
 
   return (data ?? []).map(toNodeReference);
+};
+
+export const countReferenceTargets = async (workspaceId: string, excludeThreadId?: string): Promise<number> => {
+  const supabase = createClient();
+
+  let query = supabase
+    .from('canvas_nodes')
+    .select(REFERENCE_TARGET_COUNT_SELECT, { count: 'exact', head: true })
+    .eq('type', ECanvasNodeType.Canvas)
+    .eq('threads.workspace_id', workspaceId);
+
+  if (excludeThreadId) {
+    query = query.neq('thread_id', excludeThreadId);
+  }
+
+  const { count, error } = await query;
+
+  if (error) throw error;
+
+  return count ?? 0;
 };

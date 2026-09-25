@@ -8,6 +8,8 @@ import { type FocusEvent, type FormEvent, type KeyboardEvent, useCallback, useEf
 import type { TCanvasNode, TNodeBandTone } from '@interfaces';
 
 import { useTranslations } from '@/i18n';
+import { findLinkedNodeIds } from '@/lib/canvas';
+import { useOnboardingStore } from '@/lib/onboarding';
 import { useCanvasStore, usePermissionsStore } from '@/lib/stores';
 import { canEditNode } from '@/lib/utils';
 
@@ -20,6 +22,7 @@ export const CanvasNode = ({ id, data, selected }: NodeProps<TCanvasNode>) => {
   const { label, status, comments, isNew, isAnswer, eligibleHint, effectiveStatus } = data;
 
   const pendingConnection = useCanvasStore((s) => s.pendingConnection);
+  const isLinked = useCanvasStore((s) => findLinkedNodeIds(s.edges).has(id));
   const editingNodeId = useCanvasStore((s) => s.editingNodeId);
   const setEditingNodeId = useCanvasStore((s) => s.setEditingNodeId);
   const openCommentsNodeId = useCanvasStore((s) => s.openCommentsNodeId);
@@ -76,16 +79,20 @@ export const CanvasNode = ({ id, data, selected }: NodeProps<TCanvasNode>) => {
     observerRef.current = observer;
   }, []);
 
-  const handleLabelBlur = (event: FocusEvent<HTMLTextAreaElement>) => {
-    updateNodeLabel(id, event.target.value.trim() || label);
+  const commitLabel = (value: string) => {
+    const nextLabel = value.trim() || label;
+    if (nextLabel !== label) useOnboardingStore.getState().markSignal('nodeLabelled');
+
+    updateNodeLabel(id, nextLabel);
     setEditingNodeId(null);
   };
+
+  const handleLabelBlur = (event: FocusEvent<HTMLTextAreaElement>) => commitLabel(event.target.value);
 
   const handleLabelKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
-      updateNodeLabel(id, event.currentTarget.value.trim() || label);
-      setEditingNodeId(null);
+      commitLabel(event.currentTarget.value);
 
       return;
     }
@@ -117,6 +124,9 @@ export const CanvasNode = ({ id, data, selected }: NodeProps<TCanvasNode>) => {
   return (
     <div
       data-export-node
+      data-tour="canvasNode"
+      data-tour-state={effectiveStatus ?? status ?? 'unmarked'}
+      data-tour-linked={isLinked ? 'true' : 'false'}
       onAnimationEnd={isNew ? () => clearNewFlag(id) : undefined}
       style={wash ? { backgroundImage: `linear-gradient(${wash}, ${wash})` } : undefined}
       className={clsx(
@@ -179,6 +189,7 @@ export const CanvasNode = ({ id, data, selected }: NodeProps<TCanvasNode>) => {
           {!isEditing && (hasComments || canComment) && (
             <button
               type="button"
+              data-tour="canvasNodeComments"
               onClick={(event) => {
                 event.stopPropagation();
                 setOpenCommentsNodeId(showComments ? null : id);
@@ -223,6 +234,7 @@ export const CanvasNode = ({ id, data, selected }: NodeProps<TCanvasNode>) => {
           data-export-omit
           onClick={(event) => event.stopPropagation()}
           onMouseDown={(event) => event.stopPropagation()}
+          data-tour="canvasCommentsPanel"
           className="nodrag absolute top-0 left-full z-50 ml-3 flex w-72 flex-col overflow-hidden rounded-xl border border-[color:var(--border)] bg-[color:var(--surface)] font-grotesk text-[color:var(--text)] shadow-[var(--shadow-modal)]"
         >
           <div className="flex items-center justify-between border-b border-[color:var(--border)] px-3.5 py-2.5">

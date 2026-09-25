@@ -6,6 +6,7 @@ import { test as base } from '@playwright/test';
 import { E2E_AUTH_STATE_DIR } from './consts';
 import type { IE2ETestFixtures, IE2EWorkerFixtures } from './interfaces';
 import {
+  answerOnboardingOffer,
   deleteAccount,
   deleteOwnedWorkspaces,
   deletePreferences,
@@ -44,6 +45,7 @@ export const guestTest = base.extend<IE2ETestFixtures, IE2EWorkerFixtures>({
 
     await deleteOwnedWorkspaces(account.id);
     await deletePreferences(account.id);
+    await answerOnboardingOffer(account.id);
   },
 });
 

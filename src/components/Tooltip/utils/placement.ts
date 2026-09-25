@@ -1,4 +1,4 @@
-import type { ITooltipPosition, ITooltipSize, TTooltipPlacement } from '@interfaces';
+import type { ISize, ITooltipPosition, TTooltipPlacement } from '@interfaces';
 
 import { TRIGGER_GAP, VIEWPORT_MARGIN } from '../consts';
 
@@ -10,7 +10,7 @@ export const getOppositePlacement = (placement: TTooltipPlacement): TTooltipPlac
   return 'left';
 };
 
-export const fitsInViewport = (placement: TTooltipPlacement, trigger: DOMRect, tooltip: ITooltipSize): boolean => {
+export const fitsInViewport = (placement: TTooltipPlacement, trigger: DOMRect, tooltip: ISize): boolean => {
   if (placement === 'top') return trigger.top - TRIGGER_GAP - tooltip.height >= VIEWPORT_MARGIN;
 
   if (placement === 'bottom')
@@ -23,11 +23,7 @@ export const fitsInViewport = (placement: TTooltipPlacement, trigger: DOMRect, t
 
 const PLACEMENT_FALLBACK_ORDER: TTooltipPlacement[] = ['right', 'left', 'top', 'bottom'];
 
-export const choosePlacement = (
-  preferred: TTooltipPlacement,
-  trigger: DOMRect,
-  tooltip: ITooltipSize,
-): TTooltipPlacement => {
+export const choosePlacement = (preferred: TTooltipPlacement, trigger: DOMRect, tooltip: ISize): TTooltipPlacement => {
   const candidates = [preferred, getOppositePlacement(preferred), ...PLACEMENT_FALLBACK_ORDER];
 
   return candidates.find((candidate) => fitsInViewport(candidate, trigger, tooltip)) ?? preferred;
@@ -36,7 +32,7 @@ export const choosePlacement = (
 const computeBeforeClamp = (
   placement: TTooltipPlacement,
   trigger: DOMRect,
-  tooltip: ITooltipSize,
+  tooltip: ISize,
 ): { top: number; left: number } => {
   if (placement === 'top') {
     return {
@@ -66,7 +62,7 @@ const computeBeforeClamp = (
 export const computeTooltipPosition = (
   placement: TTooltipPlacement,
   trigger: DOMRect,
-  tooltip: ITooltipSize,
+  tooltip: ISize,
 ): ITooltipPosition => {
   const raw = computeBeforeClamp(placement, trigger, tooltip);
 

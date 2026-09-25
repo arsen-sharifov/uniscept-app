@@ -73,6 +73,7 @@ const primeApi = (route: { workspaceId?: string; threadId?: string } = {}) => {
 };
 
 let manager: { current: ReturnType<typeof useWorkspaceManager> };
+let rerenderManager: () => void;
 let unmountManager: () => void;
 
 beforeEach(() => {
@@ -98,7 +99,10 @@ describe('useWorkspaceManager', () => {
       primeApi();
       vi.mocked(getMyInvitations).mockResolvedValue([myInvitation('inv-1', 'ws-9')]);
 
-      manager = renderHook(() => useWorkspaceManager()).result;
+      const view = renderHook(() => useWorkspaceManager());
+
+      manager = view.result;
+      rerenderManager = view.rerender;
     });
 
     describe('WHEN the initial load is still in flight', () => {
@@ -118,7 +122,6 @@ describe('useWorkspaceManager', () => {
       });
 
       test('THEN the first workspace becomes active with its nav tree', () => {
-        expect(manager.current.loading).toBe(false);
         expect(manager.current.workspaces).toEqual(workspaceList());
         expect(manager.current.activeWorkspaceId).toBe('ws-1');
         expect(manager.current.navItems).toEqual(INITIAL_TREE);
@@ -133,6 +136,10 @@ describe('useWorkspaceManager', () => {
         expect(router.replace).toHaveBeenCalledExactlyOnceWith('/platform/ws-1/t1');
       });
 
+      test('THEN it keeps loading until that thread opens, so the empty state never flashes', () => {
+        expect(manager.current.loading).toBe(true);
+      });
+
       test('THEN the pending invitations are exposed', () => {
         expect(manager.current.invitations).toEqual([myInvitation('inv-1', 'ws-9')]);
       });
@@ -144,6 +151,21 @@ describe('useWorkspaceManager', () => {
           userId: 'user-1',
           canManageStructure: true,
         });
+      });
+    });
+
+    describe('WHEN the redirect to the first thread lands', () => {
+      beforeEach(async () => {
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(0);
+        });
+        Object.assign(routeParams, { workspaceId: 'ws-1', threadId: 't1' });
+        act(() => rerenderManager());
+      });
+
+      test('THEN loading ends with the thread open', () => {
+        expect(manager.current.loading).toBe(false);
+        expect(manager.current.activeThreadId).toBe('t1');
       });
     });
   });
@@ -520,7 +542,7 @@ describe('useWorkspaceManager', () => {
       });
 
       test('THEN the creation reaches the api and opens the thread', () => {
-        expect(createThread).toHaveBeenCalledExactlyOnceWith('ws-1', undefined);
+        expect(createThread).toHaveBeenCalledExactlyOnceWith('ws-1', undefined, undefined);
         expect(router.push).toHaveBeenCalledExactlyOnceWith('/platform/ws-1/t-new');
         expect(event.success).toHaveBeenCalledExactlyOnceWith(TRANSLATIONS.platform.sidebar.threadCreated);
       });
@@ -539,7 +561,28 @@ describe('useWorkspaceManager', () => {
           threadItem('t1'),
           folderItem('f1', [threadItem('t2'), { type: 'thread', id: 't-new', name: 'Thread t-new' }]),
         ]);
-        expect(createThread).toHaveBeenCalledExactlyOnceWith('ws-1', 'f1');
+        expect(createThread).toHaveBeenCalledExactlyOnceWith('ws-1', 'f1', undefined);
+      });
+    });
+
+    describe('WHEN a thread is created with its name already chosen', () => {
+      let created: string | null;
+
+      beforeEach(async () => {
+        await act(async () => {
+          created = await manager.current.onCreateThread(undefined, 'Example');
+          await vi.advanceTimersByTimeAsync(0);
+        });
+      });
+
+      test('THEN the name reaches the api and the new id comes back', () => {
+        expect(createThread).toHaveBeenCalledExactlyOnceWith('ws-1', undefined, 'Example');
+        expect(created).toBe('t-new');
+      });
+
+      test('THEN the thread opens without dropping into rename mode', () => {
+        expect(manager.current.editingItemId).toBeNull();
+        expect(router.push).toHaveBeenCalledExactlyOnceWith('/platform/ws-1/t-new');
       });
     });
 
@@ -738,9 +781,11 @@ describe('useWorkspaceManager', () => {
     });
 
     describe('WHEN they create a thread at the root', () => {
+      let created: string | null;
+
       beforeEach(async () => {
         await act(async () => {
-          await manager.current.onCreateThread();
+          created = await manager.current.onCreateThread();
           await vi.advanceTimersByTimeAsync(0);
         });
       });
@@ -753,6 +798,10 @@ describe('useWorkspaceManager', () => {
           title: TRANSLATIONS.common.errorTitles.createFailed,
           context: 'sidebar.createThread',
         });
+      });
+
+      test('THEN no thread id comes back', () => {
+        expect(created).toBeNull();
       });
     });
   });

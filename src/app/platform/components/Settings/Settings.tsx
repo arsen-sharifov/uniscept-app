@@ -7,7 +7,9 @@ import type { IPreferences, TPreferenceUpdater, TSettingsSection } from '@interf
 
 import { Modal } from '@/components';
 import { useTranslations } from '@/i18n';
+import { useOnboardingStore } from '@/lib/onboarding';
 
+import { SECTION_ANCHORS } from './consts';
 import {
   AppearanceSection,
   EditorSection,
@@ -43,7 +45,17 @@ export const Settings = ({ onClose, preferences, updatePreference, defaultSectio
     }
 
     if (activeSection === 'profile') {
-      return <ProfileSection key={user?.id} user={user} onUpdateProfile={updateProfile} onUpdateEmail={changeEmail} />;
+      return (
+        <ProfileSection
+          key={user?.id}
+          user={user}
+          onUpdateProfile={async (update) => {
+            await updateProfile(update);
+            useOnboardingStore.getState().markSignal('profileSaved');
+          }}
+          onUpdateEmail={changeEmail}
+        />
+      );
     }
 
     if (activeSection === 'security') {
@@ -68,6 +80,7 @@ export const Settings = ({ onClose, preferences, updatePreference, defaultSectio
   return (
     <Modal open onClose={handleClose} width="max-w-[1100px]" overflowHidden>
       <div
+        data-tour="settingsModal"
         data-theme={preferences.theme}
         className="flex h-[86vh] rounded-2xl font-grotesk text-[color:var(--text)] transition-[color] duration-200 ease-out motion-reduce:transition-none"
       >
@@ -87,7 +100,7 @@ export const Settings = ({ onClose, preferences, updatePreference, defaultSectio
             {t.platform.settings.sections[activeSection]}
           </h2>
 
-          {renderSection()}
+          <div data-tour={SECTION_ANCHORS[activeSection]}>{renderSection()}</div>
         </div>
       </div>
     </Modal>

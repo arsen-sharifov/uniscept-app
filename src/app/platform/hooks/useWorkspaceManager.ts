@@ -65,6 +65,7 @@ export const useWorkspaceManager = () => {
   const [activeWorkspaceId, setActiveWorkspaceId] = useState<string | null>(null);
   const [navItems, setNavItems] = useState<TNavItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [redirecting, setRedirecting] = useState(false);
 
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const [editingWorkspaceId, setEditingWorkspaceId] = useState<string | null>(null);
@@ -72,6 +73,8 @@ export const useWorkspaceManager = () => {
 
   const initialized = useRef(false);
   const justCreatedIds = useRef<Set<string>>(new Set());
+
+  if (redirecting && threadIdParam) setRedirecting(false);
 
   const loadWorkspaceContent = useCallback(async (workspaceId: string): Promise<TNavItem[]> => {
     const [folders, threads] = await Promise.all([getFolders(workspaceId), getThreads(workspaceId)]);
@@ -107,7 +110,10 @@ export const useWorkspaceManager = () => {
 
         if (!threadIdParam) {
           const firstThreadId = findFirstThread(tree);
-          if (firstThreadId) router.replace(`/platform/${targetWorkspaceId}/${firstThreadId}`);
+          if (firstThreadId) {
+            setRedirecting(true);
+            router.replace(`/platform/${targetWorkspaceId}/${firstThreadId}`);
+          }
         }
       }
 
@@ -322,16 +328,16 @@ export const useWorkspaceManager = () => {
   );
 
   const handleCreateThread = useCallback(
-    async (folderId?: string) => {
-      if (!activeWorkspaceId) return;
-      if (!usePermissionsStore.getState().canManageStructure) return;
+    async (folderId?: string, name?: string): Promise<string | null> => {
+      if (!activeWorkspaceId) return null;
+      if (!usePermissionsStore.getState().canManageStructure) return null;
 
-      const thread = await createThread(activeWorkspaceId, folderId).catch((error: unknown) => {
+      const thread = await createThread(activeWorkspaceId, folderId, name).catch((error: unknown) => {
         event.error(error, { title: t.common.errorTitles.createFailed, context: 'sidebar.createThread' });
 
         return null;
       });
-      if (!thread) return;
+      if (!thread) return null;
 
       const newItem: TNavItem = {
         type: 'thread',
@@ -339,10 +345,14 @@ export const useWorkspaceManager = () => {
         name: thread.name,
       };
       setNavItems((prev) => (folderId ? insertIntoTree(prev, newItem, folderId, Infinity) : [...prev, newItem]));
-      setEditingItemId(thread.id);
-      justCreatedIds.current.add(thread.id);
+      if (!name) {
+        setEditingItemId(thread.id);
+        justCreatedIds.current.add(thread.id);
+      }
       router.push(`/platform/${activeWorkspaceId}/${thread.id}`);
       event.success(t.platform.sidebar.threadCreated);
+
+      return thread.id;
     },
     [activeWorkspaceId, router, t],
   );
@@ -673,7 +683,7 @@ export const useWorkspaceManager = () => {
       justCreatedIds.current.clear();
       setEditingWorkspaceId(null);
     }, []),
-    loading,
+    loading: loading || redirecting,
     onWorkspaceSelect: handleWorkspaceSelect,
     onCreateWorkspace: handleCreateWorkspace,
     onRenameWorkspace: handleRenameWorkspace,

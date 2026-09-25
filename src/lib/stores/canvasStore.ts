@@ -21,6 +21,7 @@ import {
   type IReferenceNodeData,
   type TCanvasNode,
   type TCanvasOperation,
+  type TFitPadding,
   type TNodeStatus,
   type TReferenceNode,
 } from '@interfaces';
@@ -67,6 +68,8 @@ interface ICanvasStore extends IPersistedSnapshot {
   editingNodeId: string | null;
   openCommentsNodeId: string | null;
   middlePan: boolean;
+  fitRequest: number;
+  fitPadding: TFitPadding | null;
 
   loadCanvas: (threadId: string, snapshot: ICanvasSnapshot) => void;
   clearCanvas: () => void;
@@ -74,9 +77,10 @@ interface ICanvasStore extends IPersistedSnapshot {
   closeAllOverlays: () => void;
   setOpenCommentsNodeId: (id: string | null) => void;
   setMiddlePan: (active: boolean) => void;
+  requestFit: (padding?: TFitPadding) => void;
   onNodesChange: OnNodesChange;
   onEdgesChange: OnEdgesChange;
-  addNode: (position: XYPosition, label: string) => void;
+  addNode: (position: XYPosition, label: string, id?: string) => void;
   addReferenceNode: (position: XYPosition, data: IReferenceNodeData) => void;
   setReferenceSearchPosition: (position: XYPosition | null) => void;
   deleteNode: (id: string) => void;
@@ -337,6 +341,8 @@ export const useCanvasStore = create<ICanvasStore>()(
       return {
         threadId: null,
         hydrated: false,
+        fitRequest: 0,
+        fitPadding: null,
         ...EMPTY_CANVAS_STATE,
 
         loadCanvas: (threadId, snapshot) => {
@@ -382,6 +388,8 @@ export const useCanvasStore = create<ICanvasStore>()(
 
         setOpenCommentsNodeId: (id) =>
           set(id === null ? { openCommentsNodeId: null } : { openCommentsNodeId: id, editingNodeId: null }),
+
+        requestFit: (padding) => set((state) => ({ fitRequest: state.fitRequest + 1, fitPadding: padding ?? null })),
 
         setMiddlePan: (active) => set({ middlePan: active }),
 
@@ -453,14 +461,13 @@ export const useCanvasStore = create<ICanvasStore>()(
             .forEach((change) => emitCanvasOperation({ type: 'deleteEdge', id: change.id }));
         },
 
-        addNode: (position, label) => {
+        addNode: (position, label, id = crypto.randomUUID()) => {
           const { threadId } = get();
           if (!threadId) return;
 
           const access = usePermissionsStore.getState();
           if (!access.canEditCanvas) return;
 
-          const id = crypto.randomUUID();
           const newNode: TCanvasNode = {
             id,
             type: ECanvasNodeType.Canvas,

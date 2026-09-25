@@ -9,3 +9,8 @@ export interface IRect {
   width: number;
   height: number;
 }
+
+export interface ISize {
+  width: number;
+  height: number;
+}

@@ -35,6 +35,14 @@ export const getAdminClient = (): SupabaseClient => {
   return client;
 };
 
+export const answerOnboardingOffer = async (userId: string, completedGuides: readonly string[] = []): Promise<void> => {
+  const { error } = await getAdminClient()
+    .from('user_onboarding')
+    .upsert({ user_id: userId, offer_answered: true, completed_guides: completedGuides });
+
+  if (error) throw new Error(`Could not answer the onboarding offer of ${userId}: ${error.message}`);
+};
+
 export const seedAccount = async (label: string): Promise<IE2ESeededAccount> => {
   const email = `${label}@${E2E_ACCOUNT_DOMAIN}`;
   const name = `E2E ${label}`;
@@ -48,6 +56,8 @@ export const seedAccount = async (label: string): Promise<IE2ESeededAccount> => 
   if (error || !data.user) {
     throw new Error(`Could not create the E2E account ${email}: ${error?.message ?? 'no user returned'}`);
   }
+
+  await answerOnboardingOffer(data.user.id);
 
   return { id: data.user.id, email, name, password: E2E_ACCOUNT_PASSWORD };
 };
@@ -90,6 +100,12 @@ export const deletePreferences = async (userId: string): Promise<void> => {
   const { error } = await getAdminClient().from('user_preferences').delete().eq('user_id', userId);
 
   if (error) throw new Error(`Could not reset the preferences of ${userId}: ${error.message}`);
+};
+
+export const deleteOnboarding = async (userId: string): Promise<void> => {
+  const { error } = await getAdminClient().from('user_onboarding').delete().eq('user_id', userId);
+
+  if (error) throw new Error(`Could not reset the onboarding of ${userId}: ${error.message}`);
 };
 
 export const seedFolder = async (workspaceId: string, name: string): Promise<IE2EFolder> => {

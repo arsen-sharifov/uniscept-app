@@ -287,7 +287,7 @@ export const Sidebar = ({
         </div>
 
         {!loading && activeWorkspaceId && items.length > 0 && (
-          <div className="px-2 pt-2">
+          <div data-tour="sidebarSearch" className="px-2 pt-2">
             <SearchInput value={query} onChange={setQuery} placeholder={t.platform.sidebar.searchPlaceholder} />
           </div>
         )}
@@ -295,6 +295,7 @@ export const Sidebar = ({
         {!loading && activeWorkspaceId && (
           <div
             data-sidebar-scroll
+            data-tour="sidebarTree"
             className="relative flex flex-1 [scrollbar-width:none] flex-col overflow-x-hidden overflow-y-auto scroll-smooth px-2 pt-3 pb-2 [&::-webkit-scrollbar]:hidden"
           >
             <div className="mb-1 flex items-center justify-between px-2">
@@ -306,6 +307,7 @@ export const Sidebar = ({
                 <div className="flex items-center gap-0.5">
                   <button
                     type="button"
+                    data-tour="sidebarCreateFolder"
                     onClick={onCreateFolder}
                     className="flex h-6 w-6 cursor-pointer items-center justify-center rounded-md text-[color:var(--text-muted)] transition-colors duration-150 hover:bg-[color:var(--surface-overlay)] hover:text-[color:var(--text-strong)] focus-visible:ring-2 focus-visible:ring-[color:var(--ring-focus)] focus-visible:outline-none active:bg-[color:var(--accent-soft)] active:text-[color:var(--accent-text)] motion-reduce:transition-none"
                     title={t.platform.sidebar.newFolder}
@@ -314,6 +316,7 @@ export const Sidebar = ({
                   </button>
                   <button
                     type="button"
+                    data-tour="sidebarCreateThread"
                     onClick={() => onCreateThread?.()}
                     className="flex h-6 w-6 cursor-pointer items-center justify-center rounded-md text-[color:var(--text-muted)] transition-colors duration-150 hover:bg-[color:var(--surface-overlay)] hover:text-[color:var(--text-strong)] focus-visible:ring-2 focus-visible:ring-[color:var(--ring-focus)] focus-visible:outline-none active:bg-[color:var(--accent-soft)] active:text-[color:var(--accent-text)] motion-reduce:transition-none"
                     title={t.platform.sidebar.newThread}
@@ -367,6 +370,7 @@ export const Sidebar = ({
                     hint={t.platform.sidebar.emptyStructureHint}
                     ctaIcon={Plus}
                     ctaLabel={t.platform.sidebar.newThread}
+                    ctaTour="sidebarNewThreadCta"
                     onCta={canManageStructure ? () => onCreateThread?.() : undefined}
                   />
                 </div>
@@ -387,6 +391,7 @@ export const Sidebar = ({
               }
               ctaIcon={Plus}
               ctaLabel={t.platform.sidebar.newWorkspace}
+              ctaTour="sidebarNewWorkspace"
               onCta={onCreateWorkspace}
             />
           </div>

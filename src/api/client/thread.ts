@@ -39,7 +39,7 @@ export const getThreads = async (workspaceId: string): Promise<IThread[]> => {
   return rows.map((row) => ({ ...toThread(row), hasAnswer: answered.has(row.id) }));
 };
 
-export const createThread = async (workspaceId: string, folderId?: string): Promise<IThread | null> => {
+export const createThread = async (workspaceId: string, folderId?: string, name?: string): Promise<IThread | null> => {
   const supabase = createClient();
 
   let countQuery = supabase
@@ -63,6 +63,7 @@ export const createThread = async (workspaceId: string, folderId?: string): Prom
       workspace_id: workspaceId,
       folder_id: folderId ?? null,
       position: count ?? 0,
+      ...(name && { name }),
     })
     .select('id, workspace_id, folder_id, name, position')
     .single<IThreadRow>();

@@ -1,6 +1,7 @@
 import { COPY, E2E_ACCOUNT_DOMAIN, E2E_ACCOUNT_PASSWORD } from '../../consts';
 import { expect, guestTest as test } from '../../fixtures';
 import {
+  declineTourOffer,
   deleteAccountByEmail,
   getInviteCode,
   getSidebar,
@@ -86,6 +87,8 @@ test.describe('sign-up completion', () => {
         await page.goto(await readConfirmationLink(email));
         await page.context().clearCookies();
         await signIn(page, email, E2E_ACCOUNT_PASSWORD);
+        await page.waitForURL(/\/platform/);
+        await declineTourOffer(page);
       });
 
       test('THEN the platform opens for the confirmed account', async ({ page }) => {

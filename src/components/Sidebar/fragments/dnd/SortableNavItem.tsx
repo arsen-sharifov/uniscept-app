@@ -195,6 +195,7 @@ export const SortableNavItem = ({
           )}
           {isAnswered && !isSelected && !isEditing && (
             <span
+              data-tour={isActive ? 'sidebarThreadResolved' : undefined}
               aria-label={translations.platform.sidebar.resolved}
               title={translations.platform.sidebar.resolved}
               className={clsx(

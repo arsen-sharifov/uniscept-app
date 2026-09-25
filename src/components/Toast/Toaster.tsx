@@ -22,7 +22,7 @@ export const Toaster = () => {
     <div
       role="region"
       aria-label={t.common.notifications}
-      className="pointer-events-none fixed top-4 right-[var(--toast-safe-right)] z-[60] flex w-[min(24rem,calc(100vw-var(--toast-safe-right)-1rem))] flex-col gap-2"
+      className="pointer-events-none fixed top-4 right-[var(--toast-safe-right)] z-90 flex w-[min(24rem,calc(100vw-var(--toast-safe-right)-1rem))] flex-col gap-2"
     >
       {[...toasts].reverse().map((toast) => (
         <ToastItem key={toast.id} toast={toast} onDismiss={dismiss} />

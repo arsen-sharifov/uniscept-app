@@ -1,4 +1,4 @@
-import type { Edge, Node } from '@xyflow/react';
+import type { Edge, FitViewOptions, Node } from '@xyflow/react';
 
 export enum ECanvasNodeType {
   Canvas = 'canvas-node',
@@ -11,6 +11,8 @@ export type TNodeStatus = 'valid' | 'invalid' | null;
 export type TNodeBandTone = 'question' | 'reference' | 'answer' | 'valid' | 'invalid' | 'affected' | 'open';
 
 export type THandleId = 'top' | 'right' | 'bottom' | 'left';
+
+export type TFitPadding = NonNullable<FitViewOptions['padding']>;
 
 export interface IComment {
   id: string;

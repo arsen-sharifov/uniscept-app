@@ -1,6 +1,6 @@
 import { describe, expect, test, vi } from 'vitest';
 
-import { getUser, updateEmail, updatePassword, updateUserMetadata, verifyPassword } from '@api/client';
+import { addUserBadge, getUser, updateEmail, updatePassword, updateUserMetadata, verifyPassword } from '@api/client';
 import { primeSupabase } from '@mocks/supabase';
 
 vi.mock('@/lib/supabase', () => import('@mocks/supabase'));
@@ -73,6 +73,62 @@ describe('updatePassword', () => {
         await updatePassword('new-secret');
 
         expect(client.auth.updateUser).toHaveBeenCalledExactlyOnceWith({ password: 'new-secret' });
+      });
+    });
+  });
+});
+
+describe('addUserBadge', () => {
+  describe('GIVEN a user whose badges were never written', () => {
+    describe('WHEN a badge is awarded', () => {
+      test('THEN the default badges are kept alongside the new one', async () => {
+        const { client } = primeSupabase([], { user: { id: 'user-1' } });
+
+        await addUserBadge('initiate');
+
+        expect(client.auth.updateUser).toHaveBeenCalledExactlyOnceWith({ data: { badges: ['founder', 'initiate'] } });
+      });
+    });
+  });
+
+  describe('GIVEN a user who already holds the badge', () => {
+    describe('WHEN it is awarded again', () => {
+      test('THEN nothing is written', async () => {
+        const { client } = primeSupabase([], {
+          user: { id: 'user-1', user_metadata: { badges: ['founder', 'initiate'] } },
+        });
+
+        await addUserBadge('initiate');
+
+        expect(client.auth.updateUser).not.toHaveBeenCalled();
+      });
+    });
+  });
+
+  describe('GIVEN stored badges holding an unknown id', () => {
+    describe('WHEN a badge is awarded', () => {
+      test('THEN the unknown id is dropped', async () => {
+        const { client } = primeSupabase([], {
+          user: { id: 'user-1', user_metadata: { badges: ['critic', 'retired'] } },
+        });
+
+        await addUserBadge('initiate');
+
+        expect(client.auth.updateUser).toHaveBeenCalledExactlyOnceWith({ data: { badges: ['critic', 'initiate'] } });
+      });
+    });
+  });
+
+  describe('GIVEN a metadata write that fails', () => {
+    describe('WHEN a badge is awarded', () => {
+      test('THEN the error propagates', async () => {
+        const { client } = primeSupabase([], { user: { id: 'user-1' } });
+        vi.mocked(client.auth.updateUser).mockResolvedValue({
+          data: { user: null },
+          error: new Error('auth down'),
+        } as never);
+
+        await expect(addUserBadge('initiate')).rejects.toThrow('auth down');
       });
     });
   });

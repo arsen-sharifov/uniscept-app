@@ -22,6 +22,7 @@ export const ExportMenu = ({ threadId, threadName }: IExportMenuProps) => {
       <button
         ref={buttonRef}
         type="button"
+        data-tour="toolbarExport"
         disabled={disabled || loading}
         aria-label={loading ? copy.loading : copy.label}
         title={disabled ? copy.unavailable : copy.label}
@@ -43,7 +44,10 @@ export const ExportMenu = ({ threadId, threadName }: IExportMenuProps) => {
       </button>
 
       {open && (
-        <div className="absolute right-full bottom-0 z-50 mr-3 w-64 max-w-[calc(100vw-6rem)] rounded-xl border border-[color:var(--border)] bg-[color:var(--surface)] p-2 text-[color:var(--text)] shadow-[var(--shadow-modal)]">
+        <div
+          data-tour="exportMenu"
+          className="absolute right-full bottom-0 z-50 mr-3 w-64 max-w-[calc(100vw-6rem)] rounded-xl border border-[color:var(--border)] bg-[color:var(--surface)] p-2 text-[color:var(--text)] shadow-[var(--shadow-modal)]"
+        >
           <p className="px-2 pt-1 text-[13px] font-semibold">{copy.label}</p>
           <p className="px-2 pt-1 pb-2 text-xs leading-relaxed text-[color:var(--text-muted)]">{copy.description}</p>
 

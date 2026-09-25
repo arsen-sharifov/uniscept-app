@@ -5,14 +5,17 @@ import { useEffect, useRef, useState } from 'react';
 import type { IPreferences, TPreferenceUpdater } from '@interfaces';
 import { PREFERENCES_DEBOUNCE_MS } from '@constants';
 import { getPreferences, upsertPreferences } from '@api/client';
-import { useTranslations } from '@/i18n';
+import { useLocale, useTranslations } from '@/i18n';
 import { event } from '@/lib/events';
+import { useOnboardingStore } from '@/lib/onboarding';
 
+import { PREFERENCE_SIGNALS } from '../consts';
 import { readFromStorage, writeToStorage } from '../utils';
 
 export const usePreferences = () => {
   const t = useTranslations();
-  const [preferences, setPreferences] = useState<IPreferences>(readFromStorage);
+  const locale = useLocale();
+  const [preferences, setPreferences] = useState<IPreferences>(() => ({ ...readFromStorage(), language: locale }));
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   const lastSyncedRef = useRef<IPreferences>(preferences);
 
@@ -59,6 +62,9 @@ export const usePreferences = () => {
   useEffect(() => () => clearTimeout(debounceRef.current), []);
 
   const updatePreference: TPreferenceUpdater = (key, value) => {
+    const signal = PREFERENCE_SIGNALS[key];
+    if (signal && preferences[key] !== value) useOnboardingStore.getState().markSignal(signal);
+
     setPreferences((prev) => {
       if (prev[key] === value) {
         return prev;

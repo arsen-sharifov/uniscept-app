@@ -31,6 +31,18 @@ export const stubAnimationFrame = () => {
   };
 };
 
+export const stubPerformanceNow = () => {
+  let now = 0;
+
+  vi.spyOn(performance, 'now').mockImplementation(() => now);
+
+  return {
+    advance: (ms: number) => {
+      now += ms;
+    },
+  };
+};
+
 export const stubMediaQueries = () => {
   const queries = new Map<string, MediaQueryList>();
 

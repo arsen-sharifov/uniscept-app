@@ -39,6 +39,18 @@ test.describe('thread creation', () => {
       });
     });
 
+    test.describe('WHEN a thread is started from the empty canvas', () => {
+      test.beforeEach(async ({ page }) => {
+        await page.getByRole('main').getByRole('button', { name: sidebar.newThread }).click();
+      });
+
+      test('THEN it opens on a canvas of its own', async ({ page, workspace }) => {
+        await expect(page).toHaveURL(new RegExp(`/platform/${workspace.id}/`));
+        await expect(getQuestionNode(page)).toBeVisible();
+        await expect(getEditingRow(page)).toBeVisible();
+      });
+    });
+
     test.describe('WHEN a folder is created and a thread is added inside it', () => {
       test.beforeEach(async ({ page }) => {
         await createFolder(page);

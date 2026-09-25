@@ -5,6 +5,25 @@ export const COPY = en;
 
 export const COPY_UK = uk;
 
+export const EXAMPLE_SCENES: readonly (keyof typeof en.platform.onboarding.steps)[] = [
+  'exampleIntro',
+  'exampleHello',
+  'exampleThread',
+  'exampleCapsule',
+  'exampleBean',
+  'exampleDoubt',
+  'examplePayback',
+  'exampleFilter',
+  'exampleStale',
+  'exampleDropFilter',
+  'exampleWaste',
+  'exampleDropCapsule',
+  'exampleValid',
+  'exampleAnswer',
+  'exampleResolved',
+  'exampleWrap',
+];
+
 export const E2E_AUTH_STATE_DIR = 'test-results/e2e-auth';
 
 export const E2E_ACCOUNT_DOMAIN = 'e2e.uniscept.test';
@@ -23,6 +42,8 @@ export const QUESTION_POSITION = { x: 460, y: 110 };
 
 export const PREFERENCES_ENDPOINT = '/rest/v1/user_preferences';
 
+export const ONBOARDING_ENDPOINT = '/rest/v1/user_onboarding';
+
 export const NODE_SELECTOR = '.react-flow__node';
 
 export const EDGE_SELECTOR = '.react-flow__edge';
@@ -30,6 +51,8 @@ export const EDGE_SELECTOR = '.react-flow__edge';
 export const PANE_SELECTOR = '.react-flow__pane';
 
 export const VIEWPORT_SELECTOR = '.react-flow__viewport';
+
+export const LANDING_WORLD_SELECTOR = '.landing-world';
 
 export const SAVE_STATE_SELECTOR = '[data-canvas-save]';
 

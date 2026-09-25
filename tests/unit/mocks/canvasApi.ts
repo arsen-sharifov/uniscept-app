@@ -1,5 +1,6 @@
 import { vi } from 'vitest';
 
+export const countReferenceTargets = vi.fn();
 export const createCanvasEdge = vi.fn();
 export const createCanvasNode = vi.fn();
 export const createNodeComment = vi.fn();

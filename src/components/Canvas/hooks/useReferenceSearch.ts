@@ -25,7 +25,7 @@ export const useReferenceSearch = ({ workspaceId, threadId }: IReferenceSearchIn
 
         setResponse({ request, nodes });
       })
-      .catch((error) => {
+      .catch((error: unknown) => {
         if (cancelled) return;
 
         setResponse({ request, nodes: [] });

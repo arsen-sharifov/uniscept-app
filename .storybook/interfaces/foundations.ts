@@ -1,4 +1,4 @@
-import type { TTheme } from '@constants';
+import type { TTheme } from '@interfaces';
 
 export type TStatusTone = 'success' | 'warning' | 'error';
 

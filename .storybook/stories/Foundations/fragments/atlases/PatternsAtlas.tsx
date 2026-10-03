@@ -1,6 +1,6 @@
 import { clsx } from 'clsx';
 
-import type { TTheme } from '@constants';
+import type { TTheme } from '@interfaces';
 import type { TPatternVariant } from '@story-interfaces';
 
 import {
@@ -17,7 +17,7 @@ import {
 } from '../../consts';
 import { findActiveTheme } from '../../utils';
 import { AtlasFrame, Cell, Section, Table, TableRow, ThemedSurface } from '../layout';
-import { PatternMiniStage, PatternStage } from '../patterns';
+import { PatternStage } from '../patterns';
 import { Copyable } from '../widgets';
 
 interface IPatternsAtlasProps {
@@ -53,7 +53,17 @@ export const PatternsAtlas = ({ pattern, activeTheme }: IPatternsAtlasProps) => 
         description="Active pattern × active theme, rendered through the real Background component."
       >
         <div className="space-y-3">
-          <PatternStage pattern={pattern} />
+          <PatternStage pattern={pattern} className="h-[360px] rounded-2xl">
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-0"
+              style={{
+                backgroundImage:
+                  'radial-gradient(80% 60% at 80% 6%, var(--accent-glow), transparent 60%), radial-gradient(60% 50% at 14% 100%, color-mix(in oklab, var(--accent-2) 22%, transparent), transparent 70%)',
+                opacity: 0.4,
+              }}
+            />
+          </PatternStage>
           <p className="max-w-[640px] text-[12.5px] leading-relaxed text-[color:var(--text-muted)]">
             {patternMeta.description}
           </p>
@@ -79,7 +89,7 @@ export const PatternsAtlas = ({ pattern, activeTheme }: IPatternsAtlasProps) => 
                   isActive ? 'border-[color:var(--accent)]' : 'border-[color:var(--border)]',
                 )}
               >
-                <PatternMiniStage pattern={variant} />
+                <PatternStage pattern={variant} className="h-32 rounded-xl" />
                 <div className="flex items-baseline justify-between gap-2 px-3 py-2.5">
                   <div>
                     <h4 className="font-grotesk text-[15px] leading-none font-semibold tracking-[-0.01em] text-[color:var(--text-strong)]">
@@ -110,7 +120,7 @@ export const PatternsAtlas = ({ pattern, activeTheme }: IPatternsAtlasProps) => 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {THEME_LIST.map((theme) => (
             <ThemedSurface key={theme.id} themeId={theme.id} className="overflow-hidden">
-              <PatternMiniStage pattern={pattern} />
+              <PatternStage pattern={pattern} className="h-32 rounded-xl" />
               <div className="flex items-baseline justify-between gap-2 px-3 py-2.5">
                 <span className="font-grotesk text-[15px] leading-none font-semibold tracking-[-0.01em] text-[color:var(--text-strong)]">
                   {theme.name}

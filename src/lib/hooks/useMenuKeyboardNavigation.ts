@@ -2,13 +2,10 @@
 
 import { type KeyboardEvent, type RefObject, useCallback } from 'react';
 
+import type { IUseMenuKeyboardNavigationOptions } from '@interfaces';
+
 const MENU_ITEM_SELECTOR = '[role="menuitem"]';
 const MENU_OPEN_KEYS: ReadonlySet<string> = new Set(['ArrowDown', 'ArrowUp']);
-
-interface IUseMenuKeyboardNavigationOptions {
-  onOpen?: () => void;
-  onClose?: () => void;
-}
 
 export const useMenuKeyboardNavigation = (
   menuRef: RefObject<HTMLElement | null>,

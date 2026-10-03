@@ -24,8 +24,7 @@ export const useToolbar = (workspaceLoading = false): IToolbarModel => {
   const canUndo = useStore(useCanvasStore.temporal, (state) => state.pastStates.length > 0);
   const canRedo = useStore(useCanvasStore.temporal, (state) => state.futureStates.length > 0);
 
-  const toolsTranslations = t.platform.canvas.tools;
-  const baseGroups = useMemo(() => buildCanvasToolGroups(toolsTranslations), [toolsTranslations]);
+  const baseGroups = useMemo(() => buildCanvasToolGroups(t.platform.canvas.tools), [t.platform.canvas.tools]);
 
   const groups = useMemo(
     () =>
@@ -41,8 +40,8 @@ export const useToolbar = (workspaceLoading = false): IToolbarModel => {
     [baseGroups, canUndo, canRedo, canEditCanvas],
   );
 
-  const pendingGroupSizes = useMemo(
-    () => (workspaceLoading || grantsPending ? baseGroups.map((group) => group.tools.length) : []),
+  const pendingGroups = useMemo(
+    () => (workspaceLoading || grantsPending ? baseGroups : []),
     [baseGroups, workspaceLoading, grantsPending],
   );
 
@@ -64,5 +63,5 @@ export const useToolbar = (workspaceLoading = false): IToolbarModel => {
     store.setActiveTool(id);
   }, []);
 
-  return { groups, pendingGroupSizes, activeTool, handleToolClick };
+  return { groups, pendingGroups, activeTool, handleToolClick };
 };

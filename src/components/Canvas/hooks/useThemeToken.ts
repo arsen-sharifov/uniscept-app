@@ -2,22 +2,20 @@
 
 import { useSyncExternalStore } from 'react';
 
-const subscribers = new Set<() => void>();
-let observer: MutationObserver | null = null;
+import { createRootAttributeSubscription } from '@/lib/utils';
+
+const COLOR_SCHEME_QUERY = '(prefers-color-scheme: dark)';
+
+const subscribeToTheme = createRootAttributeSubscription(['data-theme']);
 
 const subscribe = (notify: () => void) => {
-  subscribers.add(notify);
-  if (!observer && typeof document !== 'undefined') {
-    observer = new MutationObserver(() => subscribers.forEach((cb) => cb()));
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
-  }
+  const unsubscribeFromTheme = subscribeToTheme(notify);
+  const colorScheme = window.matchMedia(COLOR_SCHEME_QUERY);
+  colorScheme.addEventListener('change', notify);
 
   return () => {
-    subscribers.delete(notify);
-    if (subscribers.size === 0) {
-      observer?.disconnect();
-      observer = null;
-    }
+    unsubscribeFromTheme();
+    colorScheme.removeEventListener('change', notify);
   };
 };
 

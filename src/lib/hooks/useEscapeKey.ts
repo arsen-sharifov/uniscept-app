@@ -4,16 +4,10 @@ import { useEffect } from 'react';
 
 export const useEscapeKey = (onEscape: () => void, enabled: boolean = true): void => {
   useEffect(() => {
-    if (!enabled) {
-      return;
-    }
+    if (!enabled) return;
 
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== 'Escape') {
-        return;
-      }
-
-      onEscape();
+      if (event.key === 'Escape') onEscape();
     };
 
     window.addEventListener('keydown', onKeyDown);

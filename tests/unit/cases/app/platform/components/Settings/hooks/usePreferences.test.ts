@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import type { IPreferences } from '@interfaces';
 import { DEFAULT_PREFERENCES, PREFERENCES_DEBOUNCE_MS, PREFERENCES_STORAGE_KEY } from '@constants';
 import { getPreferences, upsertPreferences } from '@api/client';
+import { awardBadge } from '@mocks/badges';
 import { DEFAULT_LOCALE, TRANSLATIONS } from '@mocks/i18n';
 import { PREFERENCES } from '@mocks/preferences';
 import { usePreferences } from '@/app/platform/components/Settings/hooks';
@@ -16,6 +17,7 @@ vi.mock('@api/client', async () => ({
   ...(await import('@mocks/workspaceApi')),
 }));
 vi.mock('@/i18n', () => import('@mocks/i18n'));
+vi.mock('@/lib/badges', () => import('@mocks/badges'));
 vi.mock('@/lib/events', () => import('@mocks/events'));
 
 const PREFERENCE_ATTRIBUTES = [
@@ -113,6 +115,106 @@ describe('usePreferences', () => {
     });
   });
 
+  describe('GIVEN a remote load that is still in flight', () => {
+    let resolveLoad: (preferences: IPreferences | null) => void;
+    let rejectLoad: (reason: Error) => void;
+
+    beforeEach(() => {
+      const pendingLoad = Promise.withResolvers<IPreferences | null>();
+
+      resolveLoad = pendingLoad.resolve;
+      rejectLoad = pendingLoad.reject;
+      vi.mocked(getPreferences).mockReturnValue(pendingLoad.promise);
+      vi.mocked(upsertPreferences).mockResolvedValue(undefined);
+
+      prefs = renderHook(() => usePreferences()).result;
+    });
+
+    describe('WHEN a preference changes and the remote row arrives within the debounce', () => {
+      beforeEach(async () => {
+        await act(async () => {
+          prefs.current.updatePreference('theme', 'graphite');
+        });
+        await act(async () => {
+          resolveLoad(PREFERENCES);
+        });
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(PREFERENCES_DEBOUNCE_MS);
+        });
+      });
+
+      test('THEN the change stays on top of the remote row everywhere', () => {
+        expect(prefs.current.preferences).toEqual({ ...PREFERENCES, theme: 'graphite' });
+        expect(JSON.parse(localStorage.getItem(PREFERENCES_STORAGE_KEY)!)).toEqual({
+          ...PREFERENCES,
+          theme: 'graphite',
+        });
+        expect(document.documentElement.getAttribute('data-theme')).toBe('graphite');
+      });
+
+      test('THEN a single save carries the remote row with the change', () => {
+        expect(upsertPreferences).toHaveBeenCalledExactlyOnceWith({ ...PREFERENCES, theme: 'graphite' });
+      });
+    });
+
+    describe('WHEN a changed preference passes the debounce before the remote row arrives', () => {
+      beforeEach(async () => {
+        await act(async () => {
+          prefs.current.updatePreference('theme', 'graphite');
+          await vi.advanceTimersByTimeAsync(PREFERENCES_DEBOUNCE_MS);
+        });
+        await act(async () => {
+          resolveLoad(PREFERENCES);
+        });
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(PREFERENCES_DEBOUNCE_MS);
+        });
+      });
+
+      test('THEN the save waits for the remote row and carries it with the change', () => {
+        expect(upsertPreferences).toHaveBeenCalledExactlyOnceWith({ ...PREFERENCES, theme: 'graphite' });
+      });
+    });
+
+    describe('WHEN a preference changes and the load finds no remote row', () => {
+      beforeEach(async () => {
+        await act(async () => {
+          prefs.current.updatePreference('theme', 'graphite');
+        });
+        await act(async () => {
+          resolveLoad(null);
+        });
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(PREFERENCES_DEBOUNCE_MS);
+        });
+      });
+
+      test('THEN the local preferences with the change are saved', () => {
+        expect(prefs.current.preferences).toEqual({ ...DEFAULT_PREFERENCES, theme: 'graphite' });
+        expect(upsertPreferences).toHaveBeenCalledExactlyOnceWith({ ...DEFAULT_PREFERENCES, theme: 'graphite' });
+      });
+    });
+
+    describe('WHEN a preference changes and the load fails', () => {
+      beforeEach(async () => {
+        await act(async () => {
+          prefs.current.updatePreference('theme', 'graphite');
+        });
+        await act(async () => {
+          rejectLoad(new Error('db down'));
+        });
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(PREFERENCES_DEBOUNCE_MS);
+        });
+      });
+
+      test('THEN the local preferences with the change are still saved', () => {
+        expect(prefs.current.preferences).toEqual({ ...DEFAULT_PREFERENCES, theme: 'graphite' });
+        expect(upsertPreferences).toHaveBeenCalledExactlyOnceWith({ ...DEFAULT_PREFERENCES, theme: 'graphite' });
+      });
+    });
+  });
+
   describe('GIVEN loaded preferences over an accepting api', () => {
     let unmountPrefs: () => void;
 
@@ -145,6 +247,10 @@ describe('usePreferences', () => {
         });
         expect(document.documentElement.getAttribute('data-theme')).toBe('graphite');
         expect(upsertPreferences).not.toHaveBeenCalled();
+      });
+
+      test('THEN the Stylist badge is awarded for the new theme', () => {
+        expect(awardBadge).toHaveBeenCalledExactlyOnceWith('stylist');
       });
     });
 
@@ -222,6 +328,10 @@ describe('usePreferences', () => {
         expect(document.documentElement.getAttribute('data-default-zoom')).toBe('150');
         expect(document.documentElement.getAttribute('data-smart-guides')).toBe('true');
       });
+
+      test('THEN no badge is awarded without a theme change', () => {
+        expect(awardBadge).not.toHaveBeenCalled();
+      });
     });
 
     describe('WHEN a preference is set to its current value', () => {
@@ -238,6 +348,7 @@ describe('usePreferences', () => {
       test('THEN the state keeps its identity and nothing saves', () => {
         expect(prefs.current.preferences).toBe(before);
         expect(upsertPreferences).not.toHaveBeenCalled();
+        expect(awardBadge).not.toHaveBeenCalled();
       });
     });
 
@@ -366,6 +477,27 @@ describe('usePreferences', () => {
           title: TRANSLATIONS.common.errorTitles.saveFailed,
           context: 'preferences.save',
         });
+      });
+    });
+
+    describe('WHEN two preferences change within one debounce window and their save fails', () => {
+      beforeEach(async () => {
+        await act(async () => {
+          prefs.current.updatePreference('theme', 'graphite');
+        });
+        await act(async () => {
+          prefs.current.updatePreference('canvasPattern', 'cross');
+        });
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(PREFERENCES_DEBOUNCE_MS);
+        });
+      });
+
+      test('THEN both changes roll back everywhere', () => {
+        expect(prefs.current.preferences).toEqual(HYDRATED);
+        expect(JSON.parse(localStorage.getItem(PREFERENCES_STORAGE_KEY)!)).toEqual(HYDRATED);
+        expect(document.documentElement.getAttribute('data-theme')).toBe('eclipse');
+        expect(document.documentElement.getAttribute('data-canvas-pattern')).toBe('lines');
       });
     });
   });

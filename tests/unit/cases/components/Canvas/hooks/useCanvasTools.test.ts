@@ -7,6 +7,7 @@ import type { TCanvasNode } from '@interfaces';
 import { pointerEvent } from '@mocks/browser';
 import { THREAD_ID, canvasEdge, canvasNode, questionNode, referenceNode } from '@mocks/canvas';
 import { TRANSLATIONS } from '@mocks/i18n';
+import { router } from '@mocks/navigation';
 import { EDIT_ACCESS, READONLY_ACCESS } from '@mocks/roles';
 import { ZOOM_DURATION_MS, ZOOM_MAX, ZOOM_MIN, ZOOM_STEP_FACTOR } from '@/components/Canvas/consts';
 import { useCanvasTools } from '@/components/Canvas/hooks';
@@ -14,6 +15,7 @@ import { ECanvasTool } from '@/components/tools';
 import { useCanvasStore, usePermissionsStore } from '@/lib/stores';
 
 vi.mock('@/i18n', () => import('@mocks/i18n'));
+vi.mock('next/navigation', () => import('@mocks/navigation'));
 
 const onSetViewport = vi.fn();
 
@@ -78,7 +80,8 @@ describe('useCanvasTools', () => {
         act(() => harness.current.tools.onNodeDoubleClick(pointerEvent(), referenceNode('ref')));
       });
 
-      test('THEN nothing enters label editing', () => {
+      test('THEN the referenced node opens in its thread and nothing enters label editing', () => {
+        expect(router.push).toHaveBeenCalledExactlyOnceWith('/platform/ws-2/th-2?focus=ref&node=origin');
         expect(useCanvasStore.getState().editingNodeId).toBeNull();
       });
     });
@@ -155,6 +158,33 @@ describe('useCanvasTools', () => {
 
       test('THEN label editing stays off', () => {
         expect(useCanvasStore.getState().editingNodeId).toBeNull();
+      });
+    });
+
+    describe('WHEN they double-click a reference node', () => {
+      beforeEach(() => {
+        act(() => harness.current.tools.onNodeDoubleClick(pointerEvent(), referenceNode('ref')));
+      });
+
+      test('THEN the referenced node still opens in its thread', () => {
+        expect(router.push).toHaveBeenCalledExactlyOnceWith('/platform/ws-2/th-2?focus=ref&node=origin');
+      });
+    });
+
+    describe('WHEN they double-click a reference node without a source node id', () => {
+      beforeEach(() => {
+        const reference = referenceNode('ref');
+
+        act(() =>
+          harness.current.tools.onNodeDoubleClick(pointerEvent(), {
+            ...reference,
+            data: { ...reference.data, sourceNodeId: '' },
+          }),
+        );
+      });
+
+      test('THEN nothing navigates', () => {
+        expect(router.push).not.toHaveBeenCalled();
       });
     });
   });

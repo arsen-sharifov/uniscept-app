@@ -269,8 +269,7 @@ export const SPACING_TOKENS: readonly ISpacingToken[] = [
   { label: '10', className: 'p-10', rem: '2.5rem', pixels: '40px', usage: 'Modal body padding' },
 ];
 
-export const PATTERN_VARIANTS = ['dots', 'lines', 'cross', 'none'] as const;
-export type TPatternVariant = (typeof PATTERN_VARIANTS)[number];
+export const PATTERN_VARIANTS: readonly TPatternVariant[] = ['dots', 'lines', 'cross', 'none'];
 
 export const PATTERN_CAPTIONS: Record<TPatternVariant, { label: string; description: string }> = {
   dots: { label: 'Dots', description: 'Soft pips, quiet horizon — the workspace default.' },

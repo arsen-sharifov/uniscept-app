@@ -4,7 +4,14 @@ import type { User } from '@supabase/supabase-js';
 import { useEffect, useState } from 'react';
 
 import type { IChangePasswordPayload, IUserProfileUpdate, TChangePasswordResult } from '@interfaces';
-import { deleteAccount, getUser, updateEmail, updatePassword, updateUserMetadata, verifyPassword } from '@api/client';
+import {
+  deleteAccount,
+  getMyOwnedSharedWorkspaces,
+  getUser,
+  updateEmail,
+  updatePassword,
+  updateUserMetadata,
+} from '@api/client';
 import { useTranslations } from '@/i18n';
 import { event } from '@/lib/events';
 
@@ -58,28 +65,8 @@ export const useSettings = () => {
   const changePassword = async ({
     currentPassword,
     newPassword,
-  }: IChangePasswordPayload): Promise<TChangePasswordResult> => {
-    const email = user?.email;
-    if (!email) {
-      throw new Error('Missing user email');
-    }
-
-    const { error: verifyError } = await verifyPassword(email, currentPassword);
-    if (verifyError) {
-      if (verifyError.code === 'invalid_credentials' || verifyError.status === 400) {
-        return 'incorrectCurrentPassword';
-      }
-
-      throw verifyError;
-    }
-
-    const { error } = await updatePassword(newPassword);
-    if (error) {
-      throw error;
-    }
-
-    return 'updated';
-  };
+  }: IChangePasswordPayload): Promise<TChangePasswordResult> =>
+    (await updatePassword(currentPassword, newPassword)) ? 'updated' : 'incorrectCurrentPassword';
 
   return {
     user,
@@ -87,6 +74,7 @@ export const useSettings = () => {
     updateProfile,
     changeEmail,
     changePassword,
+    getMyOwnedSharedWorkspaces,
     deleteAccount,
   };
 };

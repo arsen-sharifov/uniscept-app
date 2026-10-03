@@ -32,7 +32,6 @@ import { roleLabel } from '@/lib/utils';
 
 export const useWorkspaceSettings = (workspaceId: string, onWorkspacesChanged?: () => void) => {
   const t = useTranslations();
-  const ws = t.platform.workspaceSettings;
 
   const [loading, setLoading] = useState(true);
   const [workspace, setWorkspace] = useState<IWorkspace | null>(null);
@@ -80,9 +79,11 @@ export const useWorkspaceSettings = (workspaceId: string, onWorkspacesChanged?: 
     if (usePermissionsStore.getState().workspaceId !== workspaceId) return;
 
     await Promise.all([getUser(), getMyWorkspacePermissions(workspaceId)])
-      .then(([{ data }, access]) =>
-        usePermissionsStore.getState().setAccess(workspaceId, data.user?.id ?? null, access),
-      )
+      .then(([{ data }, access]) => {
+        if (usePermissionsStore.getState().workspaceId !== workspaceId) return;
+
+        usePermissionsStore.getState().setAccess(workspaceId, data.user?.id ?? null, access);
+      })
       .catch((error) => event.error(error, { toast: false, context: 'workspaceSettings.refreshAccess' }));
   }, [workspaceId]);
 
@@ -154,13 +155,16 @@ export const useWorkspaceSettings = (workspaceId: string, onWorkspacesChanged?: 
         await setMemberRole(workspaceId, userId, roleId);
         await refreshRoles();
         await syncMyAccess(userId === currentUserId);
-        event.success(ws.members.roleChanged);
+        event.success(t.platform.workspaceSettings.members.roleChanged);
       } catch (error) {
-        event.error(error, { title: ws.members.roleChangeFailed, context: 'workspaceSettings.assignRole' });
+        event.error(error, {
+          title: t.platform.workspaceSettings.members.roleChangeFailed,
+          context: 'workspaceSettings.assignRole',
+        });
         await Promise.all([refreshMembers(), refreshRoles()]);
       }
     },
-    [workspaceId, roles, currentUserId, refreshMembers, refreshRoles, syncMyAccess, ws],
+    [workspaceId, roles, currentUserId, refreshMembers, refreshRoles, syncMyAccess, t],
   );
 
   const removeMember = useCallback(
@@ -170,21 +174,27 @@ export const useWorkspaceSettings = (workspaceId: string, onWorkspacesChanged?: 
       try {
         await removeWorkspaceMember(workspaceId, userId);
         await refreshRoles();
-        event.success(ws.members.removed);
+        event.success(t.platform.workspaceSettings.members.removed);
       } catch (error) {
-        event.error(error, { title: ws.members.removeFailed, context: 'workspaceSettings.removeMember' });
+        event.error(error, {
+          title: t.platform.workspaceSettings.members.removeFailed,
+          context: 'workspaceSettings.removeMember',
+        });
         await refreshMembers();
       }
     },
-    [workspaceId, refreshMembers, refreshRoles, ws],
+    [workspaceId, refreshMembers, refreshRoles, t],
   );
 
   const transferOwnership = useCallback(
     async (userId: string) => {
       const ok = await transferWorkspaceOwnership(workspaceId, userId)
         .then(() => true)
-        .catch((error) => {
-          event.error(error, { title: ws.members.transferFailed, context: 'workspaceSettings.transferOwnership' });
+        .catch((error: unknown) => {
+          event.error(error, {
+            title: t.platform.workspaceSettings.members.transferFailed,
+            context: 'workspaceSettings.transferOwnership',
+          });
 
           return false;
         });
@@ -192,28 +202,31 @@ export const useWorkspaceSettings = (workspaceId: string, onWorkspacesChanged?: 
 
       await Promise.all([refreshMembers(), refreshRoles(), refreshMyAccess()]);
       onWorkspacesChanged?.();
-      event.success(ws.members.transferred);
+      event.success(t.platform.workspaceSettings.members.transferred);
     },
-    [workspaceId, refreshMembers, refreshRoles, refreshMyAccess, onWorkspacesChanged, ws],
+    [workspaceId, refreshMembers, refreshRoles, refreshMyAccess, onWorkspacesChanged, t],
   );
 
   const invite = useCallback(
     async (email: string, roleId: string): Promise<boolean> => {
       const ok = await createWorkspaceInvitation(workspaceId, email, roleId)
         .then(() => true)
-        .catch((error) => {
-          event.error(error, { title: ws.members.inviteFailed, context: 'workspaceSettings.invite' });
+        .catch((error: unknown) => {
+          event.error(error, {
+            title: t.platform.workspaceSettings.members.inviteFailed,
+            context: 'workspaceSettings.invite',
+          });
 
           return false;
         });
       if (!ok) return false;
 
       await refreshInvitations();
-      event.success(ws.members.invited);
+      event.success(t.platform.workspaceSettings.members.invited);
 
       return true;
     },
-    [workspaceId, refreshInvitations, ws],
+    [workspaceId, refreshInvitations, t],
   );
 
   const revokeInvitation = useCallback(
@@ -222,40 +235,49 @@ export const useWorkspaceSettings = (workspaceId: string, onWorkspacesChanged?: 
 
       try {
         await revokeWorkspaceInvitation(invitationId);
-        event.success(ws.members.revoked);
+        event.success(t.platform.workspaceSettings.members.revoked);
       } catch (error) {
-        event.error(error, { title: ws.members.revokeFailed, context: 'workspaceSettings.revokeInvitation' });
+        event.error(error, {
+          title: t.platform.workspaceSettings.members.revokeFailed,
+          context: 'workspaceSettings.revokeInvitation',
+        });
         await refreshInvitations();
       }
     },
-    [refreshInvitations, ws],
+    [refreshInvitations, t],
   );
 
   const createRole = useCallback(
     async (name: string, icon: string, permissions: IWorkspaceRolePermissions): Promise<boolean> => {
       const ok = await createWorkspaceRole(workspaceId, name, icon, permissions)
         .then(() => true)
-        .catch((error) => {
-          event.error(error, { title: ws.roles.createFailed, context: 'workspaceSettings.createRole' });
+        .catch((error: unknown) => {
+          event.error(error, {
+            title: t.platform.workspaceSettings.roles.createFailed,
+            context: 'workspaceSettings.createRole',
+          });
 
           return false;
         });
       if (!ok) return false;
 
       await refreshRoles();
-      event.success(ws.roles.created);
+      event.success(t.platform.workspaceSettings.roles.created);
 
       return true;
     },
-    [workspaceId, refreshRoles, ws],
+    [workspaceId, refreshRoles, t],
   );
 
   const updateRole = useCallback(
     async (roleId: string, name: string, icon: string, permissions: IWorkspaceRolePermissions): Promise<boolean> => {
       const ok = await updateWorkspaceRole(roleId, name, icon, permissions)
         .then(() => true)
-        .catch((error) => {
-          event.error(error, { title: ws.roles.updateFailed, context: 'workspaceSettings.updateRole' });
+        .catch((error: unknown) => {
+          event.error(error, {
+            title: t.platform.workspaceSettings.roles.updateFailed,
+            context: 'workspaceSettings.updateRole',
+          });
 
           return false;
         });
@@ -263,19 +285,22 @@ export const useWorkspaceSettings = (workspaceId: string, onWorkspacesChanged?: 
 
       await refreshRoles();
       await syncMyAccess(roleId === currentMember?.roleId);
-      event.success(ws.roles.updated);
+      event.success(t.platform.workspaceSettings.roles.updated);
 
       return true;
     },
-    [refreshRoles, syncMyAccess, currentMember, ws],
+    [refreshRoles, syncMyAccess, currentMember, t],
   );
 
   const deleteRole = useCallback(
     async (roleId: string) => {
       const ok = await deleteWorkspaceRole(roleId)
         .then(() => true)
-        .catch((error) => {
-          event.error(error, { title: ws.roles.deleteFailed, context: 'workspaceSettings.deleteRole' });
+        .catch((error: unknown) => {
+          event.error(error, {
+            title: t.platform.workspaceSettings.roles.deleteFailed,
+            context: 'workspaceSettings.deleteRole',
+          });
 
           return false;
         });
@@ -283,9 +308,9 @@ export const useWorkspaceSettings = (workspaceId: string, onWorkspacesChanged?: 
 
       await Promise.all([refreshRoles(), refreshMembers()]);
       await syncMyAccess(roleId === currentMember?.roleId);
-      event.success(ws.roles.deleted);
+      event.success(t.platform.workspaceSettings.roles.deleted);
     },
-    [refreshRoles, refreshMembers, syncMyAccess, currentMember, ws],
+    [refreshRoles, refreshMembers, syncMyAccess, currentMember, t],
   );
 
   return {
@@ -295,6 +320,7 @@ export const useWorkspaceSettings = (workspaceId: string, onWorkspacesChanged?: 
     roles,
     invitations,
     currentUserId,
+    currentRole: myRole,
     canManageMembers,
     canManageRoles,
     canManageWorkspace,

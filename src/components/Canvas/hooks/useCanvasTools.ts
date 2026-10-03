@@ -1,9 +1,10 @@
 'use client';
 
 import { type EdgeMouseHandler, type IsValidConnection, type NodeMouseHandler, useReactFlow } from '@xyflow/react';
+import { useRouter } from 'next/navigation';
 import { type MouseEvent, useCallback } from 'react';
 
-import { ECanvasNodeType } from '@interfaces';
+import { ECanvasNodeType, type IUseCanvasToolsResult } from '@interfaces';
 
 import { ECanvasTool } from '@/components/tools';
 import { useTranslations } from '@/i18n';
@@ -11,16 +12,7 @@ import { findNearestHandlePair } from '@/lib/canvas';
 import { useCanvasStore, usePermissionsStore } from '@/lib/stores';
 
 import { ZOOM_DURATION_MS, ZOOM_MAX, ZOOM_MIN, ZOOM_STEP_FACTOR } from '../consts';
-import { collectStatusTargetIds } from '../utils';
-
-interface IUseCanvasToolsResult {
-  onPaneClick: (event: MouseEvent) => void;
-  onNodeClick: NodeMouseHandler;
-  onNodeDoubleClick: NodeMouseHandler;
-  onEdgeClick: EdgeMouseHandler;
-  onConnect: ReturnType<typeof useCanvasStore.getState>['connectNodes'];
-  isValidConnection: IsValidConnection;
-}
+import { buildReferenceTargetUrl, collectStatusTargetIds } from '../utils';
 
 const isValidConnection: IsValidConnection = (connection) => connection.source !== connection.target;
 
@@ -28,6 +20,7 @@ const clampZoom = (zoom: number): number => Math.min(Math.max(zoom, ZOOM_MIN), Z
 
 export const useCanvasTools = (): IUseCanvasToolsResult => {
   const t = useTranslations();
+  const router = useRouter();
   const { screenToFlowPosition, getViewport, setViewport } = useReactFlow();
 
   const activeTool = useCanvasStore((s) => s.activeTool);
@@ -148,13 +141,19 @@ export const useCanvasTools = (): IUseCanvasToolsResult => {
 
   const onNodeDoubleClick: NodeMouseHandler = useCallback(
     (_event, node) => {
+      if (node.type === ECanvasNodeType.Reference) {
+        const targetUrl = buildReferenceTargetUrl(node.data);
+        if (targetUrl) router.push(targetUrl);
+
+        return;
+      }
       if (activeTool !== ECanvasTool.Select) return;
       if (!usePermissionsStore.getState().canEditCanvas) return;
       if (node.type === ECanvasNodeType.Canvas || node.type === ECanvasNodeType.Question) {
         useCanvasStore.getState().setEditingNodeId(node.id);
       }
     },
-    [activeTool],
+    [activeTool, router],
   );
 
   const onEdgeClick: EdgeMouseHandler = useCallback(

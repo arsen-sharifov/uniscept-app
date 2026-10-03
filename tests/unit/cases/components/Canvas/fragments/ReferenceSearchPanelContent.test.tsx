@@ -1,18 +1,37 @@
 import { fireEvent, render, screen } from '@testing-library/react';
-import { beforeEach, describe, expect, test, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { stubResizeObserver } from '@mocks/browser';
 import { referenceSearchProps } from '@mocks/referenceSearch';
+import { OVERLAY_VIEWPORT_MARGIN } from '@/components/Canvas/consts';
 import { ReferenceSearchPanelContent } from '@/components/Canvas/fragments';
 
 vi.mock('@/i18n', () => import('@mocks/i18n'));
+
+const PANEL_WIDTH = 320;
+const PANEL_HEIGHT = 180;
+const GROWN_PANEL_HEIGHT = 360;
 
 const onSelect = vi.fn();
 const onClose = vi.fn();
 
 let props: ReturnType<typeof referenceSearchProps>;
+let resizeObserver: ReturnType<typeof stubResizeObserver>;
+
+const measurePanels = (height: number) => {
+  Object.defineProperty(HTMLDialogElement.prototype, 'offsetWidth', { configurable: true, value: PANEL_WIDTH });
+  Object.defineProperty(HTMLDialogElement.prototype, 'offsetHeight', { configurable: true, value: height });
+};
 
 beforeEach(() => {
+  resizeObserver = stubResizeObserver();
   props = referenceSearchProps();
+});
+
+afterEach(() => {
+  Reflect.deleteProperty(HTMLDialogElement.prototype, 'offsetWidth');
+  Reflect.deleteProperty(HTMLDialogElement.prototype, 'offsetHeight');
+  vi.unstubAllGlobals();
 });
 
 describe('ReferenceSearchPanelContent', () => {
@@ -67,6 +86,46 @@ describe('ReferenceSearchPanelContent', () => {
         expect(screen.queryByRole('option')).not.toBeInTheDocument();
         expect(screen.getByRole('combobox')).not.toHaveAttribute('aria-controls');
         expect(screen.getByRole('combobox')).not.toHaveAttribute('aria-activedescendant');
+      });
+    });
+  });
+
+  describe('GIVEN a search requested next to the bottom right corner of the window', () => {
+    beforeEach(() => {
+      measurePanels(PANEL_HEIGHT);
+      render(
+        <ReferenceSearchPanelContent
+          {...props}
+          screenPos={{ x: window.innerWidth - 40, y: window.innerHeight - 40 }}
+          onSelect={onSelect}
+          onClose={onClose}
+        />,
+      );
+    });
+
+    describe('WHEN the panel opens', () => {
+      test('THEN it moves back inside the window with the edge margin', () => {
+        expect(screen.getByRole('dialog')).toHaveStyle({
+          left: `${window.innerWidth - PANEL_WIDTH - OVERLAY_VIEWPORT_MARGIN}px`,
+          top: `${window.innerHeight - PANEL_HEIGHT - OVERLAY_VIEWPORT_MARGIN}px`,
+        });
+      });
+
+      test('THEN the search input still takes focus', () => {
+        expect(screen.getByRole('combobox')).toHaveFocus();
+      });
+    });
+
+    describe('WHEN the results make the panel taller', () => {
+      beforeEach(() => {
+        measurePanels(GROWN_PANEL_HEIGHT);
+        resizeObserver.resize();
+      });
+
+      test('THEN it moves up again so the taller panel still fits', () => {
+        expect(screen.getByRole('dialog')).toHaveStyle({
+          top: `${window.innerHeight - GROWN_PANEL_HEIGHT - OVERLAY_VIEWPORT_MARGIN}px`,
+        });
       });
     });
   });

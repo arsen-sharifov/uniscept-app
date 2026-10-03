@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { awardBadge } from '@mocks/badges';
 import { THREAD_ID, canvasNode } from '@mocks/canvas';
 import { event } from '@mocks/events';
 import { TRANSLATIONS } from '@mocks/i18n';
@@ -10,17 +11,17 @@ import { useOnboardingStore } from '@/lib/onboarding';
 import { useCanvasStore } from '@/lib/stores';
 
 vi.mock('@/i18n', () => import('@mocks/i18n'));
+vi.mock('@/lib/badges', () => import('@mocks/badges'));
 vi.mock('@/lib/events', () => import('@mocks/events'));
 vi.mock('@/lib/canvas/export', () => ({ exportCanvas: vi.fn() }));
 
 const THREAD_NAME = 'Export thread';
-const copy = TRANSLATIONS.platform.canvas.export;
 
 const root = document.createElement('div');
 root.dataset.canvasThread = THREAD_ID;
 
-const exportButton = () => screen.getByRole('button', { name: copy.label });
-const loadingButton = () => screen.getByRole('button', { name: copy.loading });
+const exportButton = () => screen.getByRole('button', { name: TRANSLATIONS.platform.canvas.export.label });
+const loadingButton = () => screen.getByRole('button', { name: TRANSLATIONS.platform.canvas.export.loading });
 const menuItem = (format: string) => screen.getByRole('menuitem', { name: new RegExp(format) });
 const openWithPointer = () => fireEvent.click(exportButton(), { detail: 1 });
 const chooseFormat = (format: string) => fireEvent.click(menuItem(format));
@@ -82,6 +83,10 @@ describe('ExportMenu', () => {
         expect(screen.queryByRole('menu')).not.toBeInTheDocument();
         expect(exportCanvas).toHaveBeenCalledExactlyOnceWith(root, THREAD_NAME, 'png');
       });
+
+      test('THEN the Cartographer badge is awarded', async () => {
+        await waitFor(() => expect(awardBadge).toHaveBeenCalledExactlyOnceWith('cartographer'));
+      });
     });
 
     describe('WHEN the graph is too large for a bitmap', () => {
@@ -92,9 +97,12 @@ describe('ExportMenu', () => {
       });
 
       test('THEN the menu stays open with the vector hint and nothing is reported as an error', async () => {
-        await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent(copy.tooLarge));
+        await waitFor(() =>
+          expect(screen.getByRole('status')).toHaveTextContent(TRANSLATIONS.platform.canvas.export.tooLarge),
+        );
         expect(screen.getByRole('menu')).toBeInTheDocument();
         expect(event.error).not.toHaveBeenCalled();
+        expect(awardBadge).not.toHaveBeenCalled();
       });
     });
 
@@ -114,6 +122,7 @@ describe('ExportMenu', () => {
         );
         expect(screen.getByRole('menu')).toBeInTheDocument();
         expect(screen.queryByRole('status')).not.toBeInTheDocument();
+        expect(awardBadge).not.toHaveBeenCalled();
       });
     });
 
@@ -237,7 +246,9 @@ describe('ExportMenu', () => {
       });
 
       test('THEN the guide does not count it as an export', async () => {
-        await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent(copy.tooLarge));
+        await waitFor(() =>
+          expect(screen.getByRole('status')).toHaveTextContent(TRANSLATIONS.platform.canvas.export.tooLarge),
+        );
         expect(useOnboardingStore.getState().signals.has('canvasExported')).toBe(false);
       });
     });
@@ -263,7 +274,7 @@ describe('ExportMenu', () => {
     describe('WHEN the toolbar renders the export action', () => {
       test('THEN the button is disabled and explains why', () => {
         expect(exportButton()).toBeDisabled();
-        expect(exportButton()).toHaveAttribute('title', copy.unavailable);
+        expect(exportButton()).toHaveAttribute('title', TRANSLATIONS.platform.canvas.export.unavailable);
       });
     });
   });
@@ -276,7 +287,7 @@ describe('ExportMenu', () => {
     describe('WHEN the toolbar renders the export action', () => {
       test('THEN the button is disabled and explains why', () => {
         expect(exportButton()).toBeDisabled();
-        expect(exportButton()).toHaveAttribute('title', copy.unavailable);
+        expect(exportButton()).toHaveAttribute('title', TRANSLATIONS.platform.canvas.export.unavailable);
       });
     });
   });

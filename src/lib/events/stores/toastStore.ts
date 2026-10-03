@@ -4,14 +4,14 @@ import { create } from 'zustand';
 
 import type { TToast, TToastDraft } from '@interfaces';
 
-const MAX_VISIBLE_TOASTS = 4;
-
 interface IToastStore {
   toasts: TToast[];
   add: (toast: TToastDraft) => string;
   dismiss: (id: string) => void;
   clear: () => void;
 }
+
+const MAX_VISIBLE_TOASTS = 4;
 
 export const useToastStore = create<IToastStore>((set) => ({
   toasts: [],

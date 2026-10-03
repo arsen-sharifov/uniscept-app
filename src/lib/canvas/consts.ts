@@ -31,3 +31,11 @@ export const ARROW_MARKER_ATTRIBUTES = {
 } as const;
 
 export const ARROW_PATH_D = 'M 0 0 L 12 4.5 L 0 9 L 2.4 4.5 Z';
+
+export const CANVAS_HISTORY_LIMIT = 100;
+
+export const DUPLICATE_NODE_OFFSET = 24;
+
+export const MAX_NODE_LABEL_LENGTH = 5000;
+
+export const MAX_COMMENT_LENGTH = 5000;

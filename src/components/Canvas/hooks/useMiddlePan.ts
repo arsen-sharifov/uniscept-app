@@ -6,7 +6,9 @@ import { useCanvasStore } from '@/lib/stores';
 
 const MIDDLE_MOUSE_BUTTON = 1;
 
-export const useMiddlePan = (): void => {
+export const useMiddlePan = (): boolean => {
+  const middlePan = useCanvasStore((s) => s.middlePan);
+
   useEffect(() => {
     const onDown = (event: MouseEvent) => {
       if (event.button !== MIDDLE_MOUSE_BUTTON) return;
@@ -41,4 +43,14 @@ export const useMiddlePan = (): void => {
       window.removeEventListener('blur', onBlur);
     };
   }, []);
+
+  useEffect(() => {
+    if (!middlePan) return;
+
+    document.body.classList.add('canvas-middle-pan');
+
+    return () => document.body.classList.remove('canvas-middle-pan');
+  }, [middlePan]);
+
+  return middlePan;
 };

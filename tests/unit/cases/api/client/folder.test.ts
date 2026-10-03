@@ -2,7 +2,7 @@ import { describe, expect, test, vi } from 'vitest';
 
 import { createFolder, deleteFolder, deleteFolders, getFolders, moveFolder, updateFolderName } from '@api/client';
 import { folderRow } from '@mocks/rows';
-import { primeSupabase } from '@mocks/supabase';
+import { NO_ROW_ERROR, primeSupabase } from '@mocks/supabase';
 
 vi.mock('@/lib/supabase', () => import('@mocks/supabase'));
 
@@ -82,6 +82,22 @@ describe('createFolder', () => {
     });
   });
 
+  describe('GIVEN a name chosen up front', () => {
+    describe('WHEN the folder is created', () => {
+      test('THEN the name is written with the row instead of the default', async () => {
+        const { queries } = primeSupabase([{ count: 0 }, { data: folderRow({ name: 'Research' }) }]);
+
+        await expect(createFolder('ws-1', undefined, 'Research')).resolves.toMatchObject({ name: 'Research' });
+        expect(queries[1]!.insert).toHaveBeenCalledExactlyOnceWith({
+          workspace_id: 'ws-1',
+          parent_folder_id: null,
+          position: 0,
+          name: 'Research',
+        });
+      });
+    });
+  });
+
   describe('GIVEN a failing count query', () => {
     describe('WHEN the folder is created', () => {
       test('THEN the error propagates', async () => {
@@ -134,6 +150,17 @@ describe('updateFolderName', () => {
         primeSupabase([{ error: new Error('db down') }]);
 
         await expect(updateFolderName('folder-1', 'Renamed')).rejects.toThrow('db down');
+      });
+    });
+  });
+
+  describe('GIVEN a rename the database applies to no row', () => {
+    describe('WHEN the name is updated', () => {
+      test('THEN the missing row is reported instead of a silent success', async () => {
+        const { queries } = primeSupabase([{ data: [] }]);
+        vi.spyOn(queries[0]!, 'single').mockResolvedValue({ data: null, error: NO_ROW_ERROR, count: null });
+
+        await expect(updateFolderName('folder-1', 'Renamed')).rejects.toMatchObject({ code: 'PGRST116' });
       });
     });
   });
@@ -212,6 +239,17 @@ describe('moveFolder', () => {
         primeSupabase([{ error: new Error('db down') }]);
 
         await expect(moveFolder('folder-2', 'folder-1', 5)).rejects.toThrow('db down');
+      });
+    });
+  });
+
+  describe('GIVEN a move the database applies to no row', () => {
+    describe('WHEN the folder is moved', () => {
+      test('THEN the missing row is reported instead of a silent success', async () => {
+        const { queries } = primeSupabase([{ data: [] }]);
+        vi.spyOn(queries[0]!, 'single').mockResolvedValue({ data: null, error: NO_ROW_ERROR, count: null });
+
+        await expect(moveFolder('folder-1', null, 2)).rejects.toMatchObject({ code: 'PGRST116' });
       });
     });
   });

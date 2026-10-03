@@ -8,6 +8,7 @@
       "submit": "Autentificare",
       "submitting": "Se autentifică…",
       "emailSent": "Verifică emailul pentru a confirma contul.",
+      "invalidLink": "Linkul este invalid sau a expirat. Încearcă să te autentifici sau cere un link nou.",
       "noAccount": "Nu ai cont?",
       "signUpLink": "Înregistrează-te"
     },
@@ -49,9 +50,18 @@
       "inviteHeading": "Configurează-ți contul",
       "inviteSubtitle": "Te alături echipei tale pe Uniscept"
     },
+    "join": {
+      "heading": "Ai fost invitat",
+      "subtitle": "Acceptă invitația pentru a-ți configura contul pe Uniscept.",
+      "accept": "Acceptă invitația",
+      "accepting": "Se acceptă…",
+      "signedInAs": "Ești autentificat ca {email}. Pentru a accepta invitația, mai întâi vei fi deconectat din acest cont.",
+      "switchAccount": "Deconectează-te și acceptă",
+      "stay": "Rămâi autentificat"
+    },
     "placeholders": {
       "name": "Ion Popescu",
-      "email": "tu@exemplu.com",
+      "email": "name@example.com",
       "password": "••••••••"
     },
     "errors": {
@@ -68,8 +78,9 @@
     }
   },
   "common": {
-    "loading": "Se încarcă",
     "close": "Închide",
+    "moreInfo": "Mai multe informații",
+    "completed": "Finalizat",
     "userAvatar": "Utilizator",
     "notifications": "Notificări",
     "errors": {
@@ -77,6 +88,7 @@
       "permission": "Nu aveți permisiunea pentru această acțiune.",
       "notFound": "Nu am mai putut găsi acel element.",
       "rateLimit": "Prea multe încercări. Așteptați un moment.",
+      "limitReached": "Limită atinsă. Eliminați câteva elemente și încercați din nou.",
       "validation": "Unele detalii par invalide. Verificați și încercați din nou.",
       "auth": "Sesiunea a expirat. Conectați-vă din nou.",
       "unknown": "Ceva nu a mers bine. Încercați din nou.",
@@ -84,10 +96,10 @@
       "emailNotConfirmed": "Confirmați adresa de email înainte de autentificare.",
       "emailTaken": "Există deja un cont cu acest email.",
       "invalidEmail": "Această adresă de email nu pare validă.",
-      "weakPassword": "Parola este prea slabă. Folosiți cel puțin 6 caractere.",
-      "samePassword": "Parola nouă trebuie să difere de cea actuală."
+      "weakPassword": "Parola este prea slabă. Folosiți cel puțin 8 caractere.",
+      "samePassword": "Parola nouă trebuie să difere de cea actuală.",
+      "ownsSharedWorkspaces": "Transferați sau ștergeți spațiile pe care le partajați cu alții înainte de a vă șterge contul."
     },
-    "noPermission": "Nu ai permisiunea necesară",
     "errorTitles": {
       "createFailed": "Nu s-a putut crea",
       "renameFailed": "Nu s-a putut redenumi",
@@ -138,6 +150,11 @@
       "structure": "Structură",
       "newThread": "Fir nou",
       "newFolder": "Folder nou",
+      "defaultNames": {
+        "workspace": "Spațiu nou",
+        "folder": "Folder nou",
+        "thread": "Fir nou"
+      },
       "signOut": "Deconectare",
       "deleteWorkspaceTitle": "Șterge spațiul",
       "deleteFolderTitle": "Șterge folderul",
@@ -151,9 +168,10 @@
       "treeAriaLabel": "Navigare",
       "dragToReorder": "Trage pentru a reordona",
       "resolved": "Rezolvat",
-      "itemsSelected": "elemente selectate",
-      "workspacesSelected": "spații selectate",
+      "itemsSelected": "{count, plural, one {element selectat} few {elemente selectate} other {de elemente selectate}}",
+      "workspacesSelected": "{count, plural, one {spațiu selectat} few {spații selectate} other {de spații selectate}}",
       "moveToFolder": "Mută în folder",
+      "structureLocked": "Necesită permisiunea „Gestionează fire și foldere”",
       "rootLevel": "Nivel rădăcină",
       "bulkDeleteTitle": "Șterge elementele",
       "bulkDeleteConfirm": "Sigur vrei să ștergi aceste elemente? Acțiunea nu poate fi anulată.",
@@ -182,14 +200,14 @@
       "referenceSearch": {
         "placeholder": "Caută noduri…",
         "noResults": "Niciun nod găsit",
-        "noMatch": "Nimic nu corespunde „{query}”",
+        "noMatch": "Nimic nu corespunde cu „{query}”",
         "hint": "Încearcă altă etichetă sau alt cuvânt cheie.",
         "actionLink": "leagă",
         "actionNavigate": "deschide",
         "actionClose": "închide"
       },
       "tools": {
-        "ariaLabel": "Instrumente canvas",
+        "ariaLabel": "Instrumentele pânzei",
         "groups": {
           "navigate": "Navigare",
           "history": "Istoric",
@@ -200,7 +218,7 @@
         "items": {
           "select": {
             "label": "Selectează",
-            "description": "Selectează și mută noduri pe canvas."
+            "description": "Selectează și mută noduri pe pânză."
           },
           "pan": {
             "label": "Deplasare",
@@ -216,7 +234,7 @@
           },
           "addNode": {
             "label": "Adaugă nod",
-            "description": "Click oriunde pe canvas pentru a plasa un nod nou."
+            "description": "Click oriunde pe pânză pentru a plasa un nod nou."
           },
           "connect": {
             "label": "Conectează",
@@ -240,7 +258,7 @@
           },
           "crossReference": {
             "label": "Referință încrucișată",
-            "description": "Plasează o referință către un nod dintr-un alt canvas."
+            "description": "Plasează o referință către un nod de pe altă pânză."
           },
           "undo": {
             "label": "Anulează",
@@ -253,8 +271,8 @@
         }
       },
       "loadError": {
-        "title": "Backend canvas inaccesibil",
-        "hint": "Nu s-a putut conecta la Supabase pentru a încărca acest canvas. Verifică instanța locală Supabase și reîncearcă.",
+        "title": "Backendul pânzei este inaccesibil",
+        "hint": "Nu s-a putut conecta la Supabase pentru a încărca această pânză. Verifică instanța locală Supabase și reîncearcă.",
         "retry": "Reîncearcă"
       },
       "node": {
@@ -271,7 +289,8 @@
         "sendComment": "Trimite comentariul",
         "closeComments": "Închide",
         "commentsHeader": "Comentarii",
-        "noComments": "Niciun comentariu încă. Începe conversația."
+        "noComments": "Niciun comentariu încă. Începe conversația.",
+        "labelAriaLabel": "Textul nodului"
       },
       "question": {
         "badge": "Întrebare",
@@ -304,11 +323,11 @@
         "discardAriaLabel": "Renunță la modificările eșuate"
       },
       "context": {
-        "ariaLabel": "Acțiuni canvas",
+        "ariaLabel": "Acțiunile pânzei",
         "addNode": "Adaugă nod",
         "addReference": "Adaugă referință",
         "deleteEdge": "Șterge muchia",
-        "openReferenced": "Deschide canvas-ul referit",
+        "openReferenced": "Deschide pânza referită",
         "deleteReference": "Șterge referința",
         "markValid": "Marchează valid",
         "unmarkValid": "Demarchează valid",
@@ -803,7 +822,6 @@
       "close": "Închide setările",
       "comingSoon": "În curând",
       "languageSaving": "Se salvează limba…",
-      "languageSaveFailed": "Salvarea limbii a eșuat. Încearcă din nou.",
       "groups": {
         "account": "Cont",
         "preferences": "Preferințe",
@@ -834,6 +852,7 @@
         "avatarTitle": "Avatar",
         "avatarOptions": "opțiuni",
         "badgesTitle": "Insigne",
+        "badgeEarned": "Insignă nouă: {name}",
         "initialsLabel": "Inițiale",
         "avatarIcons": {
           "avatarIconCat": "Pisică",
@@ -863,35 +882,33 @@
           "badgeInitiate": "Inițiat",
           "initiateUnlock": "Termină turul și toate ghidurile.",
           "badgeFirstSteps": "Primii pași",
-          "firstStepsUnlock": "Creează primul tău canvas.",
-          "badgeArchitect": "Arhitect",
-          "architectUnlock": "Construiește un canvas cu 25 sau mai multe noduri.",
-          "badgeConnector": "Conector",
-          "connectorUnlock": "Realizează 50 de conexiuni între noduri.",
-          "badgeCritic": "Critic",
-          "criticUnlock": "Marchează 25 de căi ca valide sau invalide.",
-          "badgeLinguist": "Lingvist",
-          "linguistUnlock": "Schimbă limba interfeței.",
-          "badgeCurator": "Curator",
-          "curatorUnlock": "Folosește o referință între canvas-uri.",
-          "badgeVoice": "Voce",
-          "voiceUnlock": "Postează primul tău comentariu.",
-          "badgeExplorer": "Explorator",
-          "explorerUnlock": "Deschide 10 canvas-uri diferite.",
-          "badgeStoryteller": "Povestitor",
-          "storytellerUnlock": "Creează 5 fire proprii.",
+          "firstStepsUnlock": "Creează prima ta pânză.",
           "badgeWorkspaceBuilder": "Constructor",
           "workspaceBuilderUnlock": "Creează primul tău spațiu.",
-          "badgeNightOwl": "Bufniță",
-          "nightOwlUnlock": "Lucrează după miezul nopții o săptămână.",
-          "badgeMarathoner": "Maratonist",
-          "marathonerUnlock": "Rămâi activ 30 de zile la rând.",
+          "badgeArchitect": "Arhitect",
+          "architectUnlock": "Construiește o pânză cu 25 sau mai multe noduri.",
+          "badgeConnector": "Conector",
+          "connectorUnlock": "Trasează 15 conexiuni pe o pânză.",
+          "badgeCritic": "Critic",
+          "criticUnlock": "Marchează o cale ca invalidă.",
+          "badgeWeaver": "Țesător",
+          "weaverUnlock": "Combină căi valide și invalide pe o pânză.",
+          "badgeVerdict": "Verdict",
+          "verdictUnlock": "Marchează un nod ca răspuns final.",
+          "badgeVoice": "Voce",
+          "voiceUnlock": "Postează primul tău comentariu.",
+          "badgeCurator": "Curator",
+          "curatorUnlock": "Folosește o referință între pânze.",
           "badgeCollaborator": "Colaborator",
           "collaboratorUnlock": "Alătură-te unui spațiu partajat.",
-          "badgeWeaver": "Țesător",
-          "weaverUnlock": "Combină căi valide și invalide pe un canvas.",
-          "badgeSage": "Înțelept",
-          "sageUnlock": "Lasă 100 de comentarii relevante."
+          "badgeLinguist": "Lingvist",
+          "linguistUnlock": "Schimbă limba interfeței.",
+          "badgeStylist": "Stilist",
+          "stylistUnlock": "Alege o altă temă.",
+          "badgeCartographer": "Cartograf",
+          "cartographerUnlock": "Exportă o pânză ca imagine.",
+          "badgeNightOwl": "Bufniță",
+          "nightOwlUnlock": "Adaugă un nod între miezul nopții și ora 5."
         }
       },
       "security": {
@@ -915,8 +932,10 @@
         "dangerZoneCaption": "ireversibil",
         "dangerZoneBlurb": "Acțiuni distructive care nu pot fi anulate. Citește cu atenție înainte de a continua.",
         "deleteAccount": "Șterge contul",
-        "deleteAccountCaption": "Șterge toate spațiile, firele și canvas-urile tale",
+        "deleteAccountCaption": "Șterge toate spațiile, firele și pânzele tale",
         "deleteConfirm": "Ești sigur? Această acțiune nu poate fi anulată. Toate datele tale vor fi șterse permanent.",
+        "deletePassword": "Confirmă cu parola",
+        "deleteBlocked": "Deții spații pe care le folosesc și alte persoane. Transferă proprietatea sau șterge-le înainte de a-ți șterge contul.",
         "deleteButton": "Șterge contul meu",
         "deleting": "Se șterge…",
         "cancel": "Anulează",
@@ -945,7 +964,6 @@
         "themeBloom": "Bloom",
         "bloomDesc": "Porțelan cald, acțiune magenta",
         "autoDesc": "Împerechează Daybreak și Eclipse",
-        "adaptive": "Adaptiv",
         "canvas": "Pânză",
         "canvasIntro": "Patru texturi",
         "canvasBlurb": "Alege suprafața pe care trăiesc ideile tale — de la hârtie liniștită la o grilă inginerească.",
@@ -968,16 +986,16 @@
         }
       },
       "editor": {
-        "blurb": "Reglează modul în care canvas-ul răspunde când construiești.",
-        "behaviors": "Comportament canvas",
+        "blurb": "Reglează modul în care pânza răspunde când construiești.",
+        "behaviors": "Comportamentul pânzei",
         "behaviorsCaption": "Aliniere, ghidaje",
         "snapToGrid": "Aliniere la grilă",
         "snapToGridDescription": "Trage nodurile în pași de 16 pixeli",
         "smartGuides": "Ghidaje inteligente",
         "smartGuidesDescription": "Linii de aliniere în timpul tragerii",
         "zoom": "Zoom implicit",
-        "zoomCaption": "Magnificare inițială canvas",
-        "zoomBlurb": "Cât de aproape pornești la deschiderea oricărui canvas.",
+        "zoomCaption": "Magnificarea inițială a pânzei",
+        "zoomBlurb": "Cât de aproape pornești la deschiderea oricărei pânze.",
         "defaultZoom": "Nivel zoom implicit"
       },
       "plan": {
@@ -1049,7 +1067,7 @@
         "cancel": "Anulează",
         "inviteTitle": "Invită persoane",
         "inviteHint": "Se alătură la următoarea deschidere a Uniscept.",
-        "emailPlaceholder": "nume@companie.com",
+        "emailPlaceholder": "name@example.com",
         "sendInvite": "Trimite invitația",
         "sending": "Se trimite…",
         "invited": "Invitație pregătită",
@@ -1211,11 +1229,11 @@
         },
         "references": {
           "title": "Referințe încrucișate",
-          "description": "Referențiază o concluzie validată din alt canvas. Demonstreaz-o o dată, sprijină-te pe ea oriunde contează."
+          "description": "Referențiază o concluzie validată de pe altă pânză. Demonstreaz-o o dată, sprijină-te pe ea oriunde contează."
         },
         "collaboration": {
           "title": "Colaborare în echipă",
-          "description": "Roluri în workspace, comentarii pe noduri, permisiuni proprii. Argumentați deschis, decideți pe înregistrare."
+          "description": "Roluri în spațiu, comentarii pe noduri, permisiuni proprii. Argumentați deschis, decideți pe înregistrare."
         }
       },
       "vignettes": {
@@ -1225,8 +1243,8 @@
         "validationPremise": "Costurile rămân constante la scară",
         "validationConclusion": "Economia unitară se susține",
         "validationSafe": "Retenția se menține la scară",
-        "referencesCanvasA": "Canvas · Prețuri",
-        "referencesCanvasB": "Canvas · Strategie",
+        "referencesCanvasA": "Pânză · Prețuri",
+        "referencesCanvasB": "Pânză · Strategie",
         "referencesSource": "Recuperarea CAC sub 12 luni",
         "referencesBadge": "Referință",
         "collaborationClaim": "Livrăm migrarea sub feature flag",
@@ -1278,11 +1296,11 @@
         "demo": {
           "name": "Demo",
           "description": "Pe durata sesiunii",
-          "features": ["Încearcă canvasul", "Fără cont", "Explorează funcțiile", "Stocare de sesiune"]
+          "features": ["Încearcă pânza", "Fără cont", "Explorează funcțiile", "Stocare de sesiune"]
         },
         "lite": {
           "name": "Lite",
-          "features": ["Canvasuri nelimitate", "Un singur utilizator", "Stocare în cloud", "Opțiuni de export"]
+          "features": ["Pânze nelimitate", "Un singur utilizator", "Stocare în cloud", "Opțiuni de export"]
         },
         "standard": {
           "name": "Standard",
@@ -1306,7 +1324,7 @@
       "steps": {
         "ask": {
           "title": "Întreabă",
-          "description": "Deschide un fir. Nodul central al întrebării așteaptă deja pe canvas."
+          "description": "Deschide un fir. Nodul central al întrebării așteaptă deja pe pânză."
         },
         "argue": {
           "title": "Argumentează",

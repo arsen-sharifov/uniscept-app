@@ -1,5 +1,9 @@
+'use client';
+
 import { clsx } from 'clsx';
 import { Check } from 'lucide-react';
+
+import { useTranslations } from '@/i18n';
 
 interface IStepperProps {
   steps: string[];
@@ -7,8 +11,10 @@ interface IStepperProps {
 }
 
 export const Stepper = ({ steps, currentStep }: IStepperProps) => {
+  const t = useTranslations();
+
   return (
-    <div role="list" className="flex items-center">
+    <ol className="flex items-center">
       {steps.map((label, i) => {
         const num = i + 1;
         const isActive = currentStep >= num;
@@ -17,9 +23,8 @@ export const Stepper = ({ steps, currentStep }: IStepperProps) => {
         const isLast = i === steps.length - 1;
 
         return (
-          <div
+          <li
             key={label}
-            role="listitem"
             aria-current={isCurrent ? 'step' : undefined}
             className={clsx('flex items-center', !isLast && 'flex-1')}
           >
@@ -35,7 +40,7 @@ export const Stepper = ({ steps, currentStep }: IStepperProps) => {
                 {isDone ? (
                   <>
                     <Check aria-hidden="true" className="h-3.5 w-3.5" />
-                    <span className="sr-only">Completed</span>
+                    <span className="sr-only">{t.common.completed}</span>
                   </>
                 ) : (
                   num
@@ -58,9 +63,9 @@ export const Stepper = ({ steps, currentStep }: IStepperProps) => {
                 )}
               />
             )}
-          </div>
+          </li>
         );
       })}
-    </div>
+    </ol>
   );
 };

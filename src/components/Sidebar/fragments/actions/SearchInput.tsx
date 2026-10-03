@@ -3,6 +3,8 @@
 import { Search, X } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 
+import { isTypingTarget } from '@/lib/utils';
+
 interface ISearchInputProps {
   value: string;
   onChange: (value: string) => void;
@@ -14,10 +16,7 @@ export const SearchInput = ({ value, onChange, placeholder }: ISearchInputProps)
 
   useEffect(() => {
     const handler = (event: KeyboardEvent) => {
-      const target = event.target as HTMLElement | null;
-      const isEditable =
-        target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target?.isContentEditable;
-      if (isEditable) return;
+      if (isTypingTarget(event.target)) return;
       if (event.key === '/') {
         event.preventDefault();
         ref.current?.focus();

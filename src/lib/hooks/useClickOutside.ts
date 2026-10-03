@@ -8,23 +8,11 @@ export const useClickOutside = <T extends HTMLElement>(
   enabled: boolean = true,
 ): void => {
   useEffect(() => {
-    if (!enabled) {
-      return;
-    }
+    if (!enabled) return;
 
     const onMouseDown = (event: MouseEvent) => {
       const node = ref.current;
-      if (!node) {
-        return;
-      }
-
-      if (!(event.target instanceof Node)) {
-        return;
-      }
-
-      if (node.contains(event.target)) {
-        return;
-      }
+      if (!node || !(event.target instanceof Node) || node.contains(event.target)) return;
 
       onOutside();
     };

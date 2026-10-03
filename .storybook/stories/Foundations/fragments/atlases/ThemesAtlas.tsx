@@ -1,4 +1,4 @@
-import type { TTheme } from '@constants';
+import type { TTheme } from '@interfaces';
 
 import { COLOR_GROUPS, CONTRAST_PAIRS, THEME_LIST, THEMES_SECTIONS } from '../../consts';
 import { orderedSpecimens } from '../../utils';

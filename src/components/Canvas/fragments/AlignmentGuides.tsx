@@ -5,7 +5,7 @@ import { useMemo } from 'react';
 
 import type { IAlignmentGuide } from '@interfaces';
 
-import { ALIGN_GUIDE_DASH_ARRAY, ALIGN_GUIDE_FALLBACK_COLOR, ALIGN_GUIDE_STROKE_WIDTH } from '../consts';
+import { ACCENT_FALLBACK, ALIGN_GUIDE_DASH_ARRAY, ALIGN_GUIDE_STROKE_WIDTH } from '../consts';
 import { useThemeToken } from '../hooks';
 
 interface IAlignmentGuidesProps {
@@ -14,22 +14,16 @@ interface IAlignmentGuidesProps {
 
 export const AlignmentGuides = ({ guides }: IAlignmentGuidesProps) => {
   const { flowToScreenPosition } = useReactFlow();
-  const stroke = useThemeToken('--accent', ALIGN_GUIDE_FALLBACK_COLOR);
+  const stroke = useThemeToken('--accent', ACCENT_FALLBACK);
 
   const segments = useMemo(
     () =>
-      guides.map((guide, index) => {
-        if (guide.direction === 'vertical') {
-          const head = flowToScreenPosition({ x: guide.position, y: guide.start });
-          const tail = flowToScreenPosition({ x: guide.position, y: guide.end });
+      guides.map(({ direction, position, start, end }) => {
+        const vertical = direction === 'vertical';
+        const head = flowToScreenPosition(vertical ? { x: position, y: start } : { x: start, y: position });
+        const tail = flowToScreenPosition(vertical ? { x: position, y: end } : { x: end, y: position });
 
-          return { id: `v-${index}`, x1: head.x, y1: head.y, x2: tail.x, y2: tail.y };
-        }
-
-        const head = flowToScreenPosition({ x: guide.start, y: guide.position });
-        const tail = flowToScreenPosition({ x: guide.end, y: guide.position });
-
-        return { id: `h-${index}`, x1: head.x, y1: head.y, x2: tail.x, y2: tail.y };
+        return { id: `${direction}-${position}`, x1: head.x, y1: head.y, x2: tail.x, y2: tail.y };
       }),
     [guides, flowToScreenPosition],
   );

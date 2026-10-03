@@ -13,7 +13,7 @@ interface IExportMenuProps {
 }
 
 export const ExportMenu = ({ threadId, threadName }: IExportMenuProps) => {
-  const copy = useTranslations().platform.canvas.export;
+  const t = useTranslations();
   const { open, disabled, loading, hint, menuId, rootRef, buttonRef, menuRef, toggle, handleKeyDown, exportFormat } =
     useExportMenu(threadId, threadName);
 
@@ -24,8 +24,8 @@ export const ExportMenu = ({ threadId, threadName }: IExportMenuProps) => {
         type="button"
         data-tour="toolbarExport"
         disabled={disabled || loading}
-        aria-label={loading ? copy.loading : copy.label}
-        title={disabled ? copy.unavailable : copy.label}
+        aria-label={loading ? t.platform.canvas.export.loading : t.platform.canvas.export.label}
+        title={disabled ? t.platform.canvas.export.unavailable : t.platform.canvas.export.label}
         aria-haspopup="menu"
         aria-expanded={open}
         aria-controls={open ? menuId : undefined}
@@ -48,15 +48,17 @@ export const ExportMenu = ({ threadId, threadName }: IExportMenuProps) => {
           data-tour="exportMenu"
           className="absolute right-full bottom-0 z-50 mr-3 w-64 max-w-[calc(100vw-6rem)] rounded-xl border border-[color:var(--border)] bg-[color:var(--surface)] p-2 text-[color:var(--text)] shadow-[var(--shadow-modal)]"
         >
-          <p className="px-2 pt-1 text-[13px] font-semibold">{copy.label}</p>
-          <p className="px-2 pt-1 pb-2 text-xs leading-relaxed text-[color:var(--text-muted)]">{copy.description}</p>
+          <p className="px-2 pt-1 text-[13px] font-semibold">{t.platform.canvas.export.label}</p>
+          <p className="px-2 pt-1 pb-2 text-xs leading-relaxed text-[color:var(--text-muted)]">
+            {t.platform.canvas.export.description}
+          </p>
 
           <div
             ref={menuRef}
             id={menuId}
             role="menu"
             tabIndex={-1}
-            aria-label={copy.label}
+            aria-label={t.platform.canvas.export.label}
             aria-busy={loading}
             onKeyDown={handleKeyDown}
             className="outline-none"
@@ -71,14 +73,16 @@ export const ExportMenu = ({ threadId, threadName }: IExportMenuProps) => {
                 className="flex w-full cursor-pointer items-center justify-between gap-3 rounded-lg px-2 py-2.5 text-left text-[13px] transition-colors hover:bg-[color:var(--surface-overlay)] focus-visible:bg-[color:var(--surface-overlay)] focus-visible:ring-2 focus-visible:ring-[color:var(--ring-focus)] focus-visible:outline-none disabled:cursor-wait disabled:opacity-50 motion-reduce:transition-none"
               >
                 <span className="font-semibold">{format.toUpperCase()}</span>
-                <span className="text-xs text-[color:var(--text-muted)]">{copy.formats[format]}</span>
+                <span className="text-xs text-[color:var(--text-muted)]">
+                  {t.platform.canvas.export.formats[format]}
+                </span>
               </button>
             ))}
           </div>
 
           {(loading || hint) && (
             <output className="block px-2 pt-2 text-xs leading-relaxed text-[color:var(--text-muted)]">
-              {loading ? copy.loading : hint}
+              {loading ? t.platform.canvas.export.loading : hint}
             </output>
           )}
         </div>

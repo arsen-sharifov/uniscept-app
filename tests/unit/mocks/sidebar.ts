@@ -7,11 +7,11 @@ export const RENAME_ITEMS = [
   { id: '2', name: 'Beta' },
 ];
 
-export const threadItem = (id: string, answered = false): TNavItem => ({
+export const threadItem = (id: string, resolved = false): TNavItem => ({
   type: 'thread',
   id,
   name: `Thread ${id}`,
-  answered,
+  resolved,
 });
 
 export const folderItem = (id: string, items: TNavItem[] = []): TNavItem => ({
@@ -33,14 +33,14 @@ export const threadInput = (
   id: string,
   position: number,
   folderId: string | null = null,
-  hasAnswer = false,
+  resolved = false,
 ): IThread => ({
   id,
   workspaceId: 'ws-1',
   folderId,
   name: `Thread ${id}`,
   position,
-  hasAnswer,
+  resolved,
 });
 
 export const workspaceItem = (id: string, canManageWorkspace = true): IWorkspaceItem => ({

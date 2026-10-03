@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-import type { TTheme } from '@constants';
+import type { TTheme } from '@interfaces';
 
 import { COLOR_GROUPS } from '../../consts';
 import { findActiveTheme } from '../../utils';

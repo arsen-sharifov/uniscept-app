@@ -17,7 +17,6 @@ const meta: Meta<typeof Sidebar> = {
   title: 'Components/Sidebar',
   component: Sidebar,
   parameters: {
-    layout: 'fullscreen',
     docs: {
       description: {
         component:
@@ -125,7 +124,7 @@ export const SingleWorkspace: Story = {
   render: SidebarWithState,
   args: {
     items: fullTree,
-    workspaces: [{ id: 'ws-1', name: 'My Workspace' }],
+    workspaces: [{ id: 'ws-1', name: 'My Workspace', canManageWorkspace: true }],
     activeWorkspaceId: 'ws-1',
     activeItemId: 'f1-t1',
   },
@@ -162,6 +161,7 @@ export const ManyWorkspaces: Story = {
     workspaces: Array.from({ length: 18 }, (_, i) => ({
       id: `ws-${i + 1}`,
       name: `Workspace ${i + 1}`,
+      canManageWorkspace: true,
     })),
     activeWorkspaceId: 'ws-3',
     activeItemId: 'f1-t1',

@@ -1,4 +1,19 @@
-import type { Edge, FitViewOptions, Node } from '@xyflow/react';
+import type {
+  Edge,
+  EdgeMouseHandler,
+  FitViewOptions,
+  IsValidConnection,
+  Node,
+  NodeMouseHandler,
+  OnConnect,
+  OnMoveEnd,
+  Position,
+  Viewport,
+} from '@xyflow/react';
+import type { LucideIcon } from 'lucide-react';
+import type { FocusEvent, KeyboardEvent, MouseEvent, RefObject } from 'react';
+
+import type { TDefaultZoom } from './preferences';
 
 export enum ECanvasNodeType {
   Canvas = 'canvas-node',
@@ -98,7 +113,7 @@ export interface ISaveState {
   failedCount: number;
 }
 
-export type TEdgeTone = 'default' | 'valid' | 'invalid' | 'tainted';
+export type TEdgeTone = 'default' | 'valid' | 'answer' | 'invalid' | 'tainted';
 
 export interface ICanvasEdgeData extends Record<string, unknown> {
   tone?: TEdgeTone;
@@ -118,11 +133,6 @@ export interface ICanvasEdgeGeometry {
 }
 
 export type TEffectiveStatus = TNodeStatus | 'tainted' | 'tainted-valid';
-
-export interface IEdgePaletteEntry {
-  stroke: string;
-  marker: string;
-}
 
 export interface IAlignmentGuide {
   direction: 'vertical' | 'horizontal';
@@ -169,55 +179,55 @@ export interface ICreateNodeCommentInput {
   text: string;
 }
 
-export interface IIdScoped {
+interface IIdScoped {
   id: string;
 }
 
-export interface IThreadScoped extends IIdScoped {
+interface IThreadScoped extends IIdScoped {
   threadId: string;
 }
 
-export interface IPositioned extends IThreadScoped {
+interface IPositioned extends IThreadScoped {
   x: number;
   y: number;
 }
 
-export interface ICreateCanvasNodeOperation extends IPositioned {
+interface ICreateCanvasNodeOperation extends IPositioned {
   type: 'createCanvasNode';
   label: string;
 }
 
-export interface ICreateReferenceNodeOperation extends IPositioned {
+interface ICreateReferenceNodeOperation extends IPositioned {
   type: 'createReferenceNode';
   data: IReferenceNodeData;
 }
 
-export interface IDeleteNodeOperation extends IIdScoped {
+interface IDeleteNodeOperation extends IIdScoped {
   type: 'deleteNode';
 }
 
-export interface IUpdateNodePositionOperation extends IIdScoped {
+interface IUpdateNodePositionOperation extends IIdScoped {
   type: 'updateNodePosition';
   x: number;
   y: number;
 }
 
-export interface IUpdateNodeLabelOperation extends IIdScoped {
+interface IUpdateNodeLabelOperation extends IIdScoped {
   type: 'updateNodeLabel';
   label: string;
 }
 
-export interface IUpdateNodeStatusOperation extends IIdScoped {
+interface IUpdateNodeStatusOperation extends IIdScoped {
   type: 'updateNodeStatus';
   status: TNodeStatus;
 }
 
-export interface IUpdateNodeAnswerOperation extends IIdScoped {
+interface IUpdateNodeAnswerOperation extends IIdScoped {
   type: 'updateNodeAnswer';
   isAnswer: boolean;
 }
 
-export interface ICreateEdgeOperation extends IThreadScoped {
+interface ICreateEdgeOperation extends IThreadScoped {
   type: 'createEdge';
   source: string;
   target: string;
@@ -225,17 +235,17 @@ export interface ICreateEdgeOperation extends IThreadScoped {
   targetHandle: THandleId;
 }
 
-export interface IDeleteEdgeOperation extends IIdScoped {
+interface IDeleteEdgeOperation extends IIdScoped {
   type: 'deleteEdge';
 }
 
-export interface ICreateNodeCommentOperation extends IIdScoped {
+interface ICreateNodeCommentOperation extends IIdScoped {
   type: 'createComment';
   nodeId: string;
   text: string;
 }
 
-export interface IDeleteNodeCommentOperation extends IIdScoped {
+interface IDeleteNodeCommentOperation extends IIdScoped {
   type: 'deleteComment';
 }
 
@@ -247,6 +257,9 @@ export type TNodeOperation =
   | IUpdateNodeLabelOperation
   | IUpdateNodeStatusOperation
   | IUpdateNodeAnswerOperation;
+
+export type TNodeUpdateOperation =
+  IUpdateNodePositionOperation | IUpdateNodeLabelOperation | IUpdateNodeStatusOperation | IUpdateNodeAnswerOperation;
 
 export type TEdgeOperation = ICreateEdgeOperation | IDeleteEdgeOperation;
 
@@ -320,4 +333,88 @@ export interface ICanvasSkeletonNode {
   y: number;
   width: number;
   lines: number;
+}
+
+export interface IHandlePosition {
+  id: THandleId;
+  position: Position;
+}
+
+export interface INodeBandStyle {
+  icon: LucideIcon;
+  color: string;
+}
+
+export interface INodeStateBand {
+  active: boolean;
+  tone: TNodeBandTone;
+  label: string;
+}
+
+export interface IUseCanvasSyncResult {
+  saveState: ISaveState;
+  loadError: Error | null;
+}
+
+export interface IUseCanvasToolsResult {
+  onPaneClick: (event: MouseEvent) => void;
+  onNodeClick: NodeMouseHandler;
+  onNodeDoubleClick: NodeMouseHandler;
+  onEdgeClick: EdgeMouseHandler;
+  onConnect: OnConnect;
+  isValidConnection: IsValidConnection;
+}
+
+export interface IUseCanvasViewportOptions {
+  threadId: string;
+  defaultZoom: TDefaultZoom;
+}
+
+export interface IUseCanvasViewportResult {
+  defaultViewport: Viewport;
+  arriving: boolean;
+  onMoveEnd: OnMoveEnd;
+}
+
+export interface IUseCanvasContextMenuResult {
+  contextMenu: TCanvasContextMenu | null;
+  closeContextMenu: () => void;
+  onPaneContextMenu: (event: MouseEvent | globalThis.MouseEvent) => void;
+  onNodeContextMenu: NodeMouseHandler;
+  onEdgeContextMenu: EdgeMouseHandler;
+}
+
+export interface IUseLabelEditingOptions {
+  id: string;
+  label: string;
+  measured: boolean;
+  signalLabelled?: boolean;
+}
+
+export interface IUseLabelEditingResult {
+  inputRef: RefObject<HTMLTextAreaElement | null>;
+  handleLabelBlur: (event: FocusEvent<HTMLTextAreaElement>) => void;
+  handleLabelKeyDown: (event: KeyboardEvent<HTMLTextAreaElement>) => void;
+}
+
+export type TCanvasOperationListener = (operation: TCanvasOperation) => void;
+
+export type TSaveStatusListener = (state: ISaveState) => void;
+
+export type TFailedOperationsListener = (failed: TCanvasOperation[]) => void;
+
+export interface ICanvasQueueState {
+  pending: TCanvasOperation[];
+  failed: TCanvasOperation[];
+  flushTimer: number | null;
+  retryTimer: number | null;
+  pollTimer: number | null;
+  retries: number;
+  inflight: TCanvasOperation[] | null;
+  retryRequested: boolean;
+  online: boolean;
+  saveState: ISaveState;
+  listeners: Set<TSaveStatusListener>;
+  failedListeners: Set<TFailedOperationsListener>;
+  windowListenersBound: boolean;
 }

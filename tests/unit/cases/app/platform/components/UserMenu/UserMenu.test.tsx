@@ -1,10 +1,11 @@
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { TRANSLATIONS } from '@mocks/i18n';
+import { clearLocale, TRANSLATIONS } from '@mocks/i18n';
 import { router } from '@mocks/navigation';
 import { getUser, signOut, USER_UNAVAILABLE } from '@mocks/userApi';
 import { UserMenu } from '@/app/platform/components/UserMenu';
+import { event } from '@/lib/events';
 import { useOnboardingStore } from '@/lib/onboarding';
 
 vi.mock('next/navigation', () => import('@mocks/navigation'));
@@ -22,10 +23,8 @@ describe('UserMenu', () => {
 
     describe('WHEN the user opens the menu after loading settles', () => {
       beforeEach(async () => {
-        await act(async () => {
-          render(<UserMenu />);
-        });
-        fireEvent.click(screen.getByText(TRANSLATIONS.common.userAvatar));
+        render(<UserMenu />);
+        fireEvent.click(await screen.findByText(TRANSLATIONS.common.userAvatar));
       });
 
       test('THEN settings and sign out remain available', () => {
@@ -42,10 +41,8 @@ describe('UserMenu', () => {
 
     describe('WHEN the user opens the menu', () => {
       beforeEach(async () => {
-        await act(async () => {
-          render(<UserMenu />);
-        });
-        fireEvent.click(screen.getByText(TRANSLATIONS.common.userAvatar));
+        render(<UserMenu />);
+        fireEvent.click(await screen.findByText(TRANSLATIONS.common.userAvatar));
       });
 
       test('THEN sign out remains available', () => {
@@ -57,19 +54,17 @@ describe('UserMenu', () => {
   describe('GIVEN tour progress loaded for the signed-in account', () => {
     beforeEach(() => {
       getUser.mockResolvedValue(USER_UNAVAILABLE);
+      clearLocale.mockResolvedValue(undefined);
       useOnboardingStore.getState().hydrate('user-1', { offerAnswered: true, completedGuides: ['base'] });
     });
 
     describe('WHEN the user signs out', () => {
       beforeEach(async () => {
         signOut.mockResolvedValue(undefined);
-        await act(async () => {
-          render(<UserMenu />);
-        });
-        fireEvent.click(screen.getByText(TRANSLATIONS.common.userAvatar));
-        await act(async () => {
-          fireEvent.click(screen.getByRole('button', { name: TRANSLATIONS.platform.sidebar.signOut }));
-        });
+        render(<UserMenu />);
+        fireEvent.click(await screen.findByText(TRANSLATIONS.common.userAvatar));
+        fireEvent.click(screen.getByRole('button', { name: TRANSLATIONS.platform.sidebar.signOut }));
+        await vi.waitUntil(() => router.push.mock.calls.length > 0);
       });
 
       test('THEN the progress is forgotten before the sign-in page opens', () => {
@@ -78,20 +73,48 @@ describe('UserMenu', () => {
       });
     });
 
-    describe('WHEN signing out fails on the api', () => {
+    describe('WHEN signing out fails on the api after the local session is gone', () => {
       beforeEach(async () => {
         signOut.mockRejectedValue(new Error('network down'));
-        await act(async () => {
-          render(<UserMenu />);
-        });
-        fireEvent.click(screen.getByText(TRANSLATIONS.common.userAvatar));
-        await act(async () => {
-          fireEvent.click(screen.getByRole('button', { name: TRANSLATIONS.platform.sidebar.signOut }));
+        render(<UserMenu />);
+        fireEvent.click(await screen.findByText(TRANSLATIONS.common.userAvatar));
+        fireEvent.click(screen.getByRole('button', { name: TRANSLATIONS.platform.sidebar.signOut }));
+        await vi.waitUntil(() => router.push.mock.calls.length > 0);
+      });
+
+      test('THEN the failure is reported without a toast', () => {
+        expect(event.error).toHaveBeenCalledExactlyOnceWith(expect.any(Error), {
+          toast: false,
+          context: 'auth.signOut',
         });
       });
 
-      test('THEN the progress is forgotten all the same', () => {
+      test('THEN the device state is still cleared and the sign-in page opens', () => {
         expect(useOnboardingStore.getState()).toMatchObject({ loaded: false, userId: null, completedGuides: [] });
+        expect(clearLocale).toHaveBeenCalledTimes(1);
+        expect(router.push).toHaveBeenCalledExactlyOnceWith('/login');
+      });
+    });
+
+    describe('WHEN clearing the language cookie fails', () => {
+      beforeEach(async () => {
+        signOut.mockResolvedValue(undefined);
+        clearLocale.mockRejectedValue(new Error('cookie store down'));
+        render(<UserMenu />);
+        fireEvent.click(await screen.findByText(TRANSLATIONS.common.userAvatar));
+        fireEvent.click(screen.getByRole('button', { name: TRANSLATIONS.platform.sidebar.signOut }));
+        await vi.waitUntil(() => router.push.mock.calls.length > 0);
+      });
+
+      test('THEN the sign-in page still opens', () => {
+        expect(router.push).toHaveBeenCalledExactlyOnceWith('/login');
+      });
+
+      test('THEN the failure is reported without a toast', () => {
+        expect(event.error).toHaveBeenCalledExactlyOnceWith(expect.any(Error), {
+          toast: false,
+          context: 'auth.clearLocale',
+        });
       });
     });
   });

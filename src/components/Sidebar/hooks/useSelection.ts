@@ -1,10 +1,14 @@
 'use client';
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useRef, useState, type MouseEvent } from 'react';
 
-export const useSelection = () => {
+export const useSelection = (validIds?: ReadonlySet<string>) => {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const lastClickedIdRef = useRef<string | null>(null);
+
+  if (validIds && [...selectedIds].some((id) => !validIds.has(id))) {
+    setSelectedIds(new Set([...selectedIds].filter((id) => validIds.has(id))));
+  }
 
   const toggleSelection = useCallback((id: string) => {
     setSelectedIds((prev) => {
@@ -18,17 +22,15 @@ export const useSelection = () => {
   }, []);
 
   const selectRange = useCallback((targetId: string, orderedItems: readonly { id: string }[]) => {
-    const anchorId = lastClickedIdRef.current;
-    if (!anchorId) {
+    const anchorIdx = orderedItems.findIndex((item) => item.id === lastClickedIdRef.current);
+    const targetIdx = orderedItems.findIndex((item) => item.id === targetId);
+    if (targetIdx === -1) return;
+    if (anchorIdx === -1) {
       setSelectedIds(new Set([targetId]));
       lastClickedIdRef.current = targetId;
 
       return;
     }
-
-    const anchorIdx = orderedItems.findIndex((item) => item.id === anchorId);
-    const targetIdx = orderedItems.findIndex((item) => item.id === targetId);
-    if (anchorIdx === -1 || targetIdx === -1) return;
 
     const from = Math.min(anchorIdx, targetIdx);
     const to = Math.max(anchorIdx, targetIdx);
@@ -40,18 +42,35 @@ export const useSelection = () => {
     lastClickedIdRef.current = null;
   }, []);
 
-  const clearAndSetAnchor = useCallback((id: string) => {
-    setSelectedIds(new Set());
-    lastClickedIdRef.current = id;
-  }, []);
+  const selectOnClick = useCallback(
+    (
+      id: string,
+      event: Pick<MouseEvent, 'shiftKey' | 'ctrlKey' | 'metaKey'>,
+      orderedItems: readonly { id: string }[],
+      onActivate?: (id: string) => void,
+    ) => {
+      if (event.shiftKey) {
+        selectRange(id, orderedItems);
+
+        return;
+      }
+      if (event.ctrlKey || event.metaKey) {
+        toggleSelection(id);
+
+        return;
+      }
+      setSelectedIds(new Set());
+      lastClickedIdRef.current = id;
+      onActivate?.(id);
+    },
+    [selectRange, toggleSelection],
+  );
 
   return {
     selectedIds,
     setSelectedIds,
-    toggleSelection,
-    selectRange,
     clearSelection,
-    clearAndSetAnchor,
+    selectOnClick,
     selectionCount: selectedIds.size,
   };
 };

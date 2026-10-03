@@ -26,7 +26,7 @@ export const flattenTree = (
       index,
       collapsed,
       childCount,
-      answered: item.type === 'thread' ? item.answered : undefined,
+      resolved: item.type === 'thread' ? item.resolved : undefined,
     };
 
     return [flatItem, ...children];
@@ -44,6 +44,7 @@ export const getProjection = (
   activeId: string,
   overId: string,
   zone: TDropZone,
+  subtreeDepth: number,
 ): IProjection | null => {
   if (activeId === overId) return null;
 
@@ -53,7 +54,7 @@ export const getProjection = (
 
   const activeItem = flatItems[activeIndex] as IFlattenedItem;
   const overItem = flatItems[overIndex] as IFlattenedItem;
-  const maxDepth = activeItem.type === 'folder' ? MAX_DEPTH - 1 : MAX_DEPTH;
+  const maxDepth = MAX_DEPTH - subtreeDepth;
 
   if (zone === 'inside' && overItem.type === 'folder' && overItem.id !== activeId) {
     const depth = overItem.depth + 1;
@@ -64,18 +65,12 @@ export const getProjection = (
     }
   }
 
-  const parentId: string | null = overItem.parentId;
-  let depth: number = overItem.depth;
+  if (overItem.depth > maxDepth) return null;
 
-  if (depth > maxDepth) {
-    depth = maxDepth;
-  }
+  const parentId = overItem.parentId;
+  if (activeItem.type === 'folder' && parentId && isDescendantOrSelf(flatItems, parentId, activeId)) return null;
 
-  if (activeItem.type === 'folder' && parentId) {
-    if (isDescendantOrSelf(flatItems, parentId, activeId)) return null;
-  }
-
-  return { depth, parentId, zone };
+  return { depth: overItem.depth, parentId, zone: zone === 'inside' ? 'before' : zone };
 };
 
 const findAnchorAtParent = (items: IFlattenedItem[], id: string, targetParentId: string | null): string | null => {
@@ -128,6 +123,17 @@ export const resolveDropZone = (
   return isFolder
     ? resolveFolderZone(ratio, prev, sameTarget, buffer)
     : resolveLeafZone(ratio, prev, sameTarget, buffer);
+};
+
+export const resolveKeyboardDropZone = (
+  items: readonly { id: string }[],
+  activeId: string,
+  overId: string,
+): Exclude<TDropZone, 'inside'> => {
+  const overIndex = items.findIndex((item) => item.id === overId);
+  const activeIndex = items.findIndex((item) => item.id === activeId);
+
+  return overIndex > activeIndex ? 'after' : 'before';
 };
 
 export const removeChildrenOf = (flatItems: IFlattenedItem[], ids: Set<string>): IFlattenedItem[] => {

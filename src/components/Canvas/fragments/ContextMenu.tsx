@@ -13,16 +13,19 @@ import {
   XCircle,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useRef, type ReactNode } from 'react';
+import { type ReactNode, useEffect, useRef } from 'react';
 
 import { ECanvasNodeType, type ICanvasNodeData, type TCanvasContextMenu } from '@interfaces';
 import { useClickOutside, useEscapeKey, useMenuKeyboardNavigation } from '@hooks';
 import { useTranslations } from '@/i18n';
+import { hasValidatedParent, isCanvasNodeData } from '@/lib/canvas';
 import { useCanvasStore, usePermissionsStore } from '@/lib/stores';
 import { canEditNode } from '@/lib/utils';
 
-import { buildReferenceTargetUrl, hasValidatedParent, isCanvasNodeData } from '../utils';
-import { MenuDivider, MenuItem } from './MenuItem';
+import { useViewportClamp } from '../hooks';
+import { buildReferenceTargetUrl } from '../utils';
+import { MenuDivider } from './MenuDivider';
+import { MenuItem } from './MenuItem';
 
 interface IContextMenuProps {
   menu: TCanvasContextMenu;
@@ -65,13 +68,10 @@ export const ContextMenu = ({ menu, onClose }: IContextMenuProps) => {
   useEscapeKey(onClose);
   useClickOutside(containerRef, onClose);
 
-  const close = useCallback(
-    (action: () => void) => () => {
-      action();
-      onClose();
-    },
-    [onClose],
-  );
+  const close = (action: () => void) => () => {
+    action();
+    onClose();
+  };
 
   const { focusItem, handleKeyDown } = useMenuKeyboardNavigation(containerRef, { onClose });
 
@@ -82,7 +82,7 @@ export const ContextMenu = ({ menu, onClose }: IContextMenuProps) => {
   const renderPaneItems = (flowX: number, flowY: number): ReactNode[] => [
     <MenuItem
       key="add-node"
-      icon={<Plus className="h-3 w-3" strokeWidth={2.25} />}
+      icon={Plus}
       label={t.platform.canvas.context.addNode}
       shortcut="N"
       onClick={close(() => addNode({ x: flowX, y: flowY }, t.platform.canvas.node.defaultLabel))}
@@ -90,7 +90,7 @@ export const ContextMenu = ({ menu, onClose }: IContextMenuProps) => {
     />,
     <MenuItem
       key="add-reference"
-      icon={<Link2 className="h-3 w-3" strokeWidth={2.25} />}
+      icon={Link2}
       label={t.platform.canvas.context.addReference}
       shortcut="R"
       onClick={close(() => setReferenceSearchPosition({ x: flowX, y: flowY }))}
@@ -101,7 +101,7 @@ export const ContextMenu = ({ menu, onClose }: IContextMenuProps) => {
   const renderEdgeItems = (edgeId: string): ReactNode[] => [
     <MenuItem
       key="delete-edge"
-      icon={<Trash2 className="h-3 w-3" strokeWidth={2.25} />}
+      icon={Trash2}
       label={t.platform.canvas.context.deleteEdge}
       onClick={close(() => deleteEdge(edgeId))}
       accent="red"
@@ -114,7 +114,7 @@ export const ContextMenu = ({ menu, onClose }: IContextMenuProps) => {
         ? [
             <MenuItem
               key="open-referenced"
-              icon={<ExternalLink className="h-3 w-3" strokeWidth={2.25} />}
+              icon={ExternalLink}
               label={t.platform.canvas.context.openReferenced}
               onClick={close(() => router.push(targetUrl))}
               accent="cyan"
@@ -125,7 +125,7 @@ export const ContextMenu = ({ menu, onClose }: IContextMenuProps) => {
         ? [
             <MenuItem
               key="delete-reference"
-              icon={<Trash2 className="h-3 w-3" strokeWidth={2.25} />}
+              icon={Trash2}
               label={t.platform.canvas.context.deleteReference}
               onClick={close(() => deleteNode(nodeId))}
               accent="red"
@@ -139,7 +139,7 @@ export const ContextMenu = ({ menu, onClose }: IContextMenuProps) => {
       ? [
           <MenuItem
             key="edit-question"
-            icon={<Pencil className="h-3 w-3" strokeWidth={2.25} />}
+            icon={Pencil}
             label={t.platform.canvas.question.editLabel}
             onClick={close(() => setEditingNodeId(nodeId))}
           />,
@@ -153,7 +153,7 @@ export const ContextMenu = ({ menu, onClose }: IContextMenuProps) => {
   ): ReactNode[] => [
     <MenuItem
       key="mark-valid"
-      icon={<CheckCircle className="h-3 w-3" strokeWidth={2.25} />}
+      icon={CheckCircle}
       label={status === 'valid' ? t.platform.canvas.context.unmarkValid : t.platform.canvas.context.markValid}
       shortcut="Y"
       onClick={close(() => setNodesStatus([nodeId], 'valid'))}
@@ -163,7 +163,7 @@ export const ContextMenu = ({ menu, onClose }: IContextMenuProps) => {
     />,
     <MenuItem
       key="mark-invalid"
-      icon={<XCircle className="h-3 w-3" strokeWidth={2.25} />}
+      icon={XCircle}
       label={status === 'invalid' ? t.platform.canvas.context.unmarkInvalid : t.platform.canvas.context.markInvalid}
       shortcut="X"
       onClick={close(() => setNodesStatus([nodeId], 'invalid'))}
@@ -171,7 +171,7 @@ export const ContextMenu = ({ menu, onClose }: IContextMenuProps) => {
     />,
     <MenuItem
       key="mark-answer"
-      icon={<Flag className="h-3 w-3" strokeWidth={2.25} />}
+      icon={Flag}
       label={isAnswer ? t.platform.canvas.context.unmarkAnswer : t.platform.canvas.context.markAnswer}
       shortcut="A"
       onClick={close(() => setNodeAnswer(nodeId))}
@@ -191,9 +191,8 @@ export const ContextMenu = ({ menu, onClose }: IContextMenuProps) => {
           ? [
               <MenuItem
                 key="comment"
-                icon={<MessageSquare className="h-3 w-3" strokeWidth={2.25} />}
+                icon={MessageSquare}
                 label={t.platform.canvas.context.comment}
-                shortcut="M"
                 onClick={close(() => setOpenCommentsNodeId(nodeId))}
               />,
             ]
@@ -203,7 +202,7 @@ export const ContextMenu = ({ menu, onClose }: IContextMenuProps) => {
         ? [
             <MenuItem
               key="duplicate"
-              icon={<Copy className="h-3 w-3" strokeWidth={2.25} />}
+              icon={Copy}
               label={t.platform.canvas.context.duplicate}
               onClick={close(() => duplicateNode(nodeId))}
             />,
@@ -213,7 +212,7 @@ export const ContextMenu = ({ menu, onClose }: IContextMenuProps) => {
         ? [
             <MenuItem
               key="delete"
-              icon={<Trash2 className="h-3 w-3" strokeWidth={2.25} />}
+              icon={Trash2}
               label={t.platform.canvas.context.delete}
               shortcut="⌫"
               onClick={close(() => deleteNode(nodeId))}
@@ -250,6 +249,8 @@ export const ContextMenu = ({ menu, onClose }: IContextMenuProps) => {
   const items = renderItems();
   const isEmpty = items.length === 0;
 
+  useViewportClamp(containerRef, { x: menu.x, y: menu.y }, !isEmpty);
+
   useEffect(() => {
     if (isEmpty) onClose();
   }, [isEmpty, onClose]);
@@ -263,7 +264,6 @@ export const ContextMenu = ({ menu, onClose }: IContextMenuProps) => {
       tabIndex={-1}
       aria-label={t.platform.canvas.context.ariaLabel}
       onKeyDown={handleKeyDown}
-      style={{ left: menu.x, top: menu.y }}
       className="fixed z-50 flex w-56 animate-rise-down flex-col rounded-xl border border-[color:var(--border)] bg-[color:var(--surface)] p-1 font-grotesk text-[color:var(--text)] shadow-[var(--shadow-modal)] outline-none select-none motion-reduce:animate-none"
     >
       {items}

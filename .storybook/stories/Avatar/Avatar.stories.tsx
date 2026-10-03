@@ -175,7 +175,6 @@ export const IconVsInitials: Story = {
     <Showcase
       title="Icon vs initials"
       caption="matched weight"
-      columns={5}
       items={(['xs', 'sm', 'md', 'lg', 'xl'] as const).map((size) => ({
         label: size,
         hint: `size=${size}`,

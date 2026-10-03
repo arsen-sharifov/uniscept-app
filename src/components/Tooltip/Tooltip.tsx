@@ -4,6 +4,8 @@ import { clsx } from 'clsx';
 import { Info } from 'lucide-react';
 import { cloneElement, isValidElement, useId, type ReactElement, type ReactNode } from 'react';
 
+import { useTranslations } from '@/i18n';
+
 interface ITooltipProps {
   text: string;
   children?: ReactNode;
@@ -11,10 +13,19 @@ interface ITooltipProps {
 }
 
 export const Tooltip = ({ text, children, position = 'top' }: ITooltipProps) => {
+  const t = useTranslations();
   const isTop = position === 'top';
   const tooltipId = useId();
 
-  const triggerNode = children ?? <Info className="h-3.5 w-3.5 cursor-help text-[color:var(--text-subtle)]" />;
+  const triggerNode = children ?? (
+    <button
+      type="button"
+      aria-label={t.common.moreInfo}
+      className="flex cursor-help rounded-full text-[color:var(--text-subtle)] focus-visible:ring-2 focus-visible:ring-[color:var(--ring-focus)] focus-visible:outline-none"
+    >
+      <Info aria-hidden className="h-3.5 w-3.5" />
+    </button>
+  );
 
   const trigger = isValidElement(triggerNode)
     ? cloneElement(triggerNode as ReactElement<{ 'aria-describedby'?: string }>, { 'aria-describedby': tooltipId })

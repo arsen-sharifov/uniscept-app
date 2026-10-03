@@ -12,7 +12,6 @@ type TIconStoryArgs = Omit<ComponentProps<typeof IconGallery>, 'onCopy'>;
 const meta: Meta<TIconStoryArgs> = {
   title: 'Foundations/Icons',
   parameters: {
-    layout: 'fullscreen',
     docs: {
       description: {
         component:

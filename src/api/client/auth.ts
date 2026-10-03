@@ -1,12 +1,14 @@
-import { createClient } from '@/lib/supabase/client';
+import { createClient } from '@/lib/supabase';
 
-export const signIn = async (email: string, password: string) => {
+import { toResponseError } from './utils';
+
+export const signIn = (email: string, password: string) => {
   const supabase = createClient();
 
   return supabase.auth.signInWithPassword({ email, password });
 };
 
-export const signUp = async (email: string, password: string, name: string) => {
+export const signUp = (email: string, password: string, name: string) => {
   const supabase = createClient();
 
   return supabase.auth.signUp({
@@ -16,36 +18,40 @@ export const signUp = async (email: string, password: string, name: string) => {
   });
 };
 
-export const getSession = async () => {
+export const getSession = () => {
   const supabase = createClient();
 
   return supabase.auth.getSession();
 };
 
-export const setSession = async (accessToken: string, refreshToken: string) => {
+export const verifyInvitation = (tokenHash: string) => {
   const supabase = createClient();
 
-  return supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+  return supabase.auth.verifyOtp({ token_hash: tokenHash, type: 'invite' });
 };
 
-export const completeInvitedAccount = async (name: string, password: string) => {
+export const completeInvitedAccount = (name: string, password: string) => {
   const supabase = createClient();
 
   return supabase.auth.updateUser({ password, data: { name, plan: 'beta' } });
 };
 
-export const signOut = async () => {
+export const signOut = async (): Promise<void> => {
   const supabase = createClient();
+  const { error } = await supabase.auth.signOut();
 
-  return supabase.auth.signOut();
+  if (error) throw error;
 };
 
-export const verifyInviteCode = async (code: string) => {
+export const verifyInviteCode = async (code: string, email: string) => {
   const res = await fetch('/auth/verify-invite', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ code }),
+    body: JSON.stringify({ code, email }),
   });
 
-  return res.ok;
+  if (res.ok) return true;
+  if (res.status === 403) return false;
+
+  throw await toResponseError(res, 'Invite code check failed');
 };

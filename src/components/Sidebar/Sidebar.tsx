@@ -1,7 +1,7 @@
 'use client';
 
-import { Files, FolderPlus, LayoutGrid, Plus, SearchX, Sparkles } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useState, type MouseEvent, type ReactNode } from 'react';
+import { Files, FolderPlus, LayoutGrid, Plus, Sparkles } from 'lucide-react';
+import { useCallback, useMemo, useState, type MouseEvent, type ReactNode } from 'react';
 
 import type { TDeleteTarget, TNavItem, TNavItemType, IWorkspaceItem, IMyInvitation } from '@interfaces';
 import { useEscapeKey } from '@hooks';
@@ -15,12 +15,14 @@ import {
   EmptyState,
   MoveDialog,
   NavItems,
+  SearchEmptyState,
   SearchInput,
   SidebarSkeleton,
+  StructureActionButton,
   WorkspaceSwitcher,
 } from './fragments';
 import { useInlineEdit, useSelection } from './hooks';
-import { filterTree, getSiblings, getSingleDeleteTitleKey } from './utils';
+import { collectIds, filterTree, getSiblings, getSingleDeleteTitleKey } from './utils';
 
 export interface ISidebarProps {
   items?: TNavItem[];
@@ -86,66 +88,20 @@ export const Sidebar = ({
   const t = useTranslations();
   const canManageStructure = usePermissionsStore((s) => s.canManageStructure);
 
-  const {
-    selectedIds,
-    setSelectedIds,
-    toggleSelection,
-    selectRange,
-    clearSelection,
-    clearAndSetAnchor,
-    selectionCount,
-  } = useSelection();
-
-  const {
-    selectedIds: workspaceSelectedIds,
-    setSelectedIds: setWorkspaceSelectedIds,
-    toggleSelection: toggleWorkspaceSelection,
-    selectRange: workspaceSelectRange,
-    clearSelection: clearWorkspaceSelection,
-    clearAndSetAnchor: clearAndSetAnchorWorkspace,
-  } = useSelection();
-
-  const allItemIds = useMemo(() => {
-    const collect = (list: TNavItem[]): string[] =>
-      list.flatMap((item) => (item.type === 'folder' ? [item.id, ...collect(item.items)] : [item.id]));
-
-    return new Set(collect(items));
-  }, [items]);
-
-  useEffect(() => {
-    setSelectedIds((prev) => {
-      const next = new Set([...prev].filter((id) => allItemIds.has(id)));
-
-      return next.size === prev.size ? prev : next;
-    });
-  }, [allItemIds, setSelectedIds]);
-
+  const selectableItemIds = useMemo(() => new Set(collectIds(items)), [items]);
   const allWorkspaceIds = useMemo(() => new Set(workspaces.map((workspace) => workspace.id)), [workspaces]);
 
-  useEffect(() => {
-    setWorkspaceSelectedIds((prev) => {
-      const next = new Set([...prev].filter((id) => allWorkspaceIds.has(id)));
-
-      return next.size === prev.size ? prev : next;
-    });
-  }, [allWorkspaceIds, setWorkspaceSelectedIds]);
+  const { selectedIds, setSelectedIds, selectOnClick, clearSelection, selectionCount } =
+    useSelection(selectableItemIds);
+  const {
+    selectedIds: workspaceSelectedIds,
+    selectOnClick: selectWorkspaceOnClick,
+    clearSelection: clearWorkspaceSelection,
+  } = useSelection(allWorkspaceIds);
 
   const handleWorkspaceClick = useCallback(
-    (id: string, event: MouseEvent) => {
-      if (event.shiftKey) {
-        workspaceSelectRange(id, workspaces);
-
-        return;
-      }
-      if (event.ctrlKey || event.metaKey) {
-        toggleWorkspaceSelection(id);
-
-        return;
-      }
-      clearAndSetAnchorWorkspace(id);
-      onWorkspaceSelect?.(id);
-    },
-    [workspaces, workspaceSelectRange, toggleWorkspaceSelection, clearAndSetAnchorWorkspace, onWorkspaceSelect],
+    (id: string, event: MouseEvent) => selectWorkspaceOnClick(id, event, workspaces, onWorkspaceSelect),
+    [selectWorkspaceOnClick, workspaces, onWorkspaceSelect],
   );
 
   const {
@@ -211,9 +167,6 @@ export const Sidebar = ({
     return `${t.platform.sidebar.deleteConfirmPrefix} "${deleteTarget.name}"${t.platform.sidebar.deleteConfirmSuffix}`;
   };
 
-  const deleteTitle = getDeleteTitle();
-  const deleteMessage = getDeleteMessage();
-
   const handleBulkDelete = useCallback(() => {
     setDeleteTarget({
       mode: 'bulk',
@@ -223,7 +176,7 @@ export const Sidebar = ({
     });
   }, [selectedIds, selectionCount]);
 
-  const handleRequestDelete = useCallback((id: string, name: string, type: TNavItemType) => {
+  const handleRequestDelete = useCallback((id: string, name: string, type: 'workspace' | TNavItemType) => {
     setDeleteTarget({ mode: 'single', id, name, type });
   }, []);
 
@@ -268,14 +221,7 @@ export const Sidebar = ({
             onWorkspaceClick={handleWorkspaceClick}
             onCreateWorkspace={onCreateWorkspace}
             onRequestRename={startWorkspaceEditing}
-            onRequestDelete={(id, name) =>
-              setDeleteTarget({
-                mode: 'single',
-                id,
-                name,
-                type: 'workspace',
-              })
-            }
+            onRequestDelete={(id, name) => handleRequestDelete(id, name, 'workspace')}
             onRequestSettings={(id) => onOpenWorkspaceSettings?.(id)}
             onMoveWorkspace={onMoveWorkspace}
             onBulkDelete={handleWorkspaceBulkDelete}
@@ -305,24 +251,18 @@ export const Sidebar = ({
               </div>
               {canManageStructure && (
                 <div className="flex items-center gap-0.5">
-                  <button
-                    type="button"
-                    data-tour="sidebarCreateFolder"
-                    onClick={onCreateFolder}
-                    className="flex h-6 w-6 cursor-pointer items-center justify-center rounded-md text-[color:var(--text-muted)] transition-colors duration-150 hover:bg-[color:var(--surface-overlay)] hover:text-[color:var(--text-strong)] focus-visible:ring-2 focus-visible:ring-[color:var(--ring-focus)] focus-visible:outline-none active:bg-[color:var(--accent-soft)] active:text-[color:var(--accent-text)] motion-reduce:transition-none"
+                  <StructureActionButton
+                    icon={FolderPlus}
                     title={t.platform.sidebar.newFolder}
-                  >
-                    <FolderPlus className="h-4 w-4" strokeWidth={1.9} />
-                  </button>
-                  <button
-                    type="button"
-                    data-tour="sidebarCreateThread"
-                    onClick={() => onCreateThread?.()}
-                    className="flex h-6 w-6 cursor-pointer items-center justify-center rounded-md text-[color:var(--text-muted)] transition-colors duration-150 hover:bg-[color:var(--surface-overlay)] hover:text-[color:var(--text-strong)] focus-visible:ring-2 focus-visible:ring-[color:var(--ring-focus)] focus-visible:outline-none active:bg-[color:var(--accent-soft)] active:text-[color:var(--accent-text)] motion-reduce:transition-none"
+                    tour="sidebarCreateFolder"
+                    onClick={() => onCreateFolder?.()}
+                  />
+                  <StructureActionButton
+                    icon={Plus}
                     title={t.platform.sidebar.newThread}
-                  >
-                    <Plus className="h-4 w-4" strokeWidth={1.9} />
-                  </button>
+                    tour="sidebarCreateThread"
+                    onClick={() => onCreateThread?.()}
+                  />
                 </div>
               )}
             </div>
@@ -332,9 +272,7 @@ export const Sidebar = ({
                 items={filteredItems}
                 activeItemId={activeItemId}
                 selectedIds={selectedIds}
-                onToggleSelection={toggleSelection}
-                onSelectRange={selectRange}
-                onClearAndSetAnchor={clearAndSetAnchor}
+                onSelectClick={selectOnClick}
                 setSelectedIds={setSelectedIds}
                 onItemClick={onItemClick}
                 onRequestDelete={handleRequestDelete}
@@ -347,19 +285,7 @@ export const Sidebar = ({
               />
             )}
 
-            {showSearchEmpty && (
-              <div className="flex flex-1 flex-col items-center justify-center px-4 py-8 text-center">
-                <div className="mb-2 flex h-9 w-9 items-center justify-center rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-overlay)]">
-                  <SearchX className="h-4 w-4 text-[color:var(--text-subtle)]" />
-                </div>
-                <p className="font-grotesk text-xs font-medium text-[color:var(--text-muted)]">
-                  {t.platform.sidebar.noSearchResults}
-                </p>
-                <p className="mt-1 max-w-[180px] truncate font-mono-ui text-[10px] text-[color:var(--text-label)]">
-                  &ldquo;{query}&rdquo;
-                </p>
-              </div>
-            )}
+            {showSearchEmpty && <SearchEmptyState query={query} />}
 
             {showStructureEmpty && (
               <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-2">
@@ -397,15 +323,16 @@ export const Sidebar = ({
           </div>
         )}
 
-        {selectionCount > 0 && canManageStructure && (
+        {selectionCount > 0 && (
           <div className="border-t border-[color:var(--border)] px-2 pt-2 pb-2">
             <BulkActionsBar
               count={selectionCount}
               icon={Files}
-              label={t.platform.sidebar.itemsSelected}
+              label={t('platform.sidebar.itemsSelected', { count: selectionCount })}
               onDelete={handleBulkDelete}
               onMove={() => setShowMoveDialog(true)}
               onClear={clearSelection}
+              lockedHint={canManageStructure ? undefined : t.platform.sidebar.structureLocked}
             />
           </div>
         )}
@@ -415,8 +342,8 @@ export const Sidebar = ({
 
       <ConfirmDialog
         open={deleteTarget !== null}
-        title={deleteTitle}
-        message={deleteMessage}
+        title={getDeleteTitle()}
+        message={getDeleteMessage()}
         confirmLabel={t.platform.sidebar.delete}
         cancelLabel={t.platform.sidebar.cancel}
         onConfirm={confirmDelete}

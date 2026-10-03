@@ -6,7 +6,8 @@ import { useRef } from 'react';
 import { createPortal } from 'react-dom';
 
 import type { IToolGroup } from '@interfaces';
-import { useEscapeKey, useFocusTrap } from '@hooks';
+import { useEscapeKey, useFocusTrap, useReturnFocus } from '@hooks';
+import { Scrim } from '@/components/Modal';
 import { useTranslations } from '@/i18n';
 
 import { ICON_STROKE } from '../consts';
@@ -25,18 +26,13 @@ export const ShortcutsHelp = ({ open, groups, activeTool, onClose }: IShortcutsH
 
   useEscapeKey(onClose, open);
   useFocusTrap(dialogRef, open);
+  useReturnFocus(open);
 
   if (!open || typeof window === 'undefined') return null;
 
   return createPortal(
     <div className="fixed inset-0 z-[60] flex items-center justify-center px-4">
-      <button
-        type="button"
-        tabIndex={-1}
-        aria-label={t.common.close}
-        onClick={onClose}
-        className="absolute inset-0 bg-[color:var(--scrim)] backdrop-blur-sm"
-      />
+      <Scrim onClick={onClose} blurred />
 
       <dialog
         open

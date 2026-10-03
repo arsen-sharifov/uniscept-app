@@ -26,40 +26,28 @@ import {
   type TReferenceNode,
 } from '@interfaces';
 
-import { hasValidatedParent, isCanvasNodeData, isReferenceNodeData } from '@/components/Canvas/utils';
 import { ECanvasTool } from '@/components/tools';
-import { detectPositionChanges, emitCanvasOperation, isHandleId } from '@/lib/canvas';
+import {
+  CANVAS_HISTORY_LIMIT,
+  DUPLICATE_NODE_OFFSET,
+  detectPositionChanges,
+  emitCanvasOperation,
+  hasValidatedParent,
+  isCanvasNodeData,
+  isHandleId,
+  isReferenceNodeData,
+  withReverseEdgeIds,
+} from '@/lib/canvas';
 import { canEditNode } from '@/lib/utils';
 
 import { usePermissionsStore } from './permissionsStore';
-
-const MAX_HISTORY = 100;
-const DUPLICATE_OFFSET = 24;
-
-const CLEARED_OVERLAYS = {
-  pendingConnection: null,
-  referenceSearchPosition: null,
-  editingNodeId: null,
-  openCommentsNodeId: null,
-} as const;
-
-const EMPTY_CANVAS_STATE = {
-  nodes: [] as Node[],
-  edges: [] as Edge[],
-  activeTool: ECanvasTool.Select,
-  pendingConnection: null,
-  referenceSearchPosition: null,
-  editingNodeId: null,
-  openCommentsNodeId: null,
-  middlePan: false,
-} as const;
 
 interface IPersistedSnapshot {
   nodes: Node[];
   edges: Edge[];
 }
 
-interface ICanvasStore extends IPersistedSnapshot {
+interface ICanvasState extends IPersistedSnapshot {
   threadId: string | null;
   hydrated: boolean;
   activeTool: ECanvasTool;
@@ -70,7 +58,9 @@ interface ICanvasStore extends IPersistedSnapshot {
   middlePan: boolean;
   fitRequest: number;
   fitPadding: TFitPadding | null;
+}
 
+interface ICanvasStore extends ICanvasState {
   loadCanvas: (threadId: string, snapshot: ICanvasSnapshot) => void;
   clearCanvas: () => void;
   setActiveTool: (tool: ECanvasTool) => void;
@@ -85,6 +75,7 @@ interface ICanvasStore extends IPersistedSnapshot {
   setReferenceSearchPosition: (position: XYPosition | null) => void;
   deleteNode: (id: string) => void;
   deleteEdge: (id: string) => void;
+  deleteElements: (nodeIds: string[], edgeIds: string[]) => void;
   connectNodes: (connection: Connection) => void;
   setPendingConnection: (nodeId: string | null) => void;
   setNodesStatus: (ids: string[], status: TNodeStatus) => void;
@@ -99,10 +90,48 @@ interface ICanvasStore extends IPersistedSnapshot {
   redo: () => void;
 }
 
+const CLEARED_OVERLAYS = {
+  pendingConnection: null,
+  referenceSearchPosition: null,
+  editingNodeId: null,
+  openCommentsNodeId: null,
+} as const;
+
+const EMPTY_CANVAS_STATE: Omit<ICanvasState, 'threadId' | 'hydrated' | 'fitRequest' | 'fitPadding'> = {
+  nodes: [],
+  edges: [],
+  activeTool: ECanvasTool.Select,
+  ...CLEARED_OVERLAYS,
+  middlePan: false,
+};
+
+const INITIAL_STATE: ICanvasState = {
+  threadId: null,
+  hydrated: false,
+  fitRequest: 0,
+  fitPadding: null,
+  ...EMPTY_CANVAS_STATE,
+};
+
 const snapshotOf = (state: IPersistedSnapshot): IPersistedSnapshot => ({
   nodes: state.nodes,
   edges: state.edges,
 });
+
+const toCreateOperations = (
+  id: string,
+  threadId: string,
+  { x, y }: XYPosition,
+  { label, status, isAnswer, comments }: ICanvasNodeData,
+): TCanvasOperation[] => {
+  const ops: TCanvasOperation[] = [{ type: 'createCanvasNode', id, threadId, x, y, label }];
+
+  if (status !== null) ops.push({ type: 'updateNodeStatus', id, status });
+  if (isAnswer) ops.push({ type: 'updateNodeAnswer', id, isAnswer });
+  comments.forEach((comment) => ops.push({ type: 'createComment', id: comment.id, nodeId: id, text: comment.text }));
+
+  return ops;
+};
 
 const diffNodeAdditions = (
   ops: TCanvasOperation[],
@@ -131,31 +160,7 @@ const diffNodeAdditions = (
 
     if (!isCanvasNodeData(node.data)) return;
 
-    ops.push({
-      type: 'createCanvasNode',
-      id,
-      threadId,
-      x: node.position.x,
-      y: node.position.y,
-      label: node.data.label,
-    });
-
-    if (node.data.status !== null) {
-      ops.push({ type: 'updateNodeStatus', id, status: node.data.status });
-    }
-
-    if (node.data.isAnswer) {
-      ops.push({ type: 'updateNodeAnswer', id, isAnswer: true });
-    }
-
-    node.data.comments.forEach((comment) =>
-      ops.push({
-        type: 'createComment',
-        id: comment.id,
-        nodeId: id,
-        text: comment.text,
-      }),
-    );
+    ops.push(...toCreateOperations(id, threadId, node.position, node.data));
   });
 };
 
@@ -321,29 +326,78 @@ export const useCanvasStore = create<ICanvasStore>()(
     (set, get) => {
       let dragOrigin: Node[] | null = null;
 
-      const appendNode = (node: TCanvasNode | TReferenceNode, extra?: Partial<{ referenceSearchPosition: null }>) => {
+      const appendNode = (node: TCanvasNode | TReferenceNode, extra?: Partial<ICanvasState>) => {
         set({ nodes: [...get().nodes, node], ...extra });
+      };
+
+      const patchCanvasNodes = (
+        matches: (id: string) => boolean,
+        patch: (data: ICanvasNodeData, id: string) => Partial<ICanvasNodeData>,
+      ) =>
+        set({
+          nodes: get().nodes.map((node) =>
+            matches(node.id) && isCanvasNodeData(node.data)
+              ? { ...node, data: { ...node.data, ...patch(node.data, node.id) } }
+              : node,
+          ),
+        });
+
+      const withoutHistory = (update: () => void) => {
+        const temporalApi = useCanvasStore.temporal.getState();
+        temporalApi.pause();
+        update();
+        temporalApi.resume();
       };
 
       const replayDiff = (before: IPersistedSnapshot) => {
         diffStates(before, snapshotOf(get()), get().threadId).forEach(emitCanvasOperation);
       };
 
-      const resetState = (overrides: Partial<ICanvasStore>) => {
+      const resetState = (overrides: Partial<ICanvasState>) => {
         dragOrigin = null;
-        const temporalApi = useCanvasStore.temporal.getState();
-        temporalApi.pause();
-        set({ ...EMPTY_CANVAS_STATE, ...overrides });
-        temporalApi.clear();
-        temporalApi.resume();
+        withoutHistory(() => {
+          set({ ...EMPTY_CANVAS_STATE, ...overrides });
+          useCanvasStore.temporal.getState().clear();
+        });
+      };
+
+      const removeElements = (nodeIds: string[], edgeIds: string[]) => {
+        const state = get();
+        const access = usePermissionsStore.getState();
+        if (!access.canEditCanvas) return;
+
+        const removedNodeIds = new Set(
+          state.nodes
+            .filter(
+              (node) =>
+                nodeIds.includes(node.id) &&
+                node.type !== ECanvasNodeType.Question &&
+                canEditNode(node.data.createdBy, access),
+            )
+            .map((node) => node.id),
+        );
+        const pickedEdgeIds = new Set(withReverseEdgeIds(state.edges, edgeIds));
+        const isAttached = (edge: Edge) => removedNodeIds.has(edge.source) || removedNodeIds.has(edge.target);
+        const removedEdges = state.edges.filter((edge) => pickedEdgeIds.has(edge.id) || isAttached(edge));
+        if (removedNodeIds.size === 0 && removedEdges.length === 0) return;
+
+        const isRemovedNode = (id: string | null) => id !== null && removedNodeIds.has(id);
+
+        set({
+          nodes: state.nodes.filter((node) => !removedNodeIds.has(node.id)),
+          edges: state.edges.filter((edge) => !removedEdges.includes(edge)),
+          ...(isRemovedNode(state.editingNodeId) && { editingNodeId: null }),
+          ...(isRemovedNode(state.openCommentsNodeId) && { openCommentsNodeId: null }),
+          ...(isRemovedNode(state.pendingConnection) && { pendingConnection: null }),
+        });
+        removedNodeIds.forEach((id) => emitCanvasOperation({ type: 'deleteNode', id }));
+        removedEdges
+          .filter((edge) => !isAttached(edge))
+          .forEach((edge) => emitCanvasOperation({ type: 'deleteEdge', id: edge.id }));
       };
 
       return {
-        threadId: null,
-        hydrated: false,
-        fitRequest: 0,
-        fitPadding: null,
-        ...EMPTY_CANVAS_STATE,
+        ...INITIAL_STATE,
 
         loadCanvas: (threadId, snapshot) => {
           resetState({
@@ -395,17 +449,11 @@ export const useCanvasStore = create<ICanvasStore>()(
 
         onNodesChange: (changes) => {
           const prev = get().nodes;
-          const access = usePermissionsStore.getState();
+          const { canEditCanvas } = usePermissionsStore.getState();
 
-          const allowed = changes.filter((change) => {
-            if (!access.canEditCanvas && (change.type === 'position' || change.type === 'remove')) return false;
-            if (change.type !== 'remove') return true;
-            const node = prev.find((candidate) => candidate.id === change.id);
-            if (!node) return true;
-            if (node.type === ECanvasNodeType.Question) return false;
-
-            return canEditNode(node.data.createdBy, access);
-          });
+          const allowed = changes.filter(
+            (change) => change.type !== 'remove' && (canEditCanvas || change.type !== 'position'),
+          );
 
           const next = applyNodeChanges(allowed, prev);
 
@@ -426,9 +474,7 @@ export const useCanvasStore = create<ICanvasStore>()(
             const origin = dragOrigin ?? prev;
             dragOrigin = null;
 
-            temporalApi.pause();
-            set({ nodes: origin });
-            temporalApi.resume();
+            withoutHistory(() => set({ nodes: origin }));
             set({ nodes: next });
 
             detectPositionChanges(origin, next).forEach((change) =>
@@ -444,22 +490,15 @@ export const useCanvasStore = create<ICanvasStore>()(
           }
 
           set({ nodes: next });
-
-          allowed
-            .filter((change) => change.type === 'remove')
-            .forEach((change) => emitCanvasOperation({ type: 'deleteNode', id: change.id }));
         },
 
-        onEdgesChange: (changes) => {
-          const { canEditCanvas } = usePermissionsStore.getState();
-          const allowed = canEditCanvas ? changes : changes.filter((change) => change.type !== 'remove');
-
-          set({ edges: applyEdgeChanges(allowed, get().edges) });
-
-          allowed
-            .filter((change) => change.type === 'remove')
-            .forEach((change) => emitCanvasOperation({ type: 'deleteEdge', id: change.id }));
-        },
+        onEdgesChange: (changes) =>
+          set({
+            edges: applyEdgeChanges(
+              changes.filter((change) => change.type !== 'remove'),
+              get().edges,
+            ),
+          }),
 
         addNode: (position, label, id = crypto.randomUUID()) => {
           const { threadId } = get();
@@ -483,14 +522,7 @@ export const useCanvasStore = create<ICanvasStore>()(
           };
 
           appendNode(newNode);
-          emitCanvasOperation({
-            type: 'createCanvasNode',
-            id,
-            threadId,
-            x: position.x,
-            y: position.y,
-            label,
-          });
+          toCreateOperations(id, threadId, position, newNode.data).forEach(emitCanvasOperation);
         },
 
         addReferenceNode: (position, data) => {
@@ -521,30 +553,11 @@ export const useCanvasStore = create<ICanvasStore>()(
 
         setReferenceSearchPosition: (position) => set({ referenceSearchPosition: position }),
 
-        deleteNode: (id) => {
-          const state = get();
-          const target = state.nodes.find((n) => n.id === id);
-          if (!target || target.type === ECanvasNodeType.Question) return;
-          if (!canEditNode(target.data.createdBy, usePermissionsStore.getState())) return;
+        deleteNode: (id) => removeElements([id], []),
 
-          set({
-            nodes: state.nodes.filter((n) => n.id !== id),
-            edges: state.edges.filter((e) => e.source !== id && e.target !== id),
-            ...(state.editingNodeId === id && { editingNodeId: null }),
-            ...(state.openCommentsNodeId === id && {
-              openCommentsNodeId: null,
-            }),
-            ...(state.pendingConnection === id && { pendingConnection: null }),
-          });
-          emitCanvasOperation({ type: 'deleteNode', id });
-        },
+        deleteEdge: (id) => removeElements([], [id]),
 
-        deleteEdge: (id) => {
-          if (!usePermissionsStore.getState().canEditCanvas) return;
-
-          set({ edges: get().edges.filter((e) => e.id !== id) });
-          emitCanvasOperation({ type: 'deleteEdge', id });
-        },
+        deleteElements: removeElements,
 
         connectNodes: (connection) => {
           const { source, target } = connection;
@@ -599,20 +612,14 @@ export const useCanvasStore = create<ICanvasStore>()(
 
           const currentNodes = get().nodes;
           const idSet = new Set(ids);
-          const touchedIds: string[] = [];
-          let allMatch = true;
+          const touched = currentNodes.filter(
+            (node) => idSet.has(node.id) && node.type === ECanvasNodeType.Canvas && isCanvasNodeData(node.data),
+          );
+          if (touched.length === 0) return;
 
-          currentNodes.forEach((node) => {
-            if (!idSet.has(node.id)) return;
-            if (node.type !== ECanvasNodeType.Canvas) return;
-            if (!isCanvasNodeData(node.data)) return;
-
-            if (node.data.status !== status) allMatch = false;
-            touchedIds.push(node.id);
-          });
-          if (touchedIds.length === 0) return;
-
+          const allMatch = touched.every((node) => node.data.status === status);
           const nextStatus: TNodeStatus = allMatch ? null : status;
+          const touchedIds = touched.map((node) => node.id);
 
           const applyIds =
             nextStatus === 'valid'
@@ -622,15 +629,10 @@ export const useCanvasStore = create<ICanvasStore>()(
 
           const applySet = new Set(applyIds);
 
-          set({
-            nodes: currentNodes.map((node) => {
-              if (!applySet.has(node.id)) return node;
-              if (!isCanvasNodeData(node.data)) return node;
-              const data: ICanvasNodeData = { ...node.data, status: nextStatus };
-
-              return { ...node, data };
-            }),
-          });
+          patchCanvasNodes(
+            (id) => applySet.has(id),
+            () => ({ status: nextStatus }),
+          );
 
           applyIds.forEach((id) =>
             emitCanvasOperation({
@@ -651,35 +653,19 @@ export const useCanvasStore = create<ICanvasStore>()(
           const nextValue = !target.data.isAnswer;
           if (nextValue && !hasValidatedParent(id, currentNodes, get().edges)) return;
 
-          const changed: string[] = [];
+          const answerFor = (nodeId: string) => nodeId === id && nextValue;
+          const changedIds = new Set(
+            currentNodes
+              .filter((node) => isCanvasNodeData(node.data) && (node.id === id || (nextValue && node.data.isAnswer)))
+              .map((node) => node.id),
+          );
 
-          const nodes = currentNodes.map((node) => {
-            if (!isCanvasNodeData(node.data)) return node;
-
-            if (node.id === id) {
-              changed.push(node.id);
-
-              return { ...node, data: { ...node.data, isAnswer: nextValue } };
-            }
-
-            if (nextValue && node.data.isAnswer) {
-              changed.push(node.id);
-
-              return { ...node, data: { ...node.data, isAnswer: false } };
-            }
-
-            return node;
-          });
-
-          if (changed.length === 0) return;
-
-          set({ nodes });
-          changed.forEach((changedId) =>
-            emitCanvasOperation({
-              type: 'updateNodeAnswer',
-              id: changedId,
-              isAnswer: changedId === id ? nextValue : false,
-            }),
+          patchCanvasNodes(
+            (nodeId) => changedIds.has(nodeId),
+            (_, nodeId) => ({ isAnswer: answerFor(nodeId) }),
+          );
+          changedIds.forEach((changedId) =>
+            emitCanvasOperation({ type: 'updateNodeAnswer', id: changedId, isAnswer: answerFor(changedId) }),
           );
         },
 
@@ -688,15 +674,10 @@ export const useCanvasStore = create<ICanvasStore>()(
           if (!target || !isCanvasNodeData(target.data)) return;
           if (!canEditNode(target.data.createdBy, usePermissionsStore.getState())) return;
 
-          set({
-            nodes: get().nodes.map((node) => {
-              if (node.id !== id) return node;
-              if (!isCanvasNodeData(node.data)) return node;
-              const data: ICanvasNodeData = { ...node.data, label };
-
-              return { ...node, data };
-            }),
-          });
+          patchCanvasNodes(
+            (nodeId) => nodeId === id,
+            () => ({ label }),
+          );
           emitCanvasOperation({ type: 'updateNodeLabel', id, label });
         },
 
@@ -713,8 +694,8 @@ export const useCanvasStore = create<ICanvasStore>()(
 
           const newNodeId = crypto.randomUUID();
           const position = {
-            x: source.position.x + DUPLICATE_OFFSET,
-            y: source.position.y + DUPLICATE_OFFSET,
+            x: source.position.x + DUPLICATE_NODE_OFFSET,
+            y: source.position.y + DUPLICATE_NODE_OFFSET,
           };
           const data: ICanvasNodeData = {
             label: source.data.label,
@@ -731,23 +712,7 @@ export const useCanvasStore = create<ICanvasStore>()(
             position,
             data,
           } satisfies TCanvasNode);
-
-          emitCanvasOperation({
-            type: 'createCanvasNode',
-            id: newNodeId,
-            threadId,
-            x: position.x,
-            y: position.y,
-            label: data.label,
-          });
-
-          if (data.status !== null) {
-            emitCanvasOperation({
-              type: 'updateNodeStatus',
-              id: newNodeId,
-              status: data.status,
-            });
-          }
+          toCreateOperations(newNodeId, threadId, position, data).forEach(emitCanvasOperation);
         },
 
         addComment: (nodeId, text) => {
@@ -757,18 +722,10 @@ export const useCanvasStore = create<ICanvasStore>()(
           const id = crypto.randomUUID();
           const comment: IComment = { id, text, authorId: userId };
 
-          set({
-            nodes: get().nodes.map((node) => {
-              if (node.id !== nodeId) return node;
-              if (!isCanvasNodeData(node.data)) return node;
-              const data: ICanvasNodeData = {
-                ...node.data,
-                comments: [...node.data.comments, comment],
-              };
-
-              return { ...node, data };
-            }),
-          });
+          patchCanvasNodes(
+            (candidateId) => candidateId === nodeId,
+            (data) => ({ comments: [...data.comments, comment] }),
+          );
 
           emitCanvasOperation({ type: 'createComment', id, nodeId, text });
         },
@@ -782,18 +739,10 @@ export const useCanvasStore = create<ICanvasStore>()(
             target && isCanvasNodeData(target.data) ? target.data.comments.find((c) => c.id === commentId) : null;
           if (comment?.authorId !== userId) return;
 
-          set({
-            nodes: get().nodes.map((node) => {
-              if (node.id !== nodeId) return node;
-              if (!isCanvasNodeData(node.data)) return node;
-              const data: ICanvasNodeData = {
-                ...node.data,
-                comments: node.data.comments.filter((c) => c.id !== commentId),
-              };
-
-              return { ...node, data };
-            }),
-          });
+          patchCanvasNodes(
+            (id) => id === nodeId,
+            (data) => ({ comments: data.comments.filter((c) => c.id !== commentId) }),
+          );
           emitCanvasOperation({ type: 'deleteComment', id: commentId });
         },
 
@@ -801,18 +750,17 @@ export const useCanvasStore = create<ICanvasStore>()(
           const target = get().nodes.find((node) => node.id === id);
           if (!target || !('isNew' in target.data)) return;
 
-          const temporalApi = useCanvasStore.temporal.getState();
-          temporalApi.pause();
-          set({
-            nodes: get().nodes.map((node) => {
-              if (node.id !== id) return node;
-              const data = { ...node.data };
-              delete data.isNew;
+          withoutHistory(() =>
+            set({
+              nodes: get().nodes.map((node) => {
+                if (node.id !== id) return node;
+                const data = { ...node.data };
+                delete data.isNew;
 
-              return { ...node, data };
+                return { ...node, data };
+              }),
             }),
-          });
-          temporalApi.resume();
+          );
         },
 
         undo: () => {
@@ -835,11 +783,8 @@ export const useCanvasStore = create<ICanvasStore>()(
       };
     },
     {
-      partialize: (state) => ({
-        nodes: state.nodes,
-        edges: state.edges,
-      }),
-      limit: MAX_HISTORY,
+      partialize: (state) => snapshotOf(state),
+      limit: CANVAS_HISTORY_LIMIT,
       equality: (a, b) => sameNodes(a.nodes, b.nodes) && sameEdges(a.edges, b.edges),
     },
   ),

@@ -1,20 +1,12 @@
 import { BackgroundVariant, type DefaultEdgeOptions, Position } from '@xyflow/react';
-import {
-  AlertTriangle,
-  CheckCircle2,
-  CircleDashed,
-  Flag,
-  HelpCircle,
-  Link2,
-  type LucideIcon,
-  XCircle,
-} from 'lucide-react';
+import { AlertTriangle, CheckCircle2, CircleDashed, Flag, HelpCircle, Link2, XCircle } from 'lucide-react';
 
 import type {
   ICanvasSkeletonNode,
+  IHandlePosition,
+  INodeBandStyle,
   TCanvasPattern,
   TEdgeTone,
-  THandleId,
   TNodeBandTone,
   TValidationAction,
   TVisibleSaveStatus,
@@ -22,7 +14,7 @@ import type {
 
 import { ECanvasTool } from '@/components/tools';
 
-export const HANDLE_POSITIONS: { id: THandleId; position: Position }[] = [
+export const HANDLE_POSITIONS: IHandlePosition[] = [
   { id: 'top', position: Position.Top },
   { id: 'left', position: Position.Left },
   { id: 'right', position: Position.Right },
@@ -48,8 +40,7 @@ export const BACKGROUND_VARIANT_BY_PATTERN: Record<Exclude<TCanvasPattern, 'none
   cross: BackgroundVariant.Cross,
 };
 
-export const RUBBER_LINE_STROKE_FALLBACK = '#4ade80';
-export const RUBBER_LINE_DOT_FILL_FALLBACK = '#4ade80';
+export const ACCENT_FALLBACK = '#4ade80';
 export const ACCENT_GLOW_FALLBACK = 'rgba(22, 163, 74, 0.28)';
 export const RUBBER_LINE_STROKE_WIDTH = 2;
 export const RUBBER_LINE_DASH_ARRAY = '6 4';
@@ -59,17 +50,17 @@ export const RUBBER_LINE_DOT_STROKE_WIDTH = 1.5;
 export const CONNECTION_RADIUS = 32;
 export const NODE_DRAG_THRESHOLD = 3;
 export const OPEN_COMMENTS_Z_INDEX = 2000;
+export const OVERLAY_VIEWPORT_MARGIN = 8;
 
 export const ZOOM_STEP_FACTOR = 1.25;
 export const ZOOM_MIN = 0.2;
 export const ZOOM_MAX = 4;
 export const ZOOM_DURATION_MS = 200;
 
-export const SNAP_GRID_PX = 16;
+const SNAP_GRID_PX = 16;
 export const SNAP_GRID: [number, number] = [SNAP_GRID_PX, SNAP_GRID_PX];
 
 export const ALIGN_GUIDE_THRESHOLD_PX = 4;
-export const ALIGN_GUIDE_FALLBACK_COLOR = '#4ade80';
 export const ALIGN_GUIDE_STROKE_WIDTH = 1;
 export const ALIGN_GUIDE_DASH_ARRAY = '4 4';
 
@@ -78,7 +69,7 @@ export const PAN_BUTTONS_MIDDLE: number[] = [1];
 
 export const EDGE_DEFAULT_STROKE_WIDTH = 1.75;
 
-export const EDGE_TONES: readonly TEdgeTone[] = ['default', 'valid', 'invalid', 'tainted'];
+export const EDGE_TONES: readonly TEdgeTone[] = ['default', 'valid', 'answer', 'invalid', 'tainted'];
 
 export const DEFAULT_EDGE_OPTIONS: DefaultEdgeOptions = {
   type: 'default',
@@ -103,7 +94,7 @@ export const ARIA_LABEL_KEY_BY_STATUS: Record<TVisibleSaveStatus, 'errorTitle' |
 export const FRESH_FIT_PADDING = 0.22;
 export const FIT_REQUEST_DURATION_MS = 240;
 
-export const NODE_BAND_TONES: Record<TNodeBandTone, { icon: LucideIcon; color: string }> = {
+export const NODE_BAND_TONES: Record<TNodeBandTone, INodeBandStyle> = {
   question: { icon: HelpCircle, color: 'var(--question)' },
   reference: { icon: Link2, color: 'var(--ref)' },
   answer: { icon: Flag, color: 'var(--decision)' },

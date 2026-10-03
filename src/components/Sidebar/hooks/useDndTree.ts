@@ -14,18 +14,18 @@ import {
 } from '@dnd-kit/core';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import type { IProjection, TDropZone, TNavItem, TNavItemType } from '@interfaces';
+import type { IProjection, IUseDndTreeOptions, TDropZone } from '@interfaces';
 
-import { AUTO_EXPAND_DELAY_MS, KEYBOARD_SENSOR_OPTIONS, POINTER_SENSOR_OPTIONS } from '../consts';
-import { flattenTree, getDropPosition, getProjection, removeChildrenOf, resolveDropZone } from '../utils';
-
-interface IUseDndTreeOptions {
-  items: TNavItem[];
-  onMoveItem?: (id: string, type: TNavItemType, parentId: string | null, position: number) => void;
-  onBulkMove?: (ids: Set<string>, parentId: string | null, position: number) => void;
-  editingId?: string | null;
-  selectedIds?: Set<string>;
-}
+import { AUTO_EXPAND_DELAY_MS, KEYBOARD_SENSOR_OPTIONS, POINTER_SENSOR_OPTIONS, ROOT_TAIL_PROJECTION } from '../consts';
+import {
+  flattenTree,
+  getDropPosition,
+  getMaxSubtreeDepth,
+  getProjection,
+  removeChildrenOf,
+  resolveDropZone,
+  resolveKeyboardDropZone,
+} from '../utils';
 
 export const useDndTree = ({ items, onMoveItem, onBulkMove, editingId, selectedIds }: IUseDndTreeOptions) => {
   const [collapsedIds, setCollapsedIds] = useState<Set<string>>(new Set());
@@ -63,23 +63,33 @@ export const useDndTree = ({ items, onMoveItem, onBulkMove, editingId, selectedI
 
   const flattenedItems = useMemo(() => flattenTree(items, collapsedIds), [items, collapsedIds]);
 
-  const sortableItems = useMemo(() => {
-    if (!activeId) return flattenedItems;
-    const excludeIds =
-      selectedIds && selectedIds.size > 1 && selectedIds.has(activeId)
-        ? new Set([activeId, ...selectedIds])
-        : new Set([activeId]);
+  const draggedIds = useMemo(() => {
+    if (!activeId) return null;
 
-    return removeChildrenOf(flattenedItems, excludeIds);
-  }, [flattenedItems, activeId, selectedIds]);
+    return selectedIds && selectedIds.size > 1 && selectedIds.has(activeId)
+      ? new Set([activeId, ...selectedIds])
+      : new Set([activeId]);
+  }, [activeId, selectedIds]);
+
+  const sortableItems = useMemo(
+    () => (draggedIds ? removeChildrenOf(flattenedItems, draggedIds) : flattenedItems),
+    [flattenedItems, draggedIds],
+  );
+
+  const draggedSubtreeDepth = useMemo(
+    () => (draggedIds ? getMaxSubtreeDepth(items, draggedIds) : 0),
+    [items, draggedIds],
+  );
 
   const sortedIds = useMemo(() => sortableItems.map((item) => item.id), [sortableItems]);
 
   const projected: IProjection | null = useMemo(() => {
     if (!activeId || !overId) return null;
-    const base = getProjection(sortableItems, activeId, overId, dropZone);
-    if (!base) return null;
-    const result: IProjection = isPastLast ? { depth: 0, parentId: null, zone: 'after' } : base;
+    const result: IProjection | null = isPastLast
+      ? ROOT_TAIL_PROJECTION
+      : getProjection(sortableItems, activeId, overId, dropZone, draggedSubtreeDepth);
+    if (!result) return null;
+    if (draggedIds && draggedIds.size > 1) return result;
 
     const activeItem = sortableItems.find((item) => item.id === activeId);
     if (activeItem?.parentId !== result.parentId) return result;
@@ -92,7 +102,7 @@ export const useDndTree = ({ items, onMoveItem, onBulkMove, editingId, selectedI
     if (getDropPosition(sortableItems, activeId, overId, result) === activeIdx) return null;
 
     return result;
-  }, [sortableItems, activeId, overId, dropZone, isPastLast]);
+  }, [sortableItems, activeId, overId, dropZone, isPastLast, draggedIds, draggedSubtreeDepth]);
 
   const toggleCollapse = useCallback((id: string) => {
     setCollapsedIds((prev) => {
@@ -119,6 +129,13 @@ export const useDndTree = ({ items, onMoveItem, onBulkMove, editingId, selectedI
       clearTimeout(expandTimerRef.current);
       expandTimerRef.current = null;
     }
+  }, []);
+
+  const restoreCollapsed = useCallback(() => {
+    if (!prevCollapsedRef.current) return;
+
+    setCollapsedIds(prevCollapsedRef.current);
+    prevCollapsedRef.current = null;
   }, []);
 
   const resetDragState = useCallback(() => {
@@ -205,7 +222,11 @@ export const useDndTree = ({ items, onMoveItem, onBulkMove, editingId, selectedI
         return;
       }
 
-      if (pointerY === null) return;
+      if (pointerY === null) {
+        if (activeId) commitZone(resolveKeyboardDropZone(sortableItems, activeId, curOverId));
+
+        return;
+      }
 
       const el = document.querySelector(`[data-item-id="${curOverId}"]`);
       if (!el) return;
@@ -230,72 +251,56 @@ export const useDndTree = ({ items, onMoveItem, onBulkMove, editingId, selectedI
     ({ active, over }: DragEndEvent) => {
       clearExpandTimer();
 
-      if (!over || !projected) {
-        if (prevCollapsedRef.current) {
-          setCollapsedIds(prevCollapsedRef.current);
-          prevCollapsedRef.current = null;
-        }
-        resetDragState();
-
-        return;
-      }
-
       const draggedId = active.id as string;
-      const endOverId = over.id as string;
-
-      if (draggedId === endOverId && !isPastLast) {
-        if (prevCollapsedRef.current) {
-          setCollapsedIds(prevCollapsedRef.current);
-          prevCollapsedRef.current = null;
-        }
+      if (!over || !projected || (draggedId === over.id && !isPastLast)) {
+        restoreCollapsed();
         resetDragState();
 
         return;
       }
 
-      const activeIndex = sortableItems.findIndex((item) => item.id === draggedId);
-      if (activeIndex === -1) {
+      const activeItem = sortableItems.find((item) => item.id === draggedId);
+      if (!activeItem) {
         resetDragState();
 
         return;
       }
 
-      const activeItem = sortableItems[activeIndex] as (typeof sortableItems)[number];
-      const position = getDropPosition(sortableItems, draggedId, endOverId, projected);
+      const isBulkDrop = isBulkDragRef.current && selectedIds && selectedIds.size > 1;
+      const siblingPool = isBulkDrop
+        ? sortableItems.filter((item) => item.id === draggedId || !selectedIds.has(item.id))
+        : sortableItems;
+      const position = getDropPosition(siblingPool, draggedId, over.id as string, projected);
 
-      if (isBulkDragRef.current && selectedIds && selectedIds.size > 1) {
+      if (isBulkDrop) {
         onBulkMove?.(selectedIds, projected.parentId, position);
       } else {
         onMoveItem?.(draggedId, activeItem.type, projected.parentId, position);
       }
 
-      if (prevCollapsedRef.current) {
-        setCollapsedIds(prevCollapsedRef.current);
-        prevCollapsedRef.current = null;
-      }
-
+      restoreCollapsed();
       resetDragState();
     },
-    [sortableItems, projected, isPastLast, clearExpandTimer, resetDragState, onMoveItem, onBulkMove, selectedIds],
+    [
+      sortableItems,
+      projected,
+      isPastLast,
+      clearExpandTimer,
+      restoreCollapsed,
+      resetDragState,
+      onMoveItem,
+      onBulkMove,
+      selectedIds,
+    ],
   );
 
   const handleDragCancel = useCallback(() => {
     clearExpandTimer();
-    if (prevCollapsedRef.current) {
-      setCollapsedIds(prevCollapsedRef.current);
-      prevCollapsedRef.current = null;
-    }
+    restoreCollapsed();
     resetDragState();
-  }, [clearExpandTimer, resetDragState]);
+  }, [clearExpandTimer, restoreCollapsed, resetDragState]);
 
-  useEffect(
-    () => () => {
-      if (expandTimerRef.current) {
-        clearTimeout(expandTimerRef.current);
-      }
-    },
-    [],
-  );
+  useEffect(() => clearExpandTimer, [clearExpandTimer]);
 
   return {
     flattenedItems: sortableItems,

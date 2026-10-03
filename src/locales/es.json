@@ -8,6 +8,7 @@
       "submit": "Iniciar sesión",
       "submitting": "Iniciando sesión…",
       "emailSent": "Revisa tu correo para confirmar tu cuenta.",
+      "invalidLink": "Este enlace no es válido o ha caducado. Intenta iniciar sesión o pide un enlace nuevo.",
       "noAccount": "¿No tienes cuenta?",
       "signUpLink": "Regístrate"
     },
@@ -49,9 +50,18 @@
       "inviteHeading": "Configura tu cuenta",
       "inviteSubtitle": "Te unes a tu equipo en Uniscept"
     },
+    "join": {
+      "heading": "Te han invitado",
+      "subtitle": "Acepta la invitación para configurar tu cuenta en Uniscept.",
+      "accept": "Aceptar invitación",
+      "accepting": "Aceptando…",
+      "signedInAs": "Has iniciado sesión como {email}. Para aceptar la invitación, primero se cerrará la sesión de esa cuenta.",
+      "switchAccount": "Cerrar sesión y aceptar",
+      "stay": "Mantener la sesión"
+    },
     "placeholders": {
       "name": "Juan Pérez",
-      "email": "tu@ejemplo.com",
+      "email": "name@example.com",
       "password": "••••••••"
     },
     "errors": {
@@ -68,8 +78,9 @@
     }
   },
   "common": {
-    "loading": "Cargando",
     "close": "Cerrar",
+    "moreInfo": "Más información",
+    "completed": "Completado",
     "userAvatar": "Usuario",
     "notifications": "Notificaciones",
     "errors": {
@@ -77,6 +88,7 @@
       "permission": "No tienes permiso para hacer eso.",
       "notFound": "Ya no pudimos encontrar eso.",
       "rateLimit": "Demasiados intentos. Espera un momento.",
+      "limitReached": "Límite alcanzado. Elimina algunos elementos e inténtalo de nuevo.",
       "validation": "Algunos datos parecen no válidos. Revísalos e inténtalo de nuevo.",
       "auth": "Tu sesión expiró. Inicia sesión de nuevo.",
       "unknown": "Algo salió mal. Inténtalo de nuevo.",
@@ -84,10 +96,10 @@
       "emailNotConfirmed": "Confirma tu correo antes de iniciar sesión.",
       "emailTaken": "Ya existe una cuenta con este correo.",
       "invalidEmail": "Ese correo electrónico no parece válido.",
-      "weakPassword": "La contraseña es demasiado débil. Usa al menos 6 caracteres.",
-      "samePassword": "La nueva contraseña debe ser diferente de la actual."
+      "weakPassword": "La contraseña es demasiado débil. Usa al menos 8 caracteres.",
+      "samePassword": "La nueva contraseña debe ser diferente de la actual.",
+      "ownsSharedWorkspaces": "Transfiere o elimina los espacios que compartes con otras personas antes de eliminar tu cuenta."
     },
-    "noPermission": "No tienes permiso",
     "errorTitles": {
       "createFailed": "No se pudo crear",
       "renameFailed": "No se pudo renombrar",
@@ -118,7 +130,7 @@
         "acceptFailed": "No se pudo aceptar la invitación",
         "declineFailed": "No se pudo rechazar la invitación"
       },
-      "workspaceSettings": "Configuración del espacio de trabajo",
+      "workspaceSettings": "Ajustes del espacio de trabajo",
       "workspaces": "Espacios",
       "noWorkspaceSelected": "Ningún espacio seleccionado",
       "noWorkspaces": "No hay espacios de trabajo. Crea uno para empezar.",
@@ -138,6 +150,11 @@
       "structure": "Estructura",
       "newThread": "Nuevo hilo",
       "newFolder": "Nueva carpeta",
+      "defaultNames": {
+        "workspace": "Nuevo espacio",
+        "folder": "Nueva carpeta",
+        "thread": "Nuevo hilo"
+      },
       "signOut": "Cerrar sesión",
       "deleteWorkspaceTitle": "Eliminar espacio",
       "deleteFolderTitle": "Eliminar carpeta",
@@ -151,9 +168,10 @@
       "treeAriaLabel": "Navegación",
       "dragToReorder": "Arrastra para reordenar",
       "resolved": "Resuelto",
-      "itemsSelected": "elementos seleccionados",
-      "workspacesSelected": "espacios seleccionados",
+      "itemsSelected": "{count, plural, one {elemento seleccionado} other {elementos seleccionados}}",
+      "workspacesSelected": "{count, plural, one {espacio seleccionado} other {espacios seleccionados}}",
       "moveToFolder": "Mover a carpeta",
+      "structureLocked": "Requiere el permiso «Gestionar hilos y carpetas»",
       "rootLevel": "Nivel raíz",
       "bulkDeleteTitle": "Eliminar elementos",
       "bulkDeleteConfirm": "¿Seguro que quieres eliminar estos elementos? Esta acción no se puede deshacer.",
@@ -189,7 +207,7 @@
         "actionClose": "cerrar"
       },
       "tools": {
-        "ariaLabel": "Herramientas del canvas",
+        "ariaLabel": "Herramientas del lienzo",
         "groups": {
           "navigate": "Navegar",
           "history": "Historial",
@@ -200,7 +218,7 @@
         "items": {
           "select": {
             "label": "Seleccionar",
-            "description": "Selecciona y arrastra los nodos por el canvas."
+            "description": "Selecciona y arrastra los nodos por el lienzo."
           },
           "pan": {
             "label": "Desplazar",
@@ -216,7 +234,7 @@
           },
           "addNode": {
             "label": "Añadir nodo",
-            "description": "Haz clic en cualquier parte del canvas para colocar un nuevo nodo."
+            "description": "Haz clic en cualquier parte del lienzo para colocar un nuevo nodo."
           },
           "connect": {
             "label": "Conectar",
@@ -240,7 +258,7 @@
           },
           "crossReference": {
             "label": "Referencia cruzada",
-            "description": "Coloca una referencia a un nodo de otro canvas."
+            "description": "Coloca una referencia a un nodo de otro lienzo."
           },
           "undo": {
             "label": "Deshacer",
@@ -253,8 +271,8 @@
         }
       },
       "loadError": {
-        "title": "Backend del canvas inaccesible",
-        "hint": "No se ha podido conectar con Supabase para cargar este canvas. Comprueba que la instancia local de Supabase esté en ejecución y reintenta.",
+        "title": "Backend del lienzo inaccesible",
+        "hint": "No se ha podido conectar con Supabase para cargar este lienzo. Comprueba que la instancia local de Supabase esté en ejecución y reintenta.",
         "retry": "Reintentar"
       },
       "node": {
@@ -271,7 +289,8 @@
         "sendComment": "Enviar comentario",
         "closeComments": "Cerrar",
         "commentsHeader": "Comentarios",
-        "noComments": "Aún no hay comentarios. Empieza la conversación."
+        "noComments": "Aún no hay comentarios. Empieza la conversación.",
+        "labelAriaLabel": "Texto del nodo"
       },
       "question": {
         "badge": "Pregunta",
@@ -304,11 +323,11 @@
         "discardAriaLabel": "Descartar cambios fallidos"
       },
       "context": {
-        "ariaLabel": "Acciones del canvas",
+        "ariaLabel": "Acciones del lienzo",
         "addNode": "Añadir nodo",
         "addReference": "Añadir referencia",
         "deleteEdge": "Eliminar arista",
-        "openReferenced": "Abrir canvas referenciado",
+        "openReferenced": "Abrir lienzo referenciado",
         "deleteReference": "Eliminar referencia",
         "markValid": "Marcar válido",
         "unmarkValid": "Quitar válido",
@@ -545,12 +564,12 @@
           "body": "Es el nombre del espacio actual, en la parte superior de la barra lateral."
         },
         "workspacesSettings": {
-          "title": "Abre la configuración del espacio",
-          "body": "Pasa el cursor por la fila del espacio y haz clic en el engranaje. Esta configuración solo afecta a este espacio."
+          "title": "Abre los ajustes del espacio",
+          "body": "Pasa el cursor por la fila del espacio y haz clic en el engranaje. Estos ajustes solo afectan a este espacio."
         },
         "workspacesGeneral": {
           "title": "La sección General",
-          "body": "La configuración del espacio se abre aquí: el nombre, el número de miembros, tu rol y la fecha de creación del espacio."
+          "body": "Los ajustes del espacio se abren aquí: el nombre, el número de miembros, tu rol y la fecha de creación del espacio."
         },
         "workspacesOwner": {
           "title": "Siempre hay un solo propietario",
@@ -561,7 +580,7 @@
           "body": "El acceso se define una vez por espacio, no por lienzo. Un rol decide si alguien puede editar lienzos, solo comentar o solo leer."
         },
         "membersOpen": {
-          "title": "Abre la configuración del espacio",
+          "title": "Abre los ajustes del espacio",
           "body": "Abre el selector de espacios y luego haz clic en el engranaje de la fila. Los miembros y los roles están ahí."
         },
         "membersSection": {
@@ -803,7 +822,6 @@
       "close": "Cerrar ajustes",
       "comingSoon": "Próximamente",
       "languageSaving": "Guardando idioma…",
-      "languageSaveFailed": "No se ha podido guardar el idioma. Inténtalo de nuevo.",
       "groups": {
         "account": "Cuenta",
         "preferences": "Preferencias",
@@ -834,6 +852,7 @@
         "avatarTitle": "Avatar",
         "avatarOptions": "opciones",
         "badgesTitle": "Insignias",
+        "badgeEarned": "Nueva insignia: {name}",
         "initialsLabel": "Iniciales",
         "avatarIcons": {
           "avatarIconCat": "Gato",
@@ -864,34 +883,32 @@
           "initiateUnlock": "Termina el recorrido y todas las guías.",
           "badgeFirstSteps": "Primer paso",
           "firstStepsUnlock": "Crea tu primer lienzo.",
+          "badgeWorkspaceBuilder": "Constructor",
+          "workspaceBuilderUnlock": "Crea tu primer espacio.",
           "badgeArchitect": "Arquitecto",
           "architectUnlock": "Construye un lienzo con 25 o más nodos.",
           "badgeConnector": "Conector",
-          "connectorUnlock": "Realiza 50 conexiones entre nodos.",
+          "connectorUnlock": "Traza 15 conexiones en un mismo lienzo.",
           "badgeCritic": "Crítico",
-          "criticUnlock": "Marca 25 caminos como válidos o inválidos.",
-          "badgeLinguist": "Lingüista",
-          "linguistUnlock": "Cambia el idioma de la interfaz.",
-          "badgeCurator": "Curador",
-          "curatorUnlock": "Usa una referencia entre lienzos.",
-          "badgeVoice": "Voz",
-          "voiceUnlock": "Publica tu primer comentario.",
-          "badgeExplorer": "Explorador",
-          "explorerUnlock": "Abre 10 lienzos distintos.",
-          "badgeStoryteller": "Narrador",
-          "storytellerUnlock": "Crea 5 hilos propios.",
-          "badgeWorkspaceBuilder": "Constructor",
-          "workspaceBuilderUnlock": "Crea tu primer espacio.",
-          "badgeNightOwl": "Búho",
-          "nightOwlUnlock": "Trabaja pasada la medianoche durante una semana.",
-          "badgeMarathoner": "Maratonista",
-          "marathonerUnlock": "Mantente activo 30 días seguidos.",
-          "badgeCollaborator": "Colaborador",
-          "collaboratorUnlock": "Únete a un espacio compartido.",
+          "criticUnlock": "Marca un camino como inválido.",
           "badgeWeaver": "Tejedor",
           "weaverUnlock": "Mezcla caminos válidos e inválidos en un lienzo.",
-          "badgeSage": "Sabio",
-          "sageUnlock": "Deja 100 comentarios reflexivos."
+          "badgeVerdict": "Veredicto",
+          "verdictUnlock": "Marca un nodo como respuesta final.",
+          "badgeVoice": "Voz",
+          "voiceUnlock": "Publica tu primer comentario.",
+          "badgeCurator": "Curador",
+          "curatorUnlock": "Usa una referencia entre lienzos.",
+          "badgeCollaborator": "Colaborador",
+          "collaboratorUnlock": "Únete a un espacio compartido.",
+          "badgeLinguist": "Lingüista",
+          "linguistUnlock": "Cambia el idioma de la interfaz.",
+          "badgeStylist": "Estilista",
+          "stylistUnlock": "Cambia a otro tema.",
+          "badgeCartographer": "Cartógrafo",
+          "cartographerUnlock": "Exporta un lienzo como imagen.",
+          "badgeNightOwl": "Búho",
+          "nightOwlUnlock": "Añade un nodo entre la medianoche y las 5 de la mañana."
         }
       },
       "security": {
@@ -917,6 +934,8 @@
         "deleteAccount": "Eliminar cuenta",
         "deleteAccountCaption": "Borra todos tus espacios, hilos y lienzos",
         "deleteConfirm": "¿Estás seguro? Esta acción no se puede deshacer. Todos tus datos se eliminarán permanentemente.",
+        "deletePassword": "Confirma con tu contraseña",
+        "deleteBlocked": "Eres propietario de espacios que usan otras personas. Transfiere la propiedad o elimínalos antes de eliminar tu cuenta.",
         "deleteButton": "Eliminar mi cuenta",
         "deleting": "Eliminando…",
         "cancel": "Cancelar",
@@ -945,7 +964,6 @@
         "themeBloom": "Bloom",
         "bloomDesc": "Porcelana cálida, acción magenta",
         "autoDesc": "Empareja Daybreak y Eclipse",
-        "adaptive": "Adaptable",
         "canvas": "Lienzo",
         "canvasIntro": "Cuatro texturas",
         "canvasBlurb": "Elige la superficie donde viven tus ideas — del papel tranquilo a una cuadrícula trazada.",
@@ -1005,7 +1023,7 @@
       }
     },
     "workspaceSettings": {
-      "close": "Cerrar la configuración del espacio de trabajo",
+      "close": "Cerrar los ajustes del espacio de trabajo",
       "groups": {
         "workspace": "Espacio de trabajo",
         "access": "Acceso"
@@ -1049,7 +1067,7 @@
         "cancel": "Cancelar",
         "inviteTitle": "Invitar a personas",
         "inviteHint": "Se unen la próxima vez que abran Uniscept.",
-        "emailPlaceholder": "nombre@empresa.com",
+        "emailPlaceholder": "name@example.com",
         "sendInvite": "Enviar invitación",
         "sending": "Enviando…",
         "invited": "Invitación lista",

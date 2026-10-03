@@ -52,6 +52,13 @@ export const createComment = (id: string, text: string, authorId: string = STORY
   authorId,
 });
 
+const denseStatus = (index: number): TNodeStatus => {
+  if (index % 5 === 0) return 'valid';
+  if (index % 7 === 0) return 'invalid';
+
+  return null;
+};
+
 export const buildDenseCanvas = (): ICanvasFixture => ({
   nodes: Array.from({ length: 12 }, (_, i) =>
     createCanvasNode(
@@ -59,7 +66,7 @@ export const buildDenseCanvas = (): ICanvasFixture => ({
       (i % 4) * 240 + 40,
       Math.floor(i / 4) * 170 + 40,
       `Reasoning node ${i + 1}`,
-      i % 5 === 0 ? 'valid' : i % 7 === 0 ? 'invalid' : null,
+      denseStatus(i),
     ),
   ),
   edges: Array.from({ length: 8 }, (_, i) => createCanvasEdge(`de${i}`, `n${i}`, `n${i + 4}`)),

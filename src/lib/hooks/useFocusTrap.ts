@@ -7,30 +7,22 @@ const FOCUSABLE_SELECTOR =
 
 export const useFocusTrap = (containerRef: RefObject<HTMLElement | null>, active: boolean): void => {
   useEffect(() => {
-    if (!active) {
-      return;
-    }
+    if (!active) return;
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== 'Tab') {
-        return;
-      }
+      if (event.key !== 'Tab') return;
 
       const container = containerRef.current;
-      if (!container) {
-        return;
-      }
+      if (!container) return;
 
       const focusable = Array.from(container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR));
-      if (focusable.length === 0) {
-        return;
-      }
+      if (focusable.length === 0) return;
 
       const first = focusable[0]!;
       const last = focusable.at(-1)!;
       const current = document.activeElement;
 
-      if (event.shiftKey && current === first) {
+      if (event.shiftKey && (current === first || current === container)) {
         event.preventDefault();
         last.focus();
       } else if (!event.shiftKey && current === last) {

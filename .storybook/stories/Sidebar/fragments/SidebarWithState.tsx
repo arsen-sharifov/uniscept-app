@@ -6,6 +6,7 @@ import {
   type ISidebarProps,
   Sidebar,
   findInTree,
+  findOutermostItems,
   insertIntoTree,
   removeFromTree,
   updateNavItemName,
@@ -68,21 +69,16 @@ export const SidebarWithState = (args: ISidebarProps) => {
 
   const handleBulkDeleteWorkspaces = (ids: Set<string>) => {
     args.onBulkDeleteWorkspaces?.(ids);
-    setWsItems((prev) => {
-      const remaining = prev.filter((w) => !ids.has(w.id));
-      if (activeWorkspaceId && ids.has(activeWorkspaceId)) {
-        setActiveWorkspaceId(remaining[0]?.id);
-      }
-
-      return remaining;
-    });
+    const remaining = wsItems.filter((w) => !ids.has(w.id));
+    setWsItems(remaining);
+    if (activeWorkspaceId && ids.has(activeWorkspaceId)) setActiveWorkspaceId(remaining[0]?.id);
   };
 
   const handleBulkMove = (ids: Set<string>, parentId: string | null, position: number) => {
     args.onBulkMove?.(ids, parentId, position);
     setItems((prev) => {
-      const toMove = [...ids].map((id) => findInTree(prev, id)).filter((item): item is TNavItem => item !== null);
-      const removed = [...ids].reduce((acc, id) => removeFromTree(acc, id), prev);
+      const toMove = findOutermostItems(prev, ids);
+      const removed = toMove.reduce((acc, item) => removeFromTree(acc, item.id), prev);
 
       return toMove.reduce((acc, item, index) => insertIntoTree(acc, item, parentId, position + index), removed);
     });
@@ -102,7 +98,7 @@ export const SidebarWithState = (args: ISidebarProps) => {
   const handleCreateWorkspace = () => {
     args.onCreateWorkspace?.();
     const id = nextId('ws');
-    setWsItems((prev) => [...prev, { id, name: 'New Workspace' }]);
+    setWsItems((prev) => [...prev, { id, name: 'New Workspace', canManageWorkspace: true }]);
     setActiveWorkspaceId(id);
     setEditingWorkspaceId(id);
   };
@@ -114,14 +110,9 @@ export const SidebarWithState = (args: ISidebarProps) => {
 
   const handleDeleteWorkspace = (id: string) => {
     args.onDeleteWorkspace?.(id);
-    setWsItems((prev) => {
-      const remaining = prev.filter((w) => w.id !== id);
-      if (id === activeWorkspaceId && remaining.length > 0) {
-        setActiveWorkspaceId(remaining[0].id);
-      }
-
-      return remaining;
-    });
+    const remaining = wsItems.filter((w) => w.id !== id);
+    setWsItems(remaining);
+    if (id === activeWorkspaceId) setActiveWorkspaceId(remaining[0]?.id);
   };
 
   const handleEditingComplete = () => {

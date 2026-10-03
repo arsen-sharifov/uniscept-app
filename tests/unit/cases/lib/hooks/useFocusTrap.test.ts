@@ -7,6 +7,7 @@ const container = document.createElement('div');
 const first = document.createElement('button');
 const last = document.createElement('button');
 
+container.tabIndex = -1;
 container.append(first, last);
 
 let tabEvent: KeyboardEvent;
@@ -61,6 +62,19 @@ describe('useFocusTrap', () => {
       test('THEN the focus is left to the browser', () => {
         expect(document.activeElement).toBe(first);
         expect(tabEvent.defaultPrevented).toBe(false);
+      });
+    });
+
+    describe('WHEN Shift+Tab is pressed while the container itself holds focus', () => {
+      beforeEach(() => {
+        container.focus();
+        tabEvent = new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, cancelable: true });
+        document.dispatchEvent(tabEvent);
+      });
+
+      test('THEN the focus wraps to the last element instead of leaving the trap', () => {
+        expect(document.activeElement).toBe(last);
+        expect(tabEvent.defaultPrevented).toBe(true);
       });
     });
 

@@ -55,8 +55,7 @@ export const SortableWorkspaceItem = ({
   isDragActive,
   dropIndicator,
 }: ISortableWorkspaceItemProps) => {
-  const translations = useTranslations();
-  const isLocked = !workspace.canManageWorkspace;
+  const t = useTranslations();
   const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({
     id: workspace.id,
     disabled: isEditing,
@@ -83,10 +82,12 @@ export const SortableWorkspaceItem = ({
         )}
       >
         <ItemRowButton
+          aria-current={isActive || undefined}
           isActive={isActive}
           isSelected={isSelected}
+          size="compact"
           onClick={handleClick}
-          className="cursor-pointer px-1.5 py-1"
+          className="cursor-pointer"
         >
           <ItemIcon icon={LayoutGrid} isHighlighted={isActive} hidesOnHover={!isEditing} />
           <ItemLabel
@@ -107,9 +108,9 @@ export const SortableWorkspaceItem = ({
             attributes={attributes}
             listeners={listeners}
             isActive={isActive}
-            ariaLabel={translations.platform.sidebar.dragToReorder}
+            ariaLabel={t.platform.sidebar.dragToReorder}
+            size="compact"
             onClick={handleClick}
-            className="left-1.5"
           />
         )}
 
@@ -118,24 +119,26 @@ export const SortableWorkspaceItem = ({
             <ItemActionButton
               icon={Settings}
               tone="neutral"
-              title={translations.platform.sidebar.workspaceSettings}
+              title={t.platform.sidebar.workspaceSettings}
               tour={isActive ? 'sidebarWorkspaceRowSettings' : undefined}
               onClick={() => onRequestSettings(workspace.id)}
             />
-            <ItemActionButton
-              icon={Pencil}
-              tone="neutral"
-              title={translations.platform.sidebar.rename}
-              isLocked={isLocked}
-              onClick={() => onRequestRename(workspace.id, workspace.name)}
-            />
-            <ItemActionButton
-              icon={Trash2}
-              tone="danger"
-              title={translations.platform.sidebar.delete}
-              isLocked={isLocked}
-              onClick={() => onRequestDelete(workspace.id, workspace.name)}
-            />
+            {workspace.canManageWorkspace && (
+              <>
+                <ItemActionButton
+                  icon={Pencil}
+                  tone="neutral"
+                  title={t.platform.sidebar.rename}
+                  onClick={() => onRequestRename(workspace.id, workspace.name)}
+                />
+                <ItemActionButton
+                  icon={Trash2}
+                  tone="danger"
+                  title={t.platform.sidebar.delete}
+                  onClick={() => onRequestDelete(workspace.id, workspace.name)}
+                />
+              </>
+            )}
           </ItemActionsToolbar>
         )}
       </div>

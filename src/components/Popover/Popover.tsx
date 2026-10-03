@@ -62,6 +62,11 @@ export const Popover = ({
 
   const dismiss = useCallback(() => onOpenChange(false), [onOpenChange]);
 
+  const dismissToTrigger = useCallback(() => {
+    onOpenChange(false);
+    triggerElement?.focus();
+  }, [onOpenChange, triggerElement]);
+
   useEffect(() => {
     if (!open) return;
     const onDocClick = (event: MouseEvent) => {
@@ -75,12 +80,14 @@ export const Popover = ({
     return () => document.removeEventListener('mousedown', onDocClick);
   }, [open, onOpenChange, triggerElement]);
 
-  useEscapeKey(dismiss, open);
+  useEscapeKey(dismissToTrigger, open);
   useViewportChange({ onScroll: place, onResize: dismiss, enabled: open, capture: true });
 
   useEffect(() => {
-    if (!open) return;
-    panelRef.current?.focus();
+    const panel = panelRef.current;
+    if (!open || !panel || panel.contains(document.activeElement)) return;
+
+    panel.focus();
   }, [open]);
 
   return (

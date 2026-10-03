@@ -82,7 +82,7 @@ const TOUR_CARD_ATTRIBUTE = 'data-tour-card';
 
 const TOUR_HINT_ATTRIBUTE = 'data-tour-hint';
 
-export const TOUR_OVERLAY_SELECTOR = `dialog:not([${TOUR_CARD_ATTRIBUTE}]):not([${TOUR_HINT_ATTRIBUTE}]), [role="dialog"], [role="menu"]`;
+export const TOUR_OVERLAY_SELECTOR = `dialog:not([${TOUR_CARD_ATTRIBUTE}]):not([${TOUR_HINT_ATTRIBUTE}]), [role="dialog"], [role="alertdialog"], [role="menu"]`;
 
 const TOUR_SCRIM_ATTRIBUTE = 'data-tour-scrim';
 

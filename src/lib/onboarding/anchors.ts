@@ -9,6 +9,7 @@ import {
   TOUR_PANEL_ATTRIBUTE,
   TOUR_SURFACE_SELECTOR,
 } from '@constants';
+import { isTypingTarget } from '@/lib/utils';
 
 const ANCHOR_SET: ReadonlySet<string> = new Set(TOUR_ANCHORS);
 
@@ -20,11 +21,6 @@ const isVisible = (element: Element): boolean =>
 
 const isRendered = (element: Element): boolean =>
   typeof element.checkVisibility !== 'function' || element.checkVisibility({ visibilityProperty: true });
-
-const isTextEntry = (element: Element): boolean =>
-  element instanceof HTMLInputElement ||
-  element instanceof HTMLTextAreaElement ||
-  (element instanceof HTMLElement && element.isContentEditable);
 
 const toRect = (element: Element): IAnchorRect | null => {
   const { top, left, width, height } = element.getBoundingClientRect();
@@ -74,6 +70,8 @@ export const dismissOverlays = (): void => {
 
 export const parseAnchors = (key: string): TTourAnchor[] => key.split(ANCHOR_SEPARATOR).filter(isTourAnchor);
 
+export const joinAnchors = (anchors: readonly TTourAnchor[] = []): string => anchors.join(ANCHOR_SEPARATOR);
+
 export const findAnchorElement = (anchor: TTourAnchor): HTMLElement | null => {
   const element = document.querySelector<HTMLElement>(TOUR_ANCHOR_SELECTORS[anchor] ?? `[data-tour="${anchor}"]`);
 
@@ -115,7 +113,7 @@ export const readTourGeometry = (
     rect,
     ...expected.map(toRect),
     ...readAppOverlays(isVisible).map(toRect),
-    focused && isTextEntry(focused) ? toRect(focused) : null,
+    focused && isTypingTarget(focused) ? toRect(focused) : null,
   ].filter((candidate) => candidate !== null);
 
   return { rect, anchor, blocked: null, lit: rect ? [rect] : [], open };

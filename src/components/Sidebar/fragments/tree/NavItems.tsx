@@ -5,7 +5,7 @@ import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { useCallback, useEffect, useRef, type MouseEvent } from 'react';
 import { createPortal } from 'react-dom';
 
-import type { TDropZone, TNavItem, TNavItemType } from '@interfaces';
+import type { TNavItem, TNavItemType } from '@interfaces';
 
 import { useTranslations } from '@/i18n';
 
@@ -20,9 +20,12 @@ interface INavItemsProps {
   items: TNavItem[];
   activeItemId?: string;
   selectedIds: Set<string>;
-  onToggleSelection: (id: string) => void;
-  onSelectRange: (targetId: string, orderedItems: readonly { id: string }[]) => void;
-  onClearAndSetAnchor: (id: string) => void;
+  onSelectClick: (
+    id: string,
+    event: MouseEvent,
+    orderedItems: readonly { id: string }[],
+    onActivate?: (id: string) => void,
+  ) => void;
   setSelectedIds: (ids: Set<string>) => void;
   onItemClick?: (id: string) => void;
   onRequestDelete?: (id: string, name: string, type: TNavItemType) => void;
@@ -38,9 +41,7 @@ export const NavItems = ({
   items,
   activeItemId,
   selectedIds,
-  onToggleSelection,
-  onSelectRange,
-  onClearAndSetAnchor,
+  onSelectClick,
   setSelectedIds,
   onItemClick,
   onRequestDelete,
@@ -86,21 +87,8 @@ export const NavItems = ({
   });
 
   const handleItemClick = useCallback(
-    (id: string, event: MouseEvent) => {
-      if (event.shiftKey) {
-        onSelectRange(id, flattenedItems);
-
-        return;
-      }
-      if (event.ctrlKey || event.metaKey) {
-        onToggleSelection(id);
-
-        return;
-      }
-      onClearAndSetAnchor(id);
-      onItemClick?.(id);
-    },
-    [flattenedItems, onSelectRange, onToggleSelection, onClearAndSetAnchor, onItemClick],
+    (id: string, event: MouseEvent) => onSelectClick(id, event, flattenedItems, onItemClick),
+    [flattenedItems, onSelectClick, onItemClick],
   );
 
   const prevAutoEditId = useRef(autoEditId);
@@ -112,28 +100,15 @@ export const NavItems = ({
     prevAutoEditId.current = autoEditId;
   }, [autoEditId, items, expandForDrop]);
 
-  const activeItem = activeId ? flattenedItems.find((item) => item.id === activeId) : null;
+  const isDragActive = activeId !== null;
+  const activeItem = isDragActive ? flattenedItems.find((item) => item.id === activeId) : null;
 
-  const isBulkDragActive = activeId !== null && selectedIds.size > 1 && selectedIds.has(activeId);
+  const isBulkDragActive = isDragActive && selectedIds.size > 1 && selectedIds.has(activeId);
   const bulkCount = isBulkDragActive ? selectedIds.size : undefined;
 
-  const isDragActive = activeId !== null;
-
   const visualOverId = isPastLast ? (flattenedItems.at(-1)?.id ?? overId) : overId;
-
-  const getDropIndicator = (itemId: string): TDropZone | null => {
-    if (!activeId || !visualOverId || itemId !== visualOverId) return null;
-    if (itemId === activeId && !isPastLast) return null;
-
-    return projected?.zone ?? null;
-  };
-
-  const getDropDepth = (itemId: string): number | null => {
-    if (!activeId || !visualOverId || itemId !== visualOverId) return null;
-    if (itemId === activeId && !isPastLast) return null;
-
-    return projected?.depth ?? null;
-  };
+  const dropTargetId = isDragActive && (visualOverId !== activeId || isPastLast) ? visualOverId : null;
+  const projectionFor = (itemId: string) => (itemId === dropTargetId ? projected : null);
 
   return (
     <DndContext
@@ -166,8 +141,8 @@ export const NavItems = ({
               onRequestDelete={onRequestDelete}
               onCreateThread={onCreateThread}
               onToggleCollapse={toggleCollapse}
-              dropIndicator={getDropIndicator(item.id)}
-              dropDepth={getDropDepth(item.id)}
+              dropIndicator={projectionFor(item.id)?.zone ?? null}
+              dropDepth={projectionFor(item.id)?.depth ?? null}
               isDragActive={isDragActive}
             />
           ))}
@@ -176,7 +151,7 @@ export const NavItems = ({
 
       <DragSelectOverlay rect={dragSelectRect} />
 
-      {activeId !== null &&
+      {isDragActive &&
         typeof document !== 'undefined' &&
         createPortal(
           <DragOverlay dropAnimation={null}>

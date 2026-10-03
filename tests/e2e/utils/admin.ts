@@ -26,7 +26,7 @@ let client: SupabaseClient | null = null;
 
 export const uniqueLabel = (prefix: string): string => `${prefix}-${randomBytes(4).toString('hex')}`;
 
-export const getAdminClient = (): SupabaseClient => {
+const getAdminClient = (): SupabaseClient => {
   if (!client) {
     const { url, serviceRoleKey } = getSupabaseEnv();
     client = createClient(url, serviceRoleKey, { auth: { autoRefreshToken: false, persistSession: false } });
@@ -120,7 +120,7 @@ export const seedFolder = async (workspaceId: string, name: string): Promise<IE2
   return data;
 };
 
-export const seedQuestionNode = async (threadId: string, createdBy: string, label = ''): Promise<string> => {
+const seedQuestionNode = async (threadId: string, createdBy: string, label = ''): Promise<string> => {
   const { data, error } = await getAdminClient()
     .from('canvas_nodes')
     .insert({
@@ -217,7 +217,7 @@ export const seedEdge = async (threadId: string, sourceNodeId: string, targetNod
   if (error) throw new Error(`Could not seed an edge on ${threadId}: ${error.message}`);
 };
 
-export const getRoleId = async (workspaceId: string, key: TE2ERoleKey): Promise<string> => {
+const getRoleId = async (workspaceId: string, key: TE2ERoleKey): Promise<string> => {
   const { data, error } = await getAdminClient()
     .from('workspace_roles')
     .select('id')

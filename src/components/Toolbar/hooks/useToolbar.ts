@@ -24,8 +24,7 @@ export const useToolbar = (workspaceLoading = false): IToolbarModel => {
   const canUndo = useStore(useCanvasStore.temporal, (state) => state.pastStates.length > 0);
   const canRedo = useStore(useCanvasStore.temporal, (state) => state.futureStates.length > 0);
 
-  const toolsTranslations = t.platform.canvas.tools;
-  const baseGroups = useMemo(() => buildCanvasToolGroups(toolsTranslations), [toolsTranslations]);
+  const baseGroups = useMemo(() => buildCanvasToolGroups(t.platform.canvas.tools), [t.platform.canvas.tools]);
 
   const groups = useMemo(
     () =>

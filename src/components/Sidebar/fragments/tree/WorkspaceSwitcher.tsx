@@ -9,8 +9,8 @@ import type { IMyInvitation, IWorkspaceItem } from '@interfaces';
 import { getInitials } from '@/components/Avatar';
 import { Popover } from '@/components/Popover';
 import { useTranslations } from '@/i18n';
-import { roleLabel } from '@/lib/utils';
 
+import { InvitationCard } from './InvitationCard';
 import { WorkspaceItems } from './WorkspaceItems';
 import { BulkActionsBar } from '../actions/BulkActionsBar';
 
@@ -64,6 +64,9 @@ export const WorkspaceSwitcher = ({
   const t = useTranslations();
   const [open, setOpen] = useState(false);
   const active = workspaces.find((workspace) => workspace.id === activeWorkspaceId);
+  const canDeleteSelection = workspaces.some(
+    (workspace) => workspace.canManageWorkspace && selectedIds.has(workspace.id),
+  );
 
   return (
     <Popover
@@ -124,36 +127,15 @@ export const WorkspaceSwitcher = ({
           </span>
           <div className="space-y-1.5">
             {invitations.map((invitation) => (
-              <div
+              <InvitationCard
                 key={invitation.id}
-                className="rounded-xl border border-[color:var(--status-warning-border)] bg-[color:var(--status-warning-bg)] px-2.5 py-2"
-              >
-                <p className="truncate font-grotesk text-xs font-semibold text-[color:var(--text-strong)]">
-                  {invitation.workspaceName}
-                </p>
-                <p className="truncate font-mono-ui text-[10px] text-[color:var(--text-label)] lowercase">
-                  {roleLabel(invitation.roleKey, invitation.roleName, t)}
-                </p>
-                <div className="mt-1.5 flex gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onAcceptInvitation?.(invitation);
-                      setOpen(false);
-                    }}
-                    className="flex-1 cursor-pointer rounded-lg bg-[color:var(--accent)] px-2 py-1 font-grotesk text-[11px] font-semibold text-[color:var(--on-accent)] shadow-[0_10px_28px_-12px_var(--accent-glow)] transition-colors duration-150 hover:bg-[color:var(--accent-strong)] focus-visible:ring-2 focus-visible:ring-[color:var(--ring-focus)] focus-visible:outline-none active:bg-[color:var(--accent-strong)] motion-reduce:transition-none"
-                  >
-                    {t.platform.sidebar.invitations.accept}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => onDeclineInvitation?.(invitation)}
-                    className="cursor-pointer rounded-lg border border-[color:var(--border-strong)] px-2 py-1 font-grotesk text-[11px] font-medium text-[color:var(--text-muted)] transition-colors duration-150 hover:bg-[color:var(--surface-overlay)] hover:text-[color:var(--text-strong)] focus-visible:ring-2 focus-visible:ring-[color:var(--ring-focus)] focus-visible:outline-none active:bg-[color:var(--surface-overlay)] active:text-[color:var(--text-strong)] motion-reduce:transition-none"
-                  >
-                    {t.platform.sidebar.invitations.decline}
-                  </button>
-                </div>
-              </div>
+                invitation={invitation}
+                onAccept={() => {
+                  onAcceptInvitation?.(invitation);
+                  setOpen(false);
+                }}
+                onDecline={() => onDeclineInvitation?.(invitation)}
+              />
             ))}
           </div>
         </div>
@@ -173,10 +155,7 @@ export const WorkspaceSwitcher = ({
         <button
           type="button"
           data-tour="sidebarWorkspaceCreate"
-          onClick={() => {
-            onCreateWorkspace?.();
-            setOpen(false);
-          }}
+          onClick={() => onCreateWorkspace?.()}
           className="flex shrink-0 cursor-pointer items-center gap-1 rounded-lg px-1.5 py-1 font-grotesk text-[11px] font-medium whitespace-nowrap text-[color:var(--accent-text)] transition-colors duration-150 hover:bg-[color:var(--accent-soft)] focus-visible:ring-2 focus-visible:ring-[color:var(--ring-focus)] focus-visible:outline-none active:bg-[color:var(--accent-soft)] motion-reduce:transition-none"
           title={t.platform.sidebar.newWorkspace}
         >
@@ -197,10 +176,7 @@ export const WorkspaceSwitcher = ({
             <button
               type="button"
               data-tour="sidebarWorkspaceCreate"
-              onClick={() => {
-                onCreateWorkspace?.();
-                setOpen(false);
-              }}
+              onClick={() => onCreateWorkspace?.()}
               className="cursor-pointer rounded-lg bg-[color:var(--accent)] px-3 py-1.5 font-grotesk text-xs font-semibold text-[color:var(--on-accent)] shadow-[0_10px_28px_-12px_var(--accent-glow)] transition-colors duration-150 hover:bg-[color:var(--accent-strong)] focus-visible:ring-2 focus-visible:ring-[color:var(--ring-focus)] focus-visible:outline-none active:bg-[color:var(--accent-strong)] motion-reduce:transition-none"
             >
               {t.platform.sidebar.newWorkspace}
@@ -237,8 +213,8 @@ export const WorkspaceSwitcher = ({
           <BulkActionsBar
             count={selectedIds.size}
             icon={LayoutGrid}
-            label={t.platform.sidebar.workspacesSelected}
-            onDelete={onBulkDelete}
+            label={t('platform.sidebar.workspacesSelected', { count: selectedIds.size })}
+            onDelete={canDeleteSelection ? onBulkDelete : undefined}
             onClear={onClearSelection}
           />
         </div>

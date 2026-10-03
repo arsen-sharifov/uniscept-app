@@ -1,9 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
-import type { TTheme } from '@constants';
+import type { TTheme } from '@interfaces';
 import type { TPatternVariant } from '@story-interfaces';
 
-import '@xyflow/react/dist/style.css';
 import { PATTERN_VARIANTS } from './consts';
 import { PatternsAtlas } from './fragments';
 import { ARG_CATEGORIES } from '../../consts';
@@ -15,7 +14,6 @@ interface IPatternsStoryArgs {
 const meta: Meta<IPatternsStoryArgs> = {
   title: 'Foundations/Patterns & Effects',
   parameters: {
-    layout: 'fullscreen',
     docs: {
       description: {
         component:

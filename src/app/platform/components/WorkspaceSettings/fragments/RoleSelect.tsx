@@ -5,7 +5,7 @@ import { Check, ChevronDown } from 'lucide-react';
 import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react';
 
 import type { IWorkspaceRole } from '@interfaces';
-
+import { useClickOutside } from '@hooks';
 import { SelectionStrip } from '@/components';
 import { useTranslations } from '@/i18n';
 import { roleLabel } from '@/lib/utils';
@@ -30,12 +30,10 @@ export const RoleSelect = ({ value, roles, onChange, ariaLabel, className }: IRo
   const selected = roles.find((role) => role.id === value) ?? roles[0];
   const selectedLabel = selected ? roleLabel(selected.key, selected.name, t) : '';
 
+  useClickOutside(wrapperRef, () => setOpen(false), open);
+
   useEffect(() => {
     if (!open) return;
-
-    const onPointerDown = (event: MouseEvent) => {
-      if (!wrapperRef.current?.contains(event.target as Node)) setOpen(false);
-    };
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -45,21 +43,17 @@ export const RoleSelect = ({ value, roles, onChange, ariaLabel, className }: IRo
       }
     };
 
-    document.addEventListener('mousedown', onPointerDown);
     window.addEventListener('keydown', onKeyDown, true);
 
     const options = menuRef.current?.querySelectorAll<HTMLButtonElement>('[role="option"]');
     const selectedIndex = roles.findIndex((role) => role.id === value);
     options?.[Math.max(selectedIndex, 0)]?.focus();
 
-    return () => {
-      document.removeEventListener('mousedown', onPointerDown);
-      window.removeEventListener('keydown', onKeyDown, true);
-    };
+    return () => window.removeEventListener('keydown', onKeyDown, true);
   }, [open, roles, value]);
 
   const select = (roleId: string) => {
-    onChange(roleId);
+    if (roleId !== value) onChange(roleId);
     setOpen(false);
     triggerRef.current?.focus();
   };

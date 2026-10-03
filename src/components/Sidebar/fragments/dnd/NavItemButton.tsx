@@ -51,9 +51,9 @@ export const NavItemButton = ({
       aria-selected={isSelected || undefined}
       isActive={isActive}
       isSelected={isSelected}
+      size="regular"
       onClick={onClick}
       className={clsx(
-        'px-2 py-1.5',
         isFolder && item.childCount === 0 ? 'cursor-default' : 'cursor-pointer',
         isFolder && !isActive && 'font-medium',
         isDropTarget &&

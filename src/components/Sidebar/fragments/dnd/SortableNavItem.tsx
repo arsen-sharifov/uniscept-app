@@ -60,7 +60,7 @@ export const SortableNavItem = ({
   dropDepth,
   isDragActive,
 }: ISortableNavItemProps) => {
-  const translations = useTranslations();
+  const t = useTranslations();
   const canManageStructure = usePermissionsStore((s) => s.canManageStructure);
   const isEditing = editingId === item.id;
   const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({
@@ -72,7 +72,8 @@ export const SortableNavItem = ({
   const showsTools = !isEditing && canManageStructure;
 
   const handleClick = (event: MouseEvent) => {
-    if (item.type === 'thread' || event.ctrlKey || event.metaKey || event.shiftKey) onItemClick?.(item.id, event);
+    const selects = event.ctrlKey || event.metaKey || event.shiftKey;
+    if (item.type === 'thread' || selects) onItemClick?.(item.id, event);
     else if (item.childCount > 0) onToggleCollapse(item.id);
   };
 
@@ -122,9 +123,9 @@ export const SortableNavItem = ({
             attributes={attributes}
             listeners={listeners}
             isActive={isActive}
-            ariaLabel={translations.platform.sidebar.dragToReorder}
+            ariaLabel={t.platform.sidebar.dragToReorder}
+            size="regular"
             onClick={handleClick}
-            className="left-2"
           />
         )}
 

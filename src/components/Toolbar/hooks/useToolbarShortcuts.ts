@@ -3,16 +3,24 @@
 import { useEffect } from 'react';
 
 import { useCanvasStore, usePermissionsStore } from '@/lib/stores';
+import { isTypingTarget } from '@/lib/utils';
 
 import { TOOL_KEY_MAP } from '../consts';
-import { isToolDisabled, isTypingTarget } from '../utils';
+import { isToolDisabled, toShortcutKey } from '../utils';
 
-export const useToolbarShortcuts = (): void => {
+export const useToolbarShortcuts = (onToggleShortcuts: () => void): void => {
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (isTypingTarget(event.target)) return;
 
-      const key = event.key.toLowerCase();
+      if (event.key === '?') {
+        event.preventDefault();
+        onToggleShortcuts();
+
+        return;
+      }
+
+      const key = toShortcutKey(event);
       const isModifier = event.metaKey || event.ctrlKey;
       const store = useCanvasStore.getState();
       const temporal = useCanvasStore.temporal.getState();
@@ -50,5 +58,5 @@ export const useToolbarShortcuts = (): void => {
     window.addEventListener('keydown', onKeyDown);
 
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, []);
+  }, [onToggleShortcuts]);
 };

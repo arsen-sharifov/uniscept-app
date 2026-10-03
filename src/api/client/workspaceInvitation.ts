@@ -2,7 +2,7 @@ import type { IMyInvitation, IMyInvitationRow, IWorkspaceInvitation, IWorkspaceI
 
 import { createClient } from '@/lib/supabase';
 
-import { toMyInvitation, toWorkspaceInvitation } from './utils';
+import { toMyInvitation, toResponseError, toWorkspaceInvitation } from './utils';
 
 export const getWorkspaceInvitations = async (workspaceId: string): Promise<IWorkspaceInvitation[]> => {
   const supabase = createClient();
@@ -21,12 +21,7 @@ export const createWorkspaceInvitation = async (workspaceId: string, email: stri
     body: JSON.stringify({ workspaceId, email, roleId }),
   });
 
-  if (!res.ok) {
-    const body = await res.json().catch(() => null);
-    const error = new Error(body?.error?.message ?? 'Failed to create invitation');
-    Object.assign(error, { status: res.status, code: body?.error?.code });
-    throw error;
-  }
+  if (!res.ok) throw await toResponseError(res, 'Failed to create invitation');
 };
 
 export const revokeWorkspaceInvitation = async (invitationId: string): Promise<void> => {

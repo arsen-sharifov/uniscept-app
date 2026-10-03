@@ -2,12 +2,13 @@
 
 import type { XYPosition } from '@xyflow/react';
 import { Link2, Search } from 'lucide-react';
-import { useState, useEffect, useRef, useMemo, useCallback, useId } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 
 import type { INodeReference, IReferenceNodeData, IScreenPoint } from '@interfaces';
 import { useClickOutside, useEscapeKey, useFocusTrap } from '@hooks';
 import { useTranslations } from '@/i18n';
 
+import { useViewportClamp } from '../hooks';
 import { ReferenceSearchResults } from './ReferenceSearchResults';
 
 export interface IReferenceSearchPanelContentProps {
@@ -72,6 +73,7 @@ export const ReferenceSearchPanelContent = ({
   useEscapeKey(onClose);
   useClickOutside(panelRef, onClose);
   useFocusTrap(panelRef, true);
+  useViewportClamp(panelRef, screenPos);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -108,7 +110,6 @@ export const ReferenceSearchPanelContent = ({
       aria-modal="true"
       data-tour="canvasReferenceSearch"
       aria-label={t.platform.canvas.referenceSearch.placeholder}
-      style={{ left: screenPos.x, top: screenPos.y }}
       className="fixed inset-auto z-50 flex w-80 animate-rise-up flex-col overflow-hidden rounded-xl border border-[color:var(--border)] bg-[color:var(--surface)] font-grotesk text-[color:var(--text)] shadow-[var(--shadow-modal)] motion-reduce:animate-none"
     >
       <div className="flex items-center gap-2 border-b border-[color:var(--border)] px-2.5 py-2.5">
@@ -151,24 +152,18 @@ export const ReferenceSearchPanelContent = ({
 
       {filtered.length > 0 && (
         <div className="flex items-center justify-between border-t border-[color:var(--border)] bg-[color:var(--surface-overlay)] px-3 py-1.5 font-mono-ui text-[9.5px] tracking-[0.04em] text-[color:var(--text-muted)] lowercase">
-          <span className="flex items-center gap-1">
-            <kbd className="inline-flex h-4 min-w-4 items-center justify-center rounded-md border border-[color:var(--border-strong)] bg-[color:var(--surface)] px-1 font-mono-ui text-[9px] text-[color:var(--text-strong)]">
-              ↵
-            </kbd>
-            {t.platform.canvas.referenceSearch.actionLink}
-          </span>
-          <span className="flex items-center gap-1">
-            <kbd className="inline-flex h-4 min-w-4 items-center justify-center rounded-md border border-[color:var(--border-strong)] bg-[color:var(--surface)] px-1 font-mono-ui text-[9px] text-[color:var(--text-strong)]">
-              ↑↓
-            </kbd>
-            {t.platform.canvas.referenceSearch.actionNavigate}
-          </span>
-          <span className="flex items-center gap-1">
-            <kbd className="inline-flex h-4 min-w-4 items-center justify-center rounded-md border border-[color:var(--border-strong)] bg-[color:var(--surface)] px-1 font-mono-ui text-[9px] text-[color:var(--text-strong)]">
-              Esc
-            </kbd>
-            {t.platform.canvas.referenceSearch.actionClose}
-          </span>
+          {[
+            { key: '↵', label: t.platform.canvas.referenceSearch.actionLink },
+            { key: '↑↓', label: t.platform.canvas.referenceSearch.actionNavigate },
+            { key: 'Esc', label: t.platform.canvas.referenceSearch.actionClose },
+          ].map(({ key, label }) => (
+            <span key={key} className="flex items-center gap-1">
+              <kbd className="inline-flex h-4 min-w-4 items-center justify-center rounded-md border border-[color:var(--border-strong)] bg-[color:var(--surface)] px-1 font-mono-ui text-[9px] text-[color:var(--text-strong)]">
+                {key}
+              </kbd>
+              {label}
+            </span>
+          ))}
         </div>
       )}
     </dialog>

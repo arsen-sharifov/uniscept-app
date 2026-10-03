@@ -14,7 +14,6 @@ import type {
   TNodeBandTone,
 } from '@interfaces';
 
-export const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)';
 export const LIGHT_SCHEME_QUERY = '(prefers-color-scheme: light)';
 export const FINE_POINTER_QUERY = '(pointer: fine)';
 export const DESKTOP_QUERY = '(min-width: 1024px)';
@@ -48,6 +47,7 @@ export const HERO_BAND_TONES: Record<THeroMiniTone, TNodeBandTone> = {
 export const HERO_EDGE_TONE_STROKES: Record<THeroEdgeTone, string> = {
   default: 'var(--hero-edge)',
   valid: 'var(--hero-edge-valid)',
+  answer: 'var(--decision)',
   invalid: 'var(--hero-edge-invalid)',
   tainted: 'var(--hero-edge-tainted)',
   reference: 'var(--hero-edge-reference)',

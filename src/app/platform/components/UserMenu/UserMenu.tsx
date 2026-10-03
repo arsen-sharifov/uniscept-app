@@ -21,7 +21,7 @@ interface IUserMenuProps {
 
 export const UserMenu = ({ onSettingsClick }: IUserMenuProps) => {
   const router = useRouter();
-  const translations = useTranslations();
+  const t = useTranslations();
   const [open, setOpen] = useState(false);
   const [user, setUser] = useState<User | null>();
   const forget = useOnboardingStore((state) => state.forget);
@@ -47,22 +47,18 @@ export const UserMenu = ({ onSettingsClick }: IUserMenuProps) => {
   }, []);
 
   const metadata = user?.user_metadata as IUserMetadata | undefined;
-  const displayName = metadata?.name || user?.email?.split('@')[0] || translations.common.userAvatar;
+  const displayName = metadata?.name || user?.email?.split('@')[0] || t.common.userAvatar;
   const email = user?.email ?? '';
   const storedAvatarIcon = metadata?.avatarIcon;
   const avatarIcon: TAvatarIcon | null = isAvatarIcon(storedAvatarIcon) ? storedAvatarIcon : null;
 
   const handleSignOut = async () => {
-    try {
-      await signOut();
-    } catch (error) {
-      event.error(error, { toast: false, context: 'auth.signOut' });
-    } finally {
-      forget();
-      localStorage.removeItem(PREFERENCES_STORAGE_KEY);
-      await clearLocale();
-      router.push('/login');
-    }
+    await signOut().catch((error: unknown) => event.error(error, { toast: false, context: 'auth.signOut' }));
+
+    forget();
+    localStorage.removeItem(PREFERENCES_STORAGE_KEY);
+    await clearLocale().catch((error: unknown) => event.error(error, { toast: false, context: 'auth.clearLocale' }));
+    router.push('/login');
   };
 
   if (user === undefined) {
@@ -90,7 +86,7 @@ export const UserMenu = ({ onSettingsClick }: IUserMenuProps) => {
           {...trigger}
           data-tour="sidebarUserMenu"
           className={clsx(
-            'group flex w-full min-w-0 items-center gap-2 rounded-xl px-2 py-1.5 text-left transition-colors',
+            'group flex w-full min-w-0 items-center gap-2 rounded-xl px-2 py-1.5 text-left transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring-focus)] focus-visible:outline-none',
             open ? 'bg-[color:var(--surface-overlay)]' : 'hover:bg-[color:var(--surface-overlay)]',
           )}
         >
@@ -118,18 +114,18 @@ export const UserMenu = ({ onSettingsClick }: IUserMenuProps) => {
             setOpen(false);
             onSettingsClick?.();
           }}
-          className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs text-[color:var(--text)] transition-colors hover:bg-[color:var(--surface-overlay)] hover:text-[color:var(--text-strong)]"
+          className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs text-[color:var(--text)] transition-colors hover:bg-[color:var(--surface-overlay)] hover:text-[color:var(--text-strong)] focus-visible:ring-2 focus-visible:ring-[color:var(--ring-focus)] focus-visible:outline-none"
         >
           <Settings className="h-3.5 w-3.5 text-[color:var(--text-muted)]" />
-          <span>{translations.platform.settings.title}</span>
+          <span>{t.platform.settings.title}</span>
         </button>
         <button
           type="button"
           onClick={handleSignOut}
-          className="group flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs text-[color:var(--text)] transition-colors hover:bg-[color:var(--status-error-bg)] hover:text-[color:var(--status-error)]"
+          className="group flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs text-[color:var(--text)] transition-colors hover:bg-[color:var(--status-error-bg)] hover:text-[color:var(--status-error)] focus-visible:ring-2 focus-visible:ring-[color:var(--ring-focus)] focus-visible:outline-none"
         >
           <LogOut className="h-3.5 w-3.5 text-[color:var(--text-muted)] transition-colors group-hover:text-[color:var(--status-error)]" />
-          <span>{translations.platform.sidebar.signOut}</span>
+          <span>{t.platform.sidebar.signOut}</span>
         </button>
       </div>
     </Popover>

@@ -1,9 +1,26 @@
 import { fireEvent, render, screen } from '@testing-library/react';
+import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { Popover } from '@/components/Popover';
 
 const onOpenChange = vi.fn();
+
+let rerender: (ui: ReactNode) => void;
+
+const withSelfFocusingField = (open: boolean) => (
+  <Popover
+    open={open}
+    onOpenChange={onOpenChange}
+    renderTrigger={(trigger) => (
+      <button type="button" {...trigger}>
+        Workspaces
+      </button>
+    )}
+  >
+    <input aria-label="Workspace name" autoFocus />
+  </Popover>
+);
 
 describe('Popover', () => {
   describe('GIVEN a closed popover', () => {
@@ -84,6 +101,29 @@ describe('Popover', () => {
       });
     });
 
+    describe('WHEN the trigger is pressed and released like a real click', () => {
+      beforeEach(() => {
+        const trigger = screen.getByRole('button', { name: 'Account' });
+        fireEvent.mouseDown(trigger);
+        fireEvent.click(trigger);
+      });
+
+      test('THEN it asks to close once, without the press reopening it', () => {
+        expect(onOpenChange).toHaveBeenCalledExactlyOnceWith(false);
+      });
+    });
+
+    describe('WHEN Escape is pressed', () => {
+      beforeEach(() => {
+        fireEvent.keyDown(window, { key: 'Escape' });
+      });
+
+      test('THEN it asks to close and hands focus back to the trigger', () => {
+        expect(onOpenChange).toHaveBeenCalledExactlyOnceWith(false);
+        expect(screen.getByRole('button', { name: 'Account' })).toHaveFocus();
+      });
+    });
+
     describe('WHEN the pointer goes down inside the panel', () => {
       beforeEach(() => {
         fireEvent.mouseDown(screen.getByText('Panel'));
@@ -101,6 +141,22 @@ describe('Popover', () => {
 
       test('THEN it asks to close', () => {
         expect(onOpenChange).toHaveBeenCalledExactlyOnceWith(false);
+      });
+    });
+  });
+
+  describe('GIVEN a popover whose content focuses itself on open', () => {
+    beforeEach(() => {
+      rerender = render(withSelfFocusingField(false)).rerender;
+    });
+
+    describe('WHEN it opens', () => {
+      beforeEach(() => {
+        rerender(withSelfFocusingField(true));
+      });
+
+      test('THEN the content keeps its focus instead of the panel taking it', () => {
+        expect(screen.getByRole('textbox', { name: 'Workspace name' })).toHaveFocus();
       });
     });
   });

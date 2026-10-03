@@ -3,22 +3,23 @@
 import { clsx } from 'clsx';
 import { useState } from 'react';
 
-import type { IWorkspaceRole, IWorkspaceRolePermissions } from '@interfaces';
+import type { IWorkspaceAccess, IWorkspaceRole, IWorkspaceRolePermissions } from '@interfaces';
 import { MAX_NAME_LENGTH } from '@constants';
 import { useTranslations } from '@/i18n';
 
 import { SettingsInput, SettingsPrimaryButton, Toggle } from '../../Settings';
 import { DEFAULT_ROLE_ICON_KEY, EMPTY_PERMISSIONS, PERMISSION_DEFINITIONS, ROLE_ICONS } from '../consts';
+import { canGrantPermission } from '../utils';
 
 interface IRoleEditorProps {
   role: IWorkspaceRole | null;
+  granter: IWorkspaceAccess | null;
   onSave: (name: string, icon: string, permissions: IWorkspaceRolePermissions) => Promise<boolean>;
   onCancel: () => void;
 }
 
-export const RoleEditor = ({ role, onSave, onCancel }: IRoleEditorProps) => {
+export const RoleEditor = ({ role, granter, onSave, onCancel }: IRoleEditorProps) => {
   const t = useTranslations();
-  const { roles: copy, permissions } = t.platform.workspaceSettings;
 
   const [name, setName] = useState(role?.name ?? '');
   const [icon, setIcon] = useState(role?.icon ?? DEFAULT_ROLE_ICON_KEY);
@@ -38,7 +39,7 @@ export const RoleEditor = ({ role, onSave, onCancel }: IRoleEditorProps) => {
 
   const trimmedName = name.trim();
   const canSave = trimmedName.length > 0 && !saving;
-  const submitLabel = role ? copy.save : copy.create;
+  const submitLabel = role ? t.platform.workspaceSettings.roles.save : t.platform.workspaceSettings.roles.create;
 
   const handleSave = async () => {
     if (!canSave) return;
@@ -54,7 +55,7 @@ export const RoleEditor = ({ role, onSave, onCancel }: IRoleEditorProps) => {
       <div>
         <header className="mb-1.5 flex items-baseline justify-between gap-3">
           <h3 className="font-mono-ui text-[10px] font-bold tracking-[0.14em] text-[color:var(--text-label)] uppercase">
-            {copy.nameLabel}
+            {t.platform.workspaceSettings.roles.nameLabel}
           </h3>
           <span className="shrink-0 font-mono-ui text-[10px] tracking-[0.14em] text-[color:var(--text-faint)] uppercase tabular-nums">
             {trimmedName.length}/{MAX_NAME_LENGTH}
@@ -65,16 +66,21 @@ export const RoleEditor = ({ role, onSave, onCancel }: IRoleEditorProps) => {
           type="text"
           value={name}
           maxLength={MAX_NAME_LENGTH}
-          placeholder={copy.namePlaceholder}
+          aria-label={t.platform.workspaceSettings.roles.nameLabel}
+          placeholder={t.platform.workspaceSettings.roles.namePlaceholder}
           onChange={(inputEvent) => setName(inputEvent.target.value)}
         />
       </div>
 
       <div>
         <h3 className="mb-2 font-mono-ui text-[10px] font-bold tracking-[0.14em] text-[color:var(--text-label)] uppercase">
-          {copy.iconLabel}
+          {t.platform.workspaceSettings.roles.iconLabel}
         </h3>
-        <div role="radiogroup" aria-label={copy.iconLabel} className="grid grid-cols-6 gap-2">
+        <div
+          role="radiogroup"
+          aria-label={t.platform.workspaceSettings.roles.iconLabel}
+          className="grid grid-cols-6 gap-2"
+        >
           {ROLE_ICONS.map((option) => (
             <button
               key={option.key}
@@ -98,10 +104,10 @@ export const RoleEditor = ({ role, onSave, onCancel }: IRoleEditorProps) => {
 
       <div>
         <h3 className="mb-3 font-mono-ui text-[10px] font-bold tracking-[0.14em] text-[color:var(--text-label)] uppercase">
-          {copy.permissionsLabel}
+          {t.platform.workspaceSettings.roles.permissionsLabel}
         </h3>
         <div className="divide-y divide-[color:var(--border)] overflow-hidden rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-soft)]">
-          {PERMISSION_DEFINITIONS.map((definition) => (
+          {PERMISSION_DEFINITIONS.filter(({ key }) => canGrantPermission(key, granter)).map((definition) => (
             <div
               key={definition.key}
               className={clsx(
@@ -111,8 +117,8 @@ export const RoleEditor = ({ role, onSave, onCancel }: IRoleEditorProps) => {
             >
               <Toggle
                 icon={definition.icon}
-                label={permissions[definition.key].name}
-                description={permissions[definition.key].description}
+                label={t.platform.workspaceSettings.permissions[definition.key].name}
+                description={t.platform.workspaceSettings.permissions[definition.key].description}
                 checked={perms[definition.key]}
                 onChange={(value) => setPerms((prev) => ({ ...prev, [definition.key]: value }))}
               />
@@ -127,10 +133,10 @@ export const RoleEditor = ({ role, onSave, onCancel }: IRoleEditorProps) => {
           onClick={onCancel}
           className="cursor-pointer rounded-lg border border-[color:var(--border-strong)] px-4 py-2 font-grotesk text-sm font-medium text-[color:var(--text-muted)] transition-[color,background-color,scale] duration-150 hover:bg-[color:var(--surface-overlay)] hover:text-[color:var(--text-strong)] focus-visible:ring-2 focus-visible:ring-[color:var(--ring-focus)] focus-visible:outline-none active:scale-95 motion-reduce:transition-none"
         >
-          {copy.cancel}
+          {t.platform.workspaceSettings.roles.cancel}
         </button>
         <SettingsPrimaryButton onClick={handleSave} disabled={!canSave}>
-          {saving ? copy.saving : submitLabel}
+          {saving ? t.platform.workspaceSettings.roles.saving : submitLabel}
         </SettingsPrimaryButton>
       </div>
     </div>

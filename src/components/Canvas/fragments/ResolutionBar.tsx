@@ -4,9 +4,8 @@ import { CheckCircle2 } from 'lucide-react';
 import { useMemo } from 'react';
 
 import { useTranslations } from '@/i18n';
+import { isThreadResolved } from '@/lib/canvas';
 import { useCanvasStore } from '@/lib/stores';
-
-import { isThreadResolved } from '../utils';
 
 export const ResolutionBar = () => {
   const t = useTranslations();

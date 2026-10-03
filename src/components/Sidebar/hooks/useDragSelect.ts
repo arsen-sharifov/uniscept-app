@@ -1,8 +1,8 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
-import type { IRect } from '@interfaces';
+import type { IRect, IScreenPoint, IUseDragSelectOptions } from '@interfaces';
 
 import {
   AUTO_SCROLL_INTERVAL_MS,
@@ -11,18 +11,12 @@ import {
   DRAG_SELECT_ACTIVATION_PX,
 } from '../consts';
 
-interface IUseDragSelectOptions {
-  containerRef: RefObject<HTMLElement | null>;
-  onSelectionChange: (ids: Set<string>) => void;
-  enabled?: boolean;
-}
-
 const rectsOverlap = (a: DOMRect, b: IRect): boolean =>
   a.left < b.x + b.width && a.right > b.x && a.top < b.y + b.height && a.bottom > b.y;
 
 export const useDragSelect = ({ containerRef, onSelectionChange, enabled = true }: IUseDragSelectOptions) => {
   const [rect, setRect] = useState<IRect | null>(null);
-  const startPos = useRef<{ x: number; y: number } | null>(null);
+  const startPos = useRef<IScreenPoint | null>(null);
   const isActive = useRef(false);
   const rafId = useRef<number | null>(null);
   const scrollInterval = useRef<ReturnType<typeof setInterval> | null>(null);

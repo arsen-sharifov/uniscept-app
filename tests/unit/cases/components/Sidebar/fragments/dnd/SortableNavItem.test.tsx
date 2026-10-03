@@ -4,7 +4,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import type { IFlattenedItem } from '@interfaces';
-
+import { MAX_NAME_LENGTH } from '@constants';
 import { TRANSLATIONS } from '@mocks/i18n';
 import { folderItem, threadItem } from '@mocks/sidebar';
 import { SortableNavItem } from '@/components/Sidebar/fragments/dnd';
@@ -12,8 +12,6 @@ import { flattenTree } from '@/components/Sidebar/utils';
 import { usePermissionsStore } from '@/lib/stores';
 
 vi.mock('@/i18n', () => import('@mocks/i18n'));
-
-const { sidebar } = TRANSLATIONS.platform;
 
 const onItemClick = vi.fn();
 const onToggleCollapse = vi.fn();
@@ -57,7 +55,7 @@ const renderRow = (item: IFlattenedItem, overrides: Partial<Parameters<typeof So
 
 const treeItem = () => screen.getByRole('treeitem');
 
-const grip = () => screen.queryByRole('button', { name: sidebar.dragToReorder });
+const grip = () => screen.queryByRole('button', { name: TRANSLATIONS.platform.sidebar.dragToReorder });
 
 const action = (title: string) => screen.queryByTitle(title);
 
@@ -79,7 +77,7 @@ describe('SortableNavItem', () => {
       });
 
       test('THEN the resolved mark shows next to the name', () => {
-        expect(treeItem()).toContainElement(screen.getByLabelText(sidebar.resolved));
+        expect(treeItem()).toContainElement(screen.getByLabelText(TRANSLATIONS.platform.sidebar.resolved));
       });
     });
 
@@ -94,9 +92,9 @@ describe('SortableNavItem', () => {
       });
     });
 
-    describe('WHEN the grip is clicked without dragging', () => {
+    describe('WHEN the grip is clicked with the pointer without dragging', () => {
       beforeEach(() => {
-        fireEvent.click(grip()!);
+        fireEvent.click(grip()!, { detail: 1 });
       });
 
       test('THEN the click still opens the thread', () => {
@@ -104,9 +102,20 @@ describe('SortableNavItem', () => {
       });
     });
 
+    describe('WHEN the focused grip receives a keyboard click', () => {
+      beforeEach(() => {
+        fireEvent.click(grip()!, { detail: 0 });
+      });
+
+      test('THEN the thread is not opened', () => {
+        expect(onItemClick).not.toHaveBeenCalled();
+        expect(onToggleCollapse).not.toHaveBeenCalled();
+      });
+    });
+
     describe('WHEN the rename action is clicked', () => {
       beforeEach(() => {
-        fireEvent.click(action(sidebar.rename)!);
+        fireEvent.click(action(TRANSLATIONS.platform.sidebar.rename)!);
       });
 
       test('THEN rename starts without opening the thread', () => {
@@ -117,7 +126,7 @@ describe('SortableNavItem', () => {
 
     describe('WHEN the delete action is clicked', () => {
       beforeEach(() => {
-        fireEvent.click(action(sidebar.delete)!);
+        fireEvent.click(action(TRANSLATIONS.platform.sidebar.delete)!);
       });
 
       test('THEN deletion is requested without opening the thread', () => {
@@ -136,6 +145,7 @@ describe('SortableNavItem', () => {
 
     afterEach(() => {
       fireEvent.pointerUp(document);
+      fireEvent.keyDown(document, { code: 'Escape' });
       vi.runOnlyPendingTimers();
       vi.useRealTimers();
     });
@@ -150,9 +160,22 @@ describe('SortableNavItem', () => {
       });
     });
 
+    describe('WHEN the focused grip is activated with the keyboard', () => {
+      beforeEach(() => {
+        grip()!.focus();
+        fireEvent.keyDown(grip()!, { code: 'Enter', key: 'Enter' });
+        fireEvent.click(grip()!, { detail: 0 });
+      });
+
+      test('THEN only the keyboard drag starts and the thread stays closed', () => {
+        expect(onDragStart).toHaveBeenCalledOnce();
+        expect(onItemClick).not.toHaveBeenCalled();
+      });
+    });
+
     describe('WHEN the press lands on a row action', () => {
       beforeEach(() => {
-        fireEvent.pointerDown(action(sidebar.rename)!, { isPrimary: true, button: 0 });
+        fireEvent.pointerDown(action(TRANSLATIONS.platform.sidebar.rename)!, { isPrimary: true, button: 0 });
       });
 
       test('THEN no drag starts', () => {
@@ -170,7 +193,7 @@ describe('SortableNavItem', () => {
     describe('WHEN it renders', () => {
       test('THEN it reports its open state and offers a new thread inside it', () => {
         expect(treeItem()).toHaveAttribute('aria-expanded', 'true');
-        expect(action(sidebar.newThread)).toBeInTheDocument();
+        expect(action(TRANSLATIONS.platform.sidebar.newThread)).toBeInTheDocument();
       });
     });
 
@@ -198,7 +221,7 @@ describe('SortableNavItem', () => {
 
     describe('WHEN the new thread action is clicked', () => {
       beforeEach(() => {
-        fireEvent.click(action(sidebar.newThread)!);
+        fireEvent.click(action(TRANSLATIONS.platform.sidebar.newThread)!);
       });
 
       test('THEN a thread is requested inside the folder without toggling it', () => {
@@ -235,7 +258,7 @@ describe('SortableNavItem', () => {
     describe('WHEN it renders', () => {
       test('THEN it is marked selected and the resolved mark steps aside', () => {
         expect(treeItem()).toHaveAttribute('aria-selected', 'true');
-        expect(screen.queryByLabelText(sidebar.resolved)).not.toBeInTheDocument();
+        expect(screen.queryByLabelText(TRANSLATIONS.platform.sidebar.resolved)).not.toBeInTheDocument();
       });
     });
   });
@@ -276,7 +299,7 @@ describe('SortableNavItem', () => {
     describe('WHEN it renders', () => {
       test('THEN neither the grip nor the row actions are offered', () => {
         expect(grip()).not.toBeInTheDocument();
-        expect(action(sidebar.rename)).not.toBeInTheDocument();
+        expect(action(TRANSLATIONS.platform.sidebar.rename)).not.toBeInTheDocument();
       });
     });
 
@@ -301,7 +324,14 @@ describe('SortableNavItem', () => {
       test('THEN the name turns into an input and the grip and actions step away', () => {
         expect(screen.getByRole('textbox')).toHaveValue('Thread t2');
         expect(grip()).not.toBeInTheDocument();
-        expect(action(sidebar.rename)).not.toBeInTheDocument();
+        expect(action(TRANSLATIONS.platform.sidebar.rename)).not.toBeInTheDocument();
+      });
+
+      test('THEN the labelled input caps the name at the shared name length', () => {
+        expect(screen.getByRole('textbox', { name: TRANSLATIONS.platform.sidebar.rename })).toHaveAttribute(
+          'maxlength',
+          String(MAX_NAME_LENGTH),
+        );
       });
     });
   });

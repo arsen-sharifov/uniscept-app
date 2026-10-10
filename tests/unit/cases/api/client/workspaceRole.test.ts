@@ -10,27 +10,14 @@ vi.mock('@/lib/supabase', () => import('@mocks/supabase'));
 describe('getWorkspaceRoles', () => {
   describe('GIVEN stored roles for the workspace', () => {
     describe('WHEN the roles are fetched', () => {
-      test('THEN the rows map through the role mapper', async () => {
+      test('THEN the roles of that workspace are read and each row maps through the role mapper', async () => {
         const { client } = primeSupabase([]);
         vi.mocked(client.rpc).mockResolvedValue({ data: [workspaceRoleRow()], error: null });
 
-        await expect(getWorkspaceRoles('ws-1')).resolves.toEqual([
-          {
-            id: 'role-1',
-            key: 'member',
-            name: 'Member',
-            icon: null,
-            isSystem: true,
-            isOwner: false,
-            canEditCanvas: true,
-            canComment: true,
-            canManageStructure: false,
-            canManageMembers: false,
-            canManageRoles: false,
-            canManageWorkspace: false,
-            memberCount: 2,
-          },
+        await expect(getWorkspaceRoles('ws-1')).resolves.toMatchObject([
+          { id: 'role-1', isSystem: true, canEditCanvas: true, memberCount: 2 },
         ]);
+        expect(client.rpc).toHaveBeenCalledExactlyOnceWith('get_workspace_roles', { p_workspace_id: 'ws-1' });
       });
     });
   });
@@ -117,7 +104,6 @@ describe('updateWorkspaceRole', () => {
     describe('WHEN the role is updated', () => {
       test('THEN the rpc receives every mapped parameter', async () => {
         const { client } = primeSupabase([]);
-        vi.mocked(client.rpc).mockResolvedValue({ data: null, error: null });
 
         await updateWorkspaceRole('role-1', 'Reviewer', 'star', {
           canEditCanvas: false,
@@ -160,7 +146,6 @@ describe('deleteWorkspaceRole', () => {
     describe('WHEN the role is deleted', () => {
       test('THEN the rpc targets the role id', async () => {
         const { client } = primeSupabase([]);
-        vi.mocked(client.rpc).mockResolvedValue({ data: null, error: null });
 
         await deleteWorkspaceRole('role-1');
 

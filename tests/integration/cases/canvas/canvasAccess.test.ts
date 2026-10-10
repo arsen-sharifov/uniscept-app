@@ -10,6 +10,7 @@ import type {
 import {
   deleteAccounts,
   getUserClient,
+  readEdge,
   readNode,
   seedAccount,
   seedEdge,
@@ -171,6 +172,44 @@ describe('canvas_nodes', () => {
         await expect(readNode(nodeId)).resolves.not.toBeNull();
       });
     });
+
+    describe('WHEN its author deletes it', () => {
+      beforeEach(async () => {
+        await authorClient.from('canvas_nodes').delete().eq('id', nodeId);
+      });
+
+      test('THEN the node is gone', async () => {
+        await expect(readNode(nodeId)).resolves.toBeNull();
+      });
+    });
+  });
+
+  describe('GIVEN a node authored by a viewer, who holds no edit permission', () => {
+    let nodeId: string;
+
+    beforeEach(async () => {
+      nodeId = await seedNode(thread.id, viewer.id, { label: 'written before the demotion' });
+    });
+
+    describe('WHEN the viewer updates its label', () => {
+      beforeEach(async () => {
+        await viewerClient.from('canvas_nodes').update({ label: 'edited without permission' }).eq('id', nodeId);
+      });
+
+      test('THEN the row stays unchanged', async () => {
+        await expect(readNode(nodeId)).resolves.toMatchObject({ label: 'written before the demotion' });
+      });
+    });
+
+    describe('WHEN the viewer deletes it', () => {
+      beforeEach(async () => {
+        await viewerClient.from('canvas_nodes').delete().eq('id', nodeId);
+      });
+
+      test('THEN the node survives', async () => {
+        await expect(readNode(nodeId)).resolves.not.toBeNull();
+      });
+    });
   });
 
   describe('GIVEN the question node of a thread', () => {
@@ -215,6 +254,24 @@ describe('canvas_edges', () => {
         expect(response.error).toBeNull();
       });
     });
+
+    describe('WHEN a viewer connects them', () => {
+      let response: IIntegrationResponse;
+
+      beforeEach(async () => {
+        response = await viewerClient.from('canvas_edges').insert({
+          thread_id: thread.id,
+          source_node_id: sourceId,
+          target_node_id: targetId,
+          source_handle: 'bottom',
+          target_handle: 'top',
+        });
+      });
+
+      test('THEN the insert is denied by row level security', () => {
+        expect(response.error?.code).toBe('42501');
+      });
+    });
   });
 
   describe('GIVEN nodes living in two different threads', () => {
@@ -246,7 +303,7 @@ describe('canvas_edges', () => {
     });
   });
 
-  describe('GIVEN an edge between two nodes of the thread', () => {
+  describe('GIVEN an edge drawn by an editor between two nodes of the thread', () => {
     let edgeId: string;
 
     beforeEach(async () => {
@@ -277,6 +334,26 @@ describe('canvas_edges', () => {
       test('THEN nothing comes back', () => {
         expect(response.error).toBeNull();
         expect(response.data).toEqual([]);
+      });
+    });
+
+    describe('WHEN a viewer deletes it', () => {
+      beforeEach(async () => {
+        await viewerClient.from('canvas_edges').delete().eq('id', edgeId);
+      });
+
+      test('THEN the edge survives', async () => {
+        await expect(readEdge(edgeId)).resolves.not.toBeNull();
+      });
+    });
+
+    describe('WHEN another editor deletes it', () => {
+      beforeEach(async () => {
+        await authorClient.from('canvas_edges').delete().eq('id', edgeId);
+      });
+
+      test('THEN the edge is gone', async () => {
+        await expect(readEdge(edgeId)).resolves.toBeNull();
       });
     });
   });
@@ -413,6 +490,126 @@ describe('canvas_comments', () => {
 
       test('THEN the insert is denied by row level security', () => {
         expect(response.error?.code).toBe('42501');
+      });
+    });
+  });
+});
+
+describe('set_canvas_node_status', () => {
+  let nodeId: string;
+
+  beforeEach(async () => {
+    nodeId = await seedNode(thread.id, editor.id, { label: 'status target' });
+  });
+
+  describe('GIVEN a member holding canvas edit permission', () => {
+    describe('WHEN they mark the node valid', () => {
+      let response: IIntegrationResponse;
+
+      beforeEach(async () => {
+        response = await editorClient.rpc('set_canvas_node_status', { p_node_id: nodeId, p_status: 'valid' });
+      });
+
+      test('THEN the status is persisted', async () => {
+        expect(response.error).toBeNull();
+        await expect(readNode(nodeId)).resolves.toMatchObject({ status: 'valid' });
+      });
+    });
+  });
+
+  describe('GIVEN a viewer without edit permission', () => {
+    describe('WHEN they mark the node valid', () => {
+      let response: IIntegrationResponse;
+
+      beforeEach(async () => {
+        response = await viewerClient.rpc('set_canvas_node_status', { p_node_id: nodeId, p_status: 'valid' });
+      });
+
+      test('THEN the call is denied and the node stays unmarked', async () => {
+        expect(response.error?.code).toBe('42501');
+        await expect(readNode(nodeId)).resolves.toMatchObject({ status: null });
+      });
+    });
+  });
+});
+
+describe('set_canvas_node_answer', () => {
+  let nodeId: string;
+
+  beforeEach(async () => {
+    nodeId = await seedNode(thread.id, editor.id, { label: 'answer target' });
+  });
+
+  describe('GIVEN a member holding canvas edit permission', () => {
+    describe('WHEN they mark the node as the answer', () => {
+      let response: IIntegrationResponse;
+
+      beforeEach(async () => {
+        response = await editorClient.rpc('set_canvas_node_answer', { p_node_id: nodeId, p_is_answer: true });
+      });
+
+      test('THEN the answer flag is persisted', async () => {
+        expect(response.error).toBeNull();
+        await expect(readNode(nodeId)).resolves.toMatchObject({ is_answer: true });
+      });
+    });
+  });
+
+  describe('GIVEN a viewer without edit permission', () => {
+    describe('WHEN they mark the node as the answer', () => {
+      let response: IIntegrationResponse;
+
+      beforeEach(async () => {
+        response = await viewerClient.rpc('set_canvas_node_answer', { p_node_id: nodeId, p_is_answer: true });
+      });
+
+      test('THEN the call is denied and the node stays unmarked', async () => {
+        expect(response.error?.code).toBe('42501');
+        await expect(readNode(nodeId)).resolves.toMatchObject({ is_answer: false });
+      });
+    });
+  });
+});
+
+describe('update_canvas_node_positions', () => {
+  let nodeId: string;
+
+  beforeEach(async () => {
+    nodeId = await seedNode(thread.id, editor.id, { label: 'moved node' });
+  });
+
+  describe('GIVEN a member holding canvas edit permission', () => {
+    describe('WHEN they move the node', () => {
+      let response: IIntegrationResponse<number>;
+
+      beforeEach(async () => {
+        response = await editorClient.rpc('update_canvas_node_positions', {
+          updates: [{ id: nodeId, position_x: 640, position_y: 480 }],
+        });
+      });
+
+      test('THEN one row moves to the new position', async () => {
+        expect(response.error).toBeNull();
+        expect(response.data).toBe(1);
+        await expect(readNode(nodeId)).resolves.toMatchObject({ position_x: 640, position_y: 480 });
+      });
+    });
+  });
+
+  describe('GIVEN a viewer without edit permission', () => {
+    describe('WHEN they move the node', () => {
+      let response: IIntegrationResponse<number>;
+
+      beforeEach(async () => {
+        response = await viewerClient.rpc('update_canvas_node_positions', {
+          updates: [{ id: nodeId, position_x: 999, position_y: 999 }],
+        });
+      });
+
+      test('THEN no row moves', async () => {
+        expect(response.error).toBeNull();
+        expect(response.data).toBe(0);
+        await expect(readNode(nodeId)).resolves.toMatchObject({ position_x: 0, position_y: 0 });
       });
     });
   });

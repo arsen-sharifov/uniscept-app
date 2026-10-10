@@ -1,41 +1,12 @@
 import { NextRequest } from 'next/server';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { createServerClient } from '@mocks/supabaseSsr';
+import { createServerClient, primeSsrSession, ssrAuth } from '@mocks/supabaseSsr';
 import { config, proxy } from '@/proxy';
 
 vi.mock('@supabase/ssr', () => import('@mocks/supabaseSsr'));
 
-const getUser = vi.fn();
-const exchangeCodeForSession = vi.fn();
-
 let response: Response;
-
-const primeSession = (options: {
-  user?: { id: string } | null;
-  exchangeError?: Error | null;
-  isRefreshed?: boolean;
-}) => {
-  vi.mocked(createServerClient).mockImplementation(
-    (_url: string, _key: string, config: { cookies: { setAll: (cookies: unknown[]) => void } }) => {
-      const storeFreshSession = () =>
-        config.cookies.setAll([{ name: 'sb-session', value: 'fresh', options: { path: '/' } }]);
-
-      getUser.mockImplementation(async () => {
-        if (options.isRefreshed) storeFreshSession();
-
-        return { data: { user: options.user ?? null } };
-      });
-      exchangeCodeForSession.mockImplementation(async () => {
-        storeFreshSession();
-
-        return { error: options.exchangeError ?? null };
-      });
-
-      return { auth: { getUser, exchangeCodeForSession } };
-    },
-  );
-};
 
 const location = () => new URL(response.headers.get('location') ?? '');
 
@@ -52,7 +23,7 @@ afterEach(() => {
 describe('proxy', () => {
   describe('GIVEN a guest', () => {
     beforeEach(() => {
-      primeSession({ user: null });
+      primeSsrSession({ user: null });
     });
 
     describe('WHEN they open the platform', () => {
@@ -95,14 +66,14 @@ describe('proxy', () => {
 
       test('THEN the user check is skipped and the route runs', () => {
         expect(response.headers.get('location')).toBeNull();
-        expect(getUser).not.toHaveBeenCalled();
+        expect(ssrAuth.getUser).not.toHaveBeenCalled();
       });
     });
   });
 
   describe('GIVEN a signed-in user', () => {
     beforeEach(() => {
-      primeSession({ user: { id: 'user-1' } });
+      primeSsrSession({ user: { id: 'user-1' } });
     });
 
     describe('WHEN they open the sign-in page with a query', () => {
@@ -127,6 +98,19 @@ describe('proxy', () => {
       });
     });
 
+    describe('WHEN supabase reads the session while they open the platform', () => {
+      let sessionCookies: unknown;
+
+      beforeEach(async () => {
+        await proxy(new NextRequest('http://localhost:3000/platform', { headers: { cookie: 'sb-session=current' } }));
+        sessionCookies = vi.mocked(createServerClient).mock.calls[0]?.[2].cookies.getAll();
+      });
+
+      test('THEN it gets the request cookies', () => {
+        expect(sessionCookies).toEqual([{ name: 'sb-session', value: 'current' }]);
+      });
+    });
+
     describe('WHEN they open the platform', () => {
       beforeEach(async () => {
         response = await proxy(new NextRequest('http://localhost:3000/platform'));
@@ -146,14 +130,14 @@ describe('proxy', () => {
       test('THEN the join page renders untouched so it can offer the account choice', () => {
         expect(response.headers.get('location')).toBeNull();
         expect(response.headers.get('x-middleware-request-x-pathname')).toBe('/join');
-        expect(exchangeCodeForSession).not.toHaveBeenCalled();
+        expect(ssrAuth.exchangeCodeForSession).not.toHaveBeenCalled();
       });
     });
   });
 
   describe('GIVEN a signed-in user whose expired session the proxy refreshes', () => {
     beforeEach(() => {
-      primeSession({ user: { id: 'user-1' }, isRefreshed: true });
+      primeSsrSession({ user: { id: 'user-1' }, refreshesSession: true });
     });
 
     describe('WHEN they open the platform', () => {
@@ -193,7 +177,7 @@ describe('proxy', () => {
 
   describe('GIVEN an email confirmation link carrying a valid code', () => {
     beforeEach(() => {
-      primeSession({ user: null });
+      primeSsrSession({ user: null });
     });
 
     describe('WHEN the link is opened', () => {
@@ -202,7 +186,7 @@ describe('proxy', () => {
       });
 
       test('THEN the code is exchanged and the visitor lands on the confirmation page with the session cookie', () => {
-        expect(exchangeCodeForSession).toHaveBeenCalledExactlyOnceWith('abc');
+        expect(ssrAuth.exchangeCodeForSession).toHaveBeenCalledExactlyOnceWith('abc');
         expect(location().pathname).toBe('/auth/confirmed');
         expect(location().searchParams.has('code')).toBe(false);
         expect(response.headers.get('set-cookie')).toContain('sb-session=fresh');
@@ -212,7 +196,7 @@ describe('proxy', () => {
 
   describe('GIVEN a link carrying an expired code', () => {
     beforeEach(() => {
-      primeSession({ user: null, exchangeError: new Error('expired') });
+      primeSsrSession({ user: null, exchangeError: new Error('expired') });
     });
 
     describe('WHEN the link is opened', () => {
@@ -229,7 +213,7 @@ describe('proxy', () => {
 
   describe('GIVEN any page request', () => {
     beforeEach(() => {
-      primeSession({ user: null });
+      primeSsrSession({ user: null });
     });
 
     describe('WHEN the proxy prepares the response', () => {

@@ -29,18 +29,7 @@ const canvas = () => useCanvasStore.getState();
 
 const nodeAt = (key: TExampleTarget) => canvas().nodes.find((node) => node.id === ids[key]);
 
-const play = async (played: Promise<void>) => {
-  await vi.runAllTimersAsync();
-  await played;
-};
-
-const argue = (...keys: TExampleNodeKey[]) => play(playExampleAct({ type: 'argue', keys }, copy, ids, isLive));
-
 const linksOf = () => canvas().edges.map(({ source, target }) => [source, target]);
-
-const loadQuestion = () => {
-  canvas().loadCanvas(THREAD_ID, { nodes: [questionNode('q')], edges: [] });
-};
 
 beforeEach(() => {
   vi.useFakeTimers();
@@ -78,7 +67,7 @@ describe('waitForExampleCanvas', () => {
     describe('WHEN its canvas arrives', () => {
       beforeEach(() => {
         questionId = waitForExampleCanvas(THREAD_ID);
-        loadQuestion();
+        canvas().loadCanvas(THREAD_ID, { nodes: [questionNode('q')], edges: [] });
       });
 
       test('THEN it resolves with the question node of that thread and stops listening', async () => {
@@ -91,7 +80,7 @@ describe('waitForExampleCanvas', () => {
       beforeEach(() => {
         questionId = waitForExampleCanvas(THREAD_ID);
         canvas().loadCanvas('another-thread', { nodes: [questionNode('elsewhere')], edges: [] });
-        loadQuestion();
+        canvas().loadCanvas(THREAD_ID, { nodes: [questionNode('q')], edges: [] });
       });
 
       test('THEN it keeps waiting and resolves with the question of the example thread', async () => {
@@ -117,7 +106,7 @@ describe('waitForExampleCanvas', () => {
   describe('GIVEN the example canvas is already open', () => {
     describe('WHEN it is awaited', () => {
       beforeEach(() => {
-        loadQuestion();
+        canvas().loadCanvas(THREAD_ID, { nodes: [questionNode('q')], edges: [] });
       });
 
       test('THEN it resolves straight away', async () => {
@@ -148,14 +137,16 @@ describe('createExampleIds', () => {
 describe('writeExampleQuestion', () => {
   describe('GIVEN the fresh question of the example thread is open for editing', () => {
     beforeEach(() => {
-      loadQuestion();
+      canvas().loadCanvas(THREAD_ID, { nodes: [questionNode('q')], edges: [] });
       ids = createExampleIds('q');
       canvas().setEditingNodeId('q');
     });
 
     describe('WHEN the opener writes it', () => {
       beforeEach(async () => {
-        await play(writeExampleQuestion(copy, ids, isLive));
+        const written = writeExampleQuestion(copy, ids, isLive);
+        await vi.runAllTimersAsync();
+        await written;
       });
 
       test('THEN the editor closes and the full question lands on the node', () => {
@@ -168,7 +159,7 @@ describe('writeExampleQuestion', () => {
 
 describe('playExampleAct', () => {
   beforeEach(() => {
-    loadQuestion();
+    canvas().loadCanvas(THREAD_ID, { nodes: [questionNode('q')], edges: [] });
     ids = createExampleIds('q');
   });
 
@@ -190,7 +181,9 @@ describe('playExampleAct', () => {
 
     describe('WHEN the option and the reason for it are argued in one move', () => {
       beforeEach(async () => {
-        await argue('capsule', 'oneButton');
+        const played = playExampleAct({ type: 'argue', keys: ['capsule', 'oneButton'] }, copy, ids, isLive);
+        await vi.runAllTimersAsync();
+        await played;
       });
 
       test('THEN both are written and each hangs from its planned parent', () => {
@@ -209,12 +202,28 @@ describe('playExampleAct', () => {
       });
     });
 
+    describe('WHEN the user deletes the new option before it is linked', () => {
+      beforeEach(async () => {
+        const played = playExampleAct({ type: 'argue', keys: ['capsule'] }, copy, ids, isLive);
+        await vi.advanceTimersByTimeAsync(EXAMPLE_STEP_DELAY_MS * 3);
+        canvas().deleteNode(ids.capsule);
+        await vi.runAllTimersAsync();
+        await played;
+      });
+
+      test('THEN no link is drawn to the missing node and the move still hands the tool back', () => {
+        expect(canvas().edges).toEqual([]);
+        expect(canvas().activeTool).toBe(ECanvasTool.Select);
+      });
+    });
+
     describe('WHEN the tour is left in the middle of the move', () => {
       beforeEach(async () => {
         const played = playExampleAct({ type: 'argue', keys: ['capsule', 'oneButton'] }, copy, ids, isLive);
         await vi.advanceTimersByTimeAsync(EXAMPLE_STEP_DELAY_MS);
         live = false;
-        await play(played);
+        await vi.runAllTimersAsync();
+        await played;
       });
 
       test('THEN the move stops unlinked and leaves the tool for the tour to hand back', () => {
@@ -228,13 +237,19 @@ describe('playExampleAct', () => {
 
   describe('GIVEN two competing options on the canvas', () => {
     beforeEach(async () => {
-      await argue('capsule', 'oneButton');
-      await argue('bean', 'perCup');
+      const firstOption = playExampleAct({ type: 'argue', keys: ['capsule', 'oneButton'] }, copy, ids, isLive);
+      await vi.runAllTimersAsync();
+      await firstOption;
+      const secondOption = playExampleAct({ type: 'argue', keys: ['bean', 'perCup'] }, copy, ids, isLive);
+      await vi.runAllTimersAsync();
+      await secondOption;
     });
 
     describe('WHEN one speaker doubts the other option', () => {
       beforeEach(async () => {
-        await play(playExampleAct({ type: 'comment', key: 'bean' }, copy, ids, isLive));
+        const commented = playExampleAct({ type: 'comment', key: 'bean' }, copy, ids, isLive);
+        await vi.runAllTimersAsync();
+        await commented;
       });
 
       test('THEN the doubt is left as a comment on that option with its panel still open', () => {
@@ -245,7 +260,9 @@ describe('playExampleAct', () => {
 
     describe('WHEN the doubt is answered with a second reason', () => {
       beforeEach(async () => {
-        await argue('payback');
+        const answered = playExampleAct({ type: 'argue', keys: ['payback'] }, copy, ids, isLive);
+        await vi.runAllTimersAsync();
+        await answered;
       });
 
       test('THEN the reason hangs from the option it defends', () => {
@@ -255,10 +272,18 @@ describe('playExampleAct', () => {
 
     describe('WHEN one option is ruled out and the other is chosen', () => {
       beforeEach(async () => {
-        await play(playExampleAct({ type: 'comment', key: 'capsule' }, copy, ids, isLive));
-        await play(playExampleAct({ type: 'status', status: 'invalid', keys: ['capsule'] }, copy, ids, isLive));
-        await play(playExampleAct({ type: 'status', status: 'valid', keys: ['bean', 'perCup'] }, copy, ids, isLive));
-        await play(playExampleAct({ type: 'answer', key: 'bean' }, copy, ids, isLive));
+        const commented = playExampleAct({ type: 'comment', key: 'capsule' }, copy, ids, isLive);
+        await vi.runAllTimersAsync();
+        await commented;
+        const ruledOut = playExampleAct({ type: 'status', status: 'invalid', keys: ['capsule'] }, copy, ids, isLive);
+        await vi.runAllTimersAsync();
+        await ruledOut;
+        const chosen = playExampleAct({ type: 'status', status: 'valid', keys: ['bean', 'perCup'] }, copy, ids, isLive);
+        await vi.runAllTimersAsync();
+        await chosen;
+        const answerSet = playExampleAct({ type: 'answer', key: 'bean' }, copy, ids, isLive);
+        await vi.runAllTimersAsync();
+        await answerSet;
       });
 
       test('THEN each verdict lands where the script says and the answer is set', () => {

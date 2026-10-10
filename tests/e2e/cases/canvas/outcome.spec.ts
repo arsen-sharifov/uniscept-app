@@ -23,19 +23,17 @@ test.describe('discussion outcome', () => {
       await waitForCanvas(page);
     });
 
-    test.describe('WHEN the node is marked as a valid step', () => {
+    test.describe('WHEN the node is marked as a valid step and the page is reloaded', () => {
       test.beforeEach(async ({ page }) => {
         await selectTool(page, COPY.platform.canvas.tools.items.validPath.label);
         await getNode(page, 'Option A').click();
-        await expectSaved(page);
-      });
-
-      test('THEN the node carries the valid badge after a reload', async ({ page }) => {
         await expect(getNode(page, 'Option A')).toContainText(COPY.platform.canvas.node.validBadge);
-
+        await expectSaved(page);
         await page.reload();
         await waitForCanvas(page);
+      });
 
+      test('THEN the node still carries the valid badge', async ({ page }) => {
         await expect(getNode(page, 'Option A')).toContainText(COPY.platform.canvas.node.validBadge);
       });
     });
@@ -70,36 +68,32 @@ test.describe('discussion outcome', () => {
       });
     });
 
-    test.describe('WHEN the node is marked as an invalid path', () => {
+    test.describe('WHEN the node is marked as an invalid path and the page is reloaded', () => {
       test.beforeEach(async ({ page }) => {
         await selectTool(page, COPY.platform.canvas.tools.items.invalidPath.label);
         await getNode(page, 'Option A').click();
-        await expectSaved(page);
-      });
-
-      test('THEN the node carries the invalid badge after a reload', async ({ page }) => {
         await expect(getNode(page, 'Option A')).toContainText(COPY.platform.canvas.node.invalidBadge);
-
+        await expectSaved(page);
         await page.reload();
         await waitForCanvas(page);
+      });
 
+      test('THEN the node still carries the invalid badge', async ({ page }) => {
         await expect(getNode(page, 'Option A')).toContainText(COPY.platform.canvas.node.invalidBadge);
       });
     });
 
-    test.describe('WHEN the node is removed with the delete tool', () => {
+    test.describe('WHEN the node is removed with the delete tool and the page is reloaded', () => {
       test.beforeEach(async ({ page }) => {
         await selectTool(page, COPY.platform.canvas.tools.items.delete.label);
         await getNode(page, 'Option A').click();
-        await expectSaved(page);
-      });
-
-      test('THEN it stays gone after a reload', async ({ page }) => {
         await expect(getNodes(page)).toHaveCount(0);
-
+        await expectSaved(page);
         await page.reload();
         await waitForCanvas(page);
+      });
 
+      test('THEN it stays gone', async ({ page }) => {
         await expect(getNodes(page)).toHaveCount(0);
       });
     });

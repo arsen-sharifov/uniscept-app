@@ -104,17 +104,15 @@ guestTest.describe('sign out', () => {
       await deleteAccount(disposableId);
     });
 
-    guestTest.describe('WHEN they sign out from the user menu', () => {
+    guestTest.describe('WHEN they sign out from the user menu and open the platform again', () => {
       guestTest.beforeEach(async ({ page }) => {
         await signOut(page);
+        await page.goto('/platform');
       });
 
-      guestTest('THEN the session is gone and the platform is protected again', async ({ page }) => {
+      guestTest('THEN the session is gone and the sign-in form takes over', async ({ page }) => {
         await expect(page).toHaveURL(/\/login$/);
-
-        await page.goto('/platform');
-
-        await expect(page).toHaveURL(/\/login$/);
+        await expect(page.getByRole('heading', { name: COPY.auth.signIn.heading })).toBeVisible();
       });
     });
   });

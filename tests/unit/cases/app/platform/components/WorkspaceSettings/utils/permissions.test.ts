@@ -8,14 +8,13 @@ import {
   ROLE_PERMISSIONS,
   workspaceInvitation,
   workspaceRole,
+  MEMBER_MANAGER_ACCESS,
 } from '@mocks/roles';
 import {
   canGrantPermission,
   canGrantRole,
   canReassignRoleHolders,
 } from '@/app/platform/components/WorkspaceSettings/utils';
-
-const MEMBER_MANAGER_ACCESS = { ...COMMENT_ACCESS, canManageMembers: true };
 
 describe('canGrantPermission', () => {
   describe('GIVEN the workspace owner', () => {

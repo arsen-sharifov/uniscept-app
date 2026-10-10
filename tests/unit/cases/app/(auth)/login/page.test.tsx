@@ -1,7 +1,7 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { getSession, signIn } from '@mocks/authApi';
+import { getSession, sessionOf, signIn } from '@mocks/authApi';
 import { event } from '@mocks/events';
 import { TRANSLATIONS } from '@mocks/i18n';
 import { router, searchParams } from '@mocks/navigation';
@@ -69,20 +69,32 @@ describe('LoginPage', () => {
     beforeEach(() => {
       vi.useFakeTimers();
       searchParams.set('emailSent', 'true');
-      getSession.mockResolvedValue({ data: { session: { user: { id: 'user-1' } } } });
+      getSession.mockResolvedValueOnce(sessionOf(null)).mockResolvedValue(sessionOf({ id: 'user-1' }));
       render(<LoginPage />);
     });
 
-    describe('WHEN the email is confirmed in another tab', () => {
+    describe('WHEN the first check finds no session yet', () => {
       beforeEach(async () => {
         await act(async () => {
           await vi.advanceTimersByTimeAsync(2000);
         });
       });
 
-      test('THEN the notice is shown and the platform opens once the session appears', () => {
+      test('THEN the notice stays and the platform does not open', () => {
         expect(screen.getByText(TRANSLATIONS.auth.signIn.emailSent)).toBeVisible();
-        expect(getSession).toHaveBeenCalledTimes(1);
+        expect(router.push).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('WHEN the email is confirmed in another tab before a later check', () => {
+      beforeEach(async () => {
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(6000);
+        });
+      });
+
+      test('THEN the platform opens once the session appears and the checks stop', () => {
+        expect(getSession).toHaveBeenCalledTimes(2);
         expect(router.push).toHaveBeenCalledExactlyOnceWith('/platform');
       });
     });

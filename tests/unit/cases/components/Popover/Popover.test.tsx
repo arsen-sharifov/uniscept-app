@@ -1,7 +1,8 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
-import { beforeEach, describe, expect, test, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { domRect } from '@mocks/browser';
 import { Popover } from '@/components/Popover';
 
 const onOpenChange = vi.fn();
@@ -19,6 +20,21 @@ const withSelfFocusingField = (open: boolean) => (
     )}
   >
     <input aria-label="Workspace name" autoFocus />
+  </Popover>
+);
+
+const aboveTheEnd = (open: boolean) => (
+  <Popover
+    open={open}
+    onOpenChange={onOpenChange}
+    placement="top-end"
+    renderTrigger={(trigger) => (
+      <button type="button" {...trigger}>
+        Filters
+      </button>
+    )}
+  >
+    <p>Panel</p>
   </Popover>
 );
 
@@ -161,6 +177,54 @@ describe('Popover', () => {
 
       test('THEN the content keeps its focus instead of the panel taking it', () => {
         expect(screen.getByRole('textbox', { name: 'Workspace name' })).toHaveFocus();
+      });
+    });
+  });
+
+  describe('GIVEN a popover opened above the end of its trigger', () => {
+    beforeEach(() => {
+      rerender = render(aboveTheEnd(false)).rerender;
+      vi.spyOn(screen.getByRole('button', { name: 'Filters' }), 'getBoundingClientRect').mockReturnValue(
+        domRect({ top: 500, bottom: 530, left: 300, right: 400, width: 100, height: 30 }),
+      );
+      vi.spyOn(HTMLDialogElement.prototype, 'offsetWidth', 'get').mockReturnValue(160);
+      rerender(aboveTheEnd(true));
+    });
+
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    describe('WHEN it opens', () => {
+      test('THEN the panel sits above the trigger with its right edge on the trigger', () => {
+        expect(screen.getByRole('dialog').style).toMatchObject({
+          bottom: `${window.innerHeight - 500 + 8}px`,
+          top: '',
+          left: '240px',
+        });
+      });
+    });
+
+    describe('WHEN the page scrolls and the trigger moves with it', () => {
+      beforeEach(() => {
+        vi.mocked(screen.getByRole('button', { name: 'Filters' }).getBoundingClientRect).mockReturnValue(
+          domRect({ top: 420, bottom: 450, left: 300, right: 400, width: 100, height: 30 }),
+        );
+        fireEvent.scroll(window);
+      });
+
+      test('THEN the panel follows the trigger', () => {
+        expect(screen.getByRole('dialog').style.bottom).toBe(`${window.innerHeight - 420 + 8}px`);
+      });
+    });
+
+    describe('WHEN the window resizes', () => {
+      beforeEach(() => {
+        fireEvent(window, new Event('resize'));
+      });
+
+      test('THEN it asks to close', () => {
+        expect(onOpenChange).toHaveBeenCalledExactlyOnceWith(false);
       });
     });
   });

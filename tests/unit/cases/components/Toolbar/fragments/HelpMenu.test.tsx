@@ -11,7 +11,6 @@ const onShortcuts = vi.fn();
 
 const helpButton = () => screen.getByRole('button', { name: TRANSLATIONS.platform.onboarding.menuLabel });
 const menuItem = (name: string) => screen.getByRole('menuitem', { name });
-const openWithPointer = () => fireEvent.click(helpButton(), { detail: 1 });
 
 beforeEach(() => {
   useOnboardingStore.setState({ offerOpen: false, pickerOpen: false, run: null, hint: null });
@@ -22,7 +21,7 @@ describe('HelpMenu', () => {
   describe('GIVEN the help control at the foot of the toolbar', () => {
     describe('WHEN it is clicked with the pointer', () => {
       beforeEach(() => {
-        openWithPointer();
+        fireEvent.click(helpButton(), { detail: 1 });
       });
 
       test('THEN the menu opens with the shortcuts and one entry for the tour and guides, and takes focus itself', () => {
@@ -57,7 +56,7 @@ describe('HelpMenu', () => {
 
     describe('WHEN the shortcuts item is chosen', () => {
       beforeEach(() => {
-        openWithPointer();
+        fireEvent.click(helpButton(), { detail: 1 });
         fireEvent.click(menuItem(TRANSLATIONS.platform.onboarding.menuShortcuts));
       });
 
@@ -70,7 +69,7 @@ describe('HelpMenu', () => {
 
     describe('WHEN the tour and guides entry is chosen', () => {
       beforeEach(() => {
-        openWithPointer();
+        fireEvent.click(helpButton(), { detail: 1 });
         fireEvent.click(menuItem(TRANSLATIONS.platform.onboarding.menuGuides));
       });
 
@@ -84,7 +83,7 @@ describe('HelpMenu', () => {
     describe('WHEN it is opened while Nodi points at it', () => {
       beforeEach(() => {
         act(() => useOnboardingStore.setState({ hint: 'afterDecline' }));
-        openWithPointer();
+        fireEvent.click(helpButton(), { detail: 1 });
       });
 
       test('THEN the pointer steps aside for the menu', () => {
@@ -94,7 +93,7 @@ describe('HelpMenu', () => {
 
     describe('WHEN the user leaves the open menu with Escape', () => {
       beforeEach(() => {
-        openWithPointer();
+        fireEvent.click(helpButton(), { detail: 1 });
         fireEvent.keyDown(window, { key: 'Escape' });
       });
 
@@ -106,7 +105,7 @@ describe('HelpMenu', () => {
 
     describe('WHEN the user clicks outside the open menu', () => {
       beforeEach(() => {
-        openWithPointer();
+        fireEvent.click(helpButton(), { detail: 1 });
         fireEvent.mouseDown(document.body);
       });
 
@@ -118,8 +117,8 @@ describe('HelpMenu', () => {
 
     describe('WHEN it is clicked again while the menu is open', () => {
       beforeEach(() => {
-        openWithPointer();
-        openWithPointer();
+        fireEvent.click(helpButton(), { detail: 1 });
+        fireEvent.click(helpButton(), { detail: 1 });
       });
 
       test('THEN the menu closes', () => {

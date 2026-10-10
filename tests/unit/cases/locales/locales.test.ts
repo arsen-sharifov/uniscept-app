@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
+import { collectMessages, EN_MESSAGES } from '@mocks/i18n';
 import en from '@/locales/en.json';
 import es from '@/locales/es.json';
 import fr from '@/locales/fr.json';
@@ -11,16 +12,6 @@ const collectKeys = (dictionary: object, prefix = ''): string[] =>
   Object.entries(dictionary).flatMap(([key, value]) =>
     typeof value === 'object' && value !== null ? collectKeys(value, `${prefix}${key}.`) : [`${prefix}${key}`],
   );
-
-const collectMessages = (dictionary: object, prefix = ''): Array<[string, string]> =>
-  Object.entries(dictionary).flatMap(([key, value]): Array<[string, string]> => {
-    if (typeof value === 'object' && value !== null) return collectMessages(value, `${prefix}${key}.`);
-    if (typeof value !== 'string') return [];
-
-    return [[`${prefix}${key}`, value]];
-  });
-
-const EN_MESSAGES = new Map(collectMessages(en));
 
 const placeholdersOf = (message: string): string =>
   [...message.matchAll(/\{\s*(\w+)\s*[,}]/g)]

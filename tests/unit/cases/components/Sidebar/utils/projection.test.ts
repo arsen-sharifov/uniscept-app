@@ -2,7 +2,8 @@ import { describe, expect, test } from 'vitest';
 
 import type { IFlattenedItem } from '@interfaces';
 
-import { folderItem, threadItem } from '@mocks/sidebar';
+import { ROW_HEIGHT } from '@mocks/dnd';
+import { folderItem, threadItem, BRANCHING_ROWS, BRANCHING_TREE } from '@mocks/sidebar';
 import {
   flattenTree,
   getDropPosition,
@@ -12,17 +13,11 @@ import {
   resolveKeyboardDropZone,
 } from '@/components/Sidebar/utils';
 
-const TREE = [folderItem('f1', [folderItem('f2', [threadItem('t1')]), threadItem('t2')]), threadItem('t3')];
-
-const FLAT = flattenTree(TREE, new Set());
-
-const ROW_HEIGHT = 32;
-
 describe('flattenTree', () => {
   describe('GIVEN a fully expanded nested tree', () => {
     describe('WHEN it is flattened', () => {
       test('THEN every item carries its depth, parent and subtree count', () => {
-        expect(FLAT).toEqual([
+        expect(BRANCHING_ROWS).toEqual([
           {
             id: 'f1',
             name: 'Folder f1',
@@ -86,7 +81,7 @@ describe('flattenTree', () => {
   describe('GIVEN a collapsed root folder', () => {
     describe('WHEN the tree is flattened', () => {
       test('THEN its children are hidden but fully counted', () => {
-        expect(flattenTree(TREE, new Set(['f1']))).toEqual([
+        expect(flattenTree(BRANCHING_TREE, new Set(['f1']))).toEqual([
           expect.objectContaining({ id: 'f1', collapsed: true, childCount: 3 }),
           expect.objectContaining({ id: 't3' }),
         ]);
@@ -97,7 +92,7 @@ describe('flattenTree', () => {
   describe('GIVEN a collapsed nested folder', () => {
     describe('WHEN the tree is flattened', () => {
       test('THEN only that branch is hidden', () => {
-        expect(flattenTree(TREE, new Set(['f2'])).map((item) => item.id)).toEqual(['f1', 'f2', 't2', 't3']);
+        expect(flattenTree(BRANCHING_TREE, new Set(['f2'])).map((item) => item.id)).toEqual(['f1', 'f2', 't2', 't3']);
       });
     });
   });
@@ -107,9 +102,9 @@ describe('getProjection', () => {
   describe('GIVEN a drag over the item itself or unknown items', () => {
     describe('WHEN the projection is computed', () => {
       test('THEN there is no projection', () => {
-        expect(getProjection(FLAT, 't3', 't3', 'after', 0)).toBeNull();
-        expect(getProjection(FLAT, 'ghost', 't3', 'after', 0)).toBeNull();
-        expect(getProjection(FLAT, 't3', 'ghost', 'after', 0)).toBeNull();
+        expect(getProjection(BRANCHING_ROWS, 't3', 't3', 'after', 0)).toBeNull();
+        expect(getProjection(BRANCHING_ROWS, 'ghost', 't3', 'after', 0)).toBeNull();
+        expect(getProjection(BRANCHING_ROWS, 't3', 'ghost', 'after', 0)).toBeNull();
       });
     });
   });
@@ -117,7 +112,11 @@ describe('getProjection', () => {
   describe('GIVEN a thread dragged inside a nested folder', () => {
     describe('WHEN the projection is computed', () => {
       test('THEN it lands inside the folder one level deeper', () => {
-        expect(getProjection(FLAT, 't3', 'f2', 'inside', 0)).toEqual({ depth: 2, parentId: 'f2', zone: 'inside' });
+        expect(getProjection(BRANCHING_ROWS, 't3', 'f2', 'inside', 0)).toEqual({
+          depth: 2,
+          parentId: 'f2',
+          zone: 'inside',
+        });
       });
     });
   });
@@ -125,7 +124,7 @@ describe('getProjection', () => {
   describe('GIVEN an empty folder dragged inside a folder at the depth limit', () => {
     describe('WHEN the projection is computed', () => {
       test('THEN it degrades to the slot before the target', () => {
-        const flat = flattenTree([...TREE, folderItem('fX')], new Set());
+        const flat = flattenTree([...BRANCHING_TREE, folderItem('fX')], new Set());
 
         expect(getProjection(flat, 'fX', 'f2', 'inside', 1)).toEqual({ depth: 1, parentId: 'f1', zone: 'before' });
       });
@@ -135,7 +134,7 @@ describe('getProjection', () => {
   describe('GIVEN an empty folder dragged next to a thread at the deepest level', () => {
     describe('WHEN the projection is computed', () => {
       test('THEN the drop is rejected instead of nesting the folder too deep', () => {
-        const flat = flattenTree([...TREE, folderItem('fX')], new Set());
+        const flat = flattenTree([...BRANCHING_TREE, folderItem('fX')], new Set());
 
         expect(getProjection(flat, 'fX', 't1', 'after', 1)).toBeNull();
       });
@@ -143,7 +142,7 @@ describe('getProjection', () => {
   });
 
   describe('GIVEN a folder holding a subfolder dragged over a nested folder', () => {
-    const flat = flattenTree([...TREE, folderItem('fX', [folderItem('fY')])], new Set());
+    const flat = flattenTree([...BRANCHING_TREE, folderItem('fX', [folderItem('fY')])], new Set());
 
     describe('WHEN it targets the inside of a root folder', () => {
       test('THEN it stays a root sibling placed before that folder', () => {
@@ -171,7 +170,11 @@ describe('getProjection', () => {
   describe('GIVEN a thread dragged before a root item', () => {
     describe('WHEN the projection is computed', () => {
       test('THEN it stays at the root level', () => {
-        expect(getProjection(FLAT, 't1', 't3', 'before', 0)).toEqual({ depth: 0, parentId: null, zone: 'before' });
+        expect(getProjection(BRANCHING_ROWS, 't1', 't3', 'before', 0)).toEqual({
+          depth: 0,
+          parentId: null,
+          zone: 'before',
+        });
       });
     });
   });
@@ -181,7 +184,7 @@ describe('removeChildrenOf', () => {
   describe('GIVEN a flattened tree', () => {
     describe('WHEN the children of a folder are removed', () => {
       test('THEN the whole subtree disappears transitively', () => {
-        const remaining = removeChildrenOf(FLAT, new Set(['f1'])).map((item: IFlattenedItem) => item.id);
+        const remaining = removeChildrenOf(BRANCHING_ROWS, new Set(['f1'])).map((item: IFlattenedItem) => item.id);
 
         expect(remaining).toEqual(['f1', 't3']);
       });
@@ -189,7 +192,7 @@ describe('removeChildrenOf', () => {
 
     describe('WHEN no ids are excluded', () => {
       test('THEN everything survives', () => {
-        expect(removeChildrenOf(FLAT, new Set())).toEqual(FLAT);
+        expect(removeChildrenOf(BRANCHING_ROWS, new Set())).toEqual(BRANCHING_ROWS);
       });
     });
   });
@@ -199,7 +202,7 @@ describe('getDropPosition', () => {
   describe('GIVEN a projection inside a folder', () => {
     describe('WHEN the drop position is computed', () => {
       test('THEN the item lands in the first slot', () => {
-        expect(getDropPosition(FLAT, 't3', 'f2', { depth: 2, parentId: 'f2', zone: 'inside' })).toBe(0);
+        expect(getDropPosition(BRANCHING_ROWS, 't3', 'f2', { depth: 2, parentId: 'f2', zone: 'inside' })).toBe(0);
       });
     });
   });
@@ -207,7 +210,7 @@ describe('getDropPosition', () => {
   describe('GIVEN a projection after a root row', () => {
     describe('WHEN the drop position is computed', () => {
       test('THEN the slot follows that row among the siblings without the dragged item', () => {
-        expect(getDropPosition(FLAT, 't1', 't3', { depth: 0, parentId: null, zone: 'after' })).toBe(2);
+        expect(getDropPosition(BRANCHING_ROWS, 't1', 't3', { depth: 0, parentId: null, zone: 'after' })).toBe(2);
       });
     });
   });
@@ -215,7 +218,7 @@ describe('getDropPosition', () => {
   describe('GIVEN a projection before a deeply nested row', () => {
     describe('WHEN the drop position is computed', () => {
       test('THEN the ancestor at the target level anchors the slot', () => {
-        expect(getDropPosition(FLAT, 't3', 't1', { depth: 1, parentId: 'f1', zone: 'before' })).toBe(0);
+        expect(getDropPosition(BRANCHING_ROWS, 't3', 't1', { depth: 1, parentId: 'f1', zone: 'before' })).toBe(0);
       });
     });
   });
@@ -223,7 +226,7 @@ describe('getDropPosition', () => {
   describe('GIVEN a hovered row outside the target level', () => {
     describe('WHEN the drop position is computed', () => {
       test('THEN the item lands at the end of that level', () => {
-        expect(getDropPosition(FLAT, 't1', 't3', { depth: 1, parentId: 'f1', zone: 'after' })).toBe(2);
+        expect(getDropPosition(BRANCHING_ROWS, 't1', 't3', { depth: 1, parentId: 'f1', zone: 'after' })).toBe(2);
       });
     });
   });

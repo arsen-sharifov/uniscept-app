@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, test } from 'vitest';
 
 import type { ICanvasExportImage } from '@interfaces';
 
-import { EXPORT_RECTS } from '@mocks/canvasExport';
+import { EXPORT_RECTS, STAGE_SELECTOR } from '@mocks/canvasExport';
 import {
   EXPORT_FIXTURE,
   buildExportCanvas,
@@ -15,8 +15,6 @@ import {
   installExportEnvironment,
 } from '@mocks/canvasExportDom';
 import { EXPORT_MARK_TEXT, createCanvasSvg, getExportBounds } from '@/lib/canvas/export';
-
-const STAGE_SELECTOR = '[data-canvas-export-stage]';
 
 let root: HTMLElement;
 let image: ICanvasExportImage;

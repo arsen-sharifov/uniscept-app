@@ -274,6 +274,16 @@ describe('computeEffectiveStatuses', () => {
     });
   });
 
+  describe('GIVEN a canvas node whose data is malformed', () => {
+    describe('WHEN effective statuses are computed', () => {
+      test('THEN the malformed node stays out of the result map', () => {
+        expect(computeEffectiveStatuses([{ ...canvasNode('n1'), data: { label: 42 } } as never], []).has('n1')).toBe(
+          false,
+        );
+      });
+    });
+  });
+
   describe('GIVEN an answer node with an explicit invalid status', () => {
     describe('WHEN effective statuses are computed', () => {
       test('THEN the answer stays invalid and affects its descendants', () => {

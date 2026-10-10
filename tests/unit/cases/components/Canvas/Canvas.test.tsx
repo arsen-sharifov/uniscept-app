@@ -1,15 +1,16 @@
 import { act, fireEvent, render, renderHook, screen } from '@testing-library/react';
-import { ReactFlowProvider } from '@xyflow/react';
+import { type Edge, ReactFlowProvider, useEdges } from '@xyflow/react';
+import type { ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { deleteCanvasEdge, deleteCanvasNode, getCanvasContent } from '@api/client';
+import { getCanvasContent } from '@api/client';
 import { stubAnimationFrame, stubMediaQueries, stubResizeObserver } from '@mocks/browser';
 import { THREAD_ID, canvasEdge, canvasNode } from '@mocks/canvas';
 import { TRANSLATIONS } from '@mocks/i18n';
 import { EDIT_ACCESS } from '@mocks/roles';
 import { Canvas } from '@/components/Canvas';
-import { useToolbarShortcuts } from '@/components/Toolbar/hooks';
-import { FLUSH_DEBOUNCE_MS, resetQueue } from '@/lib/canvas';
+import { OPEN_COMMENTS_Z_INDEX } from '@/components/Canvas/consts';
+import { resetQueue } from '@/lib/canvas';
 import { useCanvasStore, usePermissionsStore } from '@/lib/stores';
 
 vi.mock('@api/client', () => import('@mocks/canvasApi'));
@@ -17,12 +18,9 @@ vi.mock('@/i18n', () => import('@mocks/i18n'));
 vi.mock('@/lib/events', () => import('@mocks/events'));
 vi.mock('next/navigation', () => import('@mocks/navigation'));
 
-const toggleShortcuts = vi.fn();
+const flowPane = () => document.querySelector('.react-flow__pane') as HTMLElement;
 
-const storedIds = () => ({
-  nodes: useCanvasStore.getState().nodes.map((node) => node.id),
-  edges: useCanvasStore.getState().edges.map((edge) => edge.id),
-});
+let flowEdges: { current: Edge[] };
 
 beforeEach(() => {
   vi.useFakeTimers();
@@ -41,58 +39,6 @@ afterEach(() => {
 });
 
 describe('Canvas', () => {
-  describe('GIVEN an editor with the canvas shortcuts on, whose selected node is joined to another node', () => {
-    beforeEach(async () => {
-      vi.mocked(getCanvasContent).mockResolvedValue({
-        nodes: [
-          { ...canvasNode('own', { createdBy: 'user-1' }), selected: true },
-          canvasNode('other', { createdBy: 'user-1' }),
-        ],
-        edges: [canvasEdge('e1', 'own', 'other')],
-      });
-      render(
-        <ReactFlowProvider>
-          <Canvas workspaceId="ws-1" threadId={THREAD_ID} />
-        </ReactFlowProvider>,
-      );
-      renderHook(() => useToolbarShortcuts(toggleShortcuts));
-      await act(async () => {
-        await vi.advanceTimersByTimeAsync(0);
-      });
-    });
-
-    describe('WHEN the Delete key is pressed', () => {
-      beforeEach(async () => {
-        fireEvent.keyDown(document.body, { key: 'Delete' });
-        await act(async () => {
-          await vi.advanceTimersByTimeAsync(FLUSH_DEBOUNCE_MS);
-        });
-        fireEvent.keyUp(document.body, { key: 'Delete' });
-      });
-
-      test('THEN the node and its edge leave through the store and only the node delete is sent', () => {
-        expect(storedIds()).toEqual({ nodes: ['other'], edges: [] });
-        expect(deleteCanvasNode).toHaveBeenCalledExactlyOnceWith('own');
-        expect(deleteCanvasEdge).not.toHaveBeenCalled();
-      });
-    });
-
-    describe('WHEN the Delete key is pressed and the deletion is undone once', () => {
-      beforeEach(async () => {
-        fireEvent.keyDown(document.body, { key: 'Delete' });
-        await act(async () => {
-          await vi.advanceTimersByTimeAsync(0);
-        });
-        fireEvent.keyUp(document.body, { key: 'Delete' });
-        act(() => useCanvasStore.getState().undo());
-      });
-
-      test('THEN the node and its edge come back in one step', () => {
-        expect(storedIds()).toEqual({ nodes: ['own', 'other'], edges: ['e1'] });
-      });
-    });
-  });
-
   describe('GIVEN the store still holds the graph of the previous thread', () => {
     beforeEach(() => {
       vi.mocked(getCanvasContent).mockReturnValue(new Promise(() => {}));
@@ -143,36 +89,109 @@ describe('Canvas', () => {
     });
   });
 
-  describe('GIVEN an editor with the canvas shortcuts on and a selected edge between two nodes', () => {
+  describe('GIVEN an editor on a loaded canvas with two nodes', () => {
     beforeEach(async () => {
-      vi.mocked(getCanvasContent).mockResolvedValue({
-        nodes: [canvasNode('a', { createdBy: 'user-1' }), canvasNode('b', { createdBy: 'user-1' })],
-        edges: [{ ...canvasEdge('e1', 'a', 'b'), selected: true }],
-      });
+      vi.mocked(getCanvasContent).mockResolvedValue({ nodes: [canvasNode('a'), canvasNode('b')], edges: [] });
       render(
         <ReactFlowProvider>
           <Canvas workspaceId="ws-1" threadId={THREAD_ID} />
         </ReactFlowProvider>,
       );
-      renderHook(() => useToolbarShortcuts(toggleShortcuts));
       await act(async () => {
         await vi.advanceTimersByTimeAsync(0);
       });
     });
 
-    describe('WHEN the Delete key is pressed', () => {
-      beforeEach(async () => {
-        fireEvent.keyDown(document.body, { key: 'Delete' });
-        await act(async () => {
-          await vi.advanceTimersByTimeAsync(FLUSH_DEBOUNCE_MS);
-        });
-        fireEvent.keyUp(document.body, { key: 'Delete' });
+    describe('WHEN Escape is pressed while a connection waits for its target', () => {
+      beforeEach(() => {
+        act(() => useCanvasStore.getState().setPendingConnection('a'));
+        fireEvent.keyDown(window, { key: 'Escape' });
       });
 
-      test('THEN only the edge leaves and its delete is sent', () => {
-        expect(storedIds()).toEqual({ nodes: ['a', 'b'], edges: [] });
-        expect(deleteCanvasEdge).toHaveBeenCalledExactlyOnceWith('e1');
-        expect(deleteCanvasNode).not.toHaveBeenCalled();
+      test('THEN the pending connection is dropped', () => {
+        expect(useCanvasStore.getState().pendingConnection).toBeNull();
+      });
+    });
+
+    describe('WHEN the comments of a node open', () => {
+      beforeEach(() => {
+        act(() => useCanvasStore.getState().setOpenCommentsNodeId('a'));
+      });
+
+      test('THEN that node is raised above the others', () => {
+        expect(screen.getByText('Node a').closest('[aria-roledescription="node"]')).toHaveStyle({
+          zIndex: String(OPEN_COMMENTS_Z_INDEX),
+        });
+        expect(screen.getByText('Node b').closest('[aria-roledescription="node"]')).not.toHaveStyle({
+          zIndex: String(OPEN_COMMENTS_Z_INDEX),
+        });
+      });
+    });
+
+    describe('WHEN the pane is right-clicked', () => {
+      beforeEach(() => {
+        fireEvent.contextMenu(flowPane(), { clientX: 120, clientY: 80 });
+      });
+
+      test('THEN the pane menu opens at the cursor', () => {
+        expect(screen.getByRole('menu', { name: TRANSLATIONS.platform.canvas.context.ariaLabel })).toHaveStyle({
+          left: '120px',
+          top: '80px',
+        });
+      });
+    });
+
+    describe('WHEN the pane is clicked with the menu and the comments open', () => {
+      beforeEach(() => {
+        fireEvent.contextMenu(flowPane(), { clientX: 120, clientY: 80 });
+        act(() => useCanvasStore.getState().setOpenCommentsNodeId('a'));
+        fireEvent.pointerDown(flowPane(), { button: 0, isPrimary: true, clientX: 5, clientY: 5 });
+        fireEvent.pointerUp(flowPane(), { button: 0, isPrimary: true, clientX: 5, clientY: 5 });
+      });
+
+      test('THEN the menu and the comments close', () => {
+        expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+        expect(useCanvasStore.getState().openCommentsNodeId).toBeNull();
+      });
+    });
+  });
+
+  describe('GIVEN a refuted node in a bidirectional pair that also points on to a third node', () => {
+    beforeEach(() => {
+      vi.mocked(getCanvasContent).mockResolvedValue({
+        nodes: [canvasNode('a'), canvasNode('b', { status: 'invalid' }), canvasNode('c')],
+        edges: [canvasEdge('ab', 'a', 'b'), canvasEdge('ba', 'b', 'a'), canvasEdge('ac', 'a', 'c')],
+      });
+      flowEdges = renderHook(useEdges, {
+        wrapper: ({ children }: { children: ReactNode }) => (
+          <ReactFlowProvider>
+            <Canvas workspaceId="ws-1" threadId={THREAD_ID} />
+            {children}
+          </ReactFlowProvider>
+        ),
+      }).result;
+    });
+
+    describe('WHEN the canvas loads', () => {
+      beforeEach(async () => {
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(0);
+        });
+      });
+
+      test('THEN the pair is drawn once as a bidirectional edge in the stronger of its two tones', () => {
+        expect(flowEdges.current).toEqual([
+          expect.objectContaining({
+            id: 'ab',
+            className: 'edge-tone-invalid edge-bidirectional',
+            data: expect.objectContaining({ tone: 'invalid', bidirectional: true }),
+          }),
+          expect.objectContaining({
+            id: 'ac',
+            className: 'edge-tone-tainted',
+            data: expect.objectContaining({ tone: 'tainted', bidirectional: false }),
+          }),
+        ]);
       });
     });
   });

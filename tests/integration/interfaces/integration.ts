@@ -80,6 +80,10 @@ export interface IIntegrationOnboardingRow {
   completed_guides: string[];
 }
 
+export interface IIntegrationPreferencesRow {
+  theme: string;
+}
+
 export interface IIntegrationRoleFlags {
   canEditCanvas?: boolean;
   canComment?: boolean;

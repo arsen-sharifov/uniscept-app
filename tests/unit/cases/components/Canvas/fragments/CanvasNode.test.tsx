@@ -2,7 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { ReactFlowProvider } from '@xyflow/react';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { stubResizeObserver } from '@mocks/browser';
+import { listenOnPage, stubResizeObserver } from '@mocks/browser';
 import { THREAD_ID, canvasEdge, canvasNode, comment, nodeProps } from '@mocks/canvas';
 import { TRANSLATIONS } from '@mocks/i18n';
 import { COMMENT_ACCESS, FULL_ACCESS } from '@mocks/roles';
@@ -13,17 +13,17 @@ import { useCanvasStore, usePermissionsStore } from '@/lib/stores';
 vi.mock('@/i18n', () => import('@mocks/i18n'));
 
 const onPageClick = vi.fn();
+const onPagePress = vi.fn();
 
 const nodeCard = () => document.querySelector<HTMLElement>('[data-tour="canvasNode"]');
 const commentsPanel = () => document.querySelector<HTMLElement>('[data-tour="canvasCommentsPanel"]');
 
 beforeEach(() => {
   stubResizeObserver();
-  document.body.addEventListener('click', onPageClick);
+  listenOnPage({ click: onPageClick, mousedown: onPagePress });
 });
 
 afterEach(() => {
-  document.body.removeEventListener('click', onPageClick);
   useCanvasStore.getState().clearCanvas();
   usePermissionsStore.getState().clearAccess();
 });
@@ -131,6 +131,16 @@ describe('CanvasNode', () => {
       test('THEN the click stays inside the panel and the comments stay open', () => {
         expect(onPageClick).not.toHaveBeenCalled();
         expect(useCanvasStore.getState().openCommentsNodeId).toBe('n1');
+      });
+    });
+
+    describe('WHEN the pointer goes down inside the panel', () => {
+      beforeEach(() => {
+        fireEvent.mouseDown(screen.getByText('Comment c1'));
+      });
+
+      test('THEN the press stays inside the panel', () => {
+        expect(onPagePress).not.toHaveBeenCalled();
       });
     });
 

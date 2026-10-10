@@ -5,6 +5,8 @@ import type { IWorkspace, TChangePasswordResult } from '@interfaces';
 
 import { TRANSLATIONS } from '@mocks/i18n';
 import { router } from '@mocks/navigation';
+import { API_FAILURE } from '@mocks/userApi';
+import { SHARED_WORKSPACES } from '@mocks/workspace';
 import { SecuritySection } from '@/app/platform/components/Settings/fragments';
 import { event } from '@/lib/events';
 
@@ -16,13 +18,6 @@ const onChangePassword = vi.fn<() => Promise<TChangePasswordResult>>();
 const onCheckDeletion = vi.fn<() => Promise<Pick<IWorkspace, 'id' | 'name'>[]>>();
 const onDeleteAccount = vi.fn<(password: string) => Promise<void>>();
 
-const API_FAILURE = new Error('network down');
-
-const SHARED_WORKSPACES = [
-  { id: 'ws-1', name: 'Alpha lab' },
-  { id: 'ws-2', name: 'Beta guild' },
-];
-
 const renderSection = () =>
   render(
     <SecuritySection
@@ -32,34 +27,23 @@ const renderSection = () =>
     />,
   );
 
-const renderFilledForm = () => {
-  renderSection();
-  fireEvent.change(screen.getByLabelText(TRANSLATIONS.platform.settings.security.currentPassword), {
-    target: { value: 'old-secret-1' },
-  });
-  fireEvent.change(screen.getByLabelText(TRANSLATIONS.platform.settings.security.newPassword), {
-    target: { value: 'new-secret-1' },
-  });
-  fireEvent.change(screen.getByLabelText(TRANSLATIONS.platform.settings.security.confirmPassword), {
-    target: { value: 'new-secret-1' },
-  });
-};
-
 const deleteAccountButton = () =>
   screen.getByRole('button', { name: TRANSLATIONS.platform.settings.security.deleteAccount });
-
-const renderDeleteConfirm = async () => {
-  renderSection();
-  await act(async () => {
-    fireEvent.click(deleteAccountButton());
-  });
-};
 
 describe('SecuritySection', () => {
   describe('GIVEN a filled form whose current password the server rejects', () => {
     beforeEach(() => {
       onChangePassword.mockResolvedValue('incorrectCurrentPassword');
-      renderFilledForm();
+      renderSection();
+      fireEvent.change(screen.getByLabelText(TRANSLATIONS.platform.settings.security.currentPassword), {
+        target: { value: 'old-secret-1' },
+      });
+      fireEvent.change(screen.getByLabelText(TRANSLATIONS.platform.settings.security.newPassword), {
+        target: { value: 'new-secret-1' },
+      });
+      fireEvent.change(screen.getByLabelText(TRANSLATIONS.platform.settings.security.confirmPassword), {
+        target: { value: 'new-secret-1' },
+      });
     });
 
     describe('WHEN the password change is submitted', () => {
@@ -86,7 +70,16 @@ describe('SecuritySection', () => {
   describe('GIVEN a filled form whose update fails on the api', () => {
     beforeEach(() => {
       onChangePassword.mockRejectedValue(API_FAILURE);
-      renderFilledForm();
+      renderSection();
+      fireEvent.change(screen.getByLabelText(TRANSLATIONS.platform.settings.security.currentPassword), {
+        target: { value: 'old-secret-1' },
+      });
+      fireEvent.change(screen.getByLabelText(TRANSLATIONS.platform.settings.security.newPassword), {
+        target: { value: 'new-secret-1' },
+      });
+      fireEvent.change(screen.getByLabelText(TRANSLATIONS.platform.settings.security.confirmPassword), {
+        target: { value: 'new-secret-1' },
+      });
     });
 
     describe('WHEN the password change is submitted', () => {
@@ -112,7 +105,16 @@ describe('SecuritySection', () => {
   describe('GIVEN a filled form the server accepts', () => {
     beforeEach(() => {
       onChangePassword.mockResolvedValue('updated');
-      renderFilledForm();
+      renderSection();
+      fireEvent.change(screen.getByLabelText(TRANSLATIONS.platform.settings.security.currentPassword), {
+        target: { value: 'old-secret-1' },
+      });
+      fireEvent.change(screen.getByLabelText(TRANSLATIONS.platform.settings.security.newPassword), {
+        target: { value: 'new-secret-1' },
+      });
+      fireEvent.change(screen.getByLabelText(TRANSLATIONS.platform.settings.security.confirmPassword), {
+        target: { value: 'new-secret-1' },
+      });
     });
 
     describe('WHEN the password change is submitted', () => {
@@ -130,15 +132,78 @@ describe('SecuritySection', () => {
     });
   });
 
+  describe('GIVEN a password form with the current password typed', () => {
+    beforeEach(() => {
+      renderSection();
+      fireEvent.change(screen.getByLabelText(TRANSLATIONS.platform.settings.security.currentPassword), {
+        target: { value: 'old-secret-1' },
+      });
+    });
+
+    describe('WHEN a too short new password is submitted', () => {
+      beforeEach(() => {
+        fireEvent.change(screen.getByLabelText(TRANSLATIONS.platform.settings.security.newPassword), {
+          target: { value: 'short' },
+        });
+        fireEvent.change(screen.getByLabelText(TRANSLATIONS.platform.settings.security.confirmPassword), {
+          target: { value: 'short' },
+        });
+        fireEvent.click(screen.getByRole('button', { name: TRANSLATIONS.platform.settings.security.updatePassword }));
+      });
+
+      test('THEN the length rule is explained without a request', () => {
+        expect(screen.getByText(TRANSLATIONS.platform.settings.security.passwordTooShort)).toBeInTheDocument();
+        expect(onChangePassword).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('WHEN a confirmation that does not match is submitted', () => {
+      beforeEach(() => {
+        fireEvent.change(screen.getByLabelText(TRANSLATIONS.platform.settings.security.newPassword), {
+          target: { value: 'new-secret-1' },
+        });
+        fireEvent.change(screen.getByLabelText(TRANSLATIONS.platform.settings.security.confirmPassword), {
+          target: { value: 'new-secret-2' },
+        });
+        fireEvent.click(screen.getByRole('button', { name: TRANSLATIONS.platform.settings.security.updatePassword }));
+      });
+
+      test('THEN the mismatch is explained without a request', () => {
+        expect(screen.getByText(TRANSLATIONS.platform.settings.security.passwordMismatch)).toBeInTheDocument();
+        expect(onChangePassword).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('WHEN the current password is submitted as the new one', () => {
+      beforeEach(() => {
+        fireEvent.change(screen.getByLabelText(TRANSLATIONS.platform.settings.security.newPassword), {
+          target: { value: 'old-secret-1' },
+        });
+        fireEvent.change(screen.getByLabelText(TRANSLATIONS.platform.settings.security.confirmPassword), {
+          target: { value: 'old-secret-1' },
+        });
+        fireEvent.click(screen.getByRole('button', { name: TRANSLATIONS.platform.settings.security.updatePassword }));
+      });
+
+      test('THEN the reuse is explained without a request', () => {
+        expect(screen.getByText(TRANSLATIONS.platform.settings.security.passwordSame)).toBeInTheDocument();
+        expect(onChangePassword).not.toHaveBeenCalled();
+      });
+    });
+  });
+
   describe('GIVEN the opened account deletion confirmation', () => {
     beforeEach(async () => {
       onCheckDeletion.mockResolvedValue([]);
       onDeleteAccount.mockResolvedValue(undefined);
-      await renderDeleteConfirm();
+      renderSection();
+      await act(async () => {
+        fireEvent.click(deleteAccountButton());
+      });
     });
 
-    describe('WHEN no password has been typed yet', () => {
-      test('THEN the shared workspaces were checked once and the deletion cannot be confirmed', () => {
+    describe('WHEN it renders', () => {
+      test('THEN the shared workspaces were checked once and the deletion waits for the password', () => {
         expect(onCheckDeletion).toHaveBeenCalledTimes(1);
         expect(
           screen.getByRole('button', { name: TRANSLATIONS.platform.settings.security.deleteButton }),
@@ -181,9 +246,9 @@ describe('SecuritySection', () => {
     });
   });
 
-  describe('GIVEN an owner whose workspaces other members still use', () => {
+  describe('GIVEN an owner whose workspaces other members still use, with a later check that fails', () => {
     beforeEach(() => {
-      onCheckDeletion.mockResolvedValue(SHARED_WORKSPACES);
+      onCheckDeletion.mockRejectedValue(API_FAILURE).mockResolvedValueOnce(SHARED_WORKSPACES);
       renderSection();
     });
 
@@ -205,12 +270,11 @@ describe('SecuritySection', () => {
       });
     });
 
-    describe('WHEN the blocked confirmation is cancelled and reopened while the check fails', () => {
+    describe('WHEN the blocked confirmation is cancelled and reopened', () => {
       beforeEach(async () => {
         await act(async () => {
           fireEvent.click(deleteAccountButton());
         });
-        onCheckDeletion.mockRejectedValue(API_FAILURE);
         fireEvent.click(screen.getByRole('button', { name: TRANSLATIONS.platform.settings.security.cancel }));
         await act(async () => {
           fireEvent.click(deleteAccountButton());
@@ -250,7 +314,7 @@ describe('SecuritySection', () => {
 
   describe('GIVEN a shared workspace check that is still running', () => {
     beforeEach(() => {
-      onCheckDeletion.mockReturnValue(new Promise(() => undefined));
+      onCheckDeletion.mockReturnValue(Promise.withResolvers<Pick<IWorkspace, 'id' | 'name'>[]>().promise);
       renderSection();
     });
 
@@ -272,7 +336,10 @@ describe('SecuritySection', () => {
     beforeEach(async () => {
       onCheckDeletion.mockResolvedValue([]);
       onDeleteAccount.mockRejectedValue(API_FAILURE);
-      await renderDeleteConfirm();
+      renderSection();
+      await act(async () => {
+        fireEvent.click(deleteAccountButton());
+      });
       fireEvent.change(screen.getByLabelText(TRANSLATIONS.platform.settings.security.deletePassword), {
         target: { value: 'guess' },
       });

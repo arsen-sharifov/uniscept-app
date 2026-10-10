@@ -213,6 +213,16 @@ describe('useCanvasTools', () => {
         });
       });
     });
+
+    describe('WHEN they double-click a canvas node', () => {
+      beforeEach(() => {
+        act(() => harness.current.tools.onNodeDoubleClick(pointerEvent(), canvasNode('idea')));
+      });
+
+      test('THEN the node does not enter label editing', () => {
+        expect(useCanvasStore.getState().editingNodeId).toBeNull();
+      });
+    });
   });
 
   describe('GIVEN an editor with the cross-reference tool', () => {

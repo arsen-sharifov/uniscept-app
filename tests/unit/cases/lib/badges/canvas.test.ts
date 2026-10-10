@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { AFTERNOON } from '@mocks/badges';
 import {
   canvasEdge,
   canvasNode,
@@ -19,7 +20,6 @@ import { useCanvasStore } from '@/lib/stores';
 vi.mock('@api/client', () => import('@mocks/userApi'));
 vi.mock('@/lib/events', () => import('@mocks/events'));
 
-const AFTERNOON = new Date(2026, 9, 3, 15, 0);
 const unwatchers: Array<() => void> = [];
 
 const earnedOnCanvas = () => useBadgeStore.getState().earned?.filter((id) => id !== 'founder');

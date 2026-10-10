@@ -1,5 +1,5 @@
 import type { MouseEvent as ReactMouseEvent } from 'react';
-import { vi } from 'vitest';
+import { onTestFinished, vi } from 'vitest';
 
 export const domRect = (overrides: Partial<DOMRect>): DOMRect =>
   ({ top: 0, right: 0, bottom: 0, left: 0, width: 0, height: 0, x: 0, y: 0, ...overrides }) as DOMRect;
@@ -82,6 +82,31 @@ export const stubMediaQueries = () => {
   };
 };
 
+export const stubFontsReady = () => {
+  let load = () => {};
+  const ready = new Promise<void>((resolve) => {
+    load = resolve;
+  });
+
+  Object.defineProperty(document, 'fonts', { configurable: true, value: { ready } });
+
+  return {
+    load: () => load(),
+    restore: () => Reflect.deleteProperty(document, 'fonts'),
+  };
+};
+
+export const stubScrollIntoView = () => {
+  const scrollIntoView = vi.fn();
+
+  Object.defineProperty(Element.prototype, 'scrollIntoView', { configurable: true, value: scrollIntoView });
+  onTestFinished(() => {
+    Reflect.deleteProperty(Element.prototype, 'scrollIntoView');
+  });
+
+  return scrollIntoView;
+};
+
 export const stubResizeObserver = () => {
   const observe = vi.fn();
   const disconnect = vi.fn();
@@ -123,13 +148,17 @@ export const stubIntersectionObserver = () => {
     },
   );
 
+  const report = (isIntersecting: boolean, only?: Element) =>
+    observers.forEach((targets, callback) => {
+      const entries = [...targets]
+        .filter((target) => !only || target === only)
+        .map((target) => ({ target, isIntersecting }) as IntersectionObserverEntry);
+      if (entries.length > 0) callback(entries, {} as IntersectionObserver);
+    });
+
   return {
-    intersect: () => {
-      observers.forEach((targets, callback) => {
-        const entries = [...targets].map((target) => ({ target, isIntersecting: true }) as IntersectionObserverEntry);
-        if (entries.length > 0) callback(entries, {} as IntersectionObserver);
-      });
-    },
+    intersect: (only?: Element) => report(true, only),
+    leave: (only?: Element) => report(false, only),
   };
 };
 
@@ -190,10 +219,60 @@ export const stubOffscreenCanvas = () => {
 export const setElementLayout = (
   element: HTMLElement,
   layout: Partial<
-    Pick<HTMLElement, 'offsetLeft' | 'offsetTop' | 'offsetWidth' | 'offsetHeight' | 'offsetParent' | 'clientHeight'>
+    Pick<
+      HTMLElement,
+      | 'offsetLeft'
+      | 'offsetTop'
+      | 'offsetWidth'
+      | 'offsetHeight'
+      | 'offsetParent'
+      | 'clientHeight'
+      | 'clientWidth'
+      | 'scrollWidth'
+    >
   >,
 ) => {
   Object.entries(layout).forEach(([property, value]) => {
     Object.defineProperty(element, property, { configurable: true, value });
   });
+};
+
+export const webGlSurface = (linked = true) => {
+  const gl = {
+    VERTEX_SHADER: 1,
+    FRAGMENT_SHADER: 2,
+    LINK_STATUS: 3,
+    ARRAY_BUFFER: 4,
+    STATIC_DRAW: 5,
+    FLOAT: 6,
+    TRIANGLES: 7,
+    createShader: vi.fn(() => ({})),
+    shaderSource: vi.fn(),
+    compileShader: vi.fn(),
+    createProgram: vi.fn(() => ({})),
+    attachShader: vi.fn(),
+    linkProgram: vi.fn(),
+    getProgramParameter: vi.fn(() => linked),
+    deleteShader: vi.fn(),
+    useProgram: vi.fn(),
+    bindBuffer: vi.fn(),
+    createBuffer: vi.fn(() => ({})),
+    bufferData: vi.fn(),
+    getAttribLocation: vi.fn(() => 0),
+    enableVertexAttribArray: vi.fn(),
+    vertexAttribPointer: vi.fn(),
+    getUniformLocation: vi.fn((_program: unknown, name: string) => name),
+    viewport: vi.fn(),
+    uniform1f: vi.fn(),
+    uniform2f: vi.fn(),
+    drawArrays: vi.fn(),
+  };
+
+  return { gl, canvas: { width: 0, height: 0, getContext: vi.fn(() => gl) } };
+};
+
+export const listenOnPage = (listeners: Record<string, EventListener>) => {
+  const entries = Object.entries(listeners);
+  entries.forEach(([type, listener]) => document.body.addEventListener(type, listener));
+  onTestFinished(() => entries.forEach(([type, listener]) => document.body.removeEventListener(type, listener)));
 };

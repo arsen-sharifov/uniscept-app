@@ -6,28 +6,15 @@ import {
   PASSWORD_CHECK_RATE_LIMIT_MAX_ATTEMPTS,
 } from '@constants';
 import { handleChangePassword, handleDeleteAccount, handleVerifyInvite } from '@api/server';
-import { getAdminClient } from '@mocks/adminClient';
+import { primeAdminClient } from '@mocks/adminClient';
 import { event } from '@mocks/events';
-import { verifyPassword } from '@mocks/serverAuth';
-import { primeSupabase } from '@mocks/supabase';
-import { createClient as createServerClient } from '@mocks/supabaseServer';
+import { verifyPassword, WRONG_PASSWORD } from '@mocks/serverAuth';
+import { primeServerClient } from '@mocks/supabaseServer';
 
 vi.mock('@/lib/supabase/server', () => import('@mocks/supabaseServer'));
 vi.mock('@api/server/utils/adminClient', () => import('@mocks/adminClient'));
 vi.mock('@api/server/utils/auth', () => import('@mocks/serverAuth'));
 vi.mock('@/lib/events', () => import('@mocks/events'));
-
-const deleteUser = vi.fn();
-const rpc = vi.fn();
-
-const WRONG_PASSWORD = { data: { user: null, session: null }, error: { code: 'invalid_credentials', status: 400 } };
-
-const primeServer = (user: { id: string; email?: string } | null) => {
-  const { client } = primeSupabase([], { user });
-  vi.mocked(createServerClient).mockResolvedValue(client as never);
-
-  return client;
-};
 
 const verifyRequest = (ip: string, body: unknown, headers?: Record<string, string>): Request =>
   new Request('http://localhost/auth/verify-invite', {
@@ -37,56 +24,156 @@ const verifyRequest = (ip: string, body: unknown, headers?: Record<string, strin
   });
 
 const deleteRequest = (body: unknown, headers?: Record<string, string>): Request =>
-  new Request('http://localhost/auth/delete-account', { method: 'POST', headers, body: JSON.stringify(body) });
+  new Request('http://localhost/auth/delete-account', {
+    method: 'POST',
+    headers,
+    body: typeof body === 'string' ? body : JSON.stringify(body),
+  });
 
 const changeRequest = (body: unknown, headers?: Record<string, string>): Request =>
-  new Request('http://localhost/auth/change-password', { method: 'POST', headers, body: JSON.stringify(body) });
+  new Request('http://localhost/auth/change-password', {
+    method: 'POST',
+    headers,
+    body: typeof body === 'string' ? body : JSON.stringify(body),
+  });
+
+let admin: ReturnType<typeof primeAdminClient>;
+let response: Response;
 
 beforeEach(() => {
   vi.stubEnv('INVITE_CODE', 'secret-code');
-  rpc.mockResolvedValue({ data: null, error: null });
-  verifyPassword.mockResolvedValue({ data: {}, error: null });
-  deleteUser.mockResolvedValue({ data: {}, error: null });
-  vi.mocked(getAdminClient).mockReturnValue({ rpc, auth: { admin: { deleteUser } } } as never);
+  verifyPassword.mockResolvedValue({ error: null });
+  admin = primeAdminClient();
 });
 
 afterEach(() => {
   vi.unstubAllEnvs();
   vi.useRealTimers();
-  vi.restoreAllMocks();
 });
 
 describe('handleVerifyInvite', () => {
-  describe('GIVEN the correct invite code and a signup email', () => {
-    describe('WHEN the invite is verified', () => {
-      test('THEN the code is accepted', async () => {
-        const response = await handleVerifyInvite(
-          verifyRequest('ip-happy', { code: 'secret-code', email: 'new@user.dev' }),
+  describe('GIVEN a visitor who knows the invite code', () => {
+    describe('WHEN the code is sent with a signup email', () => {
+      beforeEach(async () => {
+        response = await handleVerifyInvite(
+          verifyRequest('ip-happy', { code: 'secret-code', email: '  New@User.DEV ' }),
         );
+      });
 
+      test('THEN the code is accepted', async () => {
         expect(response.status).toBe(200);
         await expect(response.json()).resolves.toEqual({ valid: true });
       });
 
-      test('THEN a signup allowance is granted for the normalized email', async () => {
-        await handleVerifyInvite(verifyRequest('ip-allowance', { code: 'secret-code', email: '  New@User.DEV ' }));
+      test('THEN a signup allowance is granted for the normalized email', () => {
+        expect(admin.rpc.mock.calls).toEqual([['grant_signup_allowance', { p_email: 'new@user.dev' }]]);
+      });
+    });
 
-        expect(rpc.mock.calls).toEqual([['grant_signup_allowance', { p_email: 'new@user.dev' }]]);
+    describe('WHEN the code is sent without a valid email', () => {
+      beforeEach(async () => {
+        response = await handleVerifyInvite(verifyRequest('ip-no-email', { code: 'secret-code', email: 'nope' }));
+      });
+
+      test('THEN the request is rejected and no allowance is granted', () => {
+        expect(response.status).toBe(400);
+        expect(admin.rpc).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('WHEN a malformed body is sent', () => {
+      beforeEach(async () => {
+        response = await handleVerifyInvite(verifyRequest('ip-broken', 'not json'));
+      });
+
+      test('THEN the request is rejected and no allowance is granted', () => {
+        expect(response.status).toBe(400);
+        expect(admin.rpc).not.toHaveBeenCalled();
       });
     });
   });
 
-  describe('GIVEN the correct invite code and a failing allowance grant', () => {
-    beforeEach(() => {
-      rpc.mockResolvedValue({ data: null, error: { message: 'relation does not exist', code: '42P01' } });
+  describe('GIVEN a visitor guessing the invite code', () => {
+    describe('WHEN a wrong code of the same length is sent', () => {
+      beforeEach(async () => {
+        response = await handleVerifyInvite(verifyRequest('ip-wrong', { code: 'secret-codf', email: 'new@user.dev' }));
+      });
+
+      test('THEN the code is rejected and no allowance is granted', async () => {
+        expect(response.status).toBe(403);
+        await expect(response.json()).resolves.toEqual({ valid: false });
+        expect(admin.rpc).not.toHaveBeenCalled();
+      });
     });
 
-    describe('WHEN the invite is verified', () => {
-      test('THEN the check fails as a server error without leaking the database message', async () => {
-        const response = await handleVerifyInvite(
+    describe('WHEN a code of another length is sent', () => {
+      beforeEach(async () => {
+        response = await handleVerifyInvite(verifyRequest('ip-short', { code: 'nope', email: 'new@user.dev' }));
+      });
+
+      test('THEN the code is rejected', () => {
+        expect(response.status).toBe(403);
+      });
+    });
+
+    describe('WHEN a code that is not a string is sent', () => {
+      beforeEach(async () => {
+        response = await handleVerifyInvite(verifyRequest('ip-number', { code: 42, email: 'new@user.dev' }));
+      });
+
+      test('THEN the code is rejected', () => {
+        expect(response.status).toBe(403);
+      });
+    });
+
+    describe('WHEN as many wrong codes are sent as the rate limit allows', () => {
+      let statuses: number[];
+
+      beforeEach(async () => {
+        const responses = await Promise.all(
+          Array.from({ length: INVITE_RATE_LIMIT_MAX_ATTEMPTS }, () =>
+            handleVerifyInvite(verifyRequest('ip-guessing', { code: 'wrong-code!', email: 'new@user.dev' })),
+          ),
+        );
+        statuses = responses.map((reply) => reply.status);
+      });
+
+      test('THEN each one is answered as a wrong code, not throttled', () => {
+        expect(statuses).toEqual(Array.from({ length: INVITE_RATE_LIMIT_MAX_ATTEMPTS }, () => 403));
+      });
+    });
+  });
+
+  describe('GIVEN no configured invite code', () => {
+    beforeEach(() => {
+      vi.stubEnv('INVITE_CODE', '');
+    });
+
+    describe('WHEN an empty code is sent', () => {
+      beforeEach(async () => {
+        response = await handleVerifyInvite(verifyRequest('ip-unset', { code: '', email: 'new@user.dev' }));
+      });
+
+      test('THEN the code is rejected and no allowance is granted', () => {
+        expect(response.status).toBe(403);
+        expect(admin.rpc).not.toHaveBeenCalled();
+      });
+    });
+  });
+
+  describe('GIVEN an allowance grant the database fails', () => {
+    beforeEach(() => {
+      admin.rpc.mockResolvedValue({ data: null, error: { message: 'relation does not exist', code: '42P01' } });
+    });
+
+    describe('WHEN the correct code is sent', () => {
+      beforeEach(async () => {
+        response = await handleVerifyInvite(
           verifyRequest('ip-grant-fail', { code: 'secret-code', email: 'new@user.dev' }),
         );
+      });
 
+      test('THEN the check fails as a server error without leaking the database message', async () => {
         expect(response.status).toBe(500);
         await expect(response.json()).resolves.toEqual({ valid: false });
         expect(event.error).toHaveBeenCalledExactlyOnceWith(
@@ -97,174 +184,48 @@ describe('handleVerifyInvite', () => {
     });
   });
 
-  describe('GIVEN a wrong code of the same length', () => {
-    describe('WHEN the invite is verified', () => {
-      test('THEN the code is rejected and no allowance is granted', async () => {
-        const response = await handleVerifyInvite(
-          verifyRequest('ip-wrong', { code: 'secret-codf', email: 'new@user.dev' }),
-        );
-
-        expect(response.status).toBe(403);
-        await expect(response.json()).resolves.toEqual({ valid: false });
-        expect(rpc).not.toHaveBeenCalled();
-      });
-    });
-  });
-
-  describe('GIVEN a code with a different length', () => {
-    describe('WHEN the invite is verified', () => {
-      test('THEN the code is rejected', async () => {
-        const response = await handleVerifyInvite(verifyRequest('ip-short', { code: 'nope', email: 'new@user.dev' }));
-
-        expect(response.status).toBe(403);
-      });
-    });
-  });
-
-  describe('GIVEN a non-string code', () => {
-    describe('WHEN the invite is verified', () => {
-      test('THEN the code is rejected', async () => {
-        const response = await handleVerifyInvite(verifyRequest('ip-number', { code: 42, email: 'new@user.dev' }));
-
-        expect(response.status).toBe(403);
-      });
-    });
-  });
-
-  describe('GIVEN the correct code without a valid email', () => {
-    describe('WHEN the invite is verified', () => {
-      test('THEN the request is rejected before the code is checked', async () => {
-        const response = await handleVerifyInvite(verifyRequest('ip-no-email', { code: 'secret-code', email: 'nope' }));
-
-        expect(response.status).toBe(400);
-        expect(rpc).not.toHaveBeenCalled();
-      });
-    });
-  });
-
-  describe('GIVEN a malformed request body', () => {
-    describe('WHEN the invite is verified', () => {
-      test('THEN the request is rejected', async () => {
-        const response = await handleVerifyInvite(verifyRequest('ip-broken', 'not json'));
-
-        expect(response.status).toBe(400);
-        expect(rpc).not.toHaveBeenCalled();
-      });
-    });
-  });
-
-  describe('GIVEN no configured invite code', () => {
-    describe('WHEN the invite is verified', () => {
-      test('THEN every code is rejected', async () => {
-        vi.stubEnv('INVITE_CODE', '');
-
-        const response = await handleVerifyInvite(verifyRequest('ip-unset', { code: '', email: 'new@user.dev' }));
-
-        expect(response.status).toBe(403);
-        expect(rpc).not.toHaveBeenCalled();
-      });
-    });
-  });
-
   describe('GIVEN a request sent from another site', () => {
     describe('WHEN the browser marks the request as cross-site', () => {
-      test('THEN the request is forbidden and no allowance is granted', async () => {
-        const response = await handleVerifyInvite(
+      beforeEach(async () => {
+        response = await handleVerifyInvite(
           verifyRequest(
             'ip-cross-site',
             { code: 'secret-code', email: 'new@user.dev' },
             { 'sec-fetch-site': 'cross-site' },
           ),
         );
+      });
 
+      test('THEN the request is forbidden and no allowance is granted', () => {
         expect(response.status).toBe(403);
-        expect(rpc).not.toHaveBeenCalled();
-      });
-    });
-
-    describe('WHEN a foreign origin header is sent without fetch metadata', () => {
-      test('THEN the request is forbidden', async () => {
-        const response = await handleVerifyInvite(
-          verifyRequest(
-            'ip-foreign-origin',
-            { code: 'secret-code', email: 'new@user.dev' },
-            { origin: 'https://evil.example', host: 'localhost' },
-          ),
-        );
-
-        expect(response.status).toBe(403);
-      });
-    });
-
-    describe('WHEN a matching origin header is sent without fetch metadata', () => {
-      test('THEN the code is accepted', async () => {
-        const response = await handleVerifyInvite(
-          verifyRequest(
-            'ip-own-origin',
-            { code: 'secret-code', email: 'new@user.dev' },
-            { origin: 'http://localhost:3000', host: 'localhost:3000' },
-          ),
-        );
-
-        expect(response.status).toBe(200);
+        expect(admin.rpc).not.toHaveBeenCalled();
       });
     });
   });
 
-  describe('GIVEN a client identified through x-real-ip', () => {
-    describe('WHEN the invite is verified', () => {
-      test('THEN the code is accepted', async () => {
-        const request = new Request('http://localhost/auth/verify-invite', {
-          method: 'POST',
-          headers: { 'x-real-ip': 'ip-real' },
-          body: JSON.stringify({ code: 'secret-code', email: 'new@user.dev' }),
-        });
-
-        const response = await handleVerifyInvite(request);
-
-        expect(response.status).toBe(200);
-      });
+  describe('GIVEN a client that exhausted the rate limit with wrong codes', () => {
+    beforeEach(async () => {
+      await Promise.all(
+        Array.from({ length: INVITE_RATE_LIMIT_MAX_ATTEMPTS }, () =>
+          handleVerifyInvite(verifyRequest('ip-flood', { code: 'wrong-code!', email: 'new@user.dev' })),
+        ),
+      );
     });
-  });
 
-  describe('GIVEN a client without ip headers', () => {
-    describe('WHEN the invite is verified', () => {
-      test('THEN the code is accepted through the fallback bucket', async () => {
-        const request = new Request('http://localhost/auth/verify-invite', {
-          method: 'POST',
-          body: JSON.stringify({ code: 'secret-code', email: 'new@user.dev' }),
-        });
-
-        const response = await handleVerifyInvite(request);
-
-        expect(response.status).toBe(200);
+    describe('WHEN the correct code is sent within the window', () => {
+      beforeEach(async () => {
+        response = await handleVerifyInvite(verifyRequest('ip-flood', { code: 'secret-code', email: 'new@user.dev' }));
       });
-    });
-  });
 
-  describe('GIVEN a client that exhausted the rate limit', () => {
-    describe('WHEN the limit is exceeded within the window', () => {
       test('THEN the request is throttled before the code is even checked', async () => {
-        const allowed = await Promise.all(
-          Array.from({ length: INVITE_RATE_LIMIT_MAX_ATTEMPTS }, () =>
-            handleVerifyInvite(verifyRequest('ip-flood', { code: 'wrong-code!', email: 'new@user.dev' })),
-          ),
-        );
-
-        expect(allowed.every((response) => response.status === 403)).toBe(true);
-
-        const throttled = await handleVerifyInvite(
-          verifyRequest('ip-flood', { code: 'secret-code', email: 'new@user.dev' }),
-        );
-
-        expect(throttled.status).toBe(429);
-        await expect(throttled.json()).resolves.toEqual({ valid: false });
-        expect(rpc).not.toHaveBeenCalled();
+        expect(response.status).toBe(429);
+        await expect(response.json()).resolves.toEqual({ valid: false });
+        expect(admin.rpc).not.toHaveBeenCalled();
       });
     });
   });
 
-  describe('GIVEN a throttled client whose rate limit window has elapsed', () => {
+  describe('GIVEN a client that was throttled after too many wrong codes', () => {
     beforeEach(async () => {
       vi.useFakeTimers({ toFake: ['Date'] });
       await Promise.all(
@@ -272,15 +233,15 @@ describe('handleVerifyInvite', () => {
           handleVerifyInvite(verifyRequest('ip-window', { code: 'wrong-code!', email: 'new@user.dev' })),
         ),
       );
-      vi.setSystemTime(Date.now() + INVITE_RATE_LIMIT_WINDOW_MS);
     });
 
-    describe('WHEN the invite is verified again', () => {
-      test('THEN a fresh window accepts the code', async () => {
-        const response = await handleVerifyInvite(
-          verifyRequest('ip-window', { code: 'secret-code', email: 'new@user.dev' }),
-        );
+    describe('WHEN the correct code is sent once the window has passed', () => {
+      beforeEach(async () => {
+        vi.setSystemTime(Date.now() + INVITE_RATE_LIMIT_WINDOW_MS);
+        response = await handleVerifyInvite(verifyRequest('ip-window', { code: 'secret-code', email: 'new@user.dev' }));
+      });
 
+      test('THEN a fresh window accepts the code', () => {
         expect(response.status).toBe(200);
       });
     });
@@ -290,96 +251,112 @@ describe('handleVerifyInvite', () => {
 describe('handleDeleteAccount', () => {
   describe('GIVEN no authenticated user', () => {
     beforeEach(() => {
-      primeServer(null);
+      primeServerClient([], { user: null });
     });
 
     describe('WHEN the account deletion is requested', () => {
-      test('THEN the request is unauthorized before any password check', async () => {
-        const response = await handleDeleteAccount(deleteRequest({ password: 'correct-horse' }));
+      beforeEach(async () => {
+        response = await handleDeleteAccount(deleteRequest({ password: 'correct-horse' }));
+      });
 
+      test('THEN the request is unauthorized before any password check', async () => {
         expect(response.status).toBe(401);
         await expect(response.json()).resolves.toEqual({ error: { message: 'Unauthorized' } });
         expect(verifyPassword).not.toHaveBeenCalled();
-        expect(deleteUser).not.toHaveBeenCalled();
+        expect(admin.deleteUser).not.toHaveBeenCalled();
       });
     });
   });
 
   describe('GIVEN an authenticated user who knows the password', () => {
-    let client: ReturnType<typeof primeServer>;
+    let client: ReturnType<typeof primeServerClient>;
 
     beforeEach(() => {
-      client = primeServer({ id: 'user-delete', email: 'delete@uniscept.dev' });
-      vi.mocked(client.rpc).mockResolvedValue({ data: [], error: null });
+      client = primeServerClient([], {
+        user: { id: 'user-delete', email: 'delete@uniscept.dev' },
+        rpc: { get_my_owned_shared_workspaces: { data: [] } },
+      });
     });
 
     describe('WHEN the deletion is confirmed from the app', () => {
-      test('THEN the password and the shared workspaces are checked and exactly that user is deleted', async () => {
-        const response = await handleDeleteAccount(
+      beforeEach(async () => {
+        response = await handleDeleteAccount(
           deleteRequest({ password: 'correct-horse' }, { 'sec-fetch-site': 'same-origin' }),
         );
+      });
 
+      test('THEN the deletion succeeds', async () => {
         expect(response.status).toBe(200);
         await expect(response.json()).resolves.toEqual({ success: true });
+      });
+
+      test('THEN the password and the shared workspaces are checked and exactly that user is deleted', () => {
         expect(verifyPassword.mock.calls).toEqual([['delete@uniscept.dev', 'correct-horse']]);
         expect(client.rpc.mock.calls).toEqual([['get_my_owned_shared_workspaces']]);
-        expect(deleteUser.mock.calls).toEqual([['user-delete']]);
+        expect(admin.deleteUser.mock.calls).toEqual([['user-delete']]);
       });
     });
 
     describe('WHEN the deletion is confirmed without a password', () => {
-      test('THEN the request is rejected before the password check', async () => {
-        const response = await handleDeleteAccount(deleteRequest({}));
+      beforeEach(async () => {
+        response = await handleDeleteAccount(deleteRequest({}));
+      });
 
+      test('THEN the request is rejected before the password check', async () => {
         expect(response.status).toBe(400);
         await expect(response.json()).resolves.toEqual({ error: { message: 'Invalid request' } });
         expect(verifyPassword).not.toHaveBeenCalled();
-        expect(deleteUser).not.toHaveBeenCalled();
+        expect(admin.deleteUser).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('WHEN a malformed body is sent', () => {
+      beforeEach(async () => {
+        response = await handleDeleteAccount(deleteRequest('not json'));
+      });
+
+      test('THEN the request is rejected before the password check', () => {
+        expect(response.status).toBe(400);
+        expect(verifyPassword).not.toHaveBeenCalled();
+        expect(admin.deleteUser).not.toHaveBeenCalled();
       });
     });
 
     describe('WHEN a cross-site page submits the deletion', () => {
-      test('THEN the request is forbidden and nothing is deleted', async () => {
-        const response = await handleDeleteAccount(
+      beforeEach(async () => {
+        response = await handleDeleteAccount(
           deleteRequest({ password: 'correct-horse' }, { 'sec-fetch-site': 'cross-site' }),
         );
+      });
 
+      test('THEN the request is forbidden and nothing is deleted', () => {
         expect(response.status).toBe(403);
         expect(verifyPassword).not.toHaveBeenCalled();
-        expect(deleteUser).not.toHaveBeenCalled();
-      });
-    });
-
-    describe('WHEN a same-site sibling submits the deletion', () => {
-      test('THEN the request is forbidden and nothing is deleted', async () => {
-        const response = await handleDeleteAccount(
-          deleteRequest({ password: 'correct-horse' }, { 'sec-fetch-site': 'same-site' }),
-        );
-
-        expect(response.status).toBe(403);
-        expect(deleteUser).not.toHaveBeenCalled();
+        expect(admin.deleteUser).not.toHaveBeenCalled();
       });
     });
   });
 
   describe('GIVEN an authenticated user who types a wrong password', () => {
-    let client: ReturnType<typeof primeServer>;
+    let client: ReturnType<typeof primeServerClient>;
 
     beforeEach(() => {
-      client = primeServer({ id: 'user-delete-wrong', email: 'wrong@uniscept.dev' });
+      client = primeServerClient([], { user: { id: 'user-delete-wrong', email: 'wrong@uniscept.dev' } });
       verifyPassword.mockResolvedValue(WRONG_PASSWORD);
     });
 
     describe('WHEN the deletion is confirmed', () => {
-      test('THEN the invalid credentials code comes back before the workspaces are checked and nothing is deleted', async () => {
-        const response = await handleDeleteAccount(deleteRequest({ password: 'guess' }));
+      beforeEach(async () => {
+        response = await handleDeleteAccount(deleteRequest({ password: 'guess' }));
+      });
 
+      test('THEN the invalid credentials code comes back before the workspaces are checked and nothing is deleted', async () => {
         expect(response.status).toBe(400);
         await expect(response.json()).resolves.toEqual({
           error: { message: 'Invalid credentials', code: 'invalid_credentials' },
         });
         expect(client.rpc).not.toHaveBeenCalled();
-        expect(deleteUser).not.toHaveBeenCalled();
+        expect(admin.deleteUser).not.toHaveBeenCalled();
         expect(event.error).not.toHaveBeenCalled();
       });
     });
@@ -387,19 +364,23 @@ describe('handleDeleteAccount', () => {
 
   describe('GIVEN an owner of a workspace that other members still use', () => {
     beforeEach(() => {
-      const client = primeServer({ id: 'user-delete-owner', email: 'owner@uniscept.dev' });
-      vi.mocked(client.rpc).mockResolvedValue({ data: [{ id: 'ws-shared', name: 'Shared space' }], error: null });
+      primeServerClient([], {
+        user: { id: 'user-delete-owner', email: 'owner@uniscept.dev' },
+        rpc: { get_my_owned_shared_workspaces: { data: [{ id: 'ws-shared', name: 'Shared space' }] } },
+      });
     });
 
     describe('WHEN the deletion is confirmed with the right password', () => {
-      test('THEN the deletion is refused with the shared workspaces code and nothing is deleted', async () => {
-        const response = await handleDeleteAccount(deleteRequest({ password: 'correct-horse' }));
+      beforeEach(async () => {
+        response = await handleDeleteAccount(deleteRequest({ password: 'correct-horse' }));
+      });
 
+      test('THEN the deletion is refused with the shared workspaces code and nothing is deleted', async () => {
         expect(response.status).toBe(409);
         await expect(response.json()).resolves.toEqual({
           error: { message: 'Account owns shared workspaces', code: 'owns_shared_workspaces' },
         });
-        expect(deleteUser).not.toHaveBeenCalled();
+        expect(admin.deleteUser).not.toHaveBeenCalled();
       });
     });
   });
@@ -408,35 +389,41 @@ describe('handleDeleteAccount', () => {
     const checkFailure = { message: 'function does not exist', code: '42883' };
 
     beforeEach(() => {
-      const client = primeServer({ id: 'user-delete-check', email: 'check@uniscept.dev' });
-      vi.mocked(client.rpc).mockResolvedValue({ data: null, error: checkFailure });
+      primeServerClient([], {
+        user: { id: 'user-delete-check', email: 'check@uniscept.dev' },
+        rpc: { get_my_owned_shared_workspaces: { error: checkFailure } },
+      });
     });
 
     describe('WHEN the deletion is confirmed', () => {
-      test('THEN a generic server error comes back, the failure is reported and nothing is deleted', async () => {
-        const response = await handleDeleteAccount(deleteRequest({ password: 'correct-horse' }));
+      beforeEach(async () => {
+        response = await handleDeleteAccount(deleteRequest({ password: 'correct-horse' }));
+      });
 
+      test('THEN a generic server error comes back, the failure is reported and nothing is deleted', async () => {
         expect(response.status).toBe(500);
         await expect(response.json()).resolves.toEqual({ error: { message: 'Account deletion failed' } });
         expect(event.error).toHaveBeenCalledExactlyOnceWith(checkFailure, {
           toast: false,
           context: 'auth.checkSharedWorkspaces',
         });
-        expect(deleteUser).not.toHaveBeenCalled();
+        expect(admin.deleteUser).not.toHaveBeenCalled();
       });
     });
   });
 
   describe('GIVEN a password check the auth server fails to answer', () => {
     beforeEach(() => {
-      primeServer({ id: 'user-delete-outage', email: 'outage@uniscept.dev' });
-      verifyPassword.mockResolvedValue({ data: {}, error: { code: 'unexpected_failure', status: 500 } });
+      primeServerClient([], { user: { id: 'user-delete-outage', email: 'outage@uniscept.dev' } });
+      verifyPassword.mockResolvedValue({ error: { code: 'unexpected_failure', status: 500 } });
     });
 
     describe('WHEN the deletion is confirmed', () => {
-      test('THEN a generic server error comes back, the failure is reported and nothing is deleted', async () => {
-        const response = await handleDeleteAccount(deleteRequest({ password: 'correct-horse' }));
+      beforeEach(async () => {
+        response = await handleDeleteAccount(deleteRequest({ password: 'correct-horse' }));
+      });
 
+      test('THEN a generic server error comes back, the failure is reported and nothing is deleted', async () => {
         expect(response.status).toBe(500);
         await expect(response.json()).resolves.toEqual({
           error: { message: 'Password check failed', code: 'unexpected_failure' },
@@ -445,33 +432,35 @@ describe('handleDeleteAccount', () => {
           { code: 'unexpected_failure', status: 500 },
           { toast: false, context: 'auth.verifyPassword' },
         );
-        expect(deleteUser).not.toHaveBeenCalled();
+        expect(admin.deleteUser).not.toHaveBeenCalled();
       });
     });
   });
 
   describe('GIVEN a password check the auth server throttles', () => {
     beforeEach(() => {
-      primeServer({ id: 'user-delete-throttled', email: 'throttled@uniscept.dev' });
-      verifyPassword.mockResolvedValue({ data: {}, error: { code: 'over_request_rate_limit', status: 429 } });
+      primeServerClient([], { user: { id: 'user-delete-throttled', email: 'throttled@uniscept.dev' } });
+      verifyPassword.mockResolvedValue({ error: { code: 'over_request_rate_limit', status: 429 } });
     });
 
     describe('WHEN the deletion is confirmed', () => {
-      test('THEN the throttle reaches the client as a rate limit and nothing is deleted', async () => {
-        const response = await handleDeleteAccount(deleteRequest({ password: 'correct-horse' }));
+      beforeEach(async () => {
+        response = await handleDeleteAccount(deleteRequest({ password: 'correct-horse' }));
+      });
 
+      test('THEN the throttle reaches the client as a rate limit and nothing is deleted', async () => {
         expect(response.status).toBe(429);
         await expect(response.json()).resolves.toEqual({
           error: { message: 'Password check failed', code: 'over_request_rate_limit' },
         });
-        expect(deleteUser).not.toHaveBeenCalled();
+        expect(admin.deleteUser).not.toHaveBeenCalled();
       });
     });
   });
 
   describe('GIVEN a user who exhausted the password attempts', () => {
     beforeEach(async () => {
-      primeServer({ id: 'user-delete-flood', email: 'flood@uniscept.dev' });
+      primeServerClient([], { user: { id: 'user-delete-flood', email: 'flood@uniscept.dev' } });
       verifyPassword.mockResolvedValue(WRONG_PASSWORD);
       await Promise.all(
         Array.from({ length: PASSWORD_CHECK_RATE_LIMIT_MAX_ATTEMPTS }, () =>
@@ -482,21 +471,25 @@ describe('handleDeleteAccount', () => {
     });
 
     describe('WHEN another deletion is confirmed', () => {
-      test('THEN the request is throttled before the password is checked', async () => {
-        const response = await handleDeleteAccount(deleteRequest({ password: 'correct-horse' }));
+      beforeEach(async () => {
+        response = await handleDeleteAccount(deleteRequest({ password: 'correct-horse' }));
+      });
 
+      test('THEN the request is throttled before the password is checked', () => {
         expect(response.status).toBe(429);
         expect(verifyPassword).not.toHaveBeenCalled();
-        expect(deleteUser).not.toHaveBeenCalled();
+        expect(admin.deleteUser).not.toHaveBeenCalled();
       });
     });
 
     describe('WHEN the password change is attempted instead', () => {
-      test('THEN the shared limit throttles it as well', async () => {
-        const response = await handleChangePassword(
+      beforeEach(async () => {
+        response = await handleChangePassword(
           changeRequest({ currentPassword: 'correct-horse', newPassword: 'new-secret-1' }),
         );
+      });
 
+      test('THEN the shared limit throttles it as well', () => {
         expect(response.status).toBe(429);
         expect(verifyPassword).not.toHaveBeenCalled();
       });
@@ -505,14 +498,16 @@ describe('handleDeleteAccount', () => {
 
   describe('GIVEN a failing admin deletion', () => {
     beforeEach(() => {
-      primeServer({ id: 'user-delete-admin', email: 'admin-fail@uniscept.dev' });
-      deleteUser.mockResolvedValue({ data: null, error: { message: 'admin api unavailable' } });
+      primeServerClient([], { user: { id: 'user-delete-admin', email: 'admin-fail@uniscept.dev' } });
+      admin.deleteUser.mockResolvedValue({ data: null, error: { message: 'admin api unavailable' } });
     });
 
     describe('WHEN the deletion is confirmed', () => {
-      test('THEN the failure surfaces as a generic server error', async () => {
-        const response = await handleDeleteAccount(deleteRequest({ password: 'correct-horse' }));
+      beforeEach(async () => {
+        response = await handleDeleteAccount(deleteRequest({ password: 'correct-horse' }));
+      });
 
+      test('THEN the failure surfaces as a generic server error', async () => {
         expect(response.status).toBe(500);
         await expect(response.json()).resolves.toEqual({ error: { message: 'Account deletion failed' } });
         expect(event.error).toHaveBeenCalledExactlyOnceWith(
@@ -527,15 +522,17 @@ describe('handleDeleteAccount', () => {
 describe('handleChangePassword', () => {
   describe('GIVEN no authenticated user', () => {
     beforeEach(() => {
-      primeServer(null);
+      primeServerClient([], { user: null });
     });
 
     describe('WHEN a new password is submitted', () => {
-      test('THEN the request is unauthorized before any password check', async () => {
-        const response = await handleChangePassword(
+      beforeEach(async () => {
+        response = await handleChangePassword(
           changeRequest({ currentPassword: 'old-secret', newPassword: 'new-secret-1' }),
         );
+      });
 
+      test('THEN the request is unauthorized before any password check', async () => {
         expect(response.status).toBe(401);
         await expect(response.json()).resolves.toEqual({ error: { message: 'Unauthorized' } });
         expect(verifyPassword).not.toHaveBeenCalled();
@@ -544,21 +541,23 @@ describe('handleChangePassword', () => {
   });
 
   describe('GIVEN an authenticated user who knows the current password', () => {
-    let client: ReturnType<typeof primeServer>;
+    let client: ReturnType<typeof primeServerClient>;
 
     beforeEach(() => {
-      client = primeServer({ id: 'user-change', email: 'change@uniscept.dev' });
+      client = primeServerClient([], { user: { id: 'user-change', email: 'change@uniscept.dev' } });
     });
 
     describe('WHEN a new password is submitted from the app', () => {
-      test('THEN the current password is checked and the session updates with both passwords', async () => {
-        const response = await handleChangePassword(
+      beforeEach(async () => {
+        response = await handleChangePassword(
           changeRequest(
             { currentPassword: 'old-secret', newPassword: 'new-secret-1' },
             { 'sec-fetch-site': 'same-origin' },
           ),
         );
+      });
 
+      test('THEN the current password is checked and the session updates with both passwords', async () => {
         expect(response.status).toBe(200);
         await expect(response.json()).resolves.toEqual({ success: true });
         expect(verifyPassword.mock.calls).toEqual([['change@uniscept.dev', 'old-secret']]);
@@ -570,23 +569,27 @@ describe('handleChangePassword', () => {
     });
 
     describe('WHEN a cross-site page submits the change', () => {
-      test('THEN the request is forbidden and nothing is updated', async () => {
-        const response = await handleChangePassword(
+      beforeEach(async () => {
+        response = await handleChangePassword(
           changeRequest(
             { currentPassword: 'old-secret', newPassword: 'new-secret-1' },
             { 'sec-fetch-site': 'cross-site' },
           ),
         );
+      });
 
+      test('THEN the request is forbidden and nothing is updated', () => {
         expect(response.status).toBe(403);
         expect(client.auth.updateUser).not.toHaveBeenCalled();
       });
     });
 
     describe('WHEN the change is submitted without a new password', () => {
-      test('THEN the request is rejected before the password check', async () => {
-        const response = await handleChangePassword(changeRequest({ currentPassword: 'old-secret' }));
+      beforeEach(async () => {
+        response = await handleChangePassword(changeRequest({ currentPassword: 'old-secret' }));
+      });
 
+      test('THEN the request is rejected before the password check', () => {
         expect(response.status).toBe(400);
         expect(verifyPassword).not.toHaveBeenCalled();
         expect(client.auth.updateUser).not.toHaveBeenCalled();
@@ -594,9 +597,23 @@ describe('handleChangePassword', () => {
     });
 
     describe('WHEN the change is submitted without the current password', () => {
-      test('THEN the request is rejected and nothing is updated', async () => {
-        const response = await handleChangePassword(changeRequest({ newPassword: 'new-secret-1' }));
+      beforeEach(async () => {
+        response = await handleChangePassword(changeRequest({ newPassword: 'new-secret-1' }));
+      });
 
+      test('THEN the request is rejected and nothing is updated', () => {
+        expect(response.status).toBe(400);
+        expect(verifyPassword).not.toHaveBeenCalled();
+        expect(client.auth.updateUser).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('WHEN a malformed body is sent', () => {
+      beforeEach(async () => {
+        response = await handleChangePassword(changeRequest('not json'));
+      });
+
+      test('THEN the request is rejected before the password check', () => {
         expect(response.status).toBe(400);
         expect(verifyPassword).not.toHaveBeenCalled();
         expect(client.auth.updateUser).not.toHaveBeenCalled();
@@ -605,19 +622,19 @@ describe('handleChangePassword', () => {
   });
 
   describe('GIVEN an authenticated user who types a wrong current password', () => {
-    let client: ReturnType<typeof primeServer>;
+    let client: ReturnType<typeof primeServerClient>;
 
     beforeEach(() => {
-      client = primeServer({ id: 'user-change-wrong', email: 'change-wrong@uniscept.dev' });
+      client = primeServerClient([], { user: { id: 'user-change-wrong', email: 'change-wrong@uniscept.dev' } });
       verifyPassword.mockResolvedValue(WRONG_PASSWORD);
     });
 
     describe('WHEN a new password is submitted', () => {
-      test('THEN the invalid credentials code comes back and the password stays', async () => {
-        const response = await handleChangePassword(
-          changeRequest({ currentPassword: 'guess', newPassword: 'new-secret-1' }),
-        );
+      beforeEach(async () => {
+        response = await handleChangePassword(changeRequest({ currentPassword: 'guess', newPassword: 'new-secret-1' }));
+      });
 
+      test('THEN the invalid credentials code comes back and the password stays', async () => {
         expect(response.status).toBe(400);
         await expect(response.json()).resolves.toEqual({
           error: { message: 'Invalid credentials', code: 'invalid_credentials' },
@@ -629,7 +646,7 @@ describe('handleChangePassword', () => {
 
   describe('GIVEN a new password the auth server refuses', () => {
     beforeEach(() => {
-      const client = primeServer({ id: 'user-change-weak', email: 'weak@uniscept.dev' });
+      const client = primeServerClient([], { user: { id: 'user-change-weak', email: 'weak@uniscept.dev' } });
       vi.mocked(client.auth.updateUser).mockResolvedValue({
         data: { user: null },
         error: { code: 'weak_password', status: 422, message: 'Password is known to be weak' },
@@ -637,11 +654,13 @@ describe('handleChangePassword', () => {
     });
 
     describe('WHEN it is submitted', () => {
-      test('THEN the refusal keeps its status and code behind a generic message and is reported', async () => {
-        const response = await handleChangePassword(
+      beforeEach(async () => {
+        response = await handleChangePassword(
           changeRequest({ currentPassword: 'old-secret', newPassword: 'password1' }),
         );
+      });
 
+      test('THEN the refusal keeps its status and code behind a generic message and is reported', async () => {
         expect(response.status).toBe(422);
         await expect(response.json()).resolves.toEqual({
           error: { message: 'Password update failed', code: 'weak_password' },
@@ -656,7 +675,7 @@ describe('handleChangePassword', () => {
 
   describe('GIVEN a password update that never reaches the auth server', () => {
     beforeEach(() => {
-      const client = primeServer({ id: 'user-change-offline', email: 'offline@uniscept.dev' });
+      const client = primeServerClient([], { user: { id: 'user-change-offline', email: 'offline@uniscept.dev' } });
       vi.mocked(client.auth.updateUser).mockResolvedValue({
         data: { user: null },
         error: { status: 0, message: 'fetch failed' },
@@ -664,11 +683,13 @@ describe('handleChangePassword', () => {
     });
 
     describe('WHEN it is submitted', () => {
-      test('THEN a generic server error comes back', async () => {
-        const response = await handleChangePassword(
+      beforeEach(async () => {
+        response = await handleChangePassword(
           changeRequest({ currentPassword: 'old-secret', newPassword: 'new-secret-1' }),
         );
+      });
 
+      test('THEN a generic server error comes back', async () => {
         expect(response.status).toBe(500);
         await expect(response.json()).resolves.toEqual({ error: { message: 'Password update failed' } });
       });

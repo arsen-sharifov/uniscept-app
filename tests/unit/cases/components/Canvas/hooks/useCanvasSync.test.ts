@@ -11,8 +11,9 @@ import {
   updateCanvasNodeLabel,
   updateCanvasNodePositions,
 } from '@api/client';
-import { THREAD_ID, canvasEdge, canvasNode } from '@mocks/canvas';
+import { THREAD_ID, canvasEdge, canvasNode, WORKSPACE_ID } from '@mocks/canvas';
 import { EDIT_ACCESS, FULL_ACCESS, READONLY_ACCESS } from '@mocks/roles';
+import { LOAD_TIMEOUT_MS } from '@/components/Canvas/consts';
 import { useCanvasSync } from '@/components/Canvas/hooks';
 import { ECanvasTool } from '@/components/tools';
 import { FLUSH_DEBOUNCE_MS, MAX_RETRIES, RETRY_BASE_MS, getSaveState, resetQueue } from '@/lib/canvas';
@@ -21,9 +22,6 @@ import { useCanvasStore, usePermissionsStore } from '@/lib/stores';
 
 vi.mock('@api/client', () => import('@mocks/canvasApi'));
 vi.mock('@/lib/events', () => import('@mocks/events'));
-
-const LOAD_TIMEOUT_MS = 15000;
-const WORKSPACE_ID = 'ws-1';
 
 const canvasContent = (): ICanvasSnapshot => ({
   nodes: [canvasNode('own', { createdBy: 'user-1' }), canvasNode('foreign', { createdBy: 'user-2' })],
@@ -257,6 +255,20 @@ describe('useCanvasSync', () => {
       });
     });
 
+    describe('WHEN they undo an addition after a permission unrelated to the canvas changed', () => {
+      beforeEach(() => {
+        act(() => useCanvasStore.getState().addNode({ x: 0, y: 0 }, 'Draft'));
+        act(() =>
+          usePermissionsStore.getState().setAccess('ws-1', 'user-1', { ...EDIT_ACCESS, canManageStructure: true }),
+        );
+        act(() => useCanvasStore.getState().undo());
+      });
+
+      test('THEN the history survived and the addition is undone', () => {
+        expect(useCanvasStore.getState().nodes.map((node) => node.data.label)).not.toContain('Draft');
+      });
+    });
+
     describe('WHEN they lose their canvas edit access with the add-node tool active', () => {
       beforeEach(() => {
         act(() => useCanvasStore.getState().setActiveTool(ECanvasTool.AddNode));
@@ -432,9 +444,8 @@ describe('useCanvasSync', () => {
     });
   });
 
-  describe('GIVEN a thread switch while the old thread still has an unflushed operation', () => {
+  describe('GIVEN an editor with an unflushed operation on the old thread', () => {
     let view: RenderHookResult<ReturnType<typeof useCanvasSync>, { threadId: string }>;
-    let settleStaleCreate: () => void;
 
     beforeEach(async () => {
       usePermissionsStore.getState().setAccess('ws-1', 'user-1', EDIT_ACCESS);
@@ -448,19 +459,48 @@ describe('useCanvasSync', () => {
       });
 
       act(() => useCanvasStore.getState().addNode({ x: 0, y: 0 }, 'Stale'));
+    });
 
-      const staleCreate = Promise.withResolvers<void>();
-      settleStaleCreate = staleCreate.resolve;
-      vi.mocked(createCanvasNode).mockReturnValueOnce(staleCreate.promise);
-      vi.mocked(getCanvasContent).mockResolvedValueOnce({ nodes: [canvasNode('b1')], edges: [] });
+    describe('WHEN the route switches while the old save is in flight and the new thread is still loading', () => {
+      beforeEach(() => {
+        vi.mocked(createCanvasNode).mockReturnValueOnce(new Promise(() => {}));
+        vi.mocked(getCanvasContent).mockReturnValueOnce(new Promise(() => {}));
+        view.rerender({ threadId: 'thread-2' });
+      });
 
-      view.rerender({ threadId: 'thread-2' });
-      await act(async () => {
-        await vi.advanceTimersByTimeAsync(0);
+      test('THEN the old graph leaves the store at once', () => {
+        expect(useCanvasStore.getState()).toMatchObject({ threadId: null, hydrated: false });
+        expect(useCanvasStore.getState().nodes).toHaveLength(0);
       });
     });
 
-    describe('WHEN the new thread finishes loading before the stale flush settles', () => {
+    describe('WHEN the route switches and a node is added before the new thread loads', () => {
+      beforeEach(async () => {
+        vi.mocked(getCanvasContent).mockReturnValueOnce(new Promise(() => {}));
+        view.rerender({ threadId: 'thread-2' });
+        act(() => useCanvasStore.getState().addNode({ x: 0, y: 0 }, 'Lost'));
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(FLUSH_DEBOUNCE_MS);
+        });
+      });
+
+      test('THEN only the old operation reaches the api, under the old thread', () => {
+        expect(createCanvasNode).toHaveBeenCalledExactlyOnceWith(
+          expect.objectContaining({ threadId: THREAD_ID, label: 'Stale' }),
+        );
+      });
+    });
+
+    describe('WHEN the new thread finishes loading before the old save settles', () => {
+      beforeEach(async () => {
+        vi.mocked(createCanvasNode).mockReturnValueOnce(new Promise(() => {}));
+        vi.mocked(getCanvasContent).mockResolvedValueOnce({ nodes: [canvasNode('b1')], edges: [] });
+        view.rerender({ threadId: 'thread-2' });
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(0);
+        });
+      });
+
       test('THEN the new thread hydrates while the old operation is still in flight', () => {
         expect(useCanvasStore.getState()).toMatchObject({ threadId: 'thread-2', hydrated: true });
         expect(useCanvasStore.getState().nodes.map((node) => node.id)).toEqual(['b1']);
@@ -470,9 +510,17 @@ describe('useCanvasSync', () => {
       });
     });
 
-    describe('WHEN the stale flush finally settles', () => {
+    describe('WHEN the old save settles after the new thread loaded', () => {
       beforeEach(async () => {
-        settleStaleCreate();
+        const staleCreate = Promise.withResolvers<void>();
+
+        vi.mocked(createCanvasNode).mockReturnValueOnce(staleCreate.promise);
+        vi.mocked(getCanvasContent).mockResolvedValueOnce({ nodes: [canvasNode('b1')], edges: [] });
+        view.rerender({ threadId: 'thread-2' });
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(0);
+        });
+        staleCreate.resolve();
         await act(async () => {
           await vi.advanceTimersByTimeAsync(0);
         });
@@ -485,49 +533,41 @@ describe('useCanvasSync', () => {
     });
   });
 
-  describe('GIVEN an editor with an unflushed operation on the old thread and a new thread still loading', () => {
-    let view: RenderHookResult<ReturnType<typeof useCanvasSync>, { threadId: string }>;
+  describe('GIVEN an editor whose canvas is still loading', () => {
+    let pendingLoad: PromiseWithResolvers<ICanvasSnapshot>;
 
-    beforeEach(async () => {
+    beforeEach(() => {
       usePermissionsStore.getState().setAccess('ws-1', 'user-1', EDIT_ACCESS);
-      vi.mocked(getCanvasContent).mockResolvedValueOnce(canvasContent());
-
-      view = renderHook(({ threadId }: { threadId: string }) => useCanvasSync(WORKSPACE_ID, threadId), {
-        initialProps: { threadId: THREAD_ID },
-      });
-      await act(async () => {
-        await vi.advanceTimersByTimeAsync(0);
-      });
-
-      act(() => useCanvasStore.getState().addNode({ x: 0, y: 0 }, 'Stale'));
-      vi.mocked(getCanvasContent).mockReturnValueOnce(new Promise(() => {}));
+      pendingLoad = Promise.withResolvers<ICanvasSnapshot>();
+      vi.mocked(getCanvasContent).mockReturnValue(pendingLoad.promise);
+      unmountSync = renderHook(() => useCanvasSync(WORKSPACE_ID, THREAD_ID)).unmount;
     });
 
-    describe('WHEN the route switches to the new thread while the old save is in flight', () => {
-      beforeEach(() => {
-        vi.mocked(createCanvasNode).mockReturnValueOnce(new Promise(() => {}));
-        view.rerender({ threadId: 'thread-2' });
-      });
-
-      test('THEN the old graph leaves the store at once', () => {
-        expect(useCanvasStore.getState()).toMatchObject({ threadId: null, hydrated: false });
-        expect(useCanvasStore.getState().nodes).toHaveLength(0);
-      });
-    });
-
-    describe('WHEN the route switches and a node is added before the new thread loads', () => {
+    describe('WHEN the hook unmounts and the load then arrives', () => {
       beforeEach(async () => {
-        view.rerender({ threadId: 'thread-2' });
-        act(() => useCanvasStore.getState().addNode({ x: 0, y: 0 }, 'Lost'));
+        unmountSync();
+        pendingLoad.resolve(canvasContent());
         await act(async () => {
-          await vi.advanceTimersByTimeAsync(FLUSH_DEBOUNCE_MS);
+          await vi.advanceTimersByTimeAsync(0);
         });
       });
 
-      test('THEN only the old operation reaches the api, under the old thread', () => {
-        expect(createCanvasNode).toHaveBeenCalledExactlyOnceWith(
-          expect.objectContaining({ threadId: THREAD_ID, label: 'Stale' }),
-        );
+      test('THEN the late content does not hydrate the store', () => {
+        expect(useCanvasStore.getState()).toMatchObject({ threadId: null, hydrated: false });
+      });
+    });
+
+    describe('WHEN the hook unmounts and the load then fails', () => {
+      beforeEach(async () => {
+        unmountSync();
+        pendingLoad.reject(new Error('load failed'));
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(0);
+        });
+      });
+
+      test('THEN the late failure is not reported', () => {
+        expect(event.error).not.toHaveBeenCalled();
       });
     });
   });

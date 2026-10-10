@@ -1,4 +1,4 @@
-import { COPY, COPY_UK, VIEWPORT_SELECTOR } from '../../consts';
+import { COPY, COPY_UK, VIEWPORT_SELECTOR, NEW_PASSWORD } from '../../consts';
 import { expect, guestTest, test } from '../../fixtures';
 import type { IE2ESeededAccount } from '../../interfaces';
 import {
@@ -18,8 +18,6 @@ import {
   waitForCanvas,
   waitForPreferencesSave,
 } from '../../utils';
-
-const NEW_PASSWORD = 'Uniscept-E2E-2!';
 
 test.describe('the interface language', () => {
   test.describe('GIVEN a Ukrainian browser and an account that never picked a language', () => {
@@ -77,50 +75,44 @@ test.describe('appearance preferences', () => {
       await openSection(modal, COPY.platform.settings.sections.appearance);
     });
 
-    test.describe('WHEN another theme is picked', () => {
+    test.describe('WHEN another theme is picked and the page is reloaded', () => {
       test.beforeEach(async ({ page }) => {
         const saved = waitForPreferencesSave(page);
         await page.getByRole('radio', { name: COPY.platform.settings.appearance.themeEclipse }).click();
+        await expect(page.locator('html')).toHaveAttribute('data-theme', 'eclipse');
         await saved;
+        await page.reload();
       });
 
-      test('THEN the app repaints and keeps the theme after a reload', async ({ page }) => {
-        await expect(page.locator('html')).toHaveAttribute('data-theme', 'eclipse');
-
-        await page.reload();
-
+      test('THEN the app keeps the picked theme', async ({ page }) => {
         await expect(page.locator('html')).toHaveAttribute('data-theme', 'eclipse');
       });
     });
 
-    test.describe('WHEN another language is picked', () => {
+    test.describe('WHEN another language is picked and the page is reloaded', () => {
       test.beforeEach(async ({ page }) => {
         const saved = waitForPreferencesSave(page);
         await page.getByRole('button', { name: COPY.platform.settings.appearance.languages.uk, exact: true }).click();
+        await expect(page.getByRole('heading', { name: COPY_UK.platform.settings.sections.appearance })).toBeVisible();
         await saved;
+        await page.reload();
       });
 
-      test('THEN the interface is translated and stays translated after a reload', async ({ page }) => {
-        await expect(page.getByRole('heading', { name: COPY_UK.platform.settings.sections.appearance })).toBeVisible();
-
-        await page.reload();
-
+      test('THEN the interface stays translated', async ({ page }) => {
         await expect(getSidebar(page)).toContainText(COPY_UK.platform.sidebar.structure);
       });
     });
 
-    test.describe('WHEN another canvas pattern is picked', () => {
+    test.describe('WHEN another canvas pattern is picked and the page is reloaded', () => {
       test.beforeEach(async ({ page }) => {
         const saved = waitForPreferencesSave(page);
         await page.getByRole('radio', { name: COPY.platform.settings.appearance.patternLines }).click();
+        await expect(page.locator('html')).toHaveAttribute('data-canvas-pattern', 'lines');
         await saved;
+        await page.reload();
       });
 
-      test('THEN the canvas texture changes and survives a reload', async ({ page }) => {
-        await expect(page.locator('html')).toHaveAttribute('data-canvas-pattern', 'lines');
-
-        await page.reload();
-
+      test('THEN the canvas keeps the picked texture', async ({ page }) => {
         await expect(page.locator('html')).toHaveAttribute('data-canvas-pattern', 'lines');
       });
     });
@@ -137,24 +129,22 @@ test.describe('editor preferences', () => {
       await openSection(modal, COPY.platform.settings.sections.editor);
     });
 
-    test.describe('WHEN snap to grid is switched on', () => {
+    test.describe('WHEN snap to grid is switched on, the page is reloaded and the editor settings reopen', () => {
       test.beforeEach(async ({ page }) => {
         const saved = waitForPreferencesSave(page);
         await page.getByRole('switch', { name: COPY.platform.settings.editor.snapToGrid }).click();
-        await saved;
-      });
-
-      test('THEN the switch stays on after a reload', async ({ page }) => {
         await expect(page.getByRole('switch', { name: COPY.platform.settings.editor.snapToGrid })).toHaveAttribute(
           'aria-checked',
           'true',
         );
-
+        await saved;
         await page.reload();
         await waitForCanvas(page);
         const modal = await openSettings(page);
         await openSection(modal, COPY.platform.settings.sections.editor);
+      });
 
+      test('THEN the switch is still on', async ({ page }) => {
         await expect(page.getByRole('switch', { name: COPY.platform.settings.editor.snapToGrid })).toHaveAttribute(
           'aria-checked',
           'true',
@@ -162,7 +152,7 @@ test.describe('editor preferences', () => {
       });
     });
 
-    test.describe('WHEN smart guides are switched off', () => {
+    test.describe('WHEN smart guides are switched off, the page is reloaded and the editor settings reopen', () => {
       test.beforeEach(async ({ page }) => {
         await expect(page.getByRole('switch', { name: COPY.platform.settings.editor.smartGuides })).toHaveAttribute(
           'aria-checked',
@@ -170,20 +160,18 @@ test.describe('editor preferences', () => {
         );
         const saved = waitForPreferencesSave(page);
         await page.getByRole('switch', { name: COPY.platform.settings.editor.smartGuides }).click();
-        await saved;
-      });
-
-      test('THEN the switch stays off after a reload', async ({ page }) => {
         await expect(page.getByRole('switch', { name: COPY.platform.settings.editor.smartGuides })).toHaveAttribute(
           'aria-checked',
           'false',
         );
-
+        await saved;
         await page.reload();
         await waitForCanvas(page);
         const modal = await openSettings(page);
         await openSection(modal, COPY.platform.settings.sections.editor);
+      });
 
+      test('THEN the switch is still off', async ({ page }) => {
         await expect(page.getByRole('switch', { name: COPY.platform.settings.editor.smartGuides })).toHaveAttribute(
           'aria-checked',
           'false',
@@ -191,7 +179,7 @@ test.describe('editor preferences', () => {
       });
     });
 
-    test.describe('WHEN another default zoom level is picked', () => {
+    test.describe('WHEN another default zoom level is picked, the page is reloaded and the editor settings reopen', () => {
       test.beforeEach(async ({ page }) => {
         const saved = waitForPreferencesSave(page);
         await page
@@ -199,14 +187,13 @@ test.describe('editor preferences', () => {
           .getByRole('radio', { name: /125/ })
           .click();
         await saved;
-      });
-
-      test('THEN the choice stays picked after a reload', async ({ page }) => {
         await page.reload();
         await waitForCanvas(page);
         const modal = await openSettings(page);
         await openSection(modal, COPY.platform.settings.sections.editor);
+      });
 
+      test('THEN the choice is still picked', async ({ page }) => {
         await expect(
           page
             .getByRole('radiogroup', { name: COPY.platform.settings.editor.defaultZoom })
@@ -214,10 +201,7 @@ test.describe('editor preferences', () => {
         ).toHaveAttribute('aria-checked', 'true');
       });
 
-      test('THEN the canvas opens at the chosen zoom after a reload', async ({ page }) => {
-        await page.reload();
-        await waitForCanvas(page);
-
+      test('THEN the canvas opened at the chosen zoom', async ({ page }) => {
         await expect(page.locator(VIEWPORT_SELECTOR)).toHaveAttribute('style', /scale\(1\.25\)/);
       });
     });
@@ -275,20 +259,19 @@ guestTest.describe('security', () => {
       });
     });
 
-    guestTest.describe('WHEN the account is deleted from the danger zone with its password', () => {
+    guestTest.describe('WHEN the account is deleted from the danger zone and its credentials are tried again', () => {
       guestTest.beforeEach(async ({ page }) => {
         const modal = getSettingsModal(page);
         await modal.getByRole('button', { name: COPY.platform.settings.security.deleteAccount, exact: true }).click();
         await modal.getByLabel(COPY.platform.settings.security.deletePassword).fill(disposable.password);
         await modal.getByRole('button', { name: COPY.platform.settings.security.deleteButton, exact: true }).click();
         await page.waitForURL(/\/login$/);
-      });
-
-      guestTest('THEN the credentials stop working', async ({ page }) => {
         await page.getByLabel(COPY.auth.signIn.email).fill(disposable.email);
         await page.getByLabel(COPY.auth.signIn.password).fill(disposable.password);
         await page.getByRole('button', { name: COPY.auth.signIn.submit, exact: true }).click();
+      });
 
+      guestTest('THEN the sign-in is refused', async ({ page }) => {
         await expect(getErrorToast(page, COPY.common.errors.invalidCredentials)).toBeVisible();
       });
     });
@@ -361,17 +344,16 @@ test.describe('profile', () => {
       await openSection(modal, COPY.platform.settings.sections.profile);
     });
 
-    test.describe('WHEN the display name is changed and saved', () => {
+    test.describe('WHEN the display name is changed, saved and the page is reloaded', () => {
       test.beforeEach(async ({ page }) => {
         const modal = getSettingsModal(page);
         await modal.getByPlaceholder(COPY.platform.settings.profile.namePlaceholder).fill('Renamed thinker');
         await modal.getByRole('button', { name: COPY.platform.settings.profile.save }).click();
         await expect(modal.getByText(COPY.platform.settings.profile.saved, { exact: true })).toBeVisible();
+        await page.reload();
       });
 
-      test('THEN the sidebar greets the new name after a reload', async ({ page }) => {
-        await page.reload();
-
+      test('THEN the sidebar greets the new name', async ({ page }) => {
         await expect(getSidebar(page)).toContainText('Renamed thinker');
       });
     });

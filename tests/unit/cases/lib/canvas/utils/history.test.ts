@@ -40,6 +40,7 @@ describe('history', () => {
   });
 
   describe('GIVEN a canvas holding the question and one that also holds a reference, an answer and an edge', () => {
+    const empty: ICanvasHistoryState = { nodes: [], edges: [] };
     const before: ICanvasHistoryState = { nodes: [questionNode('q')], edges: [] };
     const after: ICanvasHistoryState = {
       nodes: [questionNode('q'), referenceNode('ref'), canvasNode('n1', { status: 'valid', isAnswer: true })],
@@ -91,6 +92,16 @@ describe('history', () => {
       });
     });
 
+    describe('WHEN the step that brings the question itself is diffed', () => {
+      beforeEach(() => {
+        operations = diffHistoryStates(empty, before, THREAD_ID);
+      });
+
+      test('THEN no create is produced for it', () => {
+        expect(operations).toEqual([]);
+      });
+    });
+
     describe('WHEN the step is diffed without a loaded thread', () => {
       beforeEach(() => {
         operations = diffHistoryStates(before, after, null);
@@ -104,13 +115,18 @@ describe('history', () => {
 
   describe('GIVEN a node whose position, label, marks and comments all changed', () => {
     const before: ICanvasHistoryState = {
-      nodes: [canvasNode('n1', { label: 'Old', comments: [comment('c1')] })],
+      nodes: [canvasNode('n1', { label: 'Old', comments: [comment('c0'), comment('c1')] })],
       edges: [],
     };
     const after: ICanvasHistoryState = {
       nodes: [
         {
-          ...canvasNode('n1', { label: 'New', status: 'invalid', isAnswer: true, comments: [comment('c2')] }),
+          ...canvasNode('n1', {
+            label: 'New',
+            status: 'invalid',
+            isAnswer: true,
+            comments: [comment('c0'), comment('c2')],
+          }),
           position: { x: 5, y: 6 },
         },
       ],
@@ -122,7 +138,7 @@ describe('history', () => {
         operations = diffHistoryStates(before, after, THREAD_ID);
       });
 
-      test('THEN each changed field gets its own update and the comments are swapped', () => {
+      test('THEN each changed field gets its own update and only the swapped comments are replayed', () => {
         expect(operations).toEqual([
           { type: 'updateNodePosition', id: 'n1', x: 5, y: 6 },
           { type: 'updateNodeLabel', id: 'n1', label: 'New' },
@@ -170,14 +186,15 @@ describe('history', () => {
 
   describe('GIVEN two states that differ only in selection', () => {
     const reference = referenceNode('ref');
+    const commented = canvasNode('n1', { comments: [comment('c1')] });
 
     describe('WHEN they are compared', () => {
       beforeEach(() => {
         isSame = isSameHistoryState(
-          { nodes: [canvasNode('n1'), reference], edges: [canvasEdge('e1', 'n1', 'ref')] },
+          { nodes: [commented, reference], edges: [canvasEdge('e1', 'n1', 'ref')] },
           {
             nodes: [
-              { ...canvasNode('n1'), selected: true },
+              { ...commented, selected: true },
               { ...reference, selected: true },
             ],
             edges: [{ ...canvasEdge('e1', 'n1', 'ref'), selected: true }],
@@ -197,6 +214,21 @@ describe('history', () => {
         isSame = isSameHistoryState(
           { nodes: [canvasNode('n1', { comments: [comment('c1')] })], edges: [] },
           { nodes: [canvasNode('n1', { comments: [comment('c1', { text: 'Edited' })] })], edges: [] },
+        );
+      });
+
+      test('THEN they are different entries', () => {
+        expect(isSame).toBe(false);
+      });
+    });
+  });
+
+  describe('GIVEN two states whose only difference is an added comment', () => {
+    describe('WHEN they are compared', () => {
+      beforeEach(() => {
+        isSame = isSameHistoryState(
+          { nodes: [canvasNode('n1', { comments: [comment('c1')] })], edges: [] },
+          { nodes: [canvasNode('n1', { comments: [comment('c1'), comment('c2')] })], edges: [] },
         );
       });
 

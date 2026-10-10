@@ -1,5 +1,5 @@
-import { cleanup, render, screen } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { TRANSLATIONS } from '@mocks/i18n';
 import { useVignettePhase } from '@mocks/landingHooks';
@@ -7,8 +7,6 @@ import { ValidationVignette } from '@/app/fragments/components/vignettes';
 
 vi.mock('@/i18n', () => import('@mocks/i18n'));
 vi.mock('@/app/fragments/hooks', () => import('@mocks/landingHooks'));
-
-afterEach(cleanup);
 
 describe('ValidationVignette', () => {
   describe('GIVEN a refuted premise still connected to the conclusion', () => {

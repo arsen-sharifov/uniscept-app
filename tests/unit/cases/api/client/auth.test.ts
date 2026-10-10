@@ -100,11 +100,11 @@ describe('completeInvitedAccount', () => {
 describe('signOut', () => {
   describe('GIVEN a signed-in user', () => {
     describe('WHEN the user signs out', () => {
-      test('THEN sign out runs and resolves', async () => {
+      test('THEN the sign out resolves without a scope so every session of the user ends', async () => {
         const { client } = primeSupabase([]);
 
         await expect(signOut()).resolves.toBeUndefined();
-        expect(client.auth.signOut).toHaveBeenCalledTimes(1);
+        expect(client.auth.signOut).toHaveBeenCalledExactlyOnceWith(undefined);
       });
     });
 

@@ -3,15 +3,14 @@ import type { ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { TRANSLATIONS } from '@mocks/i18n';
-import { workspaceMember } from '@mocks/roles';
+import { NAMED_MEMBER } from '@mocks/roles';
 import { OwnershipTransferDialog } from '@/app/platform/components/WorkspaceSettings/fragments';
 
 vi.mock('@/i18n', () => import('@mocks/i18n'));
 
-const MEMBER = workspaceMember('u-member', 'role-member', { name: 'Mira Holt' });
-
 const onConfirm = vi.fn();
 const onCancel = vi.fn();
+const onReplacedCancel = vi.fn();
 const onOuterKeyDown = vi.fn();
 
 let rerender: (ui: ReactNode) => void;
@@ -21,7 +20,7 @@ const scrim = () => screen.getByRole('alertdialog').previousElementSibling;
 const withTrigger = (open: boolean, cancel: () => void = onCancel) => (
   <>
     <button type="button">Member actions</button>
-    {open && <OwnershipTransferDialog member={MEMBER} onConfirm={onConfirm} onCancel={cancel} />}
+    {open && <OwnershipTransferDialog member={NAMED_MEMBER} onConfirm={onConfirm} onCancel={cancel} />}
   </>
 );
 
@@ -112,7 +111,7 @@ describe('OwnershipTransferDialog', () => {
     describe('WHEN its owner re-renders it with a new cancel handler while the user is on the confirm button', () => {
       beforeEach(() => {
         screen.getByRole('button', { name: TRANSLATIONS.platform.workspaceSettings.members.transferConfirm }).focus();
-        rerender(withTrigger(true, vi.fn()));
+        rerender(withTrigger(true, onReplacedCancel));
       });
 
       test('THEN focus stays on the confirm button', () => {

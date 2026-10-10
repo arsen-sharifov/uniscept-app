@@ -12,14 +12,18 @@ const tourCardLast = document.createElement('button');
 const innerContainer = document.createElement('div');
 const innerFirst = document.createElement('button');
 const innerLast = document.createElement('button');
+const emptyContainer = document.createElement('div');
 
 container.tabIndex = -1;
+emptyContainer.tabIndex = -1;
 container.append(first, last);
 tourCard.setAttribute('data-tour-card', '');
 tourCard.append(tourCardFirst, tourCardLast);
 innerContainer.append(innerFirst, innerLast);
 
 let tabEvent: KeyboardEvent;
+
+const tab = (shiftKey = false) => new KeyboardEvent('keydown', { key: 'Tab', shiftKey, cancelable: true });
 
 beforeEach(() => {
   document.body.append(container);
@@ -29,6 +33,7 @@ afterEach(() => {
   container.remove();
   tourCard.remove();
   innerContainer.remove();
+  emptyContainer.remove();
 });
 
 describe('useFocusTrap', () => {
@@ -40,7 +45,7 @@ describe('useFocusTrap', () => {
     describe('WHEN Tab is pressed on the last element', () => {
       beforeEach(() => {
         last.focus();
-        tabEvent = new KeyboardEvent('keydown', { key: 'Tab', cancelable: true });
+        tabEvent = tab();
         document.dispatchEvent(tabEvent);
       });
 
@@ -53,7 +58,7 @@ describe('useFocusTrap', () => {
     describe('WHEN Shift+Tab is pressed on the first element', () => {
       beforeEach(() => {
         first.focus();
-        tabEvent = new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, cancelable: true });
+        tabEvent = tab(true);
         document.dispatchEvent(tabEvent);
       });
 
@@ -66,7 +71,7 @@ describe('useFocusTrap', () => {
     describe('WHEN Tab is pressed away from the boundaries', () => {
       beforeEach(() => {
         first.focus();
-        tabEvent = new KeyboardEvent('keydown', { key: 'Tab', cancelable: true });
+        tabEvent = tab();
         document.dispatchEvent(tabEvent);
       });
 
@@ -79,7 +84,7 @@ describe('useFocusTrap', () => {
     describe('WHEN Shift+Tab is pressed while the container itself holds focus', () => {
       beforeEach(() => {
         container.focus();
-        tabEvent = new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, cancelable: true });
+        tabEvent = tab(true);
         document.dispatchEvent(tabEvent);
       });
 
@@ -92,12 +97,32 @@ describe('useFocusTrap', () => {
     describe('WHEN Shift+Tab is pressed on the last element', () => {
       beforeEach(() => {
         last.focus();
-        tabEvent = new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, cancelable: true });
+        tabEvent = tab(true);
         document.dispatchEvent(tabEvent);
       });
 
       test('THEN the focus does not wrap', () => {
         expect(document.activeElement).toBe(last);
+        expect(tabEvent.defaultPrevented).toBe(false);
+      });
+    });
+  });
+
+  describe('GIVEN an active trap around a container with nothing focusable', () => {
+    beforeEach(() => {
+      document.body.append(emptyContainer);
+      renderHook(() => useFocusTrap({ current: emptyContainer }, true));
+    });
+
+    describe('WHEN Shift+Tab is pressed while the container itself holds focus', () => {
+      beforeEach(() => {
+        emptyContainer.focus();
+        tabEvent = tab(true);
+        document.dispatchEvent(tabEvent);
+      });
+
+      test('THEN the focus is left to the browser', () => {
+        expect(document.activeElement).toBe(emptyContainer);
         expect(tabEvent.defaultPrevented).toBe(false);
       });
     });
@@ -112,7 +137,7 @@ describe('useFocusTrap', () => {
     describe('WHEN Tab is pressed on the last element', () => {
       beforeEach(() => {
         last.focus();
-        tabEvent = new KeyboardEvent('keydown', { key: 'Tab', cancelable: true });
+        tabEvent = tab();
         document.dispatchEvent(tabEvent);
       });
 
@@ -125,7 +150,7 @@ describe('useFocusTrap', () => {
     describe('WHEN Tab is pressed on the last control of the tour card', () => {
       beforeEach(() => {
         tourCardLast.focus();
-        tabEvent = new KeyboardEvent('keydown', { key: 'Tab', cancelable: true });
+        tabEvent = tab();
         document.dispatchEvent(tabEvent);
       });
 
@@ -138,7 +163,7 @@ describe('useFocusTrap', () => {
     describe('WHEN Shift+Tab is pressed on the first element', () => {
       beforeEach(() => {
         first.focus();
-        tabEvent = new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, cancelable: true });
+        tabEvent = tab(true);
         document.dispatchEvent(tabEvent);
       });
 
@@ -151,7 +176,7 @@ describe('useFocusTrap', () => {
     describe('WHEN Shift+Tab is pressed on the first control of the tour card', () => {
       beforeEach(() => {
         tourCardFirst.focus();
-        tabEvent = new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, cancelable: true });
+        tabEvent = tab(true);
         document.dispatchEvent(tabEvent);
       });
 
@@ -164,7 +189,7 @@ describe('useFocusTrap', () => {
     describe('WHEN Tab is pressed between the controls of the tour card', () => {
       beforeEach(() => {
         tourCardFirst.focus();
-        tabEvent = new KeyboardEvent('keydown', { key: 'Tab', cancelable: true });
+        tabEvent = tab();
         document.dispatchEvent(tabEvent);
       });
 
@@ -185,7 +210,7 @@ describe('useFocusTrap', () => {
     describe('WHEN Tab is pressed on the last element of the newer trap', () => {
       beforeEach(() => {
         innerLast.focus();
-        tabEvent = new KeyboardEvent('keydown', { key: 'Tab', cancelable: true });
+        tabEvent = tab();
         document.dispatchEvent(tabEvent);
       });
 
@@ -197,7 +222,7 @@ describe('useFocusTrap', () => {
     describe('WHEN Tab is pressed on the last control of the tour card', () => {
       beforeEach(() => {
         tourCardLast.focus();
-        tabEvent = new KeyboardEvent('keydown', { key: 'Tab', cancelable: true });
+        tabEvent = tab();
         document.dispatchEvent(tabEvent);
       });
 
@@ -209,7 +234,7 @@ describe('useFocusTrap', () => {
     describe('WHEN Shift+Tab is pressed on the first element of the newer trap', () => {
       beforeEach(() => {
         innerFirst.focus();
-        tabEvent = new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, cancelable: true });
+        tabEvent = tab(true);
         document.dispatchEvent(tabEvent);
       });
 
@@ -226,7 +251,7 @@ describe('useFocusTrap', () => {
 
     describe('WHEN Tab is pressed', () => {
       beforeEach(() => {
-        tabEvent = new KeyboardEvent('keydown', { key: 'Tab', cancelable: true });
+        tabEvent = tab();
         document.dispatchEvent(tabEvent);
       });
 
@@ -244,7 +269,7 @@ describe('useFocusTrap', () => {
     describe('WHEN Tab is pressed on the last element', () => {
       beforeEach(() => {
         last.focus();
-        tabEvent = new KeyboardEvent('keydown', { key: 'Tab', cancelable: true });
+        tabEvent = tab();
         document.dispatchEvent(tabEvent);
       });
 
@@ -263,7 +288,7 @@ describe('useFocusTrap', () => {
     describe('WHEN Tab is pressed on the last element', () => {
       beforeEach(() => {
         last.focus();
-        tabEvent = new KeyboardEvent('keydown', { key: 'Tab', cancelable: true });
+        tabEvent = tab();
         document.dispatchEvent(tabEvent);
       });
 

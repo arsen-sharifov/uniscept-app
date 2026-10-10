@@ -2,10 +2,8 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { ReactFlowProvider } from '@xyflow/react';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
-import type { TCanvasNode } from '@interfaces';
-
 import { stubResizeObserver } from '@mocks/browser';
-import { THREAD_ID, nodeProps, questionNode } from '@mocks/canvas';
+import { THREAD_ID, nodeProps, overflowLabels, questionNode, resetLabelOverflow } from '@mocks/canvas';
 import { TRANSLATIONS } from '@mocks/i18n';
 import { FULL_ACCESS, READONLY_ACCESS } from '@mocks/roles';
 import { QuestionNode } from '@/components/Canvas/fragments';
@@ -18,21 +16,13 @@ const onOperation = vi.fn();
 
 const unsubscribers: Array<() => void> = [];
 
-const blankQuestion = (): TCanvasNode => ({ ...questionNode('q'), data: { ...questionNode('q').data, label: '  ' } });
-
-const overflowLabels = () => {
-  Object.defineProperty(HTMLParagraphElement.prototype, 'scrollHeight', { configurable: true, value: 200 });
-  Object.defineProperty(HTMLParagraphElement.prototype, 'clientHeight', { configurable: true, value: 100 });
-};
-
 beforeEach(() => {
   stubResizeObserver();
 });
 
 afterEach(() => {
   unsubscribers.splice(0).forEach((unsubscribe) => unsubscribe());
-  Reflect.deleteProperty(HTMLParagraphElement.prototype, 'scrollHeight');
-  Reflect.deleteProperty(HTMLParagraphElement.prototype, 'clientHeight');
+  resetLabelOverflow();
   useCanvasStore.getState().clearCanvas();
   usePermissionsStore.getState().clearAccess();
 });
@@ -79,7 +69,7 @@ describe('QuestionNode', () => {
       beforeEach(() => {
         render(
           <ReactFlowProvider>
-            <QuestionNode {...nodeProps(blankQuestion())} />
+            <QuestionNode {...nodeProps(questionNode('q', '  '))} />
           </ReactFlowProvider>,
         );
       });
@@ -153,12 +143,12 @@ describe('QuestionNode', () => {
 
     beforeEach(() => {
       usePermissionsStore.getState().setAccess('ws-1', 'user-1', FULL_ACCESS);
-      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [blankQuestion()], edges: [] });
+      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [questionNode('q', '  ')], edges: [] });
       useCanvasStore.getState().setEditingNodeId('q');
       unsubscribers.push(subscribeCanvasOperations(onOperation));
       rerender = render(
         <ReactFlowProvider>
-          <QuestionNode {...nodeProps(blankQuestion())} width={0} height={0} />
+          <QuestionNode {...nodeProps(questionNode('q', '  '))} width={0} height={0} />
         </ReactFlowProvider>,
       ).rerender;
     });
@@ -175,7 +165,7 @@ describe('QuestionNode', () => {
       beforeEach(() => {
         rerender(
           <ReactFlowProvider>
-            <QuestionNode {...nodeProps(blankQuestion())} />
+            <QuestionNode {...nodeProps(questionNode('q', '  '))} />
           </ReactFlowProvider>,
         );
       });

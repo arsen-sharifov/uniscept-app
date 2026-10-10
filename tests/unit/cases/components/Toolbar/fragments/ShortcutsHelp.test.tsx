@@ -1,25 +1,12 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
-import { Hand, Undo2 } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
-import type { IToolGroup } from '@interfaces';
-
 import { TRANSLATIONS } from '@mocks/i18n';
+import { SHORTCUT_GROUPS } from '@mocks/toolbar';
 import { ShortcutsHelp } from '@/components/Toolbar/fragments';
 
 vi.mock('@/i18n', () => import('@mocks/i18n'));
-
-const GROUPS: IToolGroup[] = [
-  {
-    id: 'navigation',
-    label: 'Navigation',
-    tools: [
-      { id: 'pan', icon: Hand, label: 'Pan', shortcut: 'H' },
-      { id: 'undo', icon: Undo2, label: 'Undo', shortcut: '⌘⇧Z', kind: 'action' },
-    ],
-  },
-];
 
 const onClose = vi.fn();
 
@@ -30,14 +17,14 @@ const scrim = () => screen.getAllByRole('button', { hidden: true }).find((button
 const withTrigger = (open: boolean) => (
   <>
     <button type="button">Canvas</button>
-    <ShortcutsHelp open={open} groups={GROUPS} onClose={onClose} />
+    <ShortcutsHelp open={open} groups={SHORTCUT_GROUPS} onClose={onClose} />
   </>
 );
 
 describe('ShortcutsHelp', () => {
   describe('GIVEN the open sheet', () => {
     beforeEach(() => {
-      render(<ShortcutsHelp open groups={GROUPS} activeTool="pan" onClose={onClose} />);
+      render(<ShortcutsHelp open groups={SHORTCUT_GROUPS} activeTool="pan" onClose={onClose} />);
     });
 
     describe('WHEN it renders', () => {
@@ -106,7 +93,7 @@ describe('ShortcutsHelp', () => {
   describe('GIVEN the closed sheet', () => {
     describe('WHEN it renders', () => {
       beforeEach(() => {
-        render(<ShortcutsHelp open={false} groups={GROUPS} onClose={onClose} />);
+        render(<ShortcutsHelp open={false} groups={SHORTCUT_GROUPS} onClose={onClose} />);
       });
 
       test('THEN nothing is shown', () => {

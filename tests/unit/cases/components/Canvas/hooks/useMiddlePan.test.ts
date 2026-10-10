@@ -72,6 +72,16 @@ describe('useMiddlePan', () => {
       });
     });
 
+    describe('WHEN the left button is released', () => {
+      beforeEach(() => {
+        window.dispatchEvent(new MouseEvent('mouseup', { button: 0, cancelable: true }));
+      });
+
+      test('THEN the pan stays engaged', () => {
+        expect(useCanvasStore.getState().middlePan).toBe(true);
+      });
+    });
+
     describe('WHEN the window loses focus', () => {
       beforeEach(() => {
         window.dispatchEvent(new Event('blur'));

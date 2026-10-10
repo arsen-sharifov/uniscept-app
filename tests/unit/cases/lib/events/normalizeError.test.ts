@@ -1,8 +1,7 @@
 import { afterEach, beforeEach, describe, expect, test } from 'vitest';
 
+import { BOOM_ERROR } from '@mocks/events';
 import { normalizeError } from '@/lib/events/normalizeError';
-
-const BOOM = new Error('boom');
 
 afterEach(() => {
   Reflect.deleteProperty(window.navigator, 'onLine');
@@ -140,7 +139,7 @@ describe('normalizeError', () => {
   describe('GIVEN a plain error without markers', () => {
     describe('WHEN it is normalized', () => {
       test('THEN the category is unknown and the cause is preserved', () => {
-        expect(normalizeError(BOOM)).toEqual({ category: 'unknown', message: 'boom', cause: BOOM });
+        expect(normalizeError(BOOM_ERROR)).toEqual({ category: 'unknown', message: 'boom', cause: BOOM_ERROR });
       });
     });
   });

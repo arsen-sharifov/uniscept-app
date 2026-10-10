@@ -1,11 +1,9 @@
 import { describe, expect, test } from 'vitest';
 
 import { bareNode, measuredNode } from '@mocks/canvas';
+import { VIEW, MENU } from '@mocks/geometry';
 import { OVERLAY_VIEWPORT_MARGIN } from '@/components/Canvas/consts';
 import { clampToViewport, hasNodeOutsideView } from '@/components/Canvas/utils';
-
-const VIEW = { width: 800, height: 600 };
-const MENU = { width: 200, height: 120 };
 
 describe('hasNodeOutsideView', () => {
   describe('GIVEN nodes inside the visible area at the default viewport', () => {

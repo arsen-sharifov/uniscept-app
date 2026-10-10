@@ -286,7 +286,7 @@ export const sendInviteEmail = async (email: string, workspaceName: string): Pro
     data: {
       name: email.split('@')[0],
       workspaceName,
-      workspaceInitial: workspaceName.trim().charAt(0).toUpperCase(),
+      workspaceInitial: [...workspaceName.trim()][0]?.toUpperCase() ?? '',
       invitedByName: 'E2E Host',
     },
   });

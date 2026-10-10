@@ -1,7 +1,7 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { getSession, verifyInvitation } from '@mocks/authApi';
+import { getSession, sessionOf, verifyInvitation, VERIFIED_INVITATION, UNFINISHED_INVITEE } from '@mocks/authApi';
 import { event } from '@mocks/events';
 import { TRANSLATIONS } from '@mocks/i18n';
 import { router, searchParams } from '@mocks/navigation';
@@ -16,13 +16,6 @@ vi.mock('@api/client', async () => ({
 vi.mock('next/navigation', () => import('@mocks/navigation'));
 vi.mock('@/i18n', () => import('@mocks/i18n'));
 vi.mock('@/lib/events', () => import('@mocks/events'));
-
-const INVITED = { data: { user: { email: 'invitee@example.com' }, session: {} }, error: null };
-
-const sessionOf = (email: string | null) => ({
-  data: { session: email ? { user: { email } } : null },
-  error: null,
-});
 
 afterEach(() => {
   cleanup();
@@ -94,12 +87,7 @@ describe('JoinPage', () => {
 
   describe('GIVEN an invited session that reloads the page before finishing the setup', () => {
     beforeEach(() => {
-      getSession.mockResolvedValue({
-        data: {
-          session: { user: { email: 'invitee@example.com', invited_at: '2026-10-01T10:00:00Z', user_metadata: {} } },
-        },
-        error: null,
-      });
+      getSession.mockResolvedValue(sessionOf(UNFINISHED_INVITEE));
     });
 
     describe('WHEN the join page opens without a link', () => {
@@ -119,10 +107,9 @@ describe('JoinPage', () => {
 
   describe('GIVEN a finished account that opens the join page without a link', () => {
     beforeEach(() => {
-      getSession.mockResolvedValue({
-        data: { session: { user: { email: 'member@example.com', user_metadata: { name: 'Member', plan: 'beta' } } } },
-        error: null,
-      });
+      getSession.mockResolvedValue(
+        sessionOf({ email: 'member@example.com', user_metadata: { name: 'Member', plan: 'beta' } }),
+      );
     });
 
     describe('WHEN the join page opens', () => {
@@ -163,7 +150,7 @@ describe('JoinPage', () => {
 
     describe('WHEN the invitation is accepted', () => {
       beforeEach(async () => {
-        verifyInvitation.mockResolvedValue(INVITED);
+        verifyInvitation.mockResolvedValue(VERIFIED_INVITATION);
         await act(async () => {
           render(<JoinPage />);
         });
@@ -207,12 +194,7 @@ describe('JoinPage', () => {
   describe('GIVEN an invitee who accepted earlier but left before finishing the setup', () => {
     beforeEach(() => {
       searchParams.set('token_hash', 'hash-used');
-      getSession.mockResolvedValue({
-        data: {
-          session: { user: { email: 'invitee@example.com', invited_at: '2026-10-01T10:00:00Z', user_metadata: {} } },
-        },
-        error: null,
-      });
+      getSession.mockResolvedValue(sessionOf(UNFINISHED_INVITEE));
     });
 
     describe('WHEN they follow the emailed link again', () => {
@@ -235,18 +217,9 @@ describe('JoinPage', () => {
   describe('GIVEN an invitee who finished the setup and follows the emailed link again', () => {
     beforeEach(() => {
       searchParams.set('token_hash', 'hash-used');
-      getSession.mockResolvedValue({
-        data: {
-          session: {
-            user: {
-              email: 'invitee@example.com',
-              invited_at: '2026-10-01T10:00:00Z',
-              user_metadata: { name: 'Invitee', plan: 'beta' },
-            },
-          },
-        },
-        error: null,
-      });
+      getSession.mockResolvedValue(
+        sessionOf({ ...UNFINISHED_INVITEE, user_metadata: { name: 'Invitee', plan: 'beta' } }),
+      );
     });
 
     describe('WHEN the join page opens', () => {
@@ -266,7 +239,7 @@ describe('JoinPage', () => {
   describe('GIVEN someone already signed in who follows an emailed invitation link', () => {
     beforeEach(() => {
       searchParams.set('token_hash', 'hash-2');
-      getSession.mockResolvedValue(sessionOf('current@example.com'));
+      getSession.mockResolvedValue(sessionOf({ email: 'current@example.com' }));
     });
 
     describe('WHEN the join page opens', () => {
@@ -307,7 +280,7 @@ describe('JoinPage', () => {
 
       beforeEach(async () => {
         signOut.mockRejectedValue(failure);
-        verifyInvitation.mockResolvedValue(INVITED);
+        verifyInvitation.mockResolvedValue(VERIFIED_INVITATION);
         await act(async () => {
           render(<JoinPage />);
         });
@@ -327,7 +300,7 @@ describe('JoinPage', () => {
     describe('WHEN they sign out and accept', () => {
       beforeEach(async () => {
         signOut.mockResolvedValue(undefined);
-        verifyInvitation.mockResolvedValue(INVITED);
+        verifyInvitation.mockResolvedValue(VERIFIED_INVITATION);
         await act(async () => {
           render(<JoinPage />);
         });

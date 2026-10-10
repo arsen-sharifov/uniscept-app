@@ -10,7 +10,7 @@ import {
   updateFolderName,
 } from '@api/client';
 import { folderRow } from '@mocks/rows';
-import { NO_ROW_ERROR, primeSupabase } from '@mocks/supabase';
+import { NO_ROW_ERROR, positionReads, primeSupabase } from '@mocks/supabase';
 
 vi.mock('@/lib/supabase', () => import('@mocks/supabase'));
 
@@ -52,11 +52,7 @@ describe('createFolder', () => {
   describe('GIVEN a root folder in a workspace whose root holds folders and threads', () => {
     describe('WHEN the folder is created', () => {
       test('THEN the folder takes the position after the last root item of either kind', async () => {
-        const { queries } = primeSupabase([
-          { data: { position: 1 } },
-          { data: { position: 2 } },
-          { data: folderRow() },
-        ]);
+        const { queries } = primeSupabase([...positionReads(1, 2), { data: folderRow() }]);
         const is = vi.spyOn(queries[0]!, 'is');
 
         await expect(createFolder('ws-1')).resolves.toEqual({
@@ -80,8 +76,7 @@ describe('createFolder', () => {
     describe('WHEN the folder is created', () => {
       test('THEN the folder takes the position after the last item of the parent', async () => {
         const { queries } = primeSupabase([
-          { data: { position: 4 } },
-          { data: null },
+          ...positionReads(4, null),
           { data: folderRow({ parent_folder_id: 'folder-1' }) },
         ]);
         const eq = vi.spyOn(queries[0]!, 'eq');
@@ -101,7 +96,7 @@ describe('createFolder', () => {
   describe('GIVEN a name chosen up front', () => {
     describe('WHEN the folder is created', () => {
       test('THEN the name is written with the row instead of the default', async () => {
-        const { queries } = primeSupabase([{ data: null }, { data: null }, { data: folderRow({ name: 'Research' }) }]);
+        const { queries } = primeSupabase([...positionReads(null, null), { data: folderRow({ name: 'Research' }) }]);
 
         await expect(createFolder('ws-1', undefined, 'Research')).resolves.toMatchObject({ name: 'Research' });
         expect(queries[2]!.insert).toHaveBeenCalledExactlyOnceWith({
@@ -127,7 +122,7 @@ describe('createFolder', () => {
   describe('GIVEN a failing insert', () => {
     describe('WHEN the folder is created', () => {
       test('THEN the error propagates', async () => {
-        primeSupabase([{ data: null }, { data: null }, { error: new Error('db down') }]);
+        primeSupabase([...positionReads(null, null), { error: new Error('db down') }]);
 
         await expect(createFolder('ws-1')).rejects.toThrow('db down');
       });
@@ -137,7 +132,7 @@ describe('createFolder', () => {
   describe('GIVEN an insert that returns no row', () => {
     describe('WHEN the folder is created', () => {
       test('THEN nothing is returned', async () => {
-        primeSupabase([{ data: null }, { data: null }, { data: null }]);
+        primeSupabase([...positionReads(null, null), { data: null }]);
 
         await expect(createFolder('ws-1')).resolves.toBeNull();
       });

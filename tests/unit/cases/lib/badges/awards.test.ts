@@ -7,7 +7,14 @@ import { awardBadge, hydrateBadges, useBadgeStore } from '@/lib/badges';
 vi.mock('@api/client', () => import('@mocks/userApi'));
 vi.mock('@/lib/events', () => import('@mocks/events'));
 
-afterEach(() => useBadgeStore.getState().forget());
+beforeEach(() => {
+  vi.useFakeTimers();
+});
+
+afterEach(() => {
+  useBadgeStore.getState().forget();
+  vi.useRealTimers();
+});
 
 describe('awards', () => {
   describe('GIVEN stored badges with an unknown id', () => {
@@ -43,7 +50,7 @@ describe('awards', () => {
     describe('WHEN a new badge is awarded', () => {
       beforeEach(async () => {
         awardBadge('voice');
-        await vi.waitUntil(() => addUserBadge.mock.calls.length > 0);
+        await vi.advanceTimersByTimeAsync(0);
       });
 
       test('THEN it is earned, announced and saved', () => {
@@ -77,21 +84,39 @@ describe('awards', () => {
     });
 
     describe('WHEN two badges are awarded while the first save is still running', () => {
-      const firstSave = Promise.withResolvers<undefined>();
+      let releaseFirstSave: () => void;
 
       beforeEach(async () => {
+        const firstSave = Promise.withResolvers<undefined>();
+        releaseFirstSave = () => firstSave.resolve(undefined);
         addUserBadge.mockReturnValueOnce(firstSave.promise);
         awardBadge('voice');
         awardBadge('critic');
-        await vi.waitUntil(() => addUserBadge.mock.calls.length > 0);
+        await vi.advanceTimersByTimeAsync(0);
       });
 
-      test('THEN the second save waits for the first one', async () => {
+      afterEach(async () => {
+        releaseFirstSave();
+        await vi.advanceTimersByTimeAsync(0);
+      });
+
+      test('THEN only the first save has started', () => {
         expect(addUserBadge.mock.calls).toEqual([['voice']]);
+      });
+    });
 
+    describe('WHEN two badges are awarded and the first save then finishes', () => {
+      beforeEach(async () => {
+        const firstSave = Promise.withResolvers<undefined>();
+        addUserBadge.mockReturnValueOnce(firstSave.promise);
+        awardBadge('voice');
+        awardBadge('critic');
+        await vi.advanceTimersByTimeAsync(0);
         firstSave.resolve(undefined);
-        await vi.waitUntil(() => addUserBadge.mock.calls.length > 1);
+        await vi.advanceTimersByTimeAsync(0);
+      });
 
+      test('THEN the second save follows it', () => {
         expect(addUserBadge.mock.calls).toEqual([['voice'], ['critic']]);
       });
     });
@@ -103,7 +128,7 @@ describe('awards', () => {
         addUserBadge.mockRejectedValueOnce(saveError);
         awardBadge('voice');
         awardBadge('critic');
-        await vi.waitUntil(() => addUserBadge.mock.calls.length > 1);
+        await vi.advanceTimersByTimeAsync(0);
       });
 
       test('THEN the failure is logged without a toast and later saves still run', () => {
@@ -121,7 +146,7 @@ describe('awards', () => {
     describe('WHEN a badge is awarded', () => {
       beforeEach(async () => {
         awardBadge('collaborator');
-        await vi.waitUntil(() => addUserBadge.mock.calls.length > 0);
+        await vi.advanceTimersByTimeAsync(0);
       });
 
       test('THEN it is saved without being announced', () => {

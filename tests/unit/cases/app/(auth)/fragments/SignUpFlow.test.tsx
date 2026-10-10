@@ -121,6 +121,22 @@ describe('SignUpFlow', () => {
       });
     });
 
+    describe('WHEN they go back after a wrong invite code', () => {
+      beforeEach(async () => {
+        verifyInviteCode.mockResolvedValue(false);
+        await act(async () => {
+          fireEvent.submit(accountForm(TRANSLATIONS.auth.signUp.accountStep.submit));
+        });
+        fireEvent.click(screen.getByRole('button', { name: TRANSLATIONS.auth.signUp.accountStep.back }));
+      });
+
+      test('THEN the plan step returns without the account form or the code error', () => {
+        expect(screen.getByRole('heading', { name: TRANSLATIONS.auth.signUp.planStep.heading })).toBeVisible();
+        expect(screen.queryByLabelText(TRANSLATIONS.auth.signUp.accountStep.password)).toBeNull();
+        expect(screen.queryByRole('alert')).toBeNull();
+      });
+    });
+
     describe('WHEN the invite code check fails on the server', () => {
       beforeEach(async () => {
         verifyInviteCode.mockRejectedValue(new Error('network down'));

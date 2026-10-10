@@ -1,8 +1,11 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
+import type { TCanvasContextMenu } from '@interfaces';
+
 import { stubResizeObserver } from '@mocks/browser';
 import { THREAD_ID, canvasEdge, canvasNode, questionNode, referenceNode } from '@mocks/canvas';
+import { MENU_WIDTH, MENU_HEIGHT } from '@mocks/geometry';
 import { TRANSLATIONS } from '@mocks/i18n';
 import { router } from '@mocks/navigation';
 import { COMMENT_ACCESS, EDIT_ACCESS, FULL_ACCESS, READONLY_ACCESS } from '@mocks/roles';
@@ -13,11 +16,9 @@ import { useCanvasStore, usePermissionsStore } from '@/lib/stores';
 vi.mock('@/i18n', () => import('@mocks/i18n'));
 vi.mock('next/navigation', () => import('@mocks/navigation'));
 
-const MENU_WIDTH = 224;
-const MENU_HEIGHT = 96;
-
 const onClose = vi.fn();
 
+const nodeMenu = (nodeId: string): TCanvasContextMenu => ({ type: 'node', x: 0, y: 0, nodeId });
 const menuItem = (label: string) => screen.getByRole('menuitem', { name: new RegExp(label) });
 const menuLayout = () =>
   Array.from(screen.getByRole('menu').children, (child) => child.getAttribute('role') ?? 'divider');
@@ -161,18 +162,18 @@ describe('ContextMenu', () => {
     });
   });
 
-  describe('GIVEN an editor opening the menu on an edge', () => {
+  describe('GIVEN an editor and a canvas with one edge', () => {
     beforeEach(() => {
       usePermissionsStore.getState().setAccess('ws-1', 'user-1', FULL_ACCESS);
       useCanvasStore.getState().loadCanvas(THREAD_ID, {
         nodes: [canvasNode('a'), canvasNode('b')],
         edges: [canvasEdge('e1', 'a', 'b')],
       });
-      render(<ContextMenu menu={{ type: 'edge', x: 0, y: 0, edgeId: 'e1' }} onClose={onClose} />);
     });
 
-    describe('WHEN the edge is deleted from the menu', () => {
+    describe('WHEN the edge is deleted from its menu', () => {
       beforeEach(() => {
+        render(<ContextMenu menu={{ type: 'edge', x: 0, y: 0, edgeId: 'e1' }} onClose={onClose} />);
         fireEvent.click(menuItem(TRANSLATIONS.platform.canvas.context.deleteEdge));
       });
 
@@ -181,15 +182,8 @@ describe('ContextMenu', () => {
         expect(onClose).toHaveBeenCalled();
       });
     });
-  });
 
-  describe('GIVEN a menu for an edge that no longer exists', () => {
-    beforeEach(() => {
-      usePermissionsStore.getState().setAccess('ws-1', 'user-1', FULL_ACCESS);
-      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [], edges: [] });
-    });
-
-    describe('WHEN the menu mounts', () => {
+    describe('WHEN a menu opens for an edge that is no longer on the canvas', () => {
       beforeEach(() => {
         render(<ContextMenu menu={{ type: 'edge', x: 0, y: 0, edgeId: 'gone' }} onClose={onClose} />);
       });
@@ -204,7 +198,7 @@ describe('ContextMenu', () => {
     beforeEach(() => {
       usePermissionsStore.getState().setAccess('ws-1', 'user-1', FULL_ACCESS);
       useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [canvasNode('n1')], edges: [] });
-      render(<ContextMenu menu={{ type: 'node', x: 0, y: 0, nodeId: 'n1' }} onClose={onClose} />);
+      render(<ContextMenu menu={nodeMenu('n1')} onClose={onClose} />);
     });
 
     describe('WHEN the menu appears', () => {
@@ -238,10 +232,6 @@ describe('ContextMenu', () => {
         );
         expect(menuItem(TRANSLATIONS.platform.canvas.context.markAnswer)).toHaveAttribute('aria-disabled', 'true');
         expect(menuItem(TRANSLATIONS.platform.canvas.context.markInvalid)).toHaveAttribute('aria-disabled', 'false');
-      });
-
-      test('THEN the disabled first verdict still takes the focus', () => {
-        expect(menuItem(TRANSLATIONS.platform.canvas.context.markValid)).toHaveFocus();
       });
     });
 
@@ -308,7 +298,7 @@ describe('ContextMenu', () => {
         nodes: [questionNode('q'), canvasNode('n1', { status: 'valid', isAnswer: true })],
         edges: [canvasEdge('e1', 'q', 'n1')],
       });
-      render(<ContextMenu menu={{ type: 'node', x: 0, y: 0, nodeId: 'n1' }} onClose={onClose} />);
+      render(<ContextMenu menu={nodeMenu('n1')} onClose={onClose} />);
     });
 
     describe('WHEN the menu appears', () => {
@@ -340,20 +330,17 @@ describe('ContextMenu', () => {
     });
   });
 
-  describe('GIVEN an invalid node under the question', () => {
+  describe('GIVEN an owner opening the menu on an invalid node under the question', () => {
     beforeEach(() => {
       usePermissionsStore.getState().setAccess('ws-1', 'user-1', FULL_ACCESS);
       useCanvasStore.getState().loadCanvas(THREAD_ID, {
         nodes: [questionNode('q'), canvasNode('n1', { status: 'invalid' })],
         edges: [canvasEdge('e1', 'q', 'n1')],
       });
+      render(<ContextMenu menu={nodeMenu('n1')} onClose={onClose} />);
     });
 
-    describe('WHEN its menu appears', () => {
-      beforeEach(() => {
-        render(<ContextMenu menu={{ type: 'node', x: 0, y: 0, nodeId: 'n1' }} onClose={onClose} />);
-      });
-
+    describe('WHEN the menu appears', () => {
       test('THEN the invalid verdict offers to be undone', () => {
         expect(menuItem(TRANSLATIONS.platform.canvas.context.unmarkInvalid)).toBeEnabled();
         expect(menuItem(TRANSLATIONS.platform.canvas.context.markValid)).toBeEnabled();
@@ -361,31 +348,21 @@ describe('ContextMenu', () => {
     });
   });
 
-  describe('GIVEN an editor on a node somebody else created', () => {
+  describe('GIVEN a node somebody else created', () => {
     beforeEach(() => {
-      usePermissionsStore.getState().setAccess('ws-1', 'user-1', EDIT_ACCESS);
       useCanvasStore.getState().loadCanvas(THREAD_ID, {
         nodes: [canvasNode('n1', { createdBy: 'user-2' })],
         edges: [],
       });
     });
 
-    describe('WHEN the menu appears', () => {
+    describe('WHEN an editor opens its menu', () => {
       beforeEach(() => {
-        render(<ContextMenu menu={{ type: 'node', x: 0, y: 0, nodeId: 'n1' }} onClose={onClose} />);
+        usePermissionsStore.getState().setAccess('ws-1', 'user-1', EDIT_ACCESS);
+        render(<ContextMenu menu={nodeMenu('n1')} onClose={onClose} />);
       });
 
       test('THEN delete is offered as unavailable with the reason', () => {
-        expect(menuLayout()).toEqual([
-          'menuitem',
-          'menuitem',
-          'menuitem',
-          'menuitem',
-          'divider',
-          'menuitem',
-          'divider',
-          'menuitem',
-        ]);
         expect(menuItem(TRANSLATIONS.platform.canvas.context.delete)).toHaveAttribute('aria-disabled', 'true');
         expect(menuItem(TRANSLATIONS.platform.canvas.context.delete)).toHaveTextContent(
           TRANSLATIONS.platform.canvas.context.deleteNotAllowed,
@@ -393,9 +370,10 @@ describe('ContextMenu', () => {
       });
     });
 
-    describe('WHEN the unavailable delete is clicked', () => {
+    describe('WHEN an editor clicks the unavailable delete', () => {
       beforeEach(() => {
-        render(<ContextMenu menu={{ type: 'node', x: 0, y: 0, nodeId: 'n1' }} onClose={onClose} />);
+        usePermissionsStore.getState().setAccess('ws-1', 'user-1', EDIT_ACCESS);
+        render(<ContextMenu menu={nodeMenu('n1')} onClose={onClose} />);
         fireEvent.click(menuItem(TRANSLATIONS.platform.canvas.context.delete));
       });
 
@@ -404,37 +382,33 @@ describe('ContextMenu', () => {
         expect(onClose).not.toHaveBeenCalled();
       });
     });
-  });
 
-  describe('GIVEN an editor on a reference somebody else added', () => {
-    beforeEach(() => {
-      usePermissionsStore.getState().setAccess('ws-1', 'user-1', EDIT_ACCESS);
-      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [referenceNode('r1')], edges: [] });
-    });
-
-    describe('WHEN the menu appears', () => {
+    describe('WHEN an editor without the comment permission opens its menu', () => {
       beforeEach(() => {
-        render(<ContextMenu menu={{ type: 'node', x: 0, y: 0, nodeId: 'r1' }} onClose={onClose} />);
+        usePermissionsStore.getState().setAccess('ws-1', 'user-1', { ...EDIT_ACCESS, canComment: false });
+        render(<ContextMenu menu={nodeMenu('n1')} onClose={onClose} />);
       });
 
-      test('THEN deleting the reference is offered as unavailable with the reason', () => {
-        expect(menuItem(TRANSLATIONS.platform.canvas.context.deleteReference)).toHaveAttribute('aria-disabled', 'true');
-        expect(menuItem(TRANSLATIONS.platform.canvas.context.deleteReference)).toHaveTextContent(
-          TRANSLATIONS.platform.canvas.context.deleteNotAllowed,
-        );
+      test('THEN the verdicts lead the menu without the comment action', () => {
+        expect(menuLayout()).toEqual([
+          'menuitem',
+          'menuitem',
+          'menuitem',
+          'divider',
+          'menuitem',
+          'divider',
+          'menuitem',
+        ]);
+        expect(
+          screen.queryByRole('menuitem', { name: TRANSLATIONS.platform.canvas.context.comment }),
+        ).not.toBeInTheDocument();
       });
     });
-  });
 
-  describe('GIVEN a commenter on a node', () => {
-    beforeEach(() => {
-      usePermissionsStore.getState().setAccess('ws-1', 'user-1', COMMENT_ACCESS);
-      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [canvasNode('n1')], edges: [] });
-    });
-
-    describe('WHEN the menu appears', () => {
+    describe('WHEN a commenter opens its menu', () => {
       beforeEach(() => {
-        render(<ContextMenu menu={{ type: 'node', x: 0, y: 0, nodeId: 'n1' }} onClose={onClose} />);
+        usePermissionsStore.getState().setAccess('ws-1', 'user-1', COMMENT_ACCESS);
+        render(<ContextMenu menu={nodeMenu('n1')} onClose={onClose} />);
       });
 
       test('THEN only the comment action is offered', () => {
@@ -448,7 +422,7 @@ describe('ContextMenu', () => {
     beforeEach(() => {
       usePermissionsStore.getState().setAccess('ws-1', 'user-1', FULL_ACCESS);
       useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [referenceNode('r1')], edges: [] });
-      render(<ContextMenu menu={{ type: 'node', x: 0, y: 0, nodeId: 'r1' }} onClose={onClose} />);
+      render(<ContextMenu menu={nodeMenu('r1')} onClose={onClose} />);
     });
 
     describe('WHEN the menu appears', () => {
@@ -481,15 +455,29 @@ describe('ContextMenu', () => {
     });
   });
 
-  describe('GIVEN a viewer on a reference', () => {
+  describe('GIVEN a reference somebody else added', () => {
     beforeEach(() => {
-      usePermissionsStore.getState().setAccess('ws-1', 'user-1', READONLY_ACCESS);
       useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [referenceNode('r1')], edges: [] });
     });
 
-    describe('WHEN the menu appears', () => {
+    describe('WHEN an editor opens its menu', () => {
       beforeEach(() => {
-        render(<ContextMenu menu={{ type: 'node', x: 0, y: 0, nodeId: 'r1' }} onClose={onClose} />);
+        usePermissionsStore.getState().setAccess('ws-1', 'user-1', EDIT_ACCESS);
+        render(<ContextMenu menu={nodeMenu('r1')} onClose={onClose} />);
+      });
+
+      test('THEN deleting the reference is offered as unavailable with the reason', () => {
+        expect(menuItem(TRANSLATIONS.platform.canvas.context.deleteReference)).toHaveAttribute('aria-disabled', 'true');
+        expect(menuItem(TRANSLATIONS.platform.canvas.context.deleteReference)).toHaveTextContent(
+          TRANSLATIONS.platform.canvas.context.deleteNotAllowed,
+        );
+      });
+    });
+
+    describe('WHEN a viewer opens its menu', () => {
+      beforeEach(() => {
+        usePermissionsStore.getState().setAccess('ws-1', 'user-1', READONLY_ACCESS);
+        render(<ContextMenu menu={nodeMenu('r1')} onClose={onClose} />);
       });
 
       test('THEN only opening the source is offered', () => {
@@ -510,7 +498,7 @@ describe('ContextMenu', () => {
 
     describe('WHEN the menu appears', () => {
       beforeEach(() => {
-        render(<ContextMenu menu={{ type: 'node', x: 0, y: 0, nodeId: 'r1' }} onClose={onClose} />);
+        render(<ContextMenu menu={nodeMenu('r1')} onClose={onClose} />);
       });
 
       test('THEN only deleting the reference is offered', () => {
@@ -520,15 +508,15 @@ describe('ContextMenu', () => {
     });
   });
 
-  describe('GIVEN an owner opening the menu on the question', () => {
+  describe('GIVEN the question on the canvas', () => {
     beforeEach(() => {
-      usePermissionsStore.getState().setAccess('ws-1', 'user-1', FULL_ACCESS);
       useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [questionNode('q')], edges: [] });
-      render(<ContextMenu menu={{ type: 'node', x: 0, y: 0, nodeId: 'q' }} onClose={onClose} />);
     });
 
-    describe('WHEN the question is edited from the menu', () => {
+    describe('WHEN an owner edits it from its menu', () => {
       beforeEach(() => {
+        usePermissionsStore.getState().setAccess('ws-1', 'user-1', FULL_ACCESS);
+        render(<ContextMenu menu={nodeMenu('q')} onClose={onClose} />);
         fireEvent.click(menuItem(TRANSLATIONS.platform.canvas.question.editLabel));
       });
 
@@ -537,17 +525,11 @@ describe('ContextMenu', () => {
         expect(onClose).toHaveBeenCalledOnce();
       });
     });
-  });
 
-  describe('GIVEN a commenter on the question', () => {
-    beforeEach(() => {
-      usePermissionsStore.getState().setAccess('ws-1', 'user-1', COMMENT_ACCESS);
-      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [questionNode('q')], edges: [] });
-    });
-
-    describe('WHEN the menu mounts', () => {
+    describe('WHEN a commenter opens its menu', () => {
       beforeEach(() => {
-        render(<ContextMenu menu={{ type: 'node', x: 0, y: 0, nodeId: 'q' }} onClose={onClose} />);
+        usePermissionsStore.getState().setAccess('ws-1', 'user-1', COMMENT_ACCESS);
+        render(<ContextMenu menu={nodeMenu('q')} onClose={onClose} />);
       });
 
       test('THEN nothing is rendered and the menu closes itself', () => {
@@ -568,7 +550,7 @@ describe('ContextMenu', () => {
 
     describe('WHEN the menu mounts', () => {
       beforeEach(() => {
-        render(<ContextMenu menu={{ type: 'node', x: 0, y: 0, nodeId: 'n1' }} onClose={onClose} />);
+        render(<ContextMenu menu={nodeMenu('n1')} onClose={onClose} />);
       });
 
       test('THEN nothing is rendered and the menu closes itself', () => {

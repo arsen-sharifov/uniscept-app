@@ -2,6 +2,9 @@ import { vi } from 'vitest';
 
 import type { IFolder, IInlineEdit, IMyInvitation, IThread, IWorkspaceItem, TNavItem } from '@interfaces';
 
+import { TRANSLATIONS } from '@mocks/i18n';
+import { flattenTree } from '@/components/Sidebar/utils';
+
 export const SELECTION_ITEMS = [{ id: 'a' }, { id: 'b' }, { id: 'c' }, { id: 'd' }, { id: 'e' }];
 
 export const RENAME_ITEMS = [
@@ -72,3 +75,67 @@ export const inlineEdit = (overrides: Partial<IInlineEdit> = {}): IInlineEdit =>
   handleKeyDown: vi.fn(),
   ...overrides,
 });
+
+export const INITIAL_TREE: TNavItem[] = [threadItem('t1'), folderItem('f1', [threadItem('t2')])];
+
+export const NESTED_FOLDER_TREE = [
+  folderItem('f1', [folderItem('f2', [threadItem('t1')])]),
+  folderItem('f3'),
+  threadItem('t2'),
+];
+
+export const MIXED_TREE = [folderItem('f1', [threadItem('t1')]), folderItem('f2'), threadItem('t2')];
+
+export const BRANCHING_TREE = [
+  folderItem('f1', [folderItem('f2', [threadItem('t1')]), threadItem('t2')]),
+  threadItem('t3'),
+];
+
+export const FOLDER_THREADS_TREE: TNavItem[] = [
+  folderItem('f1', [threadItem('t1'), threadItem('t2')]),
+  threadItem('t3'),
+  threadItem('t4'),
+];
+
+export const BULK_TREE: TNavItem[] = [
+  folderItem('f1', [threadItem('t1')]),
+  folderItem('f2', [threadItem('t2')]),
+  threadItem('t3'),
+];
+
+export const DEEP_TREE: TNavItem[] = [
+  folderItem('f1', [threadItem('t1')]),
+  folderItem('fD', [folderItem('fE')]),
+  threadItem('t3'),
+  threadItem('t4'),
+];
+
+export const DEEP_LAST_TREE: TNavItem[] = [folderItem('fD', [folderItem('fE')]), folderItem('f1', [threadItem('t1')])];
+
+export const FLAT_TREE: TNavItem[] = [
+  threadItem('t1'),
+  threadItem('t2'),
+  threadItem('t3'),
+  threadItem('t4'),
+  threadItem('t5'),
+];
+
+export const BULK_SELECTED = new Set(['f1', 'f2']);
+export const SIDE_SELECTED = new Set(['t2', 't3']);
+export const SPREAD_SELECTED = new Set(['t2', 't4']);
+
+export const MIXED_ROWS = flattenTree(
+  [folderItem('f1', [threadItem('t1')]), folderItem('f2'), threadItem('t2', true)],
+  new Set(),
+);
+
+export const BRANCHING_ROWS = flattenTree(BRANCHING_TREE, new Set());
+
+export const MOVE_TARGET_NAMES = [TRANSLATIONS.platform.sidebar.rootLevel, 'Folder f1', 'Folder f2', 'Folder f3'];
+
+export const BASE_WORKSPACES = [workspaceItem('ws-1')];
+
+export const PLAIN_CLICK = { shiftKey: false, ctrlKey: false, metaKey: false };
+export const CTRL_CLICK = { ...PLAIN_CLICK, ctrlKey: true };
+export const META_CLICK = { ...PLAIN_CLICK, metaKey: true };
+export const SHIFT_CLICK = { ...PLAIN_CLICK, shiftKey: true };

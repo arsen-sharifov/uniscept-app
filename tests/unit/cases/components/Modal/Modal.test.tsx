@@ -128,6 +128,28 @@ describe('Modal', () => {
         expect(screen.getByRole('button', { name: 'Open' })).toHaveFocus();
       });
     });
+
+    describe('WHEN it closes and its fade-out ends', () => {
+      beforeEach(() => {
+        rerender(withTrigger(false));
+        fireEvent.transitionEnd(screen.getByRole('dialog').parentElement!);
+      });
+
+      test('THEN the dialog leaves the page', () => {
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      });
+    });
+
+    describe('WHEN it closes and only the panel finishes its transition', () => {
+      beforeEach(() => {
+        rerender(withTrigger(false));
+        fireEvent.transitionEnd(screen.getByRole('dialog'));
+      });
+
+      test('THEN the dialog stays until the fade-out ends', () => {
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
+      });
+    });
   });
 
   describe('GIVEN a modal labelled as an alert dialog', () => {

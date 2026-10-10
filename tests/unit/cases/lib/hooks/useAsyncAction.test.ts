@@ -3,11 +3,9 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { SUCCESS_RESET_DELAY_MS } from '@constants';
 import { useAsyncAction } from '@hooks';
-import { event } from '@/lib/events';
+import { event, BOOM_ERROR } from '@mocks/events';
 
 vi.mock('@/lib/events', () => import('@mocks/events'));
-
-const FAILURE = new Error('boom');
 
 let hook: RenderHookResult<ReturnType<typeof useAsyncAction>, unknown>;
 let pending: Promise<void>;
@@ -67,32 +65,6 @@ describe('useAsyncAction', () => {
       });
     });
 
-    describe('WHEN it runs again just before the success reset elapses', () => {
-      beforeEach(async () => {
-        await act(async () => hook.result.current.run(async () => {}, 'Save failed'));
-        act(() => vi.advanceTimersByTime(SUCCESS_RESET_DELAY_MS - 1));
-        await act(async () => hook.result.current.run(async () => {}, 'Save failed'));
-        act(() => vi.advanceTimersByTime(SUCCESS_RESET_DELAY_MS - 1));
-      });
-
-      test('THEN the reset timer restarts', () => {
-        expect(hook.result.current.success).toBe(true);
-      });
-    });
-
-    describe('WHEN it runs again just before the success reset elapses and the restarted reset elapses', () => {
-      beforeEach(async () => {
-        await act(async () => hook.result.current.run(async () => {}, 'Save failed'));
-        act(() => vi.advanceTimersByTime(SUCCESS_RESET_DELAY_MS - 1));
-        await act(async () => hook.result.current.run(async () => {}, 'Save failed'));
-        act(() => vi.advanceTimersByTime(SUCCESS_RESET_DELAY_MS));
-      });
-
-      test('THEN success turns off', () => {
-        expect(hook.result.current.success).toBe(false);
-      });
-    });
-
     describe('WHEN the hook unmounts after the success', () => {
       beforeEach(async () => {
         await act(async () => hook.result.current.run(async () => {}, 'Save failed'));
@@ -105,18 +77,49 @@ describe('useAsyncAction', () => {
     });
   });
 
+  describe('GIVEN a success that runs again just before its reset elapses', () => {
+    beforeEach(async () => {
+      await act(async () => hook.result.current.run(async () => {}, 'Save failed'));
+      act(() => vi.advanceTimersByTime(SUCCESS_RESET_DELAY_MS - 1));
+      await act(async () => hook.result.current.run(async () => {}, 'Save failed'));
+    });
+
+    describe('WHEN almost the whole delay passes again', () => {
+      beforeEach(() => {
+        act(() => vi.advanceTimersByTime(SUCCESS_RESET_DELAY_MS - 1));
+      });
+
+      test('THEN success stays on because the reset timer restarted', () => {
+        expect(hook.result.current.success).toBe(true);
+      });
+    });
+
+    describe('WHEN the whole delay passes again', () => {
+      beforeEach(() => {
+        act(() => vi.advanceTimersByTime(SUCCESS_RESET_DELAY_MS));
+      });
+
+      test('THEN success turns off', () => {
+        expect(hook.result.current.success).toBe(false);
+      });
+    });
+  });
+
   describe('GIVEN an action that the backend rejects', () => {
     describe('WHEN it runs', () => {
       beforeEach(async () => {
         await act(async () =>
           hook.result.current.run(async () => {
-            throw FAILURE;
+            throw BOOM_ERROR;
           }, 'Save failed'),
         );
       });
 
       test('THEN the failure is toasted under the given title instead of shown inline', () => {
-        expect(event.error).toHaveBeenCalledExactlyOnceWith(FAILURE, { title: 'Save failed', context: 'asyncAction' });
+        expect(event.error).toHaveBeenCalledExactlyOnceWith(BOOM_ERROR, {
+          title: 'Save failed',
+          context: 'asyncAction',
+        });
         expect(hook.result.current).toMatchObject({ loading: false, success: false, error: null });
       });
     });

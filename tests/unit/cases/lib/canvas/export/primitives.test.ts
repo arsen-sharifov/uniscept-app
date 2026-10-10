@@ -2,10 +2,11 @@ import { beforeEach, describe, expect, test, vi, type Mock } from 'vitest';
 
 import type { ICanvasExportContext } from '@interfaces';
 
-import { NESTED_CSS_LIST, OKLCH_COLOR, SRGB_WASH_COLOR } from '@mocks/canvasExport';
+import { NESTED_CSS_LIST, OKLCH_COLOR, SRGB_WASH_COLOR, SAMPLED_COLOR } from '@mocks/canvasExport';
 import { colorContext, definitionContext, scratchContext } from '@mocks/canvasExportDom';
 import {
   defineOnce,
+  getCanvasContext,
   parseCssColor,
   resolveExportColor,
   splitCssList,
@@ -13,9 +14,21 @@ import {
   toXmlText,
 } from '@/lib/canvas/export';
 
-const SAMPLED_COLOR = 'rgba(250, 250, 245, 1)';
-
 let context: ICanvasExportContext;
+
+describe('getCanvasContext', () => {
+  describe('GIVEN a browser without 2D canvas rendering', () => {
+    beforeEach(() => {
+      vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
+    });
+
+    describe('WHEN a drawing context is asked for', () => {
+      test('THEN the export stops with a clear error', () => {
+        expect(() => getCanvasContext(document.createElement('canvas'))).toThrow('Canvas rendering is unavailable');
+      });
+    });
+  });
+});
 
 describe('splitCssList', () => {
   describe('GIVEN a comma-separated list whose items contain nested function calls', () => {

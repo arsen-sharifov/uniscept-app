@@ -14,6 +14,8 @@ import {
   getAdminClient,
   getRoleId,
   getUserClient,
+  readPreferences,
+  rolePermissionParams,
   seedAccount,
   seedNode,
   seedThread,
@@ -44,8 +46,8 @@ afterAll(async () => {
 });
 
 describe('seed_workspace_roles', () => {
-  describe('GIVEN a visitor without a session', () => {
-    describe('WHEN they seed roles on an existing workspace', () => {
+  describe('GIVEN an existing workspace', () => {
+    describe('WHEN a visitor without a session seeds its roles', () => {
       let response: IIntegrationResponse;
 
       beforeEach(async () => {
@@ -57,11 +59,24 @@ describe('seed_workspace_roles', () => {
         expect(response.error?.message).toMatch(/permission denied for function/);
       });
     });
+
+    describe('WHEN a signed-in account seeds its roles', () => {
+      let response: IIntegrationResponse;
+
+      beforeEach(async () => {
+        response = await strangerClient.rpc('seed_workspace_roles', { p_workspace_id: workspace.id });
+      });
+
+      test('THEN execution is denied', () => {
+        expect(response.error?.code).toBe('42501');
+        expect(response.error?.message).toMatch(/permission denied for function/);
+      });
+    });
   });
 });
 
 describe('canvas_node_workspace_id', () => {
-  describe('GIVEN a node of the workspace and a visitor without a session', () => {
+  describe('GIVEN a node of the workspace', () => {
     let nodeId: string;
 
     beforeEach(async () => {
@@ -69,11 +84,24 @@ describe('canvas_node_workspace_id', () => {
       nodeId = await seedNode(thread.id, owner.id);
     });
 
-    describe('WHEN they resolve the workspace of the node', () => {
+    describe('WHEN a visitor without a session resolves the workspace of the node', () => {
       let response: IIntegrationResponse;
 
       beforeEach(async () => {
         response = await anonClient.rpc('canvas_node_workspace_id', { p_node_id: nodeId });
+      });
+
+      test('THEN execution is denied', () => {
+        expect(response.error?.code).toBe('42501');
+        expect(response.error?.message).toMatch(/permission denied for function/);
+      });
+    });
+
+    describe('WHEN a signed-in account outside the workspace resolves the workspace of the node', () => {
+      let response: IIntegrationResponse;
+
+      beforeEach(async () => {
+        response = await strangerClient.rpc('canvas_node_workspace_id', { p_node_id: nodeId });
       });
 
       test('THEN execution is denied', () => {
@@ -92,12 +120,14 @@ describe('can_grant_permissions', () => {
       beforeEach(async () => {
         response = await strangerClient.rpc('can_grant_permissions', {
           p_workspace_id: workspace.id,
-          p_can_edit_canvas: true,
-          p_can_comment: true,
-          p_can_manage_structure: true,
-          p_can_manage_members: true,
-          p_can_manage_roles: true,
-          p_can_manage_workspace: true,
+          ...rolePermissionParams({
+            canEditCanvas: true,
+            canComment: true,
+            canManageStructure: true,
+            canManageMembers: true,
+            canManageRoles: true,
+            canManageWorkspace: true,
+          }),
         });
       });
 
@@ -266,23 +296,6 @@ describe('node_comments', () => {
   });
 });
 
-describe('workspace_roles', () => {
-  describe('GIVEN a visitor without a session', () => {
-    describe('WHEN they insert a role', () => {
-      let response: IIntegrationResponse;
-
-      beforeEach(async () => {
-        response = await anonClient.from('workspace_roles').insert({ workspace_id: workspace.id, name: 'anon' });
-      });
-
-      test('THEN the table privilege is missing', () => {
-        expect(response.error?.code).toBe('42501');
-        expect(response.error?.message).toMatch(/permission denied for table/);
-      });
-    });
-  });
-});
-
 describe('workspace_members', () => {
   describe('GIVEN a signed-in account outside the workspace', () => {
     describe('WHEN it inserts itself as a member', () => {
@@ -316,6 +329,46 @@ describe('user_preferences', () => {
       test('THEN the foreign row is hidden', () => {
         expect(response.error).toBeNull();
         expect(response.data!.map((row) => row.user_id)).not.toContain(owner.id);
+      });
+    });
+
+    describe('WHEN another account writes preferences in its name', () => {
+      let response: IIntegrationResponse;
+
+      beforeEach(async () => {
+        response = await strangerClient.from('user_preferences').insert({ user_id: owner.id, theme: 'aurora' });
+      });
+
+      test('THEN the insert is denied by row level security', () => {
+        expect(response.error?.code).toBe('42501');
+      });
+    });
+
+    describe('WHEN the account changes its own theme', () => {
+      let response: IIntegrationResponse;
+
+      beforeEach(async () => {
+        response = await ownerClient.from('user_preferences').update({ theme: 'tide' }).eq('user_id', owner.id);
+      });
+
+      test('THEN the new theme is persisted', async () => {
+        expect(response.error).toBeNull();
+        await expect(readPreferences(owner.id)).resolves.toEqual({ theme: 'tide' });
+      });
+    });
+  });
+
+  describe('GIVEN a visitor without a session', () => {
+    describe('WHEN they write preferences in the name of an account', () => {
+      let response: IIntegrationResponse;
+
+      beforeEach(async () => {
+        response = await anonClient.from('user_preferences').insert({ user_id: stranger.id, theme: 'aurora' });
+      });
+
+      test('THEN the table privilege is missing', () => {
+        expect(response.error?.code).toBe('42501');
+        expect(response.error?.message).toMatch(/permission denied for table/);
       });
     });
   });

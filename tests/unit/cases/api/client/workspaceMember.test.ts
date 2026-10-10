@@ -58,7 +58,6 @@ describe('setMemberRole', () => {
     describe('WHEN the member role is set', () => {
       test('THEN the rpc receives the workspace, user and role ids', async () => {
         const { client } = primeSupabase([]);
-        vi.mocked(client.rpc).mockResolvedValue({ data: null, error: null });
 
         await setMemberRole('ws-1', 'user-1', 'role-1');
 
@@ -88,7 +87,6 @@ describe('removeWorkspaceMember', () => {
     describe('WHEN the member is removed', () => {
       test('THEN the rpc receives the workspace and user ids', async () => {
         const { client } = primeSupabase([]);
-        vi.mocked(client.rpc).mockResolvedValue({ data: null, error: null });
 
         await removeWorkspaceMember('ws-1', 'user-1');
 
@@ -117,7 +115,6 @@ describe('transferWorkspaceOwnership', () => {
     describe('WHEN the ownership is transferred', () => {
       test('THEN the rpc receives the workspace and new owner ids', async () => {
         const { client } = primeSupabase([]);
-        vi.mocked(client.rpc).mockResolvedValue({ data: null, error: null });
 
         await transferWorkspaceOwnership('ws-1', 'user-2');
 

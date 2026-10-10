@@ -2,12 +2,10 @@ import { describe, expect, test, vi } from 'vitest';
 
 import { ECanvasNodeType } from '@interfaces';
 import { countReferenceTargets, getCanvasContent, IDS_PER_REQUEST, searchReferenceTargets } from '@api/client';
-import { canvasEdgeRow, canvasNodeRow, canvasNodeWithThreadRow, nodeCommentRow } from '@mocks/rows';
+import { canvasEdgeRow, canvasNodeRow, canvasNodeWithThreadRow, nodeCommentRow, THREAD_ROW } from '@mocks/rows';
 import { primeSupabase } from '@mocks/supabase';
 
 vi.mock('@/lib/supabase', () => import('@mocks/supabase'));
-
-const THREAD_ROW = { data: { id: 'th-1' } };
 
 describe('getCanvasContent', () => {
   describe('GIVEN a thread with a canvas node, a reference node and a comment', () => {
@@ -267,6 +265,16 @@ describe('searchReferenceTargets', () => {
         await searchReferenceTargets('ws-1');
 
         expect(neq).not.toHaveBeenCalled();
+      });
+    });
+  });
+
+  describe('GIVEN a failing search query', () => {
+    describe('WHEN reference targets are searched', () => {
+      test('THEN the error is rethrown', async () => {
+        primeSupabase([{ error: new Error('db down') }]);
+
+        await expect(searchReferenceTargets('ws-1')).rejects.toThrow('db down');
       });
     });
   });

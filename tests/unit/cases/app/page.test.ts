@@ -1,16 +1,15 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { getMessages } from '@mocks/nextIntlServer';
 import { generateMetadata } from '@/app/page';
 import uk from '@/locales/uk.json';
 
-const { getTranslations } = vi.hoisted(() => ({ getTranslations: vi.fn() }));
-
-vi.mock('@/i18n/translations', () => ({ getTranslations }));
+vi.mock('next-intl/server', () => import('@mocks/nextIntlServer'));
 
 describe('generateMetadata', () => {
   describe('GIVEN a landing page request resolved to ukrainian', () => {
     beforeEach(() => {
-      getTranslations.mockResolvedValue(uk);
+      getMessages.mockResolvedValue(uk);
     });
 
     describe('WHEN the landing page metadata is generated', () => {

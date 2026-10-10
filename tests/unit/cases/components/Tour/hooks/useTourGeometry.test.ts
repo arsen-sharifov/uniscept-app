@@ -1,25 +1,12 @@
 import { act, cleanup, renderHook, type RenderHookResult } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
-import type { IAnchorRect, ITrackedGeometry } from '@interfaces';
+import type { ITrackedGeometry } from '@interfaces';
 import { LOST_TARGET_MS } from '@constants';
 import { domRect, elementAt, stubAnimationFrame, stubPerformanceNow } from '@mocks/browser';
+import { FRAME_MS, HELP_RECT, MOVED_RECT, COVER_RECT, CREATE_RECT, SWITCHER_RECT } from '@mocks/geometry';
+import { WORKSPACE_ANCHORS } from '@mocks/onboarding';
 import { useTourGeometry } from '@/components/Tour/hooks';
-import { joinAnchors } from '@/lib/onboarding';
-
-const FRAME_MS = 16;
-
-const HELP_RECT: IAnchorRect = { top: 820, left: 1380, width: 36, height: 36 };
-
-const MOVED_RECT: IAnchorRect = { top: 760, left: 1380, width: 36, height: 36 };
-
-const COVER_RECT: IAnchorRect = { top: 40, left: 150, width: 1240, height: 820 };
-
-const CREATE_RECT: IAnchorRect = { top: 130, left: 180, width: 90, height: 24 };
-
-const SWITCHER_RECT: IAnchorRect = { top: 60, left: 10, width: 250, height: 50 };
-
-const WORKSPACE_ANCHORS = joinAnchors(['sidebarWorkspaceCreate', 'sidebarWorkspaceSwitcher']);
 
 let frames: ReturnType<typeof stubAnimationFrame>;
 let clock: ReturnType<typeof stubPerformanceNow>;

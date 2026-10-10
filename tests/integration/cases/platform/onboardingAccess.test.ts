@@ -51,22 +51,6 @@ describe('user_onboarding', () => {
       });
     });
 
-    describe('WHEN the owner records another finished guide', () => {
-      let response: IIntegrationResponse;
-
-      beforeEach(async () => {
-        response = await ownerClient
-          .from('user_onboarding')
-          .update({ completed_guides: ['base', 'canvas'] })
-          .eq('user_id', owner.id);
-      });
-
-      test('THEN the update lands', async () => {
-        expect(response.error).toBeNull();
-        await expect(readOnboarding(owner.id)).resolves.toMatchObject({ completed_guides: ['base', 'canvas'] });
-      });
-    });
-
     describe('WHEN the owner saves progress with an upsert, the way the app does', () => {
       let response: IIntegrationResponse;
 

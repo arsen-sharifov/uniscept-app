@@ -13,7 +13,7 @@ import {
   updateThreadName,
 } from '@api/client';
 import { canvasEdgeRow, canvasNodeRow, threadRow } from '@mocks/rows';
-import { NO_ROW_ERROR, primeSupabase } from '@mocks/supabase';
+import { NO_ROW_ERROR, positionReads, primeSupabase } from '@mocks/supabase';
 
 vi.mock('@/lib/supabase', () => import('@mocks/supabase'));
 
@@ -294,12 +294,7 @@ describe('createThread', () => {
   describe('GIVEN a root thread in a workspace whose root holds folders and threads', () => {
     describe('WHEN the thread is created', () => {
       test('THEN the thread follows the last root item of either kind and a question node is seeded for it', async () => {
-        const { queries } = primeSupabase([
-          { data: { position: 1 } },
-          { data: { position: 2 } },
-          { data: threadRow() },
-          { data: null },
-        ]);
+        const { queries } = primeSupabase([...positionReads(1, 2), { data: threadRow() }, { data: null }]);
         const is = vi.spyOn(queries[1]!, 'is');
 
         await expect(createThread('ws-1')).resolves.toEqual({
@@ -333,8 +328,7 @@ describe('createThread', () => {
     describe('WHEN the thread is created', () => {
       test('THEN the thread takes the position after the last item of the folder', async () => {
         const { queries } = primeSupabase([
-          { data: null },
-          { data: { position: 4 } },
+          ...positionReads(null, 4),
           { data: threadRow({ folder_id: 'folder-1' }) },
           { data: null },
         ]);
@@ -356,8 +350,7 @@ describe('createThread', () => {
     describe('WHEN the thread is created', () => {
       test('THEN the name is written with the row instead of the default', async () => {
         const { queries } = primeSupabase([
-          { data: null },
-          { data: null },
+          ...positionReads(null, null),
           { data: threadRow({ name: 'Example' }) },
           { data: null },
         ]);
@@ -377,8 +370,7 @@ describe('createThread', () => {
     describe('WHEN the thread is created', () => {
       test('THEN the failure is swallowed and the thread is still returned', async () => {
         const { client } = primeSupabase([
-          { data: null },
-          { data: { position: 1 } },
+          ...positionReads(null, 1),
           { data: threadRow() },
           { error: new Error('node down') },
         ]);
@@ -409,7 +401,7 @@ describe('createThread', () => {
   describe('GIVEN a failing insert', () => {
     describe('WHEN the thread is created', () => {
       test('THEN the error propagates', async () => {
-        primeSupabase([{ data: null }, { data: null }, { error: new Error('db down') }]);
+        primeSupabase([...positionReads(null, null), { error: new Error('db down') }]);
 
         await expect(createThread('ws-1')).rejects.toThrow('db down');
       });
@@ -419,7 +411,7 @@ describe('createThread', () => {
   describe('GIVEN an insert that returns no row', () => {
     describe('WHEN the thread is created', () => {
       test('THEN nothing is returned and no question node is seeded', async () => {
-        const { client } = primeSupabase([{ data: null }, { data: null }, { data: null }]);
+        const { client } = primeSupabase([...positionReads(null, null), { data: null }]);
 
         await expect(createThread('ws-1')).resolves.toBeNull();
         expect(client.from).toHaveBeenCalledTimes(3);

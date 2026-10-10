@@ -1,16 +1,12 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
-import type { TTourHint } from '@interfaces';
-
 import { stubResizeObserver } from '@mocks/browser';
 import { TRANSLATIONS } from '@mocks/i18n';
 import { TourHint } from '@/components/Tour';
 import { useOnboardingStore } from '@/lib/onboarding';
 
 vi.mock('@/i18n', () => import('@mocks/i18n'));
-
-let hint: TTourHint;
 
 beforeEach(() => {
   stubResizeObserver();
@@ -21,13 +17,12 @@ afterEach(() => useOnboardingStore.getState().forget());
 describe('TourHint', () => {
   describe('GIVEN the first run was just finished', () => {
     beforeEach(() => {
-      hint = 'afterTour';
-      useOnboardingStore.setState({ hint });
+      useOnboardingStore.setState({ hint: 'afterTour' });
     });
 
     describe('WHEN the pointer shows', () => {
       beforeEach(() => {
-        render(<TourHint hint={hint} />);
+        render(<TourHint hint="afterTour" />);
       });
 
       test('THEN it invites the user to keep learning from the help menu', () => {
@@ -38,7 +33,7 @@ describe('TourHint', () => {
 
     describe('WHEN the guides are opened from it', () => {
       beforeEach(() => {
-        render(<TourHint hint={hint} />);
+        render(<TourHint hint="afterTour" />);
         fireEvent.click(screen.getByText(TRANSLATIONS.platform.onboarding.continueHint.open));
       });
 
@@ -50,13 +45,12 @@ describe('TourHint', () => {
 
   describe('GIVEN the tour was declined', () => {
     beforeEach(() => {
-      hint = 'afterDecline';
-      useOnboardingStore.setState({ hint });
+      useOnboardingStore.setState({ hint: 'afterDecline' });
     });
 
     describe('WHEN the pointer shows', () => {
       beforeEach(() => {
-        render(<TourHint hint={hint} />);
+        render(<TourHint hint="afterDecline" />);
       });
 
       test('THEN it says where the tour waits', () => {
@@ -67,7 +61,7 @@ describe('TourHint', () => {
 
     describe('WHEN it is dismissed', () => {
       beforeEach(() => {
-        render(<TourHint hint={hint} />);
+        render(<TourHint hint="afterDecline" />);
         fireEvent.click(screen.getByText(TRANSLATIONS.platform.onboarding.continueHint.dismiss));
       });
 

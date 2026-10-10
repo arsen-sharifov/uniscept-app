@@ -158,3 +158,7 @@ export const myInvitationRow = (overrides?: Partial<IMyInvitationRow>): IMyInvit
   created_at: '2026-01-01T00:00:00Z',
   ...overrides,
 });
+
+export const THREAD_ROW = { data: { id: 'th-1' } };
+
+export const WORKSPACE_NAME_LOOKUP = [{ data: { name: 'Acme Space' } }];

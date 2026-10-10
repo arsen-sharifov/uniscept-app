@@ -1,15 +1,10 @@
 import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { SELECTION_ITEMS } from '@mocks/sidebar';
+import { SELECTION_ITEMS, CTRL_CLICK, META_CLICK, PLAIN_CLICK, SHIFT_CLICK } from '@mocks/sidebar';
 import { useSelection } from '@/components/Sidebar/hooks';
 
 const onActivate = vi.fn();
-
-const PLAIN_CLICK = { shiftKey: false, ctrlKey: false, metaKey: false };
-const CTRL_CLICK = { ...PLAIN_CLICK, ctrlKey: true };
-const META_CLICK = { ...PLAIN_CLICK, metaKey: true };
-const SHIFT_CLICK = { ...PLAIN_CLICK, shiftKey: true };
 
 let selection: { current: ReturnType<typeof useSelection> };
 

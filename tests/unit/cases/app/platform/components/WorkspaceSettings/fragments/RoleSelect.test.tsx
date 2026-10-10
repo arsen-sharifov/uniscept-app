@@ -1,17 +1,17 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { workspaceRole } from '@mocks/roles';
+import { SELECTABLE_ROLES } from '@mocks/roles';
 import { RoleSelect } from '@/app/platform/components/WorkspaceSettings/fragments';
 
 vi.mock('@/i18n', () => import('@mocks/i18n'));
 
-const ROLES = [workspaceRole('role-admin', { name: 'Admin' }), workspaceRole('role-editor', { name: 'Editor' })];
+const onChange = vi.fn();
 
 describe('RoleSelect', () => {
   describe('GIVEN an open role list', () => {
     beforeEach(() => {
-      render(<RoleSelect value="role-admin" roles={ROLES} onChange={vi.fn()} ariaLabel="Role" />);
+      render(<RoleSelect value="role-admin" roles={SELECTABLE_ROLES} onChange={onChange} ariaLabel="Role" />);
       fireEvent.click(screen.getByRole('button', { name: 'Role: Admin' }));
     });
 
@@ -22,6 +22,17 @@ describe('RoleSelect', () => {
       });
 
       test('THEN the list closes and focus moves to the trigger, for the browser to tab on from there', () => {
+        expect(screen.queryByRole('listbox')).toBeNull();
+        expect(screen.getByRole('button', { name: 'Role: Admin' })).toHaveFocus();
+      });
+    });
+
+    describe('WHEN Escape is pressed', () => {
+      beforeEach(() => {
+        fireEvent.keyDown(screen.getByRole('option', { name: 'Editor' }), { key: 'Escape' });
+      });
+
+      test('THEN the list closes and focus returns to the trigger', () => {
         expect(screen.queryByRole('listbox')).toBeNull();
         expect(screen.getByRole('button', { name: 'Role: Admin' })).toHaveFocus();
       });

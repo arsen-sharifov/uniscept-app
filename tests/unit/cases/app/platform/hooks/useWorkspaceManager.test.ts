@@ -1,7 +1,7 @@
 import { act, cleanup, renderHook } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, test, vi, type Mock } from 'vitest';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
-import type { IFolder, IThread, IWorkspaceItem, TNavItem } from '@interfaces';
+import type { IFolder, IThread, IWorkspaceItem } from '@interfaces';
 import {
   acceptWorkspaceInvitation,
   createFolder,
@@ -28,12 +28,21 @@ import {
   updateWorkspaceName,
 } from '@api/client';
 import { awardBadge } from '@mocks/badges';
-import { canvasEdge, canvasNode } from '@mocks/canvas';
+import { canvasNode } from '@mocks/canvas';
 import { TRANSLATIONS } from '@mocks/i18n';
 import { routeParams, router } from '@mocks/navigation';
 import { EDIT_ACCESS, FULL_ACCESS } from '@mocks/roles';
-import { folderInput, folderItem, myInvitation, threadInput, threadItem, workspaceItem } from '@mocks/sidebar';
+import {
+  folderInput,
+  folderItem,
+  myInvitation,
+  threadInput,
+  threadItem,
+  workspaceItem,
+  INITIAL_TREE,
+} from '@mocks/sidebar';
 import { primeSupabase } from '@mocks/supabase';
+import { USER_RESPONSE } from '@mocks/userApi';
 import { useWorkspaceManager } from '@/app/platform/hooks';
 import { event } from '@/lib/events';
 import { useCanvasStore, usePermissionsStore } from '@/lib/stores';
@@ -49,8 +58,6 @@ vi.mock('@/lib/badges', () => import('@mocks/badges'));
 vi.mock('@/lib/events', () => import('@mocks/events'));
 vi.mock('@/lib/supabase', () => import('@mocks/supabase'));
 
-const USER_RESPONSE = { data: { user: { id: 'user-1' } }, error: null } as never;
-
 const workspaceList = (): IWorkspaceItem[] => [
   workspaceItem('ws-1'),
   workspaceItem('ws-2'),
@@ -60,8 +67,6 @@ const workspaceList = (): IWorkspaceItem[] => [
 const folderList = () => [folderInput('f1', 1)];
 
 const threadList = () => [threadInput('t1', 0), threadInput('t2', 0, 'f1')];
-
-const INITIAL_TREE: TNavItem[] = [threadItem('t1'), folderItem('f1', [threadItem('t2')])];
 
 const primeApi = (route: { workspaceId?: string; threadId?: string } = {}) => {
   primeSupabase([]);
@@ -76,7 +81,6 @@ const primeApi = (route: { workspaceId?: string; threadId?: string } = {}) => {
 
 let manager: { current: ReturnType<typeof useWorkspaceManager> };
 let rerenderManager: () => void;
-let unmountManager: () => void;
 
 beforeEach(() => {
   vi.useFakeTimers();
@@ -92,7 +96,6 @@ afterEach(async () => {
   delete routeParams.workspaceId;
   delete routeParams.threadId;
   vi.useRealTimers();
-  vi.restoreAllMocks();
 });
 
 describe('useWorkspaceManager', () => {
@@ -173,16 +176,19 @@ describe('useWorkspaceManager', () => {
   });
 
   describe('GIVEN a route that already points at a workspace and a thread', () => {
-    beforeEach(async () => {
+    beforeEach(() => {
       primeApi({ workspaceId: 'ws-2', threadId: 't1' });
 
       manager = renderHook(() => useWorkspaceManager()).result;
-      await act(async () => {
-        await vi.advanceTimersByTimeAsync(0);
-      });
     });
 
     describe('WHEN the initial load settles', () => {
+      beforeEach(async () => {
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(0);
+        });
+      });
+
       test('THEN the routed workspace becomes active', () => {
         expect(manager.current.activeWorkspaceId).toBe('ws-2');
         expect(manager.current.activeThreadId).toBe('t1');
@@ -289,6 +295,30 @@ describe('useWorkspaceManager', () => {
         expect(getFolders).not.toHaveBeenCalledWith('ws-9');
       });
     });
+
+    describe('WHEN another workspace is picked before the tree of the routed workspace arrives', () => {
+      beforeEach(async () => {
+        const routedTree = Promise.withResolvers<IFolder[]>();
+
+        vi.mocked(getFolders).mockReturnValueOnce(routedTree.promise);
+        Object.assign(routeParams, { workspaceId: 'ws-1', threadId: 't1' });
+        act(() => rerenderManager());
+        await act(async () => {
+          await manager.current.onWorkspaceSelect('ws-3');
+          await vi.advanceTimersByTimeAsync(0);
+        });
+        await act(async () => {
+          routedTree.resolve([folderInput('f-stale', 0)]);
+          await vi.advanceTimersByTimeAsync(0);
+        });
+      });
+
+      test('THEN the picked workspace keeps its own tree', () => {
+        expect(manager.current.activeWorkspaceId).toBe('ws-3');
+        expect(manager.current.navItems).toEqual(INITIAL_TREE);
+        expect(manager.current.loading).toBe(false);
+      });
+    });
   });
 
   describe('GIVEN a routed workspace whose member list is still loading', () => {
@@ -326,56 +356,128 @@ describe('useWorkspaceManager', () => {
     });
   });
 
-  describe('GIVEN workspace permissions that fail to load', () => {
+  describe('GIVEN a workspace list that fails to load', () => {
     beforeEach(() => {
-      primeApi({ workspaceId: 'ws-1', threadId: 't1' });
-      vi.mocked(getMyWorkspacePermissions).mockRejectedValue(new Error('permissions unavailable'));
+      primeApi();
+      vi.mocked(getMyWorkspaces).mockRejectedValue(new Error('db down'));
+
       manager = renderHook(() => useWorkspaceManager()).result;
     });
 
-    describe('WHEN the permission request fails', () => {
+    describe('WHEN the initial load settles', () => {
       beforeEach(async () => {
         await act(async () => {
           await vi.advanceTimersByTimeAsync(0);
         });
       });
 
-      test('THEN access resolves without any grant', () => {
-        expect(usePermissionsStore.getState()).toMatchObject({
-          workspaceId: 'ws-1',
-          resolved: true,
-          isOwner: false,
-          canEditCanvas: false,
-          canComment: false,
-        });
-      });
-
-      test('THEN the load failure reaches the feedback boundary', () => {
-        expect(event.error).toHaveBeenCalledExactlyOnceWith(expect.any(Error), {
-          title: TRANSLATIONS.common.errorTitles.loadFailed,
-          context: 'sidebar.loadPermissions',
-        });
-      });
-    });
-  });
-
-  describe('GIVEN a workspace list that fails to load', () => {
-    beforeEach(async () => {
-      primeApi();
-      vi.mocked(getMyWorkspaces).mockRejectedValue(new Error('db down'));
-
-      manager = renderHook(() => useWorkspaceManager()).result;
-      await act(async () => {
-        await vi.advanceTimersByTimeAsync(0);
-      });
-    });
-
-    describe('WHEN the initial load settles', () => {
       test('THEN the failure surfaces and loading ends', () => {
         expect(manager.current.loading).toBe(false);
         expect(manager.current.workspaces).toEqual([]);
         expect(getFolders).not.toHaveBeenCalled();
         expect(event.error).toHaveBeenCalledExactlyOnceWith(expect.any(Error), { context: 'sidebar.loadWorkspaces' });
+      });
+    });
+  });
+
+  describe('GIVEN workspaces without any folder or thread and no route', () => {
+    beforeEach(() => {
+      primeApi();
+      vi.mocked(getFolders).mockResolvedValue([]);
+      vi.mocked(getThreads).mockResolvedValue([]);
+
+      manager = renderHook(() => useWorkspaceManager()).result;
+    });
+
+    describe('WHEN the initial load settles', () => {
+      beforeEach(async () => {
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(0);
+        });
+      });
+
+      test('THEN loading ends on the empty first workspace without a redirect', () => {
+        expect(manager.current.activeWorkspaceId).toBe('ws-1');
+        expect(manager.current.navItems).toEqual([]);
+        expect(manager.current.loading).toBe(false);
+        expect(router.replace).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('WHEN they select another workspace', () => {
+      beforeEach(async () => {
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(0);
+        });
+        await act(async () => {
+          await manager.current.onWorkspaceSelect('ws-2');
+          await vi.advanceTimersByTimeAsync(0);
+        });
+      });
+
+      test('THEN the user is routed to the platform home instead of a thread', () => {
+        expect(manager.current.activeWorkspaceId).toBe('ws-2');
+        expect(router.push).toHaveBeenCalledExactlyOnceWith('/platform');
+      });
+    });
+  });
+
+  describe('GIVEN a member without any workspace', () => {
+    beforeEach(() => {
+      primeApi();
+      vi.mocked(getMyWorkspaces).mockResolvedValue([]);
+
+      manager = renderHook(() => useWorkspaceManager()).result;
+    });
+
+    describe('WHEN the initial load settles', () => {
+      beforeEach(async () => {
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(0);
+        });
+      });
+
+      test('THEN loading ends with no active workspace and no content request', () => {
+        expect(manager.current.loading).toBe(false);
+        expect(manager.current.activeWorkspaceId).toBeNull();
+        expect(getFolders).not.toHaveBeenCalled();
+        expect(router.replace).not.toHaveBeenCalled();
+      });
+    });
+  });
+
+  describe('GIVEN a member without any workspace who still holds structure access', () => {
+    beforeEach(async () => {
+      primeApi();
+      vi.mocked(getMyWorkspaces).mockResolvedValue([]);
+      vi.mocked(createThread).mockResolvedValue(threadInput('t-new', 0));
+      vi.mocked(createFolder).mockResolvedValue(folderInput('f-new', 0));
+
+      manager = renderHook(() => useWorkspaceManager()).result;
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(0);
+      });
+      usePermissionsStore.getState().setAccess('ws-1', 'user-1', FULL_ACCESS);
+    });
+
+    describe('WHEN they try to create items and bulk delete', () => {
+      let createdThreadId: string | null;
+
+      beforeEach(async () => {
+        await act(async () => {
+          createdThreadId = await manager.current.onCreateThread();
+          await manager.current.onCreateFolder();
+          await manager.current.onBulkDelete(new Set(['t1']));
+          await vi.advanceTimersByTimeAsync(0);
+        });
+      });
+
+      test('THEN nothing reaches the api and nothing is announced', () => {
+        expect(createdThreadId).toBeNull();
+        expect(createThread).not.toHaveBeenCalled();
+        expect(createFolder).not.toHaveBeenCalled();
+        expect(deleteThreads).not.toHaveBeenCalled();
+        expect(event.success).not.toHaveBeenCalled();
       });
     });
   });
@@ -440,10 +542,27 @@ describe('useWorkspaceManager', () => {
 
       test('THEN the edit mode ends and the later rename gets its own toast', () => {
         expect(manager.current.editingWorkspaceId).toBeNull();
-        expect(vi.mocked(event.success).mock.calls).toEqual([
-          [TRANSLATIONS.platform.sidebar.workspaceCreated],
-          [TRANSLATIONS.platform.sidebar.workspaceRenamed],
-        ]);
+        expect(event.success).toHaveBeenCalledTimes(2);
+        expect(event.success).toHaveBeenNthCalledWith(1, TRANSLATIONS.platform.sidebar.workspaceCreated);
+        expect(event.success).toHaveBeenNthCalledWith(2, TRANSLATIONS.platform.sidebar.workspaceRenamed);
+      });
+    });
+
+    describe('WHEN they name the freshly created workspace', () => {
+      beforeEach(async () => {
+        await act(async () => {
+          await manager.current.onCreateWorkspace();
+          await vi.advanceTimersByTimeAsync(0);
+        });
+        await act(async () => {
+          await manager.current.onRenameWorkspace('ws-new', 'Research');
+          await vi.advanceTimersByTimeAsync(0);
+        });
+      });
+
+      test('THEN the rename persists without a rename toast', () => {
+        expect(updateWorkspaceName).toHaveBeenCalledExactlyOnceWith('ws-new', 'Research');
+        expect(event.success).toHaveBeenCalledExactlyOnceWith(TRANSLATIONS.platform.sidebar.workspaceCreated);
       });
     });
 
@@ -466,18 +585,23 @@ describe('useWorkspaceManager', () => {
       });
     });
 
-    describe('WHEN they rename a workspace they cannot manage', () => {
+    describe('WHEN they rename, delete and bulk delete a workspace they cannot manage', () => {
       beforeEach(async () => {
         await act(async () => {
           await manager.current.onRenameWorkspace('ws-3', 'Hijacked');
+          await manager.current.onDeleteWorkspace('ws-3');
+          await manager.current.onBulkDeleteWorkspaces(new Set(['ws-3']));
           await vi.advanceTimersByTimeAsync(0);
         });
       });
 
-      test('THEN the workspace stays untouched', () => {
+      test('THEN the workspace stays untouched and only the skip warning shows', () => {
         expect(manager.current.workspaces).toEqual(workspaceList());
         expect(updateWorkspaceName).not.toHaveBeenCalled();
+        expect(deleteWorkspace).not.toHaveBeenCalled();
+        expect(deleteWorkspaces).not.toHaveBeenCalled();
         expect(event.success).not.toHaveBeenCalled();
+        expect(event.warning).toHaveBeenCalledExactlyOnceWith(TRANSLATIONS.platform.sidebar.workspacesDeleteSkipped);
       });
     });
 
@@ -557,6 +681,20 @@ describe('useWorkspaceManager', () => {
       });
     });
 
+    describe('WHEN they drop a workspace on its own place', () => {
+      beforeEach(async () => {
+        await act(async () => {
+          await manager.current.onMoveWorkspace('ws-2', 1);
+          await vi.advanceTimersByTimeAsync(0);
+        });
+      });
+
+      test('THEN the order stays and nothing is written', () => {
+        expect(manager.current.workspaces).toEqual(workspaceList());
+        expect(moveWorkspace).not.toHaveBeenCalled();
+      });
+    });
+
     describe('WHEN they bulk delete a manageable and an unmanageable workspace', () => {
       beforeEach(async () => {
         await act(async () => {
@@ -608,23 +746,6 @@ describe('useWorkspaceManager', () => {
         expect(router.push).toHaveBeenCalledExactlyOnceWith('/platform/ws-2/t1');
       });
     });
-
-    describe('WHEN they select the workspace that is already active', () => {
-      beforeEach(async () => {
-        await act(async () => {
-          await manager.current.onWorkspaceSelect('ws-1');
-          await vi.advanceTimersByTimeAsync(0);
-        });
-      });
-
-      test('THEN the open thread stays put while the tree reloads', () => {
-        expect(manager.current.activeWorkspaceId).toBe('ws-1');
-        expect(manager.current.navItems).toEqual(INITIAL_TREE);
-        expect(getFolders).toHaveBeenCalledTimes(2);
-        expect(getFolders).toHaveBeenLastCalledWith('ws-1');
-        expect(router.push).not.toHaveBeenCalled();
-      });
-    });
   });
 
   describe('GIVEN an active workspace whose tree failed to load', () => {
@@ -650,6 +771,57 @@ describe('useWorkspaceManager', () => {
         expect(manager.current.activeWorkspaceId).toBe('ws-1');
         expect(manager.current.navItems).toEqual(INITIAL_TREE);
         expect(router.push).not.toHaveBeenCalled();
+      });
+    });
+  });
+
+  describe('GIVEN a workspace whose content fails to load on selection', () => {
+    beforeEach(async () => {
+      primeApi({ workspaceId: 'ws-1', threadId: 't1' });
+      vi.mocked(getFolders).mockRejectedValue(new Error('db down'));
+      vi.mocked(getFolders).mockResolvedValueOnce(folderList());
+
+      manager = renderHook(() => useWorkspaceManager()).result;
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(0);
+      });
+    });
+
+    describe('WHEN they select another workspace', () => {
+      beforeEach(async () => {
+        await act(async () => {
+          await manager.current.onWorkspaceSelect('ws-2');
+          await vi.advanceTimersByTimeAsync(0);
+        });
+      });
+
+      test('THEN the previous workspace is restored', () => {
+        expect(manager.current.activeWorkspaceId).toBe('ws-1');
+        expect(manager.current.loading).toBe(false);
+        expect(router.push).not.toHaveBeenCalled();
+        expect(event.error).toHaveBeenCalledExactlyOnceWith(expect.any(Error), {
+          title: TRANSLATIONS.common.errorTitles.loadFailed,
+          context: 'sidebar.selectWorkspace',
+        });
+      });
+    });
+
+    describe('WHEN they select the active workspace again', () => {
+      beforeEach(async () => {
+        await act(async () => {
+          await manager.current.onWorkspaceSelect('ws-1');
+          await vi.advanceTimersByTimeAsync(0);
+        });
+      });
+
+      test('THEN the failed reload is reported and the tree stays', () => {
+        expect(manager.current.activeWorkspaceId).toBe('ws-1');
+        expect(manager.current.navItems).toEqual(INITIAL_TREE);
+        expect(router.push).not.toHaveBeenCalled();
+        expect(event.error).toHaveBeenCalledExactlyOnceWith(expect.any(Error), {
+          title: TRANSLATIONS.common.errorTitles.loadFailed,
+          context: 'sidebar.selectWorkspace',
+        });
       });
     });
   });
@@ -740,14 +912,38 @@ describe('useWorkspaceManager', () => {
     });
   });
 
-  describe('GIVEN a workspace rename that fails on the api', () => {
+  describe('GIVEN workspace writes that fail on the api', () => {
     beforeEach(async () => {
       primeApi({ workspaceId: 'ws-1', threadId: 't1' });
+      vi.mocked(createWorkspace).mockRejectedValue(new Error('db down'));
       vi.mocked(updateWorkspaceName).mockRejectedValue(new Error('db down'));
+      vi.mocked(deleteWorkspace).mockRejectedValue(new Error('db down'));
+      vi.mocked(deleteWorkspaces).mockRejectedValue(new Error('db down'));
 
       manager = renderHook(() => useWorkspaceManager()).result;
       await act(async () => {
         await vi.advanceTimersByTimeAsync(0);
+      });
+    });
+
+    describe('WHEN they create a workspace', () => {
+      beforeEach(async () => {
+        await act(async () => {
+          await manager.current.onCreateWorkspace();
+          await vi.advanceTimersByTimeAsync(0);
+        });
+      });
+
+      test('THEN nothing is added and the failure surfaces', () => {
+        expect(manager.current.workspaces).toEqual(workspaceList());
+        expect(manager.current.activeWorkspaceId).toBe('ws-1');
+        expect(router.push).not.toHaveBeenCalled();
+        expect(event.success).not.toHaveBeenCalled();
+        expect(awardBadge).not.toHaveBeenCalled();
+        expect(event.error).toHaveBeenCalledExactlyOnceWith(expect.any(Error), {
+          title: TRANSLATIONS.common.errorTitles.createFailed,
+          context: 'sidebar.createWorkspace',
+        });
       });
     });
 
@@ -769,18 +965,6 @@ describe('useWorkspaceManager', () => {
         expect(event.success).not.toHaveBeenCalled();
       });
     });
-  });
-
-  describe('GIVEN a workspace delete that fails on the api', () => {
-    beforeEach(async () => {
-      primeApi({ workspaceId: 'ws-1', threadId: 't1' });
-      vi.mocked(deleteWorkspace).mockRejectedValue(new Error('db down'));
-
-      manager = renderHook(() => useWorkspaceManager()).result;
-      await act(async () => {
-        await vi.advanceTimersByTimeAsync(0);
-      });
-    });
 
     describe('WHEN they delete the active workspace', () => {
       beforeEach(async () => {
@@ -798,6 +982,59 @@ describe('useWorkspaceManager', () => {
         expect(event.error).toHaveBeenCalledExactlyOnceWith(expect.any(Error), {
           title: TRANSLATIONS.common.errorTitles.deleteFailed,
           context: 'sidebar.deleteWorkspace',
+        });
+      });
+    });
+
+    describe('WHEN they bulk delete a workspace that is not active', () => {
+      beforeEach(async () => {
+        await act(async () => {
+          await manager.current.onBulkDeleteWorkspaces(new Set(['ws-2']));
+          await vi.advanceTimersByTimeAsync(0);
+        });
+      });
+
+      test('THEN the workspace returns from the refetched list and the failure surfaces', () => {
+        expect(manager.current.workspaces).toEqual(workspaceList());
+        expect(getMyWorkspaces).toHaveBeenCalledTimes(2);
+        expect(event.success).not.toHaveBeenCalled();
+        expect(event.error).toHaveBeenCalledExactlyOnceWith(expect.any(Error), {
+          title: TRANSLATIONS.common.errorTitles.deleteFailed,
+          context: 'sidebar.bulkDeleteWorkspaces',
+        });
+      });
+    });
+  });
+
+  describe('GIVEN a workspace rename that fails while the list cannot be reloaded', () => {
+    beforeEach(async () => {
+      primeApi({ workspaceId: 'ws-1', threadId: 't1' });
+      vi.mocked(updateWorkspaceName).mockRejectedValue(new Error('db down'));
+      vi.mocked(getMyWorkspaces).mockRejectedValue(new Error('db down')).mockResolvedValueOnce(workspaceList());
+
+      manager = renderHook(() => useWorkspaceManager()).result;
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(0);
+      });
+    });
+
+    describe('WHEN they rename a manageable workspace', () => {
+      beforeEach(async () => {
+        await act(async () => {
+          await manager.current.onRenameWorkspace('ws-2', 'Research');
+          await vi.advanceTimersByTimeAsync(0);
+        });
+      });
+
+      test('THEN the rename failure surfaces and the reload failure is logged without a toast', () => {
+        expect(event.error).toHaveBeenCalledTimes(2);
+        expect(event.error).toHaveBeenNthCalledWith(1, expect.any(Error), {
+          title: TRANSLATIONS.common.errorTitles.renameFailed,
+          context: 'sidebar.renameWorkspace',
+        });
+        expect(event.error).toHaveBeenNthCalledWith(2, expect.any(Error), {
+          toast: false,
+          context: 'sidebar.reloadWorkspaces',
         });
       });
     });
@@ -858,57 +1095,6 @@ describe('useWorkspaceManager', () => {
     });
   });
 
-  describe('GIVEN a workspace whose content fails to load on selection', () => {
-    beforeEach(async () => {
-      primeApi({ workspaceId: 'ws-1', threadId: 't1' });
-      vi.mocked(getFolders).mockRejectedValue(new Error('db down'));
-      vi.mocked(getFolders).mockResolvedValueOnce(folderList());
-
-      manager = renderHook(() => useWorkspaceManager()).result;
-      await act(async () => {
-        await vi.advanceTimersByTimeAsync(0);
-      });
-    });
-
-    describe('WHEN they select another workspace', () => {
-      beforeEach(async () => {
-        await act(async () => {
-          await manager.current.onWorkspaceSelect('ws-2');
-          await vi.advanceTimersByTimeAsync(0);
-        });
-      });
-
-      test('THEN the previous workspace is restored', () => {
-        expect(manager.current.activeWorkspaceId).toBe('ws-1');
-        expect(manager.current.loading).toBe(false);
-        expect(router.push).not.toHaveBeenCalled();
-        expect(event.error).toHaveBeenCalledExactlyOnceWith(expect.any(Error), {
-          title: TRANSLATIONS.common.errorTitles.loadFailed,
-          context: 'sidebar.selectWorkspace',
-        });
-      });
-    });
-
-    describe('WHEN they select the active workspace again', () => {
-      beforeEach(async () => {
-        await act(async () => {
-          await manager.current.onWorkspaceSelect('ws-1');
-          await vi.advanceTimersByTimeAsync(0);
-        });
-      });
-
-      test('THEN the failed reload is reported and the tree stays', () => {
-        expect(manager.current.activeWorkspaceId).toBe('ws-1');
-        expect(manager.current.navItems).toEqual(INITIAL_TREE);
-        expect(router.push).not.toHaveBeenCalled();
-        expect(event.error).toHaveBeenCalledExactlyOnceWith(expect.any(Error), {
-          title: TRANSLATIONS.common.errorTitles.loadFailed,
-          context: 'sidebar.selectWorkspace',
-        });
-      });
-    });
-  });
-
   describe('GIVEN a workspace pick still loading when another workspace is picked', () => {
     let resolveStaleLoad: (folders: IFolder[]) => void;
     let rejectStaleLoad: (reason: Error) => void;
@@ -963,6 +1149,809 @@ describe('useWorkspaceManager', () => {
         expect(manager.current.activeWorkspaceId).toBe('ws-3');
         expect(manager.current.navItems).toEqual(INITIAL_TREE);
         expect(router.push).toHaveBeenCalledExactlyOnceWith('/platform/ws-3/t1');
+      });
+    });
+  });
+
+  describe('GIVEN the active workspace being deleted', () => {
+    let resolveDelete: () => void;
+
+    beforeEach(async () => {
+      const pendingDelete = Promise.withResolvers<void>();
+
+      resolveDelete = pendingDelete.resolve;
+      primeApi({ workspaceId: 'ws-1', threadId: 't1' });
+      vi.mocked(deleteWorkspace).mockReturnValue(pendingDelete.promise);
+      vi.mocked(createWorkspace).mockResolvedValue({
+        id: 'ws-new',
+        name: 'New Workspace',
+        ownerId: 'user-1',
+        createdAt: '2026-01-01T00:00:00Z',
+      });
+
+      manager = renderHook(() => useWorkspaceManager()).result;
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(0);
+      });
+      await act(async () => {
+        manager.current.onDeleteWorkspace('ws-1');
+        await vi.advanceTimersByTimeAsync(0);
+      });
+      await act(async () => {
+        await manager.current.onCreateWorkspace();
+        await vi.advanceTimersByTimeAsync(0);
+      });
+    });
+
+    describe('WHEN the delete settles after a workspace was created meanwhile', () => {
+      beforeEach(async () => {
+        await act(async () => {
+          resolveDelete();
+          await vi.advanceTimersByTimeAsync(0);
+        });
+      });
+
+      test('THEN the new workspace survives and stays active', () => {
+        expect(manager.current.workspaces.map((workspace) => workspace.id)).toEqual(['ws-2', 'ws-3', 'ws-new']);
+        expect(manager.current.activeWorkspaceId).toBe('ws-new');
+        expect(manager.current.navItems).toEqual([]);
+      });
+    });
+  });
+
+  describe('GIVEN a manageable content tree on the active workspace', () => {
+    beforeEach(async () => {
+      primeApi({ workspaceId: 'ws-1', threadId: 't1' });
+      vi.mocked(createThread).mockResolvedValue(threadInput('t-new', 2));
+      vi.mocked(createFolder).mockResolvedValue(folderInput('f-new', 2));
+
+      manager = renderHook(() => useWorkspaceManager()).result;
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(0);
+      });
+    });
+
+    describe('WHEN they create a thread at the root', () => {
+      beforeEach(async () => {
+        await act(async () => {
+          await manager.current.onCreateThread();
+          await vi.advanceTimersByTimeAsync(0);
+        });
+      });
+
+      test('THEN the thread appends to the root in edit mode', () => {
+        expect(manager.current.navItems).toEqual([
+          ...INITIAL_TREE,
+          { type: 'thread', id: 't-new', name: 'Thread t-new' },
+        ]);
+        expect(manager.current.editingItemId).toBe('t-new');
+      });
+
+      test('THEN the creation reaches the api and opens the thread', () => {
+        expect(createThread).toHaveBeenCalledExactlyOnceWith(
+          'ws-1',
+          undefined,
+          TRANSLATIONS.platform.sidebar.defaultNames.thread,
+        );
+        expect(router.push).toHaveBeenCalledExactlyOnceWith('/platform/ws-1/t-new');
+        expect(event.success).toHaveBeenCalledExactlyOnceWith(TRANSLATIONS.platform.sidebar.threadCreated);
+      });
+
+      test('THEN the First Steps badge is awarded', () => {
+        expect(awardBadge).toHaveBeenCalledExactlyOnceWith('firstSteps');
+      });
+    });
+
+    describe('WHEN they create a thread inside the folder', () => {
+      beforeEach(async () => {
+        await act(async () => {
+          await manager.current.onCreateThread('f1');
+          await vi.advanceTimersByTimeAsync(0);
+        });
+      });
+
+      test('THEN the thread lands at the end of the folder', () => {
+        expect(manager.current.navItems).toEqual([
+          threadItem('t1'),
+          folderItem('f1', [threadItem('t2'), { type: 'thread', id: 't-new', name: 'Thread t-new' }]),
+        ]);
+        expect(createThread).toHaveBeenCalledExactlyOnceWith(
+          'ws-1',
+          'f1',
+          TRANSLATIONS.platform.sidebar.defaultNames.thread,
+        );
+      });
+    });
+
+    describe('WHEN a thread is created with its name already chosen', () => {
+      let created: string | null;
+
+      beforeEach(async () => {
+        await act(async () => {
+          created = await manager.current.onCreateThread(undefined, 'Example');
+          await vi.advanceTimersByTimeAsync(0);
+        });
+      });
+
+      test('THEN the name reaches the api and the new id comes back', () => {
+        expect(createThread).toHaveBeenCalledExactlyOnceWith('ws-1', undefined, 'Example');
+        expect(created).toBe('t-new');
+      });
+
+      test('THEN the thread opens without dropping into rename mode', () => {
+        expect(manager.current.editingItemId).toBeNull();
+        expect(router.push).toHaveBeenCalledExactlyOnceWith('/platform/ws-1/t-new');
+      });
+
+      test('THEN no badge is awarded for the prepared thread', () => {
+        expect(awardBadge).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('WHEN they create a folder', () => {
+      beforeEach(async () => {
+        await act(async () => {
+          await manager.current.onCreateFolder();
+          await vi.advanceTimersByTimeAsync(0);
+        });
+      });
+
+      test('THEN the folder appends to the root in edit mode', () => {
+        expect(manager.current.navItems).toEqual([...INITIAL_TREE, folderItem('f-new')]);
+        expect(manager.current.editingItemId).toBe('f-new');
+        expect(createFolder).toHaveBeenCalledExactlyOnceWith(
+          'ws-1',
+          undefined,
+          TRANSLATIONS.platform.sidebar.defaultNames.folder,
+        );
+        expect(event.success).toHaveBeenCalledExactlyOnceWith(TRANSLATIONS.platform.sidebar.folderCreated);
+      });
+    });
+
+    describe('WHEN they name the freshly created thread', () => {
+      beforeEach(async () => {
+        await act(async () => {
+          await manager.current.onCreateThread();
+          await vi.advanceTimersByTimeAsync(0);
+        });
+        await act(async () => {
+          await manager.current.onRenameItem('t-new', 'Named question');
+          await vi.advanceTimersByTimeAsync(0);
+        });
+      });
+
+      test('THEN the rename persists without a rename toast', () => {
+        expect(updateThreadName).toHaveBeenCalledExactlyOnceWith('t-new', 'Named question');
+        expect(event.success).toHaveBeenCalledExactlyOnceWith(TRANSLATIONS.platform.sidebar.threadCreated);
+      });
+    });
+
+    describe('WHEN they leave the freshly created thread unnamed and rename it later', () => {
+      beforeEach(async () => {
+        await act(async () => {
+          await manager.current.onCreateThread();
+          await vi.advanceTimersByTimeAsync(0);
+        });
+        act(() => manager.current.clearEditingItemId());
+        await act(async () => {
+          await manager.current.onRenameItem('t-new', 'Named question');
+          await vi.advanceTimersByTimeAsync(0);
+        });
+      });
+
+      test('THEN the edit mode ends and the later rename gets its own toast', () => {
+        expect(manager.current.editingItemId).toBeNull();
+        expect(event.success).toHaveBeenCalledTimes(2);
+        expect(event.success).toHaveBeenNthCalledWith(1, TRANSLATIONS.platform.sidebar.threadCreated);
+        expect(event.success).toHaveBeenNthCalledWith(2, TRANSLATIONS.platform.sidebar.threadRenamed);
+      });
+    });
+
+    describe('WHEN they rename the root thread', () => {
+      beforeEach(async () => {
+        await act(async () => {
+          await manager.current.onRenameItem('t1', 'Sharper question');
+          await vi.advanceTimersByTimeAsync(0);
+        });
+      });
+
+      test('THEN the rename shows optimistically and persists', () => {
+        expect(manager.current.navItems[0]).toEqual({
+          type: 'thread',
+          id: 't1',
+          name: 'Sharper question',
+          resolved: false,
+        });
+        expect(updateThreadName).toHaveBeenCalledExactlyOnceWith('t1', 'Sharper question');
+        expect(event.success).toHaveBeenCalledExactlyOnceWith(TRANSLATIONS.platform.sidebar.threadRenamed);
+        expect(getFolders).toHaveBeenCalledTimes(1);
+      });
+    });
+
+    describe('WHEN they rename the folder', () => {
+      beforeEach(async () => {
+        await act(async () => {
+          await manager.current.onRenameItem('f1', 'Sorted');
+          await vi.advanceTimersByTimeAsync(0);
+        });
+      });
+
+      test('THEN the rename shows optimistically and persists', () => {
+        expect(manager.current.navItems[1]).toMatchObject({ id: 'f1', name: 'Sorted' });
+        expect(updateFolderName).toHaveBeenCalledExactlyOnceWith('f1', 'Sorted');
+        expect(event.success).toHaveBeenCalledExactlyOnceWith(TRANSLATIONS.platform.sidebar.folderRenamed);
+      });
+    });
+
+    describe('WHEN they delete the open thread', () => {
+      beforeEach(async () => {
+        await act(async () => {
+          await manager.current.onDeleteItem('t1');
+          await vi.advanceTimersByTimeAsync(0);
+        });
+      });
+
+      test('THEN the thread leaves the tree', () => {
+        expect(manager.current.navItems).toEqual([folderItem('f1', [threadItem('t2')])]);
+        expect(deleteThread).toHaveBeenCalledExactlyOnceWith('t1');
+        expect(deleteFolder).not.toHaveBeenCalled();
+        expect(event.success).toHaveBeenCalledExactlyOnceWith(TRANSLATIONS.platform.sidebar.threadDeleted);
+      });
+
+      test('THEN the user is routed away from the deleted thread', () => {
+        expect(router.push).toHaveBeenCalledExactlyOnceWith('/platform');
+      });
+    });
+
+    describe('WHEN they delete the folder that does not hold the open thread', () => {
+      beforeEach(async () => {
+        await act(async () => {
+          await manager.current.onDeleteItem('f1');
+          await vi.advanceTimersByTimeAsync(0);
+        });
+      });
+
+      test('THEN the folder leaves the tree without navigation', () => {
+        expect(manager.current.navItems).toEqual([threadItem('t1')]);
+        expect(deleteFolder).toHaveBeenCalledExactlyOnceWith('f1');
+        expect(event.success).toHaveBeenCalledExactlyOnceWith(TRANSLATIONS.platform.sidebar.folderDeleted);
+        expect(router.push).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('WHEN they drag the root thread into the folder', () => {
+      beforeEach(async () => {
+        await act(async () => {
+          await manager.current.onMoveItem('t1', 'f1', 0);
+          await vi.advanceTimersByTimeAsync(0);
+        });
+      });
+
+      test('THEN the tree reflects the move optimistically', () => {
+        expect(manager.current.navItems).toEqual([folderItem('f1', [threadItem('t1'), threadItem('t2')])]);
+      });
+
+      test('THEN the dragged thread and every shifted sibling persist', () => {
+        expect(vi.mocked(moveThread).mock.calls).toEqual([
+          ['t1', 'f1', 0],
+          ['t2', 'f1', 1],
+        ]);
+        expect(moveFolder).toHaveBeenCalledExactlyOnceWith('f1', null, 0);
+      });
+    });
+
+    describe('WHEN they drag the root thread to the end of the folder', () => {
+      beforeEach(async () => {
+        await act(async () => {
+          await manager.current.onMoveItem('t1', 'f1', 1);
+          await vi.advanceTimersByTimeAsync(0);
+        });
+      });
+
+      test('THEN both lists it touched are persisted in full, since stored positions may have gaps', () => {
+        expect(manager.current.navItems).toEqual([folderItem('f1', [threadItem('t2'), threadItem('t1')])]);
+        expect(vi.mocked(moveThread).mock.calls).toEqual([
+          ['t2', 'f1', 0],
+          ['t1', 'f1', 1],
+        ]);
+        expect(moveFolder).toHaveBeenCalledExactlyOnceWith('f1', null, 0);
+      });
+    });
+
+    describe('WHEN they drop the root thread where it already was', () => {
+      beforeEach(async () => {
+        await act(async () => {
+          await manager.current.onMoveItem('t1', null, 0);
+          await vi.advanceTimersByTimeAsync(0);
+        });
+      });
+
+      test('THEN the tree stays and nothing is written', () => {
+        expect(manager.current.navItems).toEqual(INITIAL_TREE);
+        expect(moveThread).not.toHaveBeenCalled();
+        expect(moveFolder).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('WHEN they bulk delete the open thread and the folder', () => {
+      beforeEach(async () => {
+        await act(async () => {
+          await manager.current.onBulkDelete(new Set(['t1', 'f1']));
+          await vi.advanceTimersByTimeAsync(0);
+        });
+      });
+
+      test('THEN the tree empties through the api', () => {
+        expect(manager.current.navItems).toEqual([]);
+        expect(deleteThreads).toHaveBeenCalledExactlyOnceWith(['t1']);
+        expect(deleteFolders).toHaveBeenCalledExactlyOnceWith(['f1']);
+        expect(event.success).toHaveBeenCalledExactlyOnceWith(TRANSLATIONS.platform.sidebar.itemsDeleted);
+      });
+
+      test('THEN the user is routed home', () => {
+        expect(router.push).toHaveBeenCalledExactlyOnceWith('/platform');
+      });
+    });
+
+    describe('WHEN they click a thread inside the folder', () => {
+      beforeEach(() => {
+        act(() => manager.current.onItemClick('t2'));
+      });
+
+      test('THEN the router opens the thread', () => {
+        expect(router.push).toHaveBeenCalledExactlyOnceWith('/platform/ws-1/t2');
+      });
+    });
+
+    describe('WHEN they click the folder', () => {
+      beforeEach(() => {
+        act(() => manager.current.onItemClick('f1'));
+      });
+
+      test('THEN no navigation happens', () => {
+        expect(router.push).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('WHEN they bulk delete the folder that does not hold the open thread', () => {
+      beforeEach(async () => {
+        await act(async () => {
+          await manager.current.onBulkDelete(new Set(['f1']));
+          await vi.advanceTimersByTimeAsync(0);
+        });
+      });
+
+      test('THEN only the folder delete reaches the api and the open thread stays', () => {
+        expect(manager.current.navItems).toEqual([threadItem('t1')]);
+        expect(deleteFolders).toHaveBeenCalledExactlyOnceWith(['f1']);
+        expect(deleteThreads).not.toHaveBeenCalled();
+        expect(router.push).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('WHEN they delete and rename an item that is no longer in the tree', () => {
+      beforeEach(async () => {
+        await act(async () => {
+          await manager.current.onDeleteItem('t-gone');
+          await manager.current.onRenameItem('t-gone', 'Renamed');
+          await vi.advanceTimersByTimeAsync(0);
+        });
+      });
+
+      test('THEN nothing reaches the api and no failure is reported or reloaded', () => {
+        expect(manager.current.navItems).toEqual(INITIAL_TREE);
+        expect(deleteThread).not.toHaveBeenCalled();
+        expect(updateThreadName).not.toHaveBeenCalled();
+        expect(event.error).not.toHaveBeenCalled();
+        expect(getFolders).toHaveBeenCalledOnce();
+      });
+    });
+  });
+
+  describe('GIVEN a second folder beside the folder that holds a thread', () => {
+    beforeEach(async () => {
+      primeApi({ workspaceId: 'ws-1', threadId: 't1' });
+      vi.mocked(getFolders).mockResolvedValue([folderInput('f1', 1), folderInput('f2', 2)]);
+
+      manager = renderHook(() => useWorkspaceManager()).result;
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(0);
+      });
+    });
+
+    describe('WHEN they bulk move the folder together with its own thread into the second folder', () => {
+      beforeEach(async () => {
+        await act(async () => {
+          await manager.current.onBulkMove(new Set(['f1', 't2']), 'f2', 0);
+          await vi.advanceTimersByTimeAsync(0);
+        });
+      });
+
+      test('THEN the thread travels inside its folder instead of being pulled out of it', () => {
+        expect(manager.current.navItems).toEqual([
+          threadItem('t1'),
+          folderItem('f2', [folderItem('f1', [threadItem('t2')])]),
+        ]);
+        expect(moveThread).not.toHaveBeenCalledWith('t2', expect.anything(), expect.anything());
+      });
+
+      test('THEN the moved folder and the root items left behind persist at their new indexes', () => {
+        expect(vi.mocked(moveFolder).mock.calls).toEqual([
+          ['f1', 'f2', 0],
+          ['f2', null, 1],
+        ]);
+        expect(moveThread).toHaveBeenCalledExactlyOnceWith('t1', null, 0);
+      });
+    });
+
+    describe('WHEN they bulk move the root thread between the two folders', () => {
+      beforeEach(async () => {
+        await act(async () => {
+          await manager.current.onBulkMove(new Set(['t1']), null, 1);
+          await vi.advanceTimersByTimeAsync(0);
+        });
+      });
+
+      test('THEN the thread lands at the drop slot and the root list persists in its new order', () => {
+        expect(manager.current.navItems).toEqual([
+          folderItem('f1', [threadItem('t2')]),
+          threadItem('t1'),
+          folderItem('f2'),
+        ]);
+        expect(vi.mocked(moveFolder).mock.calls).toEqual([
+          ['f1', null, 0],
+          ['f2', null, 2],
+        ]);
+        expect(moveThread).toHaveBeenCalledExactlyOnceWith('t1', null, 1);
+      });
+    });
+  });
+
+  describe('GIVEN a member who cannot manage the structure', () => {
+    beforeEach(async () => {
+      primeApi({ workspaceId: 'ws-1', threadId: 't1' });
+      vi.mocked(getMyWorkspacePermissions).mockResolvedValue(EDIT_ACCESS);
+
+      manager = renderHook(() => useWorkspaceManager()).result;
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(0);
+      });
+    });
+
+    describe('WHEN they try every structure change', () => {
+      beforeEach(async () => {
+        await act(async () => {
+          await manager.current.onCreateThread();
+          await manager.current.onCreateFolder();
+          await manager.current.onDeleteItem('t1');
+          await manager.current.onRenameItem('t1', 'Sharper question');
+          await manager.current.onMoveItem('t1', 'f1', 0);
+          await manager.current.onBulkMove(new Set(['t1']), 'f1', 0);
+          await manager.current.onBulkDelete(new Set(['t1']));
+          await vi.advanceTimersByTimeAsync(0);
+        });
+      });
+
+      test('THEN the tree and the api stay untouched', () => {
+        expect(manager.current.navItems).toEqual(INITIAL_TREE);
+        expect(createThread).not.toHaveBeenCalled();
+        expect(createFolder).not.toHaveBeenCalled();
+        expect(deleteThread).not.toHaveBeenCalled();
+        expect(updateThreadName).not.toHaveBeenCalled();
+        expect(moveThread).not.toHaveBeenCalled();
+        expect(deleteThreads).not.toHaveBeenCalled();
+      });
+    });
+  });
+
+  describe('GIVEN structure writes that fail on the api', () => {
+    beforeEach(async () => {
+      primeApi({ workspaceId: 'ws-1', threadId: 't1' });
+      vi.mocked(createThread).mockRejectedValue(new Error('db down'));
+      vi.mocked(createFolder).mockRejectedValue(new Error('db down'));
+      vi.mocked(deleteThread).mockRejectedValue(new Error('db down'));
+      vi.mocked(updateThreadName).mockRejectedValue(new Error('db down'));
+      vi.mocked(moveThread).mockRejectedValue(new Error('db down'));
+
+      manager = renderHook(() => useWorkspaceManager()).result;
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(0);
+      });
+    });
+
+    describe('WHEN they create a thread at the root', () => {
+      let created: string | null;
+
+      beforeEach(async () => {
+        await act(async () => {
+          created = await manager.current.onCreateThread();
+          await vi.advanceTimersByTimeAsync(0);
+        });
+      });
+
+      test('THEN the tree stays and the failure surfaces', () => {
+        expect(manager.current.navItems).toEqual(INITIAL_TREE);
+        expect(router.push).not.toHaveBeenCalled();
+        expect(event.success).not.toHaveBeenCalled();
+        expect(awardBadge).not.toHaveBeenCalled();
+        expect(event.error).toHaveBeenCalledExactlyOnceWith(expect.any(Error), {
+          title: TRANSLATIONS.common.errorTitles.createFailed,
+          context: 'sidebar.createThread',
+        });
+      });
+
+      test('THEN no thread id comes back', () => {
+        expect(created).toBeNull();
+      });
+    });
+
+    describe('WHEN they create a folder', () => {
+      beforeEach(async () => {
+        await act(async () => {
+          await manager.current.onCreateFolder();
+          await vi.advanceTimersByTimeAsync(0);
+        });
+      });
+
+      test('THEN the tree stays out of edit mode and the failure surfaces', () => {
+        expect(manager.current.navItems).toEqual(INITIAL_TREE);
+        expect(manager.current.editingItemId).toBeNull();
+        expect(event.success).not.toHaveBeenCalled();
+        expect(event.error).toHaveBeenCalledExactlyOnceWith(expect.any(Error), {
+          title: TRANSLATIONS.common.errorTitles.createFailed,
+          context: 'sidebar.createFolder',
+        });
+      });
+    });
+
+    describe('WHEN they delete the open thread', () => {
+      beforeEach(async () => {
+        await act(async () => {
+          await manager.current.onDeleteItem('t1');
+          await vi.advanceTimersByTimeAsync(0);
+        });
+      });
+
+      test('THEN the thread stays open in the tree and the failure surfaces', () => {
+        expect(manager.current.navItems).toEqual(INITIAL_TREE);
+        expect(router.push).not.toHaveBeenCalled();
+        expect(event.success).not.toHaveBeenCalled();
+        expect(event.error).toHaveBeenCalledExactlyOnceWith(expect.any(Error), {
+          title: TRANSLATIONS.common.errorTitles.deleteFailed,
+          context: 'sidebar.deleteItem',
+        });
+      });
+    });
+
+    describe('WHEN they rename the root thread', () => {
+      beforeEach(async () => {
+        await act(async () => {
+          await manager.current.onRenameItem('t1', 'Sharper question');
+          await vi.advanceTimersByTimeAsync(0);
+        });
+      });
+
+      test('THEN the tree rolls back to the server state', () => {
+        expect(manager.current.navItems).toEqual(INITIAL_TREE);
+        expect(getFolders).toHaveBeenCalledTimes(2);
+        expect(event.success).not.toHaveBeenCalled();
+        expect(event.error).toHaveBeenCalledExactlyOnceWith(expect.any(Error), {
+          title: TRANSLATIONS.common.errorTitles.renameFailed,
+          context: 'sidebar.renameItem',
+        });
+      });
+    });
+
+    describe('WHEN they drag the root thread into the folder', () => {
+      beforeEach(async () => {
+        await act(async () => {
+          await manager.current.onMoveItem('t1', 'f1', 0);
+          await vi.advanceTimersByTimeAsync(0);
+        });
+      });
+
+      test('THEN the tree rolls back to the server state', () => {
+        expect(manager.current.navItems).toEqual(INITIAL_TREE);
+        expect(getFolders).toHaveBeenCalledTimes(2);
+        expect(event.error).toHaveBeenCalledExactlyOnceWith(expect.any(Error), {
+          title: TRANSLATIONS.common.errorTitles.moveFailed,
+          context: 'sidebar.moveItem',
+        });
+      });
+    });
+
+    describe('WHEN they bulk move the root thread into the folder', () => {
+      beforeEach(async () => {
+        await act(async () => {
+          await manager.current.onBulkMove(new Set(['t1']), 'f1', 0);
+          await vi.advanceTimersByTimeAsync(0);
+        });
+      });
+
+      test('THEN the tree rolls back and the failure is reported as a bulk move', () => {
+        expect(manager.current.navItems).toEqual(INITIAL_TREE);
+        expect(event.error).toHaveBeenCalledExactlyOnceWith(expect.any(Error), {
+          title: TRANSLATIONS.common.errorTitles.moveFailed,
+          context: 'sidebar.bulkMove',
+        });
+      });
+    });
+  });
+
+  describe('GIVEN a move that fails while the tree cannot be reloaded', () => {
+    beforeEach(async () => {
+      primeApi({ workspaceId: 'ws-1', threadId: 't1' });
+      vi.mocked(moveThread).mockRejectedValue(new Error('db down'));
+      vi.mocked(getFolders).mockRejectedValue(new Error('db down')).mockResolvedValueOnce(folderList());
+
+      manager = renderHook(() => useWorkspaceManager()).result;
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(0);
+      });
+    });
+
+    describe('WHEN they drag the root thread into the folder', () => {
+      beforeEach(async () => {
+        await act(async () => {
+          await manager.current.onMoveItem('t1', 'f1', 0);
+          await vi.advanceTimersByTimeAsync(0);
+        });
+      });
+
+      test('THEN the move failure surfaces and the reload failure is logged without a toast', () => {
+        expect(event.error).toHaveBeenCalledTimes(2);
+        expect(event.error).toHaveBeenNthCalledWith(1, expect.any(Error), {
+          title: TRANSLATIONS.common.errorTitles.moveFailed,
+          context: 'sidebar.moveItem',
+        });
+        expect(event.error).toHaveBeenNthCalledWith(2, expect.any(Error), {
+          toast: false,
+          context: 'sidebar.reloadContent',
+        });
+      });
+    });
+  });
+
+  describe('GIVEN a tree move whose thread writes fail while the folder write is still running', () => {
+    let resolveFolderWrite: () => void;
+
+    beforeEach(async () => {
+      const folderWrite = Promise.withResolvers<void>();
+
+      resolveFolderWrite = folderWrite.resolve;
+      primeApi({ workspaceId: 'ws-1', threadId: 't1' });
+      vi.mocked(moveThread).mockRejectedValue(new Error('db down'));
+      vi.mocked(moveFolder).mockReturnValue(folderWrite.promise);
+
+      manager = renderHook(() => useWorkspaceManager()).result;
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(0);
+      });
+    });
+
+    describe('WHEN they drag the root thread into the folder', () => {
+      beforeEach(async () => {
+        await act(async () => {
+          manager.current.onMoveItem('t1', 'f1', 0);
+          await vi.advanceTimersByTimeAsync(0);
+        });
+      });
+
+      test('THEN nothing reloads and nothing is reported while the folder write is still running', () => {
+        expect(getFolders).toHaveBeenCalledOnce();
+        expect(event.error).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('WHEN they drag the root thread into the folder and the folder write settles', () => {
+      beforeEach(async () => {
+        await act(async () => {
+          manager.current.onMoveItem('t1', 'f1', 0);
+          await vi.advanceTimersByTimeAsync(0);
+        });
+        await act(async () => {
+          resolveFolderWrite();
+          await vi.advanceTimersByTimeAsync(0);
+        });
+      });
+
+      test('THEN the tree reloads once and the failure surfaces once', () => {
+        expect(manager.current.navItems).toEqual(INITIAL_TREE);
+        expect(getFolders).toHaveBeenCalledTimes(2);
+        expect(event.error).toHaveBeenCalledExactlyOnceWith(expect.any(Error), {
+          title: TRANSLATIONS.common.errorTitles.moveFailed,
+          context: 'sidebar.moveItem',
+        });
+      });
+    });
+  });
+
+  describe('GIVEN a bulk delete whose folder delete commits and whose thread delete fails, with a thread of that folder open', () => {
+    beforeEach(async () => {
+      primeApi({ workspaceId: 'ws-1', threadId: 't2' });
+      vi.mocked(deleteThreads).mockRejectedValue(new Error('db down'));
+
+      manager = renderHook(() => useWorkspaceManager()).result;
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(0);
+      });
+      vi.mocked(getFolders).mockResolvedValue([]);
+      vi.mocked(getThreads).mockResolvedValue([threadInput('t1', 0)]);
+    });
+
+    describe('WHEN they bulk delete the folder and the root thread', () => {
+      beforeEach(async () => {
+        await act(async () => {
+          await manager.current.onBulkDelete(new Set(['f1', 't1']));
+          await vi.advanceTimersByTimeAsync(0);
+        });
+      });
+
+      test('THEN the tree reloads the server state and the failure surfaces', () => {
+        expect(manager.current.navItems).toEqual([threadItem('t1')]);
+        expect(event.success).not.toHaveBeenCalled();
+        expect(event.error).toHaveBeenCalledExactlyOnceWith(expect.any(Error), {
+          title: TRANSLATIONS.common.errorTitles.deleteFailed,
+          context: 'sidebar.bulkDelete',
+        });
+      });
+
+      test('THEN the user is routed away from the deleted thread', () => {
+        expect(router.push).toHaveBeenCalledExactlyOnceWith('/platform');
+      });
+    });
+  });
+
+  describe('GIVEN a bulk delete that fails on the api before anything commits', () => {
+    beforeEach(async () => {
+      primeApi({ workspaceId: 'ws-1', threadId: 't1' });
+      vi.mocked(deleteThreads).mockRejectedValue(new Error('db down'));
+
+      manager = renderHook(() => useWorkspaceManager()).result;
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(0);
+      });
+    });
+
+    describe('WHEN they bulk delete the open thread', () => {
+      beforeEach(async () => {
+        await act(async () => {
+          await manager.current.onBulkDelete(new Set(['t1']));
+          await vi.advanceTimersByTimeAsync(0);
+        });
+      });
+
+      test('THEN the tree rolls back to the server state and the thread stays open', () => {
+        expect(manager.current.navItems).toEqual(INITIAL_TREE);
+        expect(router.push).not.toHaveBeenCalled();
+      });
+    });
+  });
+
+  describe('GIVEN a folder delete that is still running in a bulk delete whose thread delete fails', () => {
+    beforeEach(async () => {
+      primeApi({ workspaceId: 'ws-1', threadId: 't1' });
+      vi.mocked(deleteFolders).mockReturnValue(Promise.withResolvers<void>().promise);
+      vi.mocked(deleteThreads).mockRejectedValue(new Error('db down'));
+
+      manager = renderHook(() => useWorkspaceManager()).result;
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(0);
+      });
+    });
+
+    describe('WHEN they bulk delete the folder and the root thread', () => {
+      beforeEach(async () => {
+        await act(async () => {
+          manager.current.onBulkDelete(new Set(['f1', 't1']));
+          await vi.advanceTimersByTimeAsync(0);
+        });
+      });
+
+      test('THEN the thread delete waits for the folder delete and nothing reloads meanwhile', () => {
+        expect(deleteFolders).toHaveBeenCalledExactlyOnceWith(['f1']);
+        expect(deleteThreads).not.toHaveBeenCalled();
+        expect(getFolders).toHaveBeenCalledOnce();
       });
     });
   });
@@ -1168,714 +2157,6 @@ describe('useWorkspaceManager', () => {
     });
   });
 
-  describe('GIVEN the active workspace being deleted', () => {
-    let resolveDelete: () => void;
-
-    beforeEach(async () => {
-      const pendingDelete = Promise.withResolvers<void>();
-
-      resolveDelete = pendingDelete.resolve;
-      primeApi({ workspaceId: 'ws-1', threadId: 't1' });
-      vi.mocked(deleteWorkspace).mockReturnValue(pendingDelete.promise);
-      vi.mocked(createWorkspace).mockResolvedValue({
-        id: 'ws-new',
-        name: 'New Workspace',
-        ownerId: 'user-1',
-        createdAt: '2026-01-01T00:00:00Z',
-      });
-
-      manager = renderHook(() => useWorkspaceManager()).result;
-      await act(async () => {
-        await vi.advanceTimersByTimeAsync(0);
-      });
-      await act(async () => {
-        manager.current.onDeleteWorkspace('ws-1');
-        await vi.advanceTimersByTimeAsync(0);
-      });
-      await act(async () => {
-        await manager.current.onCreateWorkspace();
-        await vi.advanceTimersByTimeAsync(0);
-      });
-    });
-
-    describe('WHEN the delete settles after a workspace was created meanwhile', () => {
-      beforeEach(async () => {
-        await act(async () => {
-          resolveDelete();
-          await vi.advanceTimersByTimeAsync(0);
-        });
-      });
-
-      test('THEN the new workspace survives and stays active', () => {
-        expect(manager.current.workspaces.map((workspace) => workspace.id)).toEqual(['ws-2', 'ws-3', 'ws-new']);
-        expect(manager.current.activeWorkspaceId).toBe('ws-new');
-        expect(manager.current.navItems).toEqual([]);
-      });
-    });
-  });
-
-  describe('GIVEN a manageable content tree on the active workspace', () => {
-    beforeEach(async () => {
-      primeApi({ workspaceId: 'ws-1', threadId: 't1' });
-      vi.mocked(createThread).mockResolvedValue(threadInput('t-new', 2));
-      vi.mocked(createFolder).mockResolvedValue(folderInput('f-new', 2));
-
-      manager = renderHook(() => useWorkspaceManager()).result;
-      await act(async () => {
-        await vi.advanceTimersByTimeAsync(0);
-      });
-    });
-
-    describe('WHEN they create a thread at the root', () => {
-      beforeEach(async () => {
-        await act(async () => {
-          await manager.current.onCreateThread();
-          await vi.advanceTimersByTimeAsync(0);
-        });
-      });
-
-      test('THEN the thread appends to the root in edit mode', () => {
-        expect(manager.current.navItems).toEqual([
-          ...INITIAL_TREE,
-          { type: 'thread', id: 't-new', name: 'Thread t-new' },
-        ]);
-        expect(manager.current.editingItemId).toBe('t-new');
-      });
-
-      test('THEN the creation reaches the api and opens the thread', () => {
-        expect(createThread).toHaveBeenCalledExactlyOnceWith(
-          'ws-1',
-          undefined,
-          TRANSLATIONS.platform.sidebar.defaultNames.thread,
-        );
-        expect(router.push).toHaveBeenCalledExactlyOnceWith('/platform/ws-1/t-new');
-        expect(event.success).toHaveBeenCalledExactlyOnceWith(TRANSLATIONS.platform.sidebar.threadCreated);
-      });
-
-      test('THEN the First Steps badge is awarded', () => {
-        expect(awardBadge).toHaveBeenCalledExactlyOnceWith('firstSteps');
-      });
-    });
-
-    describe('WHEN they create a thread inside the folder', () => {
-      beforeEach(async () => {
-        await act(async () => {
-          await manager.current.onCreateThread('f1');
-          await vi.advanceTimersByTimeAsync(0);
-        });
-      });
-
-      test('THEN the thread lands at the end of the folder', () => {
-        expect(manager.current.navItems).toEqual([
-          threadItem('t1'),
-          folderItem('f1', [threadItem('t2'), { type: 'thread', id: 't-new', name: 'Thread t-new' }]),
-        ]);
-        expect(createThread).toHaveBeenCalledExactlyOnceWith(
-          'ws-1',
-          'f1',
-          TRANSLATIONS.platform.sidebar.defaultNames.thread,
-        );
-      });
-    });
-
-    describe('WHEN a thread is created with its name already chosen', () => {
-      let created: string | null;
-
-      beforeEach(async () => {
-        await act(async () => {
-          created = await manager.current.onCreateThread(undefined, 'Example');
-          await vi.advanceTimersByTimeAsync(0);
-        });
-      });
-
-      test('THEN the name reaches the api and the new id comes back', () => {
-        expect(createThread).toHaveBeenCalledExactlyOnceWith('ws-1', undefined, 'Example');
-        expect(created).toBe('t-new');
-      });
-
-      test('THEN the thread opens without dropping into rename mode', () => {
-        expect(manager.current.editingItemId).toBeNull();
-        expect(router.push).toHaveBeenCalledExactlyOnceWith('/platform/ws-1/t-new');
-      });
-
-      test('THEN no badge is awarded for the prepared thread', () => {
-        expect(awardBadge).not.toHaveBeenCalled();
-      });
-    });
-
-    describe('WHEN they create a folder', () => {
-      beforeEach(async () => {
-        await act(async () => {
-          await manager.current.onCreateFolder();
-          await vi.advanceTimersByTimeAsync(0);
-        });
-      });
-
-      test('THEN the folder appends to the root in edit mode', () => {
-        expect(manager.current.navItems).toEqual([...INITIAL_TREE, folderItem('f-new')]);
-        expect(manager.current.editingItemId).toBe('f-new');
-        expect(createFolder).toHaveBeenCalledExactlyOnceWith(
-          'ws-1',
-          undefined,
-          TRANSLATIONS.platform.sidebar.defaultNames.folder,
-        );
-        expect(event.success).toHaveBeenCalledExactlyOnceWith(TRANSLATIONS.platform.sidebar.folderCreated);
-      });
-    });
-
-    describe('WHEN they name the freshly created thread', () => {
-      beforeEach(async () => {
-        await act(async () => {
-          await manager.current.onCreateThread();
-          await vi.advanceTimersByTimeAsync(0);
-        });
-        await act(async () => {
-          await manager.current.onRenameItem('t-new', 'Named question');
-          await vi.advanceTimersByTimeAsync(0);
-        });
-      });
-
-      test('THEN the rename persists without a rename toast', () => {
-        expect(updateThreadName).toHaveBeenCalledExactlyOnceWith('t-new', 'Named question');
-        expect(event.success).toHaveBeenCalledExactlyOnceWith(TRANSLATIONS.platform.sidebar.threadCreated);
-      });
-    });
-
-    describe('WHEN they leave the freshly created thread unnamed and rename it later', () => {
-      beforeEach(async () => {
-        await act(async () => {
-          await manager.current.onCreateThread();
-          await vi.advanceTimersByTimeAsync(0);
-        });
-        act(() => manager.current.clearEditingItemId());
-        await act(async () => {
-          await manager.current.onRenameItem('t-new', 'Named question');
-          await vi.advanceTimersByTimeAsync(0);
-        });
-      });
-
-      test('THEN the edit mode ends and the later rename gets its own toast', () => {
-        expect(manager.current.editingItemId).toBeNull();
-        expect(vi.mocked(event.success).mock.calls).toEqual([
-          [TRANSLATIONS.platform.sidebar.threadCreated],
-          [TRANSLATIONS.platform.sidebar.threadRenamed],
-        ]);
-      });
-    });
-
-    describe('WHEN they rename the root thread', () => {
-      beforeEach(async () => {
-        await act(async () => {
-          await manager.current.onRenameItem('t1', 'Sharper question');
-          await vi.advanceTimersByTimeAsync(0);
-        });
-      });
-
-      test('THEN the rename shows optimistically and persists', () => {
-        expect(manager.current.navItems[0]).toEqual({
-          type: 'thread',
-          id: 't1',
-          name: 'Sharper question',
-          resolved: false,
-        });
-        expect(updateThreadName).toHaveBeenCalledExactlyOnceWith('t1', 'Sharper question');
-        expect(event.success).toHaveBeenCalledExactlyOnceWith(TRANSLATIONS.platform.sidebar.threadRenamed);
-        expect(getFolders).toHaveBeenCalledTimes(1);
-      });
-    });
-
-    describe('WHEN they rename the folder', () => {
-      beforeEach(async () => {
-        await act(async () => {
-          await manager.current.onRenameItem('f1', 'Sorted');
-          await vi.advanceTimersByTimeAsync(0);
-        });
-      });
-
-      test('THEN the rename shows optimistically and persists', () => {
-        expect(manager.current.navItems[1]).toMatchObject({ id: 'f1', name: 'Sorted' });
-        expect(updateFolderName).toHaveBeenCalledExactlyOnceWith('f1', 'Sorted');
-        expect(event.success).toHaveBeenCalledExactlyOnceWith(TRANSLATIONS.platform.sidebar.folderRenamed);
-      });
-    });
-
-    describe('WHEN they delete the open thread', () => {
-      beforeEach(async () => {
-        await act(async () => {
-          await manager.current.onDeleteItem('t1');
-          await vi.advanceTimersByTimeAsync(0);
-        });
-      });
-
-      test('THEN the thread leaves the tree', () => {
-        expect(manager.current.navItems).toEqual([folderItem('f1', [threadItem('t2')])]);
-        expect(deleteThread).toHaveBeenCalledExactlyOnceWith('t1');
-        expect(deleteFolder).not.toHaveBeenCalled();
-        expect(event.success).toHaveBeenCalledExactlyOnceWith(TRANSLATIONS.platform.sidebar.threadDeleted);
-      });
-
-      test('THEN the user is routed away from the deleted thread', () => {
-        expect(router.push).toHaveBeenCalledExactlyOnceWith('/platform');
-      });
-    });
-
-    describe('WHEN they delete the folder that does not hold the open thread', () => {
-      beforeEach(async () => {
-        await act(async () => {
-          await manager.current.onDeleteItem('f1');
-          await vi.advanceTimersByTimeAsync(0);
-        });
-      });
-
-      test('THEN the folder leaves the tree without navigation', () => {
-        expect(manager.current.navItems).toEqual([threadItem('t1')]);
-        expect(deleteFolder).toHaveBeenCalledExactlyOnceWith('f1');
-        expect(event.success).toHaveBeenCalledExactlyOnceWith(TRANSLATIONS.platform.sidebar.folderDeleted);
-        expect(router.push).not.toHaveBeenCalled();
-      });
-    });
-
-    describe('WHEN they drag the root thread into the folder', () => {
-      beforeEach(async () => {
-        await act(async () => {
-          await manager.current.onMoveItem('t1', 'f1', 0);
-          await vi.advanceTimersByTimeAsync(0);
-        });
-      });
-
-      test('THEN the tree reflects the move optimistically', () => {
-        expect(manager.current.navItems).toEqual([folderItem('f1', [threadItem('t1'), threadItem('t2')])]);
-      });
-
-      test('THEN the dragged thread and every shifted sibling persist', () => {
-        expect(vi.mocked(moveThread).mock.calls).toEqual([
-          ['t1', 'f1', 0],
-          ['t2', 'f1', 1],
-        ]);
-        expect(moveFolder).toHaveBeenCalledExactlyOnceWith('f1', null, 0);
-      });
-    });
-
-    describe('WHEN they drag the root thread to the end of the folder', () => {
-      beforeEach(async () => {
-        await act(async () => {
-          await manager.current.onMoveItem('t1', 'f1', 1);
-          await vi.advanceTimersByTimeAsync(0);
-        });
-      });
-
-      test('THEN both lists it touched are persisted in full, since stored positions may have gaps', () => {
-        expect(manager.current.navItems).toEqual([folderItem('f1', [threadItem('t2'), threadItem('t1')])]);
-        expect(vi.mocked(moveThread).mock.calls).toEqual([
-          ['t2', 'f1', 0],
-          ['t1', 'f1', 1],
-        ]);
-        expect(moveFolder).toHaveBeenCalledExactlyOnceWith('f1', null, 0);
-      });
-    });
-
-    describe('WHEN they drop the root thread where it already was', () => {
-      beforeEach(async () => {
-        await act(async () => {
-          await manager.current.onMoveItem('t1', null, 0);
-          await vi.advanceTimersByTimeAsync(0);
-        });
-      });
-
-      test('THEN the tree stays and nothing is written', () => {
-        expect(manager.current.navItems).toEqual(INITIAL_TREE);
-        expect(moveThread).not.toHaveBeenCalled();
-        expect(moveFolder).not.toHaveBeenCalled();
-      });
-    });
-
-    describe('WHEN they bulk move the root thread to the end of the folder', () => {
-      beforeEach(async () => {
-        await act(async () => {
-          await manager.current.onBulkMove(new Set(['t1']), 'f1', 1);
-          await vi.advanceTimersByTimeAsync(0);
-        });
-      });
-
-      test('THEN the thread lands after the existing children', () => {
-        expect(manager.current.navItems).toEqual([folderItem('f1', [threadItem('t2'), threadItem('t1')])]);
-      });
-
-      test('THEN both lists it touched are persisted in full', () => {
-        expect(vi.mocked(moveThread).mock.calls).toEqual([
-          ['t2', 'f1', 0],
-          ['t1', 'f1', 1],
-        ]);
-        expect(moveFolder).toHaveBeenCalledExactlyOnceWith('f1', null, 0);
-      });
-    });
-
-    describe('WHEN they bulk move the root thread to the top of the folder', () => {
-      beforeEach(async () => {
-        await act(async () => {
-          await manager.current.onBulkMove(new Set(['t1']), 'f1', 0);
-          await vi.advanceTimersByTimeAsync(0);
-        });
-      });
-
-      test('THEN the thread lands at the drop slot and the shifted child is persisted', () => {
-        expect(manager.current.navItems).toEqual([folderItem('f1', [threadItem('t1'), threadItem('t2')])]);
-        expect(vi.mocked(moveThread).mock.calls).toEqual([
-          ['t1', 'f1', 0],
-          ['t2', 'f1', 1],
-        ]);
-      });
-    });
-
-    describe('WHEN they bulk delete the open thread and the folder', () => {
-      beforeEach(async () => {
-        await act(async () => {
-          await manager.current.onBulkDelete(new Set(['t1', 'f1']));
-          await vi.advanceTimersByTimeAsync(0);
-        });
-      });
-
-      test('THEN the tree empties through the api', () => {
-        expect(manager.current.navItems).toEqual([]);
-        expect(deleteThreads).toHaveBeenCalledExactlyOnceWith(['t1']);
-        expect(deleteFolders).toHaveBeenCalledExactlyOnceWith(['f1']);
-        expect(event.success).toHaveBeenCalledExactlyOnceWith(TRANSLATIONS.platform.sidebar.itemsDeleted);
-      });
-
-      test('THEN the user is routed home', () => {
-        expect(router.push).toHaveBeenCalledExactlyOnceWith('/platform');
-      });
-    });
-
-    describe('WHEN they click a thread inside the folder', () => {
-      beforeEach(() => {
-        act(() => manager.current.onItemClick('t2'));
-      });
-
-      test('THEN the router opens the thread', () => {
-        expect(router.push).toHaveBeenCalledExactlyOnceWith('/platform/ws-1/t2');
-      });
-    });
-
-    describe('WHEN they click the folder', () => {
-      beforeEach(() => {
-        act(() => manager.current.onItemClick('f1'));
-      });
-
-      test('THEN no navigation happens', () => {
-        expect(router.push).not.toHaveBeenCalled();
-      });
-    });
-  });
-
-  describe('GIVEN a thread create that fails on the api', () => {
-    beforeEach(async () => {
-      primeApi({ workspaceId: 'ws-1', threadId: 't1' });
-      vi.mocked(createThread).mockRejectedValue(new Error('db down'));
-
-      manager = renderHook(() => useWorkspaceManager()).result;
-      await act(async () => {
-        await vi.advanceTimersByTimeAsync(0);
-      });
-    });
-
-    describe('WHEN they create a thread at the root', () => {
-      let created: string | null;
-
-      beforeEach(async () => {
-        await act(async () => {
-          created = await manager.current.onCreateThread();
-          await vi.advanceTimersByTimeAsync(0);
-        });
-      });
-
-      test('THEN the tree stays and the failure surfaces', () => {
-        expect(manager.current.navItems).toEqual(INITIAL_TREE);
-        expect(router.push).not.toHaveBeenCalled();
-        expect(event.success).not.toHaveBeenCalled();
-        expect(awardBadge).not.toHaveBeenCalled();
-        expect(event.error).toHaveBeenCalledExactlyOnceWith(expect.any(Error), {
-          title: TRANSLATIONS.common.errorTitles.createFailed,
-          context: 'sidebar.createThread',
-        });
-      });
-
-      test('THEN no thread id comes back', () => {
-        expect(created).toBeNull();
-      });
-    });
-  });
-
-  describe('GIVEN a thread rename that fails on the api', () => {
-    beforeEach(async () => {
-      primeApi({ workspaceId: 'ws-1', threadId: 't1' });
-      vi.mocked(updateThreadName).mockRejectedValue(new Error('db down'));
-
-      manager = renderHook(() => useWorkspaceManager()).result;
-      await act(async () => {
-        await vi.advanceTimersByTimeAsync(0);
-      });
-    });
-
-    describe('WHEN they rename the root thread', () => {
-      beforeEach(async () => {
-        await act(async () => {
-          await manager.current.onRenameItem('t1', 'Sharper question');
-          await vi.advanceTimersByTimeAsync(0);
-        });
-      });
-
-      test('THEN the tree rolls back to the server state', () => {
-        expect(manager.current.navItems).toEqual(INITIAL_TREE);
-        expect(getFolders).toHaveBeenCalledTimes(2);
-        expect(event.success).not.toHaveBeenCalled();
-        expect(event.error).toHaveBeenCalledExactlyOnceWith(expect.any(Error), {
-          title: TRANSLATIONS.common.errorTitles.renameFailed,
-          context: 'sidebar.renameItem',
-        });
-      });
-    });
-  });
-
-  describe('GIVEN a move that fails on the api', () => {
-    beforeEach(async () => {
-      primeApi({ workspaceId: 'ws-1', threadId: 't1' });
-      vi.mocked(moveThread).mockRejectedValue(new Error('db down'));
-
-      manager = renderHook(() => useWorkspaceManager()).result;
-      await act(async () => {
-        await vi.advanceTimersByTimeAsync(0);
-      });
-    });
-
-    describe('WHEN they drag the root thread into the folder', () => {
-      beforeEach(async () => {
-        await act(async () => {
-          await manager.current.onMoveItem('t1', 'f1', 0);
-          await vi.advanceTimersByTimeAsync(0);
-        });
-      });
-
-      test('THEN the tree rolls back to the server state', () => {
-        expect(manager.current.navItems).toEqual(INITIAL_TREE);
-        expect(getFolders).toHaveBeenCalledTimes(2);
-        expect(event.error).toHaveBeenCalledExactlyOnceWith(expect.any(Error), {
-          title: TRANSLATIONS.common.errorTitles.moveFailed,
-          context: 'sidebar.moveItem',
-        });
-      });
-    });
-  });
-
-  describe('GIVEN a tree move whose thread writes fail while the folder write is still running', () => {
-    let resolveFolderWrite: () => void;
-
-    beforeEach(async () => {
-      const folderWrite = Promise.withResolvers<void>();
-
-      resolveFolderWrite = folderWrite.resolve;
-      primeApi({ workspaceId: 'ws-1', threadId: 't1' });
-      vi.mocked(moveThread).mockRejectedValue(new Error('db down'));
-      vi.mocked(moveFolder).mockReturnValue(folderWrite.promise);
-
-      manager = renderHook(() => useWorkspaceManager()).result;
-      await act(async () => {
-        await vi.advanceTimersByTimeAsync(0);
-      });
-    });
-
-    describe('WHEN they drag the root thread into the folder', () => {
-      beforeEach(async () => {
-        await act(async () => {
-          manager.current.onMoveItem('t1', 'f1', 0);
-          await vi.advanceTimersByTimeAsync(0);
-        });
-      });
-
-      test('THEN nothing reloads and nothing is reported while the folder write is still running', () => {
-        expect(getFolders).toHaveBeenCalledOnce();
-        expect(event.error).not.toHaveBeenCalled();
-      });
-    });
-
-    describe('WHEN they drag the root thread into the folder and the folder write settles', () => {
-      beforeEach(async () => {
-        await act(async () => {
-          manager.current.onMoveItem('t1', 'f1', 0);
-          await vi.advanceTimersByTimeAsync(0);
-        });
-        await act(async () => {
-          resolveFolderWrite();
-          await vi.advanceTimersByTimeAsync(0);
-        });
-      });
-
-      test('THEN the tree reloads once and the failure surfaces once', () => {
-        expect(manager.current.navItems).toEqual(INITIAL_TREE);
-        expect(getFolders).toHaveBeenCalledTimes(2);
-        expect(event.error).toHaveBeenCalledExactlyOnceWith(expect.any(Error), {
-          title: TRANSLATIONS.common.errorTitles.moveFailed,
-          context: 'sidebar.moveItem',
-        });
-      });
-    });
-  });
-
-  describe('GIVEN a bulk delete whose folder delete commits and whose thread delete fails, with a thread of that folder open', () => {
-    beforeEach(async () => {
-      primeApi({ workspaceId: 'ws-1', threadId: 't2' });
-      vi.mocked(deleteThreads).mockRejectedValue(new Error('db down'));
-
-      manager = renderHook(() => useWorkspaceManager()).result;
-      await act(async () => {
-        await vi.advanceTimersByTimeAsync(0);
-      });
-      vi.mocked(getFolders).mockResolvedValue([]);
-      vi.mocked(getThreads).mockResolvedValue([threadInput('t1', 0)]);
-    });
-
-    describe('WHEN they bulk delete the folder and the root thread', () => {
-      beforeEach(async () => {
-        await act(async () => {
-          await manager.current.onBulkDelete(new Set(['f1', 't1']));
-          await vi.advanceTimersByTimeAsync(0);
-        });
-      });
-
-      test('THEN the tree reloads the server state and the failure surfaces', () => {
-        expect(manager.current.navItems).toEqual([threadItem('t1')]);
-        expect(event.success).not.toHaveBeenCalled();
-        expect(event.error).toHaveBeenCalledExactlyOnceWith(expect.any(Error), {
-          title: TRANSLATIONS.common.errorTitles.deleteFailed,
-          context: 'sidebar.bulkDelete',
-        });
-      });
-
-      test('THEN the user is routed away from the deleted thread', () => {
-        expect(router.push).toHaveBeenCalledExactlyOnceWith('/platform');
-      });
-    });
-  });
-
-  describe('GIVEN a bulk delete that fails on the api before anything commits', () => {
-    beforeEach(async () => {
-      primeApi({ workspaceId: 'ws-1', threadId: 't1' });
-      vi.mocked(deleteThreads).mockRejectedValue(new Error('db down'));
-
-      manager = renderHook(() => useWorkspaceManager()).result;
-      await act(async () => {
-        await vi.advanceTimersByTimeAsync(0);
-      });
-    });
-
-    describe('WHEN they bulk delete the open thread', () => {
-      beforeEach(async () => {
-        await act(async () => {
-          await manager.current.onBulkDelete(new Set(['t1']));
-          await vi.advanceTimersByTimeAsync(0);
-        });
-      });
-
-      test('THEN the tree rolls back to the server state and the thread stays open', () => {
-        expect(manager.current.navItems).toEqual(INITIAL_TREE);
-        expect(router.push).not.toHaveBeenCalled();
-      });
-    });
-  });
-
-  describe('GIVEN a folder delete that is still running in a bulk delete whose thread delete fails', () => {
-    beforeEach(async () => {
-      primeApi({ workspaceId: 'ws-1', threadId: 't1' });
-      vi.mocked(deleteFolders).mockReturnValue(Promise.withResolvers<void>().promise);
-      vi.mocked(deleteThreads).mockRejectedValue(new Error('db down'));
-
-      manager = renderHook(() => useWorkspaceManager()).result;
-      await act(async () => {
-        await vi.advanceTimersByTimeAsync(0);
-      });
-    });
-
-    describe('WHEN they bulk delete the folder and the root thread', () => {
-      beforeEach(async () => {
-        await act(async () => {
-          manager.current.onBulkDelete(new Set(['f1', 't1']));
-          await vi.advanceTimersByTimeAsync(0);
-        });
-      });
-
-      test('THEN the thread delete waits for the folder delete and nothing reloads meanwhile', () => {
-        expect(deleteFolders).toHaveBeenCalledExactlyOnceWith(['f1']);
-        expect(deleteThreads).not.toHaveBeenCalled();
-        expect(getFolders).toHaveBeenCalledOnce();
-      });
-    });
-  });
-
-  describe('GIVEN a second folder beside the folder that holds a thread', () => {
-    beforeEach(async () => {
-      primeApi({ workspaceId: 'ws-1', threadId: 't1' });
-      vi.mocked(getFolders).mockResolvedValue([folderInput('f1', 1), folderInput('f2', 2)]);
-
-      manager = renderHook(() => useWorkspaceManager()).result;
-      await act(async () => {
-        await vi.advanceTimersByTimeAsync(0);
-      });
-    });
-
-    describe('WHEN they bulk move the folder together with its own thread into the second folder', () => {
-      beforeEach(async () => {
-        await act(async () => {
-          await manager.current.onBulkMove(new Set(['f1', 't2']), 'f2', 0);
-          await vi.advanceTimersByTimeAsync(0);
-        });
-      });
-
-      test('THEN the thread travels inside its folder instead of being pulled out of it', () => {
-        expect(manager.current.navItems).toEqual([
-          threadItem('t1'),
-          folderItem('f2', [folderItem('f1', [threadItem('t2')])]),
-        ]);
-        expect(moveThread).not.toHaveBeenCalledWith('t2', expect.anything(), expect.anything());
-      });
-
-      test('THEN the moved folder and the root items left behind persist at their new indexes', () => {
-        expect(vi.mocked(moveFolder).mock.calls).toEqual([
-          ['f1', 'f2', 0],
-          ['f2', null, 1],
-        ]);
-        expect(moveThread).toHaveBeenCalledExactlyOnceWith('t1', null, 0);
-      });
-    });
-  });
-
-  describe('GIVEN a member who cannot manage the structure', () => {
-    beforeEach(async () => {
-      primeApi({ workspaceId: 'ws-1', threadId: 't1' });
-      vi.mocked(getMyWorkspacePermissions).mockResolvedValue(EDIT_ACCESS);
-
-      manager = renderHook(() => useWorkspaceManager()).result;
-      await act(async () => {
-        await vi.advanceTimersByTimeAsync(0);
-      });
-    });
-
-    describe('WHEN they try to create and delete items', () => {
-      beforeEach(async () => {
-        await act(async () => {
-          await manager.current.onCreateThread();
-          await manager.current.onDeleteItem('t1');
-          await vi.advanceTimersByTimeAsync(0);
-        });
-      });
-
-      test('THEN the tree and the api stay untouched', () => {
-        expect(manager.current.navItems).toEqual(INITIAL_TREE);
-        expect(createThread).not.toHaveBeenCalled();
-        expect(deleteThread).not.toHaveBeenCalled();
-      });
-    });
-  });
-
   describe('GIVEN pending invitations for the member', () => {
     beforeEach(async () => {
       primeApi({ workspaceId: 'ws-1', threadId: 't1' });
@@ -1929,12 +2210,13 @@ describe('useWorkspaceManager', () => {
     });
   });
 
-  describe('GIVEN an invitation accept that fails on the api', () => {
+  describe('GIVEN invitation answers that fail on the api', () => {
     beforeEach(async () => {
       primeApi({ workspaceId: 'ws-1', threadId: 't1' });
       vi.mocked(getMyWorkspaces).mockResolvedValue([workspaceItem('ws-1')]);
       vi.mocked(getMyInvitations).mockResolvedValue([myInvitation('inv-1', 'ws-9'), myInvitation('inv-2', 'ws-8')]);
       vi.mocked(acceptWorkspaceInvitation).mockRejectedValue(new Error('db down'));
+      vi.mocked(declineWorkspaceInvitation).mockRejectedValue(new Error('db down'));
 
       manager = renderHook(() => useWorkspaceManager()).result;
       await act(async () => {
@@ -1961,143 +2243,69 @@ describe('useWorkspaceManager', () => {
         });
       });
     });
+
+    describe('WHEN they decline the second invitation', () => {
+      beforeEach(async () => {
+        await act(async () => {
+          await manager.current.onDeclineInvitation(myInvitation('inv-2', 'ws-8'));
+          await vi.advanceTimersByTimeAsync(0);
+        });
+      });
+
+      test('THEN the invitation stays and the failure surfaces', () => {
+        expect(manager.current.invitations).toEqual([myInvitation('inv-1', 'ws-9'), myInvitation('inv-2', 'ws-8')]);
+        expect(event.success).not.toHaveBeenCalled();
+        expect(event.error).toHaveBeenCalledExactlyOnceWith(expect.any(Error), {
+          title: TRANSLATIONS.platform.sidebar.invitations.declineFailed,
+          context: 'sidebar.declineInvitation',
+        });
+      });
+    });
   });
 
-  describe('GIVEN a manager subscribed to the canvas store', () => {
-    let unsubscribeCanvas: Mock<() => void>;
+  describe('GIVEN pending invitations that fail to load', () => {
+    beforeEach(() => {
+      primeApi({ workspaceId: 'ws-1', threadId: 't1' });
+      vi.mocked(getMyInvitations).mockRejectedValue(new Error('db down'));
 
-    beforeEach(async () => {
-      const canvasSubscribe = useCanvasStore.subscribe;
-      vi.spyOn(useCanvasStore, 'subscribe').mockImplementation((listener) => {
-        unsubscribeCanvas = vi.fn(canvasSubscribe(listener));
+      manager = renderHook(() => useWorkspaceManager()).result;
+    });
 
-        return unsubscribeCanvas;
+    describe('WHEN the initial load settles', () => {
+      beforeEach(async () => {
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(0);
+        });
       });
+
+      test('THEN no invitation shows and the failure is logged without a toast', () => {
+        expect(manager.current.invitations).toEqual([]);
+        expect(manager.current.activeWorkspaceId).toBe('ws-1');
+        expect(event.error).toHaveBeenCalledExactlyOnceWith(expect.any(Error), {
+          toast: false,
+          context: 'sidebar.loadInvitations',
+        });
+      });
+    });
+  });
+
+  describe('GIVEN a loaded manager on an open thread', () => {
+    beforeEach(async () => {
       primeApi({ workspaceId: 'ws-1', threadId: 't1' });
 
-      const view = renderHook(() => useWorkspaceManager());
-
-      manager = view.result;
-      unmountManager = view.unmount;
+      manager = renderHook(() => useWorkspaceManager()).result;
       await act(async () => {
         await vi.advanceTimersByTimeAsync(0);
       });
     });
 
-    describe('WHEN the active thread gains an answer node on the canvas', () => {
+    describe('WHEN the open thread gains an answer node on the canvas', () => {
       beforeEach(() => {
         act(() => useCanvasStore.setState({ threadId: 't1', nodes: [canvasNode('n1', { isAnswer: true })] }));
       });
 
       test('THEN the thread shows as resolved in the nav tree', () => {
         expect(manager.current.navItems[0]).toEqual(threadItem('t1', true));
-      });
-    });
-
-    describe('WHEN the answer node is removed again', () => {
-      beforeEach(() => {
-        act(() => useCanvasStore.setState({ threadId: 't1', nodes: [canvasNode('n1', { isAnswer: true })] }));
-        act(() => useCanvasStore.setState({ nodes: [canvasNode('n1')] }));
-      });
-
-      test('THEN the resolved mark clears', () => {
-        expect(manager.current.navItems[0]).toEqual(threadItem('t1'));
-      });
-    });
-
-    describe('WHEN the answer node is reached from a refuted node', () => {
-      beforeEach(() => {
-        act(() =>
-          useCanvasStore.setState({
-            threadId: 't1',
-            nodes: [canvasNode('n0', { status: 'invalid' }), canvasNode('n1', { isAnswer: true })],
-            edges: [canvasEdge('e1', 'n0', 'n1')],
-          }),
-        );
-      });
-
-      test('THEN the tainted answer leaves the thread unresolved', () => {
-        expect(manager.current.navItems[0]).toEqual(threadItem('t1'));
-      });
-    });
-
-    describe('WHEN the edge from the refuted node is removed afterwards', () => {
-      beforeEach(() => {
-        act(() =>
-          useCanvasStore.setState({
-            threadId: 't1',
-            nodes: [canvasNode('n0', { status: 'invalid' }), canvasNode('n1', { isAnswer: true })],
-            edges: [canvasEdge('e1', 'n0', 'n1')],
-          }),
-        );
-        act(() => useCanvasStore.setState({ edges: [] }));
-      });
-
-      test('THEN the edge change alone resolves the thread', () => {
-        expect(manager.current.navItems[0]).toEqual(threadItem('t1', true));
-      });
-    });
-
-    describe('WHEN the canvas opens another resolved thread', () => {
-      beforeEach(() => {
-        act(() => useCanvasStore.setState({ threadId: 't1', nodes: [canvasNode('n1', { isAnswer: true })] }));
-        act(() => useCanvasStore.setState({ threadId: 't2', nodes: [canvasNode('n2', { isAnswer: true })] }));
-      });
-
-      test('THEN both threads carry the resolved mark', () => {
-        expect(manager.current.navItems).toEqual([threadItem('t1', true), folderItem('f1', [threadItem('t2', true)])]);
-      });
-    });
-
-    describe('WHEN the canvas changes without flipping the resolution', () => {
-      let navItemsBefore: TNavItem[];
-
-      beforeEach(() => {
-        act(() => useCanvasStore.setState({ threadId: 't1', nodes: [canvasNode('n1')] }));
-        navItemsBefore = manager.current.navItems;
-        act(() => useCanvasStore.setState({ nodes: [canvasNode('n2')] }));
-      });
-
-      test('THEN the nav tree is not recomputed', () => {
-        expect(manager.current.navItems).toBe(navItemsBefore);
-      });
-    });
-
-    describe('WHEN only canvas state outside the graph changes', () => {
-      let navItemsBefore: TNavItem[];
-
-      beforeEach(() => {
-        act(() => useCanvasStore.setState({ threadId: 't1', nodes: [canvasNode('n1', { isAnswer: true })] }));
-        navItemsBefore = manager.current.navItems;
-        act(() => useCanvasStore.setState({ hydrated: true }));
-      });
-
-      test('THEN the nav tree is not recomputed', () => {
-        expect(manager.current.navItems).toBe(navItemsBefore);
-        expect(manager.current.navItems[0]).toEqual(threadItem('t1', true));
-      });
-    });
-
-    describe('WHEN the canvas holds nodes without a loaded thread', () => {
-      let navItemsBefore: TNavItem[];
-
-      beforeEach(() => {
-        navItemsBefore = manager.current.navItems;
-        act(() => useCanvasStore.setState({ threadId: null, nodes: [canvasNode('n1', { isAnswer: true })] }));
-      });
-
-      test('THEN no thread is marked', () => {
-        expect(manager.current.navItems).toBe(navItemsBefore);
-      });
-    });
-
-    describe('WHEN the manager unmounts', () => {
-      beforeEach(() => {
-        unmountManager();
-      });
-
-      test('THEN the canvas subscription is released', () => {
-        expect(unsubscribeCanvas).toHaveBeenCalledTimes(1);
       });
     });
   });

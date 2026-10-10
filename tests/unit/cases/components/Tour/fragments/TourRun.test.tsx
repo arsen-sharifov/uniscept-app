@@ -1,9 +1,11 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
+import type { ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import type { ITourSnapshot, TGuideId, TTourStepKey } from '@interfaces';
-
-import { elementAt, stubAnimationFrame, stubResizeObserver } from '@mocks/browser';
+import { LOST_TARGET_MS } from '@constants';
+import { elementAt, stubAnimationFrame, stubPerformanceNow, stubResizeObserver } from '@mocks/browser';
+import { RUN_SWITCHER_RECT } from '@mocks/geometry';
 import { TRANSLATIONS } from '@mocks/i18n';
 import { NO_TOUR_ACCESS, snapshot } from '@mocks/onboarding';
 import { TourRun } from '@/components/Tour';
@@ -11,19 +13,12 @@ import { findGuide, useOnboardingStore } from '@/lib/onboarding';
 
 vi.mock('@/i18n', () => import('@mocks/i18n'));
 
-const SWITCHER_RECT = { top: 20, left: 16, width: 240, height: 44 };
-
 const stepIndexOf = (guideId: TGuideId, copyKey: TTourStepKey) =>
   findGuide(guideId)?.steps.findIndex((step) => step.copyKey === copyKey) ?? -1;
 
-const runAt = (guideId: TGuideId, copyKey: TTourStepKey, state: ITourSnapshot) => {
-  const guide = findGuide(guideId)!;
-  const stepIndex = stepIndexOf(guideId, copyKey);
-  useOnboardingStore.setState({ run: { guideId, stepIndex } });
-  const { rerender } = render(<TourRun guide={guide} stepIndex={stepIndex} snapshot={state} />);
-
-  return (next: ITourSnapshot) => rerender(<TourRun guide={guide} stepIndex={stepIndex} snapshot={next} />);
-};
+const tourRun = (guideId: TGuideId, copyKey: TTourStepKey, state: ITourSnapshot) => (
+  <TourRun guide={findGuide(guideId)!} stepIndex={stepIndexOf(guideId, copyKey)} snapshot={state} />
+);
 
 const spotlightRing = () => document.querySelector('[data-tour-scrim] rect');
 
@@ -37,10 +32,14 @@ afterEach(() => useOnboardingStore.getState().forget());
 
 describe('TourRun', () => {
   describe('GIVEN a step that waits for a workspace', () => {
+    beforeEach(() => {
+      useOnboardingStore.setState({ run: { guideId: 'base', stepIndex: stepIndexOf('base', 'baseWorkspace') } });
+    });
+
     describe('WHEN the workspace appears while the step is open', () => {
       beforeEach(() => {
-        const rerun = runAt('base', 'baseWorkspace', snapshot());
-        rerun(snapshot({ workspaceCount: 1 }));
+        const { rerender } = render(tourRun('base', 'baseWorkspace', snapshot()));
+        rerender(tourRun('base', 'baseWorkspace', snapshot({ workspaceCount: 1 })));
       });
 
       test('THEN the run moves on by itself', () => {
@@ -50,7 +49,7 @@ describe('TourRun', () => {
 
     describe('WHEN the workspace already exists on arrival', () => {
       beforeEach(() => {
-        runAt('base', 'baseWorkspace', snapshot({ workspaceCount: 1 }));
+        render(tourRun('base', 'baseWorkspace', snapshot({ workspaceCount: 1 })));
       });
 
       test('THEN the step waits to be read and offers next', () => {
@@ -61,10 +60,16 @@ describe('TourRun', () => {
   });
 
   describe('GIVEN a step that waits for an open thread', () => {
+    let rerender: (ui: ReactNode) => void;
+
+    beforeEach(() => {
+      useOnboardingStore.setState({ run: { guideId: 'base', stepIndex: stepIndexOf('base', 'baseThread') } });
+      rerender = render(tourRun('base', 'baseThread', snapshot({ workspaceCount: 1, threadId: 'thread-1' }))).rerender;
+    });
+
     describe('WHEN the thread that was open on arrival closes', () => {
       beforeEach(() => {
-        const rerun = runAt('base', 'baseThread', snapshot({ workspaceCount: 1, threadId: 'thread-1' }));
-        rerun(snapshot({ workspaceCount: 1 }));
+        rerender(tourRun('base', 'baseThread', snapshot({ workspaceCount: 1 })));
       });
 
       test('THEN it waits for the action again instead of offering next', () => {
@@ -76,9 +81,13 @@ describe('TourRun', () => {
   });
 
   describe('GIVEN a step the account has no right to perform', () => {
+    beforeEach(() => {
+      useOnboardingStore.setState({ run: { guideId: 'canvas', stepIndex: stepIndexOf('canvas', 'commentsOpen') } });
+    });
+
     describe('WHEN the run reaches it', () => {
       beforeEach(() => {
-        runAt('canvas', 'commentsOpen', snapshot({ threadId: 'thread-1', permissions: NO_TOUR_ACCESS }));
+        render(tourRun('canvas', 'commentsOpen', snapshot({ threadId: 'thread-1', permissions: NO_TOUR_ACCESS })));
       });
 
       test('THEN it is skipped', () => {
@@ -90,8 +99,9 @@ describe('TourRun', () => {
   describe('GIVEN a step whose target is on screen', () => {
     beforeEach(() => {
       const frames = stubAnimationFrame();
-      document.body.append(elementAt({ 'data-tour': 'sidebarWorkspaceSwitcher' }, SWITCHER_RECT));
-      runAt('base', 'baseWorkspace', snapshot());
+      document.body.append(elementAt({ 'data-tour': 'sidebarWorkspaceSwitcher' }, RUN_SWITCHER_RECT));
+      useOnboardingStore.setState({ run: { guideId: 'base', stepIndex: stepIndexOf('base', 'baseWorkspace') } });
+      render(tourRun('base', 'baseWorkspace', snapshot()));
       act(() => frames.flush());
       ring = spotlightRing();
     });
@@ -113,10 +123,57 @@ describe('TourRun', () => {
     });
   });
 
+  describe('GIVEN a canvas step whose thread was closed behind the tour', () => {
+    let frames: ReturnType<typeof stubAnimationFrame>;
+    let clock: ReturnType<typeof stubPerformanceNow>;
+
+    beforeEach(() => {
+      frames = stubAnimationFrame();
+      clock = stubPerformanceNow();
+      clock.advance(1);
+      useOnboardingStore.setState({ run: { guideId: 'base', stepIndex: stepIndexOf('base', 'baseQuestion') } });
+      render(tourRun('base', 'baseQuestion', snapshot({ workspaceCount: 1 })));
+      act(() => frames.flush());
+    });
+
+    afterEach(() => {
+      vi.unstubAllGlobals();
+    });
+
+    describe('WHEN its target stays missing past the lost delay', () => {
+      beforeEach(() => {
+        clock.advance(LOST_TARGET_MS);
+        act(() => frames.flush());
+      });
+
+      test('THEN the run steps back to the step that opens a thread', () => {
+        expect(useOnboardingStore.getState().run?.stepIndex).toBe(stepIndexOf('base', 'baseThread'));
+      });
+    });
+  });
+
+  describe('GIVEN a run whose step index is past the end of its guide', () => {
+    describe('WHEN it renders', () => {
+      beforeEach(() => {
+        const guide = findGuide('base')!;
+        render(<TourRun guide={guide} stepIndex={guide.steps.length} snapshot={snapshot()} />);
+      });
+
+      test('THEN nothing is shown and the run is left alone', () => {
+        expect(screen.queryByRole('dialog', { hidden: true })).not.toBeInTheDocument();
+        expect(useOnboardingStore.getState().run).toBeNull();
+      });
+    });
+  });
+
   describe('GIVEN a running step', () => {
+    beforeEach(() => {
+      useOnboardingStore.setState({ run: { guideId: 'base', stepIndex: stepIndexOf('base', 'baseIntro') } });
+      render(tourRun('base', 'baseIntro', snapshot()));
+    });
+
     describe('WHEN the user leaves the tour', () => {
       beforeEach(() => {
-        runAt('base', 'baseIntro', snapshot());
         act(() => screen.getByTitle(TRANSLATIONS.platform.onboarding.quit).click());
       });
 

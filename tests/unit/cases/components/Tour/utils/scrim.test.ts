@@ -1,15 +1,14 @@
 import { describe, expect, test } from 'vitest';
 
 import { SPOTLIGHT_PADDING } from '@constants';
+import { SCRIM_ANCHOR_RECT } from '@mocks/geometry';
 import { buildScrimPath, inflate, mergeHoles } from '@/components/Tour/utils';
-
-const RECT = { top: 100, left: 200, width: 60, height: 40 };
 
 describe('inflate', () => {
   describe('GIVEN an anchor rect', () => {
     describe('WHEN it is inflated for the spotlight', () => {
       test('THEN it grows by the padding on every side', () => {
-        expect(inflate(RECT)).toEqual({
+        expect(inflate(SCRIM_ANCHOR_RECT)).toEqual({
           top: 100 - SPOTLIGHT_PADDING,
           left: 200 - SPOTLIGHT_PADDING,
           width: 60 + SPOTLIGHT_PADDING * 2,
@@ -32,7 +31,7 @@ describe('buildScrimPath', () => {
   describe('GIVEN two holes', () => {
     describe('WHEN the scrim path is built', () => {
       test('THEN each hole adds its own subpath', () => {
-        const path = buildScrimPath([RECT, { top: 0, left: 0, width: 300, height: 80 }]);
+        const path = buildScrimPath([SCRIM_ANCHOR_RECT, { top: 0, left: 0, width: 300, height: 80 }]);
 
         expect(path.match(/M/g)).toHaveLength(3);
         expect(path.match(/Z/g)).toHaveLength(3);

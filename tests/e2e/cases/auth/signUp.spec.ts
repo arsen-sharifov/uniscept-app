@@ -1,4 +1,4 @@
-import { COPY, E2E_ACCOUNT_DOMAIN, E2E_ACCOUNT_PASSWORD } from '../../consts';
+import { COPY, E2E_ACCOUNT_DOMAIN, E2E_ACCOUNT_PASSWORD, REJECTED_EMAIL } from '../../consts';
 import { expect, guestTest as test } from '../../fixtures';
 import {
   declineTourOffer,
@@ -9,8 +9,6 @@ import {
   signIn,
   uniqueLabel,
 } from '../../utils';
-
-const REJECTED_EMAIL = `rejected@${E2E_ACCOUNT_DOMAIN}`;
 
 test.describe('sign up', () => {
   test.describe('GIVEN the sign-up flow on its plan step', () => {
@@ -41,7 +39,7 @@ test.describe('sign up', () => {
       });
 
       test('THEN the form refuses the code and keeps the visitor on the page', async ({ page }) => {
-        await expect(page.getByText(COPY.auth.errors.invalidInviteCode)).toBeVisible();
+        await expect(page.getByRole('alert').filter({ hasText: COPY.auth.errors.invalidInviteCode })).toBeVisible();
         await expect(page).toHaveURL(/\/signup$/);
       });
     });
@@ -84,7 +82,6 @@ test.describe('sign-up completion', () => {
         await page.goto(await readConfirmationLink(email));
         await page.context().clearCookies();
         await signIn(page, email, E2E_ACCOUNT_PASSWORD);
-        await page.waitForURL(/\/platform/);
         await declineTourOffer(page);
       });
 

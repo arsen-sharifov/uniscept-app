@@ -126,18 +126,16 @@ test.describe('comment-only access', () => {
       });
     });
 
-    test.describe('WHEN a comment is posted on the host node', () => {
+    test.describe('WHEN a comment is posted on the host node and the page is reloaded', () => {
       test.beforeEach(async ({ page }) => {
         await addNodeComment(getNode(page, 'Host proposal'), 'Can we estimate the cost?');
-        await expectSaved(page);
-      });
-
-      test('THEN the comment is listed on the node after a reload', async ({ page }) => {
         await expect(getNode(page, 'Host proposal')).toContainText('Can we estimate the cost?');
-
+        await expectSaved(page);
         await page.reload();
         await waitForCanvas(page);
+      });
 
+      test('THEN the node still counts the comment', async ({ page }) => {
         await expect(
           getNode(page, 'Host proposal').getByRole('button', { name: COPY.platform.canvas.node.viewComments }),
         ).toContainText('1');
@@ -178,19 +176,18 @@ test.describe('editor access', () => {
       });
     });
 
-    test.describe('WHEN the member drops and renames their own node', () => {
+    test.describe('WHEN the member drops and renames their own node and the page is reloaded', () => {
       test.beforeEach(async ({ page }) => {
         await getNavItem(page, 'Editor thread').click();
         await waitForCanvas(page);
         await addNodeAt(page, 700, 300);
         await renameNode(page, getNodes(page).last(), 'Member insight');
         await expectSaved(page);
-      });
-
-      test('THEN the member node survives a reload', async ({ page }) => {
         await page.reload();
         await waitForCanvas(page);
+      });
 
+      test('THEN the member node is still there', async ({ page }) => {
         await expect(getNode(page, 'Member insight')).toBeVisible();
       });
     });

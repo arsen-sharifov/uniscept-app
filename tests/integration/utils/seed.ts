@@ -2,7 +2,12 @@ import { randomUUID } from 'node:crypto';
 
 import type { SupabaseClient } from '@supabase/supabase-js';
 
-import { CUSTOM_ROLE_POSITION, INTEGRATION_ACCOUNT_DOMAIN, INTEGRATION_ACCOUNT_PASSWORD } from '../consts';
+import {
+  ACCOUNT_PAGE_SIZE,
+  CUSTOM_ROLE_POSITION,
+  INTEGRATION_ACCOUNT_DOMAIN,
+  INTEGRATION_ACCOUNT_PASSWORD,
+} from '../consts';
 import type {
   IIntegrationAccount,
   IIntegrationEdgeRow,
@@ -11,6 +16,7 @@ import type {
   IIntegrationNodeCommentRow,
   IIntegrationNodeRow,
   IIntegrationOnboardingRow,
+  IIntegrationPreferencesRow,
   IIntegrationRoleFlags,
   IIntegrationThread,
   IIntegrationThreadRow,
@@ -24,13 +30,27 @@ const userClients = new Map<string, Promise<SupabaseClient>>();
 
 export const uniqueLabel = (prefix: string): string => `${prefix}-${randomUUID().slice(0, 8)}`;
 
-export const seedAccount = async (label: string): Promise<IIntegrationAccount> => {
-  const email = `${uniqueLabel(label)}@${INTEGRATION_ACCOUNT_DOMAIN}`;
+export const uniqueEmail = (prefix: string): string => `${uniqueLabel(prefix)}@${INTEGRATION_ACCOUNT_DOMAIN}`;
+
+export const rolePermissionParams = (flags: IIntegrationRoleFlags): Record<string, boolean> => ({
+  p_can_edit_canvas: flags.canEditCanvas ?? false,
+  p_can_comment: flags.canComment ?? false,
+  p_can_manage_structure: flags.canManageStructure ?? false,
+  p_can_manage_members: flags.canManageMembers ?? false,
+  p_can_manage_roles: flags.canManageRoles ?? false,
+  p_can_manage_workspace: flags.canManageWorkspace ?? false,
+});
+
+export const seedAccount = async (
+  label: string,
+  metadata: Record<string, string> = {},
+): Promise<IIntegrationAccount> => {
+  const email = uniqueEmail(label);
   const { data, error } = await getAdminClient().auth.admin.createUser({
     email,
     password: INTEGRATION_ACCOUNT_PASSWORD,
     email_confirm: true,
-    user_metadata: { name: `Integration ${label}` },
+    user_metadata: { name: `Integration ${label}`, ...metadata },
   });
 
   if (error || !data.user) {
@@ -38,12 +58,6 @@ export const seedAccount = async (label: string): Promise<IIntegrationAccount> =
   }
 
   return { id: data.user.id, email, password: INTEGRATION_ACCOUNT_PASSWORD };
-};
-
-export const setAccountMetadata = async (userId: string, metadata: Record<string, string>): Promise<void> => {
-  const { error } = await getAdminClient().auth.admin.updateUserById(userId, { user_metadata: metadata });
-
-  if (error) throw new Error(`Could not update the metadata of ${userId}: ${error.message}`);
 };
 
 const deleteAccount = async (userId: string): Promise<void> => {
@@ -192,6 +206,19 @@ export const readRoleHolders = async (workspaceId: string, roleId: string): Prom
   return data.map((row) => row.user_id);
 };
 
+export const readMemberPosition = async (workspaceId: string, userId: string): Promise<number> => {
+  const { data, error } = await getAdminClient()
+    .from('workspace_members')
+    .select('position')
+    .eq('workspace_id', workspaceId)
+    .eq('user_id', userId)
+    .single<{ position: number }>();
+
+  if (error || !data) throw new Error(`Could not read the membership of ${userId}: ${error?.message ?? 'no row'}`);
+
+  return data.position;
+};
+
 export const isMember = async (workspaceId: string, userId: string): Promise<boolean> => {
   const { data, error } = await getAdminClient()
     .from('workspace_members')
@@ -244,7 +271,7 @@ export const seedInvitations = async (workspaceId: string, count: number, roleId
     .insert(
       Array.from({ length: count }, () => ({
         workspace_id: workspaceId,
-        email: `${uniqueLabel('pending')}@${INTEGRATION_ACCOUNT_DOMAIN}`,
+        email: uniqueEmail('pending'),
         role_id: roleId,
       })),
     );
@@ -263,16 +290,6 @@ export const countPendingInvitations = async (workspaceId: string): Promise<numb
   if (error) throw new Error(`Could not count the pending invitations of ${workspaceId}: ${error.message}`);
 
   return count ?? 0;
-};
-
-export const deleteInvitations = async (workspaceId: string, email: string): Promise<void> => {
-  const { error } = await getAdminClient()
-    .from('workspace_invitations')
-    .delete()
-    .eq('workspace_id', workspaceId)
-    .eq('email', email.toLowerCase());
-
-  if (error) throw new Error(`Could not delete the invitations of ${email}: ${error.message}`);
 };
 
 export const readInvitation = async (invitationId: string): Promise<IIntegrationInvitationRow | null> => {
@@ -482,6 +499,18 @@ export const readOnboarding = async (userId: string): Promise<IIntegrationOnboar
   return data;
 };
 
+export const readPreferences = async (userId: string): Promise<IIntegrationPreferencesRow | null> => {
+  const { data, error } = await getAdminClient()
+    .from('user_preferences')
+    .select('theme')
+    .eq('user_id', userId)
+    .maybeSingle<IIntegrationPreferencesRow>();
+
+  if (error) throw new Error(`Could not read the preferences of ${userId}: ${error.message}`);
+
+  return data;
+};
+
 export const seedNodeComment = async (nodeId: string, authorId: string, text: string): Promise<string> => {
   const { data, error } = await getAdminClient()
     .from('node_comments')
@@ -532,12 +561,16 @@ export const deleteSignupAllowance = async (email: string): Promise<void> => {
   if (error) throw new Error(`Could not delete the sign-up allowance of ${email}: ${error.message}`);
 };
 
-export const readAccountId = async (email: string): Promise<string | null> => {
-  const { data, error } = await getAdminClient().auth.admin.listUsers({ page: 1, perPage: 1000 });
+export const readAccountId = async (email: string, page = 1): Promise<string | null> => {
+  const { data, error } = await getAdminClient().auth.admin.listUsers({ page, perPage: ACCOUNT_PAGE_SIZE });
 
   if (error) throw new Error(`Could not list the accounts: ${error.message}`);
 
-  return data.users.find((user) => user.email === email.toLowerCase())?.id ?? null;
+  const accountId = data.users.find((user) => user.email === email.toLowerCase())?.id;
+
+  if (accountId) return accountId;
+
+  return data.nextPage ? readAccountId(email, data.nextPage) : null;
 };
 
 export const deleteAccountByEmail = async (email: string): Promise<void> => {

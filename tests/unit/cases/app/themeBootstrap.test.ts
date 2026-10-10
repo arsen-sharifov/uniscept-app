@@ -1,25 +1,20 @@
 import { afterEach, beforeEach, describe, expect, test } from 'vitest';
 
 import { PREFERENCES_STORAGE_KEY } from '@constants';
+import { DEFAULT_THEME_ATTRIBUTES } from '@mocks/preferences';
 import { THEME_BOOTSTRAP } from '@/app/themeBootstrap';
-
-const DEFAULT_ATTRIBUTES = {
-  'data-scripted': '',
-  'data-theme': 'auto',
-  'data-canvas-pattern': 'dots',
-  'data-default-zoom': '100',
-  'data-snap-to-grid': 'false',
-  'data-smart-guides': 'true',
-};
 
 const readAttributes = () =>
   Object.fromEntries(
-    Object.keys(DEFAULT_ATTRIBUTES).map((attribute) => [attribute, document.documentElement.getAttribute(attribute)]),
+    Object.keys(DEFAULT_THEME_ATTRIBUTES).map((attribute) => [
+      attribute,
+      document.documentElement.getAttribute(attribute),
+    ]),
   );
 
 afterEach(() => {
   localStorage.clear();
-  Object.keys(DEFAULT_ATTRIBUTES).forEach((attribute) => document.documentElement.removeAttribute(attribute));
+  Object.keys(DEFAULT_THEME_ATTRIBUTES).forEach((attribute) => document.documentElement.removeAttribute(attribute));
 });
 
 describe('THEME_BOOTSTRAP', () => {
@@ -69,7 +64,7 @@ describe('THEME_BOOTSTRAP', () => {
       });
 
       test('THEN every attribute falls back to its default', () => {
-        expect(readAttributes()).toEqual(DEFAULT_ATTRIBUTES);
+        expect(readAttributes()).toEqual(DEFAULT_THEME_ATTRIBUTES);
       });
     });
   });
@@ -85,7 +80,7 @@ describe('THEME_BOOTSTRAP', () => {
       });
 
       test('THEN every attribute falls back to its default', () => {
-        expect(readAttributes()).toEqual(DEFAULT_ATTRIBUTES);
+        expect(readAttributes()).toEqual(DEFAULT_THEME_ATTRIBUTES);
       });
     });
   });
@@ -97,7 +92,7 @@ describe('THEME_BOOTSTRAP', () => {
       });
 
       test('THEN every attribute falls back to its default', () => {
-        expect(readAttributes()).toEqual(DEFAULT_ATTRIBUTES);
+        expect(readAttributes()).toEqual(DEFAULT_THEME_ATTRIBUTES);
       });
     });
   });

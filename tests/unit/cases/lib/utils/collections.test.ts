@@ -1,20 +1,15 @@
 import { beforeEach, describe, expect, test } from 'vitest';
 
+import { GROUPABLE_ITEMS } from '@mocks/collections';
 import { groupBy } from '@/lib/utils';
 
-const ITEMS = [
-  { id: 'a', node: 'n1' },
-  { id: 'b', node: 'n2' },
-  { id: 'c', node: 'n1' },
-];
-
-let groups: Map<string, typeof ITEMS>;
+let groups: Map<string, typeof GROUPABLE_ITEMS>;
 
 describe('groupBy', () => {
   describe('GIVEN items sharing some keys', () => {
     describe('WHEN they are grouped by that key', () => {
       beforeEach(() => {
-        groups = groupBy(ITEMS, (item) => item.node);
+        groups = groupBy(GROUPABLE_ITEMS, (item) => item.node);
       });
 
       test('THEN each key holds its items in their original order', () => {

@@ -6,6 +6,7 @@ import { TRANSLATIONS } from '@mocks/i18n';
 import { EDIT_ACCESS, READONLY_ACCESS } from '@mocks/roles';
 import { useToolbarShortcuts } from '@/components/Toolbar/hooks';
 import { ECanvasTool } from '@/components/tools';
+import { subscribeCanvasOperations } from '@/lib/canvas';
 import { event } from '@/lib/events';
 import { useCanvasStore, usePermissionsStore } from '@/lib/stores';
 
@@ -20,12 +21,17 @@ const dialogButton = document.createElement('button');
 
 const toggleShortcuts = vi.fn();
 
+const onOperation = vi.fn();
+
+const unsubscribers: Array<() => void> = [];
+
 beforeEach(() => {
   dialog.append(dialogButton);
   document.body.append(input, dialog);
 });
 
 afterEach(() => {
+  unsubscribers.splice(0).forEach((unsubscribe) => unsubscribe());
   input.remove();
   dialog.remove();
   useCanvasStore.getState().clearCanvas();
@@ -331,6 +337,57 @@ describe('useToolbarShortcuts', () => {
     });
   });
 
+  describe('GIVEN an editor whose selected node is joined to another node', () => {
+    beforeEach(() => {
+      usePermissionsStore.getState().setAccess('ws-1', 'user-1', EDIT_ACCESS);
+      useCanvasStore.getState().loadCanvas(THREAD_ID, {
+        nodes: [
+          { ...canvasNode('own', { createdBy: 'user-1' }), selected: true },
+          canvasNode('other', { createdBy: 'user-1' }),
+        ],
+        edges: [canvasEdge('e1', 'own', 'other')],
+      });
+      unsubscribers.push(subscribeCanvasOperations(onOperation));
+      renderHook(() => useToolbarShortcuts(toggleShortcuts));
+    });
+
+    describe('WHEN Delete is pressed', () => {
+      beforeEach(() => {
+        window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Delete', cancelable: true }));
+      });
+
+      test('THEN the node and its edge leave and only the node delete is emitted', () => {
+        expect(useCanvasStore.getState().nodes.map((node) => node.id)).toEqual(['other']);
+        expect(useCanvasStore.getState().edges).toEqual([]);
+        expect(onOperation).toHaveBeenCalledExactlyOnceWith({ type: 'deleteNode', id: 'own' });
+      });
+    });
+  });
+
+  describe('GIVEN an editor with a selected edge between two nodes', () => {
+    beforeEach(() => {
+      usePermissionsStore.getState().setAccess('ws-1', 'user-1', EDIT_ACCESS);
+      useCanvasStore.getState().loadCanvas(THREAD_ID, {
+        nodes: [canvasNode('a', { createdBy: 'user-1' }), canvasNode('b', { createdBy: 'user-1' })],
+        edges: [{ ...canvasEdge('e1', 'a', 'b'), selected: true }],
+      });
+      unsubscribers.push(subscribeCanvasOperations(onOperation));
+      renderHook(() => useToolbarShortcuts(toggleShortcuts));
+    });
+
+    describe('WHEN Delete is pressed', () => {
+      beforeEach(() => {
+        window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Delete', cancelable: true }));
+      });
+
+      test('THEN only the edge leaves and its delete is emitted', () => {
+        expect(useCanvasStore.getState().nodes.map((node) => node.id)).toEqual(['a', 'b']);
+        expect(useCanvasStore.getState().edges).toEqual([]);
+        expect(onOperation).toHaveBeenCalledExactlyOnceWith({ type: 'deleteEdge', id: 'e1' });
+      });
+    });
+  });
+
   describe('GIVEN an editor with their own node and a node somebody else created selected', () => {
     beforeEach(() => {
       usePermissionsStore.getState().setAccess('ws-1', 'user-1', EDIT_ACCESS);
@@ -388,11 +445,22 @@ describe('useToolbarShortcuts', () => {
     });
   });
 
-  describe('GIVEN a viewer on a loaded canvas', () => {
+  describe('GIVEN a viewer on a loaded canvas with a selected node', () => {
     beforeEach(() => {
       usePermissionsStore.getState().setAccess('ws-1', 'user-1', READONLY_ACCESS);
-      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [], edges: [] });
+      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [{ ...canvasNode('n1'), selected: true }], edges: [] });
       renderHook(() => useToolbarShortcuts(toggleShortcuts));
+    });
+
+    describe('WHEN Delete is pressed', () => {
+      beforeEach(() => {
+        window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Delete', cancelable: true }));
+      });
+
+      test('THEN the node stays without a notice', () => {
+        expect(useCanvasStore.getState().nodes).toHaveLength(1);
+        expect(event.info).not.toHaveBeenCalled();
+      });
     });
 
     describe('WHEN an editing tool key is pressed', () => {

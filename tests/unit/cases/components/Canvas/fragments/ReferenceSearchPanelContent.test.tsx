@@ -2,20 +2,16 @@ import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { stubResizeObserver } from '@mocks/browser';
+import { PANEL_WIDTH, PANEL_HEIGHT, GROWN_PANEL_HEIGHT } from '@mocks/geometry';
+import { TRANSLATIONS, translate } from '@mocks/i18n';
 import { referenceSearchProps } from '@mocks/referenceSearch';
 import { OVERLAY_VIEWPORT_MARGIN } from '@/components/Canvas/consts';
 import { ReferenceSearchPanelContent } from '@/components/Canvas/fragments';
 
 vi.mock('@/i18n', () => import('@mocks/i18n'));
 
-const PANEL_WIDTH = 320;
-const PANEL_HEIGHT = 180;
-const GROWN_PANEL_HEIGHT = 360;
-
 const onSelect = vi.fn();
 const onClose = vi.fn();
-
-const outsideButton = document.createElement('button');
 
 let props: ReturnType<typeof referenceSearchProps>;
 let resizeObserver: ReturnType<typeof stubResizeObserver>;
@@ -28,20 +24,23 @@ const measurePanels = (height: number) => {
 beforeEach(() => {
   resizeObserver = stubResizeObserver();
   props = referenceSearchProps();
-  document.body.append(outsideButton);
 });
 
 afterEach(() => {
-  outsideButton.remove();
   Reflect.deleteProperty(HTMLDialogElement.prototype, 'offsetWidth');
   Reflect.deleteProperty(HTMLDialogElement.prototype, 'offsetHeight');
   vi.unstubAllGlobals();
 });
 
 describe('ReferenceSearchPanelContent', () => {
-  describe('GIVEN two available targets', () => {
+  describe('GIVEN two available targets and a button outside the panel', () => {
     beforeEach(() => {
-      render(<ReferenceSearchPanelContent {...props} onSelect={onSelect} onClose={onClose} />);
+      render(
+        <>
+          <button type="button">Outside</button>
+          <ReferenceSearchPanelContent {...props} onSelect={onSelect} onClose={onClose} />
+        </>,
+      );
     });
 
     describe('WHEN the user selects the second result with the keyboard', () => {
@@ -76,10 +75,79 @@ describe('ReferenceSearchPanelContent', () => {
 
     describe('WHEN Enter is pressed on a button outside the panel', () => {
       beforeEach(() => {
-        fireEvent.keyDown(outsideButton, { key: 'Enter' });
+        fireEvent.keyDown(screen.getByRole('button', { name: 'Outside' }), { key: 'Enter' });
       });
 
       test('THEN nothing is selected', () => {
+        expect(onSelect).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('WHEN the user moves up from the first result and presses Enter', () => {
+      beforeEach(() => {
+        fireEvent.keyDown(screen.getByRole('combobox'), { key: 'ArrowUp' });
+        fireEvent.keyDown(screen.getByRole('combobox'), { key: 'Enter' });
+      });
+
+      test('THEN the cursor wraps to the last result and selects it', () => {
+        expect(onSelect).toHaveBeenCalledExactlyOnceWith(
+          props.position,
+          expect.objectContaining({ sourceNodeId: 'r2' }),
+        );
+      });
+    });
+
+    describe('WHEN the pointer rests on the second result and Enter is pressed', () => {
+      beforeEach(() => {
+        fireEvent.mouseEnter(within(screen.getAllByRole('option')[1]!).getByRole('button'));
+        fireEvent.keyDown(screen.getByRole('combobox'), { key: 'Enter' });
+      });
+
+      test('THEN the hovered result is the one passed to the selection handler', () => {
+        expect(screen.getAllByRole('option')[1]).toHaveAttribute('aria-selected', 'true');
+        expect(onSelect).toHaveBeenCalledExactlyOnceWith(
+          props.position,
+          expect.objectContaining({ sourceNodeId: 'r2' }),
+        );
+      });
+    });
+
+    describe('WHEN the user clicks the first result', () => {
+      beforeEach(() => {
+        fireEvent.click(within(screen.getAllByRole('option')[0]!).getByRole('button'));
+      });
+
+      test('THEN that result is passed to the selection handler', () => {
+        expect(onSelect).toHaveBeenCalledExactlyOnceWith(
+          props.position,
+          expect.objectContaining({ sourceNodeId: 'r1', sourceWorkspaceName: 'Workspace one' }),
+        );
+      });
+    });
+
+    describe('WHEN the query names the workspace of the targets', () => {
+      beforeEach(() => {
+        fireEvent.change(screen.getByRole('combobox'), { target: { value: 'workspace one' } });
+      });
+
+      test('THEN both targets stay listed', () => {
+        expect(screen.getAllByRole('option')).toHaveLength(2);
+      });
+    });
+
+    describe('WHEN the query matches nothing and Enter is pressed', () => {
+      beforeEach(() => {
+        fireEvent.change(screen.getByRole('combobox'), { target: { value: 'zzz' } });
+        fireEvent.keyDown(screen.getByRole('combobox'), { key: 'ArrowDown' });
+        fireEvent.keyDown(screen.getByRole('combobox'), { key: 'Enter' });
+      });
+
+      test('THEN the empty state names the query with a hint and nothing is selected', () => {
+        expect(
+          screen.getByText(translate('platform.canvas.referenceSearch.noMatch', { query: 'zzz' })),
+        ).toBeInTheDocument();
+        expect(screen.getByText(TRANSLATIONS.platform.canvas.referenceSearch.hint)).toBeInTheDocument();
+        expect(screen.getByRole('combobox')).toHaveAttribute('aria-expanded', 'false');
         expect(onSelect).not.toHaveBeenCalled();
       });
     });
@@ -96,6 +164,30 @@ describe('ReferenceSearchPanelContent', () => {
           props.position,
           expect.objectContaining({ sourceNodeId: 'r1' }),
         );
+      });
+    });
+  });
+
+  describe('GIVEN no available targets', () => {
+    beforeEach(() => {
+      render(<ReferenceSearchPanelContent {...props} nodes={[]} onSelect={onSelect} onClose={onClose} />);
+    });
+
+    describe('WHEN the panel opens', () => {
+      test('THEN it says no nodes were found without a hint', () => {
+        expect(screen.getByText(TRANSLATIONS.platform.canvas.referenceSearch.noResults)).toBeInTheDocument();
+        expect(screen.queryByText(TRANSLATIONS.platform.canvas.referenceSearch.hint)).not.toBeInTheDocument();
+      });
+    });
+
+    describe('WHEN the user moves up through the empty list and presses Enter', () => {
+      beforeEach(() => {
+        fireEvent.keyDown(screen.getByRole('combobox'), { key: 'ArrowUp' });
+        fireEvent.keyDown(screen.getByRole('combobox'), { key: 'Enter' });
+      });
+
+      test('THEN nothing is selected', () => {
+        expect(onSelect).not.toHaveBeenCalled();
       });
     });
   });

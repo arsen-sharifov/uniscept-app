@@ -99,7 +99,6 @@ describe('revokeWorkspaceInvitation', () => {
     describe('WHEN the invitation is revoked', () => {
       test('THEN the rpc targets the invitation id', async () => {
         const { client } = primeSupabase([]);
-        vi.mocked(client.rpc).mockResolvedValue({ data: null, error: null });
 
         await revokeWorkspaceInvitation('inv-1');
 
@@ -170,7 +169,6 @@ describe('acceptWorkspaceInvitation', () => {
     describe('WHEN the invitation is accepted', () => {
       test('THEN the rpc targets the invitation id', async () => {
         const { client } = primeSupabase([]);
-        vi.mocked(client.rpc).mockResolvedValue({ data: null, error: null });
 
         await acceptWorkspaceInvitation('inv-1');
 
@@ -196,7 +194,6 @@ describe('declineWorkspaceInvitation', () => {
     describe('WHEN the invitation is declined', () => {
       test('THEN the rpc targets the invitation id', async () => {
         const { client } = primeSupabase([]);
-        vi.mocked(client.rpc).mockResolvedValue({ data: null, error: null });
 
         await declineWorkspaceInvitation('inv-1');
 

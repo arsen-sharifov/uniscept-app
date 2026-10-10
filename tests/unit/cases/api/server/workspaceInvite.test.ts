@@ -2,24 +2,16 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { MAX_NAME_LENGTH, WORKSPACE_INVITE_RATE_LIMIT_MAX_ATTEMPTS } from '@constants';
 import { handleWorkspaceInvite } from '@api/server';
-import { getAdminClient } from '@mocks/adminClient';
+import { primeAdminClient } from '@mocks/adminClient';
 import { event } from '@mocks/events';
-import { primeSupabase } from '@mocks/supabase';
-import { createClient as createServerClient } from '@mocks/supabaseServer';
+import { INVITER, WORKSPACE_INVITE_REQUEST, INVITE_RPCS } from '@mocks/roles';
+import { WORKSPACE_NAME_LOOKUP } from '@mocks/rows';
+import { PERMISSION_DENIED_ERROR } from '@mocks/supabase';
+import { primeServerClient } from '@mocks/supabaseServer';
 
 vi.mock('@/lib/supabase/server', () => import('@mocks/supabaseServer'));
 vi.mock('@api/server/utils/adminClient', () => import('@mocks/adminClient'));
 vi.mock('@/lib/events', () => import('@mocks/events'));
-
-const inviteUserByEmail = vi.fn();
-
-const adminRpc = vi.fn();
-
-const deleteAllowance = vi.fn();
-
-const adminFrom = vi.fn(() => ({ delete: () => ({ eq: deleteAllowance }) }));
-
-const PERMISSION_DENIED = { message: 'permission denied', code: '42501' };
 
 const inviteRequest = (body: unknown, headers?: Record<string, string>): Request =>
   new Request('http://localhost/api/auth/workspace-invite', {
@@ -28,120 +20,121 @@ const inviteRequest = (body: unknown, headers?: Record<string, string>): Request
     body: typeof body === 'string' ? body : JSON.stringify(body),
   });
 
-const primeServer = (
-  results: Array<{ data?: unknown; error?: unknown }>,
-  user: { id: string; email?: string; user_metadata?: Record<string, unknown> } | null,
-  rpcResults: Record<string, { data?: unknown; error?: unknown }> = {},
-) => {
-  const { client } = primeSupabase(results, { user });
-  const responses: Record<string, { data?: unknown; error?: unknown }> = {
-    get_workspace_invitations: { data: [] },
-    create_workspace_invitation: { data: 'invitation-1' },
-    ...rpcResults,
-  };
-
-  vi.mocked(client.rpc).mockImplementation(async (name) => ({ data: null, error: null, ...responses[name] }));
-  vi.mocked(createServerClient).mockResolvedValue(client as never);
-  adminRpc.mockResolvedValue({ data: null, error: null });
-  deleteAllowance.mockResolvedValue({ data: null, error: null });
-  vi.mocked(getAdminClient).mockReturnValue({
-    rpc: adminRpc,
-    from: adminFrom,
-    auth: { admin: { inviteUserByEmail } },
-  } as never);
-
-  return client;
-};
+let admin: ReturnType<typeof primeAdminClient>;
+let response: Response;
 
 beforeEach(() => {
   vi.stubEnv('NEXT_PUBLIC_APP_URL', 'http://localhost:3000');
+  admin = primeAdminClient();
 });
 
 afterEach(() => {
   vi.unstubAllEnvs();
-  vi.restoreAllMocks();
 });
 
 describe('handleWorkspaceInvite', () => {
-  describe('GIVEN a signed-in inviter sending a malformed request body', () => {
+  describe('GIVEN a signed-in inviter', () => {
+    let client: ReturnType<typeof primeServerClient>;
+
     beforeEach(() => {
-      primeServer([], { id: 'user-1' });
+      client = primeServerClient([], { user: INVITER, rpc: INVITE_RPCS });
     });
 
-    describe('WHEN the invite is submitted', () => {
-      test('THEN the request is rejected', async () => {
-        const response = await handleWorkspaceInvite(inviteRequest('not json'));
+    describe('WHEN a malformed body is submitted', () => {
+      beforeEach(async () => {
+        response = await handleWorkspaceInvite(inviteRequest('not json'));
+      });
 
+      test('THEN the request is rejected before any invitation is created', async () => {
         expect(response.status).toBe(400);
         await expect(response.json()).resolves.toEqual({ error: { message: 'Invalid request' } });
+        expect(client.rpc).not.toHaveBeenCalled();
       });
     });
-  });
 
-  describe('GIVEN a signed-in inviter sending a request without a workspace id', () => {
-    beforeEach(() => {
-      primeServer([], { id: 'user-1' });
-    });
+    describe('WHEN an invite without a workspace id is submitted', () => {
+      beforeEach(async () => {
+        response = await handleWorkspaceInvite(inviteRequest({ email: 'teammate@acme.dev', roleId: 'role-1' }));
+      });
 
-    describe('WHEN the invite is submitted', () => {
-      test('THEN the request is rejected', async () => {
-        const response = await handleWorkspaceInvite(inviteRequest({ email: 'a@b.dev', roleId: 'role-1' }));
-
+      test('THEN the request is rejected before any invitation is created', () => {
         expect(response.status).toBe(400);
+        expect(client.rpc).not.toHaveBeenCalled();
       });
     });
-  });
 
-  describe('GIVEN a signed-in inviter sending a request without an email', () => {
-    beforeEach(() => {
-      primeServer([], { id: 'user-1' });
-    });
+    describe('WHEN an invite without an email is submitted', () => {
+      beforeEach(async () => {
+        response = await handleWorkspaceInvite(inviteRequest({ workspaceId: 'ws-1', roleId: 'role-1' }));
+      });
 
-    describe('WHEN the invite is submitted', () => {
-      test('THEN the request is rejected', async () => {
-        const response = await handleWorkspaceInvite(inviteRequest({ workspaceId: 'ws-1', roleId: 'role-1' }));
-
+      test('THEN the request is rejected before any invitation is created', () => {
         expect(response.status).toBe(400);
+        expect(client.rpc).not.toHaveBeenCalled();
       });
     });
-  });
 
-  describe('GIVEN a signed-in inviter sending a request without a role id', () => {
-    beforeEach(() => {
-      primeServer([], { id: 'user-1' });
+    describe('WHEN an invite with a malformed email is submitted', () => {
+      beforeEach(async () => {
+        response = await handleWorkspaceInvite(inviteRequest({ ...WORKSPACE_INVITE_REQUEST, email: 'not an email' }));
+      });
+
+      test('THEN the request is rejected before any invitation is created', () => {
+        expect(response.status).toBe(400);
+        expect(client.rpc).not.toHaveBeenCalled();
+      });
     });
 
-    describe('WHEN the invite is submitted', () => {
-      test('THEN the request is rejected', async () => {
-        const response = await handleWorkspaceInvite(inviteRequest({ workspaceId: 'ws-1', email: 'a@b.dev' }));
+    describe('WHEN an invite without a role id is submitted', () => {
+      beforeEach(async () => {
+        response = await handleWorkspaceInvite(inviteRequest({ workspaceId: 'ws-1', email: 'teammate@acme.dev' }));
+      });
 
+      test('THEN the request is rejected before any invitation is created', () => {
         expect(response.status).toBe(400);
+        expect(client.rpc).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('WHEN a cross-site page submits the invite', () => {
+      beforeEach(async () => {
+        response = await handleWorkspaceInvite(
+          inviteRequest(WORKSPACE_INVITE_REQUEST, { 'sec-fetch-site': 'cross-site' }),
+        );
+      });
+
+      test('THEN the request is forbidden before any invitation is created', () => {
+        expect(response.status).toBe(403);
+        expect(client.rpc).not.toHaveBeenCalled();
+        expect(admin.inviteUserByEmail).not.toHaveBeenCalled();
       });
     });
   });
 
   describe('GIVEN no authenticated user', () => {
-    let client: ReturnType<typeof primeServer>;
+    let client: ReturnType<typeof primeServerClient>;
 
     beforeEach(() => {
-      client = primeServer([], null);
+      client = primeServerClient([], { user: null, rpc: INVITE_RPCS });
     });
 
     describe('WHEN the invite is submitted', () => {
-      test('THEN the request is unauthorized and no invitation is created', async () => {
-        const response = await handleWorkspaceInvite(
-          inviteRequest({ workspaceId: 'ws-1', email: 'a@b.dev', roleId: 'role-1' }),
-        );
+      beforeEach(async () => {
+        response = await handleWorkspaceInvite(inviteRequest(WORKSPACE_INVITE_REQUEST));
+      });
 
+      test('THEN the request is unauthorized and no invitation is created', () => {
         expect(response.status).toBe(401);
         expect(client.rpc).not.toHaveBeenCalled();
       });
     });
 
-    describe('WHEN a malformed request body is submitted', () => {
-      test('THEN the request is unauthorized before the body is validated', async () => {
-        const response = await handleWorkspaceInvite(inviteRequest('not json'));
+    describe('WHEN a malformed body is submitted', () => {
+      beforeEach(async () => {
+        response = await handleWorkspaceInvite(inviteRequest('not json'));
+      });
 
+      test('THEN the request is unauthorized before the body is validated', async () => {
         expect(response.status).toBe(401);
         await expect(response.json()).resolves.toEqual({ error: { message: 'Unauthorized' } });
       });
@@ -150,92 +143,92 @@ describe('handleWorkspaceInvite', () => {
 
   describe('GIVEN an inviter the database refuses to let manage members', () => {
     beforeEach(() => {
-      primeServer(
-        [],
-        { id: 'user-1' },
-        {
-          get_workspace_invitations: { error: PERMISSION_DENIED },
-          create_workspace_invitation: { error: PERMISSION_DENIED },
+      primeServerClient([], {
+        user: { ...INVITER, id: 'user-denied' },
+        rpc: {
+          get_workspace_invitations: { error: PERMISSION_DENIED_ERROR },
+          create_workspace_invitation: { error: PERMISSION_DENIED_ERROR },
         },
-      );
+      });
     });
 
     describe('WHEN the invite is submitted', () => {
-      test('THEN the pg code maps to a forbidden response without the database message and no email is sent', async () => {
-        const response = await handleWorkspaceInvite(
-          inviteRequest({ workspaceId: 'ws-1', email: 'a@b.dev', roleId: 'role-1' }),
-        );
+      beforeEach(async () => {
+        response = await handleWorkspaceInvite(inviteRequest(WORKSPACE_INVITE_REQUEST));
+      });
 
+      test('THEN the pg code maps to a forbidden response without the database message and no email is sent', async () => {
         expect(response.status).toBe(403);
-        await expect(response.json()).resolves.toEqual({
-          error: { message: 'Invitation failed', code: '42501' },
-        });
-        expect(inviteUserByEmail).not.toHaveBeenCalled();
+        await expect(response.json()).resolves.toEqual({ error: { message: 'Invitation failed', code: '42501' } });
+        expect(admin.inviteUserByEmail).not.toHaveBeenCalled();
       });
     });
   });
 
   describe('GIVEN a workspace that already holds the maximum of pending invitations', () => {
     beforeEach(() => {
-      primeServer(
-        [],
-        { id: 'user-cap' },
-        {
+      primeServerClient([], {
+        user: { ...INVITER, id: 'user-cap' },
+        rpc: {
+          ...INVITE_RPCS,
           create_workspace_invitation: { error: { message: 'Too many pending invitations', code: '54000' } },
         },
-      );
+      });
     });
 
     describe('WHEN another invite is submitted', () => {
-      test('THEN the limit code reaches the client as a conflict and no email is sent', async () => {
-        const response = await handleWorkspaceInvite(
-          inviteRequest({ workspaceId: 'ws-1', email: 'one-too-many@acme.dev', roleId: 'role-1' }),
+      beforeEach(async () => {
+        response = await handleWorkspaceInvite(
+          inviteRequest({ ...WORKSPACE_INVITE_REQUEST, email: 'one-too-many@acme.dev' }),
         );
+      });
 
+      test('THEN the limit code reaches the client as a conflict and no email is sent', async () => {
         expect(response.status).toBe(409);
         await expect(response.json()).resolves.toEqual({ error: { message: 'Invitation failed', code: '54000' } });
-        expect(inviteUserByEmail).not.toHaveBeenCalled();
+        expect(admin.inviteUserByEmail).not.toHaveBeenCalled();
       });
     });
   });
 
   describe('GIVEN an invitation rpc failing with an unknown code', () => {
     beforeEach(() => {
-      primeServer([], { id: 'user-1' }, { create_workspace_invitation: { error: { message: 'boom', code: 'XX000' } } });
+      primeServerClient([], {
+        user: { ...INVITER, id: 'user-unknown-code' },
+        rpc: { ...INVITE_RPCS, create_workspace_invitation: { error: { message: 'boom', code: 'XX000' } } },
+      });
     });
 
     describe('WHEN the invite is submitted', () => {
-      test('THEN the response falls back to a server error', async () => {
-        const response = await handleWorkspaceInvite(
-          inviteRequest({ workspaceId: 'ws-1', email: 'a@b.dev', roleId: 'role-1' }),
-        );
+      beforeEach(async () => {
+        response = await handleWorkspaceInvite(inviteRequest(WORKSPACE_INVITE_REQUEST));
+      });
 
+      test('THEN the response falls back to a server error', () => {
         expect(response.status).toBe(500);
       });
     });
   });
 
   describe('GIVEN a named inviter and an existing workspace', () => {
-    let client: ReturnType<typeof primeServer>;
+    let client: ReturnType<typeof primeServerClient>;
 
     beforeEach(() => {
-      client = primeServer([{ data: { name: 'Acme Space' } }], {
-        id: 'user-1',
-        email: 'owner@acme.dev',
-        user_metadata: { name: 'Owner Name' },
+      client = primeServerClient(WORKSPACE_NAME_LOOKUP, {
+        user: { ...INVITER, id: 'user-named', user_metadata: { name: 'Owner Name' } },
+        rpc: INVITE_RPCS,
       });
-      inviteUserByEmail.mockResolvedValue({ data: {}, error: null });
     });
 
     describe('WHEN the invite is submitted', () => {
-      test('THEN the invite email carries the workspace metadata', async () => {
-        const response = await handleWorkspaceInvite(
-          inviteRequest({ workspaceId: 'ws-1', email: 'teammate@acme.dev', roleId: 'role-1' }),
-        );
+      beforeEach(async () => {
+        response = await handleWorkspaceInvite(inviteRequest(WORKSPACE_INVITE_REQUEST));
+      });
 
+      test('THEN the invite email carries the workspace metadata', async () => {
         expect(response.status).toBe(200);
         await expect(response.json()).resolves.toEqual({ ok: true });
-        expect(inviteUserByEmail.mock.calls).toEqual([
+        expect(admin.inviteUserByEmail.mock.calls).toEqual([
           [
             'teammate@acme.dev',
             {
@@ -251,20 +244,14 @@ describe('handleWorkspaceInvite', () => {
         ]);
       });
 
-      test('THEN a signup allowance for the invitee is granted before the invitation email is sent', async () => {
-        await handleWorkspaceInvite(
-          inviteRequest({ workspaceId: 'ws-1', email: 'teammate@acme.dev', roleId: 'role-1' }),
+      test('THEN a signup allowance for the invitee is granted before the invitation email is sent', () => {
+        expect(admin.rpc).toHaveBeenCalledExactlyOnceWith('grant_signup_allowance', { p_email: 'teammate@acme.dev' });
+        expect(admin.rpc.mock.invocationCallOrder[0]).toBeLessThan(
+          admin.inviteUserByEmail.mock.invocationCallOrder[0]!,
         );
-
-        expect(adminRpc).toHaveBeenCalledExactlyOnceWith('grant_signup_allowance', { p_email: 'teammate@acme.dev' });
-        expect(adminRpc.mock.invocationCallOrder[0]).toBeLessThan(inviteUserByEmail.mock.invocationCallOrder[0]!);
       });
 
-      test('THEN the pending invitations are read before the invitation rpc receives the request payload', async () => {
-        await handleWorkspaceInvite(
-          inviteRequest({ workspaceId: 'ws-1', email: 'teammate@acme.dev', roleId: 'role-1' }),
-        );
-
+      test('THEN the pending invitations are read before the invitation rpc receives the request payload', () => {
         expect(client.rpc.mock.calls).toEqual([
           ['get_workspace_invitations', { p_workspace_id: 'ws-1' }],
           [
@@ -278,101 +265,209 @@ describe('handleWorkspaceInvite', () => {
 
   describe('GIVEN an inviter without a display name', () => {
     beforeEach(() => {
-      primeServer([{ data: { name: 'Acme Space' } }], {
-        id: 'user-1',
-        email: 'owner@acme.dev',
-        user_metadata: {},
+      primeServerClient(WORKSPACE_NAME_LOOKUP, {
+        user: { ...INVITER, id: 'user-unnamed', user_metadata: {} },
+        rpc: INVITE_RPCS,
       });
-      inviteUserByEmail.mockResolvedValue({ data: {}, error: null });
     });
 
     describe('WHEN the invite is submitted', () => {
-      test('THEN the email prefix stands in for the inviter name', async () => {
-        await handleWorkspaceInvite(
-          inviteRequest({ workspaceId: 'ws-1', email: 'teammate@acme.dev', roleId: 'role-1' }),
-        );
+      beforeEach(async () => {
+        response = await handleWorkspaceInvite(inviteRequest(WORKSPACE_INVITE_REQUEST));
+      });
 
-        expect(inviteUserByEmail.mock.calls[0]?.[1].data.invitedByName).toBe('owner');
+      test('THEN the email prefix stands in for the inviter name', () => {
+        expect(admin.inviteUserByEmail.mock.calls[0]?.[1].data.invitedByName).toBe('owner');
+      });
+    });
+  });
+
+  describe('GIVEN an inviter whose metadata name is not a string', () => {
+    beforeEach(() => {
+      primeServerClient(WORKSPACE_NAME_LOOKUP, {
+        user: { id: 'user-object-name', email: 'owner@acme.dev', user_metadata: { name: { first: 'Owner' } } },
+        rpc: INVITE_RPCS,
+      });
+    });
+
+    describe('WHEN the invite is submitted', () => {
+      beforeEach(async () => {
+        response = await handleWorkspaceInvite(inviteRequest(WORKSPACE_INVITE_REQUEST));
+      });
+
+      test('THEN the email prefix stands in for the inviter name', () => {
+        expect(response.status).toBe(200);
+        expect(admin.inviteUserByEmail.mock.calls[0]?.[1].data.invitedByName).toBe('owner');
       });
     });
   });
 
   describe('GIVEN a workspace lookup without a row', () => {
     beforeEach(() => {
-      primeServer([{ data: null }], { id: 'user-1', email: 'owner@acme.dev' });
-      inviteUserByEmail.mockResolvedValue({ data: {}, error: null });
+      primeServerClient([{ data: null }], { user: { ...INVITER, id: 'user-no-workspace' }, rpc: INVITE_RPCS });
     });
 
     describe('WHEN the invite is submitted', () => {
-      test('THEN the email falls back to an empty workspace name', async () => {
-        await handleWorkspaceInvite(
-          inviteRequest({ workspaceId: 'ws-1', email: 'teammate@acme.dev', roleId: 'role-1' }),
-        );
+      beforeEach(async () => {
+        response = await handleWorkspaceInvite(inviteRequest(WORKSPACE_INVITE_REQUEST));
+      });
 
-        expect(inviteUserByEmail.mock.calls[0]?.[1].data).toMatchObject({ workspaceName: '', workspaceInitial: '' });
+      test('THEN the email falls back to an empty workspace name', () => {
+        expect(admin.inviteUserByEmail.mock.calls[0]?.[1].data).toMatchObject({
+          workspaceName: '',
+          workspaceInitial: '',
+        });
       });
     });
   });
 
   describe('GIVEN a workspace whose name starts with an emoji', () => {
     beforeEach(() => {
-      primeServer([{ data: { name: '🚀 launch crew' } }], { id: 'user-emoji', email: 'owner@acme.dev' });
-      inviteUserByEmail.mockResolvedValue({ data: {}, error: null });
+      primeServerClient([{ data: { name: '🚀 launch crew' } }], {
+        user: { id: 'user-emoji', email: 'owner@acme.dev' },
+        rpc: INVITE_RPCS,
+      });
     });
 
     describe('WHEN the invite is submitted', () => {
-      test('THEN the email initial is the whole emoji instead of half of it', async () => {
-        await handleWorkspaceInvite(
-          inviteRequest({ workspaceId: 'ws-1', email: 'teammate@acme.dev', roleId: 'role-1' }),
-        );
+      beforeEach(async () => {
+        response = await handleWorkspaceInvite(inviteRequest(WORKSPACE_INVITE_REQUEST));
+      });
 
-        expect(inviteUserByEmail.mock.calls[0]?.[1].data.workspaceInitial).toBe('🚀');
+      test('THEN the email initial is the whole emoji instead of half of it', () => {
+        expect(admin.inviteUserByEmail.mock.calls[0]?.[1].data.workspaceInitial).toBe('🚀');
+      });
+    });
+  });
+
+  describe('GIVEN an inviter and a workspace whose names carry markup, tabs and padding', () => {
+    beforeEach(() => {
+      primeServerClient([{ data: { name: `<b>Acme</b>\tLabs\n\t Space ${'x'.repeat(100)}` } }], {
+        user: {
+          id: 'user-markup',
+          email: 'owner@acme.dev',
+          user_metadata: { name: '<a href="https://evil.example">Support</a>' },
+        },
+        rpc: INVITE_RPCS,
+      });
+    });
+
+    describe('WHEN the invite is submitted', () => {
+      beforeEach(async () => {
+        response = await handleWorkspaceInvite(inviteRequest(WORKSPACE_INVITE_REQUEST));
+      });
+
+      test('THEN the names keep their characters for the escaping email template, with whitespace collapsed and the length capped', () => {
+        expect(admin.inviteUserByEmail.mock.calls[0]?.[1].data).toMatchObject({
+          workspaceName: `<b>Acme</b> Labs Space ${'x'.repeat(100)}`.slice(0, MAX_NAME_LENGTH),
+          invitedByName: '<a href="https://evil.example">Support</a>',
+        });
+      });
+    });
+  });
+
+  describe('GIVEN an inviter name with bidi controls and a workspace name cut inside an emoji', () => {
+    beforeEach(() => {
+      primeServerClient([{ data: { name: `${'x'.repeat(MAX_NAME_LENGTH - 1)}🚀 tail` } }], {
+        user: {
+          id: 'user-bidi',
+          email: 'owner@acme.dev',
+          user_metadata: { name: 'Support\u202Emoc.lapyap\u2066\u200F' },
+        },
+        rpc: INVITE_RPCS,
+      });
+    });
+
+    describe('WHEN the invite is submitted', () => {
+      beforeEach(async () => {
+        response = await handleWorkspaceInvite(inviteRequest(WORKSPACE_INVITE_REQUEST));
+      });
+
+      test('THEN the bidi controls are dropped and the length cap keeps the emoji whole', () => {
+        expect(admin.inviteUserByEmail.mock.calls[0]?.[1].data).toMatchObject({
+          invitedByName: 'Supportmoc.lapyap',
+          workspaceName: `${'x'.repeat(MAX_NAME_LENGTH - 1)}🚀`,
+        });
+      });
+    });
+  });
+
+  describe('GIVEN a same-origin request with a mixed-case email', () => {
+    let client: ReturnType<typeof primeServerClient>;
+
+    beforeEach(() => {
+      client = primeServerClient(WORKSPACE_NAME_LOOKUP, {
+        user: { id: 'user-case', email: 'owner@acme.dev' },
+        rpc: INVITE_RPCS,
+      });
+    });
+
+    describe('WHEN the invite is submitted', () => {
+      beforeEach(async () => {
+        response = await handleWorkspaceInvite(
+          inviteRequest(
+            { ...WORKSPACE_INVITE_REQUEST, email: '  TeamMate@Acme.dev ' },
+            { 'sec-fetch-site': 'same-origin' },
+          ),
+        );
+      });
+
+      test('THEN the invitation and the email use the normalized address', () => {
+        expect(response.status).toBe(200);
+        expect(client.rpc).toHaveBeenCalledWith(
+          'create_workspace_invitation',
+          expect.objectContaining({ p_email: 'teammate@acme.dev' }),
+        );
+        expect(admin.inviteUserByEmail.mock.calls[0]?.[0]).toBe('teammate@acme.dev');
       });
     });
   });
 
   describe('GIVEN an invitee that already has an account', () => {
-    let client: ReturnType<typeof primeServer>;
+    let client: ReturnType<typeof primeServerClient>;
 
     beforeEach(() => {
-      client = primeServer([{ data: { name: 'Acme Space' } }], { id: 'user-1', email: 'owner@acme.dev' });
-      inviteUserByEmail.mockResolvedValue({
+      client = primeServerClient(WORKSPACE_NAME_LOOKUP, {
+        user: { ...INVITER, id: 'user-registered' },
+        rpc: INVITE_RPCS,
+      });
+      admin.inviteUserByEmail.mockResolvedValue({
         data: null,
         error: { message: 'A user with this email address has already been registered', code: 'email_exists' },
       });
     });
 
     describe('WHEN the invite email is refused as already registered', () => {
-      test('THEN the invitation still succeeds without a rollback', async () => {
-        const response = await handleWorkspaceInvite(
-          inviteRequest({ workspaceId: 'ws-1', email: 'teammate@acme.dev', roleId: 'role-1' }),
-        );
+      beforeEach(async () => {
+        response = await handleWorkspaceInvite(inviteRequest(WORKSPACE_INVITE_REQUEST));
+      });
 
+      test('THEN the invitation still succeeds without a rollback', async () => {
         expect(response.status).toBe(200);
         await expect(response.json()).resolves.toEqual({ ok: true });
         expect(client.rpc).not.toHaveBeenCalledWith('revoke_workspace_invitation', expect.anything());
-        expect(deleteAllowance).not.toHaveBeenCalled();
+        expect(admin.deleteAllowance).not.toHaveBeenCalled();
       });
     });
   });
 
   describe('GIVEN a new invitation whose email fails with a message that mentions an existing registration', () => {
-    let client: ReturnType<typeof primeServer>;
+    let client: ReturnType<typeof primeServerClient>;
 
     beforeEach(() => {
-      client = primeServer([{ data: { name: 'Acme Space' } }], { id: 'user-1', email: 'owner@acme.dev' });
-      inviteUserByEmail.mockResolvedValue({
+      client = primeServerClient(WORKSPACE_NAME_LOOKUP, { user: { ...INVITER, id: 'user-hook' }, rpc: INVITE_RPCS });
+      admin.inviteUserByEmail.mockResolvedValue({
         data: null,
         error: { message: 'Hook rejected the already registered domain', code: 'hook_timeout' },
       });
     });
 
     describe('WHEN the invite is submitted', () => {
-      test('THEN only the error code decides and the failure is answered with a rollback', async () => {
-        const response = await handleWorkspaceInvite(
-          inviteRequest({ workspaceId: 'ws-1', email: 'teammate@acme.dev', roleId: 'role-1' }),
-        );
+      beforeEach(async () => {
+        response = await handleWorkspaceInvite(inviteRequest(WORKSPACE_INVITE_REQUEST));
+      });
 
+      test('THEN only the error code decides and the failure is answered with a rollback', () => {
         expect(response.status).toBe(502);
         expect(client.rpc).toHaveBeenCalledWith('revoke_workspace_invitation', { p_invitation_id: 'invitation-1' });
       });
@@ -380,22 +475,25 @@ describe('handleWorkspaceInvite', () => {
   });
 
   describe('GIVEN a new invitation whose email fails', () => {
-    let client: ReturnType<typeof primeServer>;
+    let client: ReturnType<typeof primeServerClient>;
 
     beforeEach(() => {
-      client = primeServer([{ data: { name: 'Acme Space' } }], { id: 'user-1', email: 'owner@acme.dev' });
-      inviteUserByEmail.mockResolvedValue({
+      client = primeServerClient(WORKSPACE_NAME_LOOKUP, {
+        user: { ...INVITER, id: 'user-email-fails' },
+        rpc: INVITE_RPCS,
+      });
+      admin.inviteUserByEmail.mockResolvedValue({
         data: null,
         error: { message: 'Email rate limit exceeded', code: 'over_email_send_rate_limit' },
       });
     });
 
     describe('WHEN the invite is submitted', () => {
-      test('THEN the invitation is rolled back and a generic failure keeps the provider code but not its message', async () => {
-        const response = await handleWorkspaceInvite(
-          inviteRequest({ workspaceId: 'ws-1', email: 'teammate@acme.dev', roleId: 'role-1' }),
-        );
+      beforeEach(async () => {
+        response = await handleWorkspaceInvite(inviteRequest(WORKSPACE_INVITE_REQUEST));
+      });
 
+      test('THEN the invitation is rolled back and a generic failure keeps the provider code but not its message', async () => {
         expect(response.status).toBe(502);
         await expect(response.json()).resolves.toEqual({
           error: { message: 'Invitation email failed', code: 'over_email_send_rate_limit' },
@@ -403,13 +501,9 @@ describe('handleWorkspaceInvite', () => {
         expect(client.rpc).toHaveBeenCalledWith('revoke_workspace_invitation', { p_invitation_id: 'invitation-1' });
       });
 
-      test('THEN the signup allowance granted for the invitee is withdrawn', async () => {
-        await handleWorkspaceInvite(
-          inviteRequest({ workspaceId: 'ws-1', email: 'teammate@acme.dev', roleId: 'role-1' }),
-        );
-
-        expect(adminFrom).toHaveBeenCalledExactlyOnceWith('signup_allowances');
-        expect(deleteAllowance).toHaveBeenCalledExactlyOnceWith('email', 'teammate@acme.dev');
+      test('THEN the signup allowance granted for the invitee is withdrawn', () => {
+        expect(admin.from).toHaveBeenCalledExactlyOnceWith('signup_allowances');
+        expect(admin.deleteAllowance).toHaveBeenCalledExactlyOnceWith('email', 'teammate@acme.dev');
       });
     });
   });
@@ -418,20 +512,20 @@ describe('handleWorkspaceInvite', () => {
     const failure = { message: 'admin api unavailable', code: '08006' };
 
     beforeEach(() => {
-      primeServer([{ data: { name: 'Acme Space' } }], { id: 'user-1', email: 'owner@acme.dev' });
-      inviteUserByEmail.mockResolvedValue({
+      primeServerClient(WORKSPACE_NAME_LOOKUP, { user: { ...INVITER, id: 'user-withdraw-fails' }, rpc: INVITE_RPCS });
+      admin.inviteUserByEmail.mockResolvedValue({
         data: null,
         error: { message: 'smtp unreachable', code: 'unexpected_failure' },
       });
-      deleteAllowance.mockResolvedValue({ data: null, error: failure });
+      admin.deleteAllowance.mockResolvedValue({ data: null, error: failure });
     });
 
     describe('WHEN the invite is submitted', () => {
-      test('THEN the failed withdrawal is reported quietly and the answer stays the failed email', async () => {
-        const response = await handleWorkspaceInvite(
-          inviteRequest({ workspaceId: 'ws-1', email: 'teammate@acme.dev', roleId: 'role-1' }),
-        );
+      beforeEach(async () => {
+        response = await handleWorkspaceInvite(inviteRequest(WORKSPACE_INVITE_REQUEST));
+      });
 
+      test('THEN the failed withdrawal is reported quietly and the answer stays the failed email', async () => {
         expect(response.status).toBe(502);
         await expect(response.json()).resolves.toEqual({
           error: { message: 'Invitation email failed', code: 'unexpected_failure' },
@@ -443,24 +537,27 @@ describe('handleWorkspaceInvite', () => {
 
   describe('GIVEN a new invitation whose signup allowance cannot be granted', () => {
     const failure = { message: 'relation does not exist', code: '42P01' };
-    let client: ReturnType<typeof primeServer>;
+    let client: ReturnType<typeof primeServerClient>;
 
     beforeEach(() => {
-      client = primeServer([{ data: { name: 'Acme Space' } }], { id: 'user-allowance', email: 'owner@acme.dev' });
-      adminRpc.mockResolvedValue({ data: null, error: failure });
+      client = primeServerClient(WORKSPACE_NAME_LOOKUP, {
+        user: { id: 'user-allowance', email: 'owner@acme.dev' },
+        rpc: INVITE_RPCS,
+      });
+      admin.rpc.mockResolvedValue({ data: null, error: failure });
     });
 
     describe('WHEN the invite is submitted', () => {
-      test('THEN no email is sent, the invitation is rolled back and the failure answers like a failed email', async () => {
-        const response = await handleWorkspaceInvite(
-          inviteRequest({ workspaceId: 'ws-1', email: 'teammate@acme.dev', roleId: 'role-1' }),
-        );
+      beforeEach(async () => {
+        response = await handleWorkspaceInvite(inviteRequest(WORKSPACE_INVITE_REQUEST));
+      });
 
+      test('THEN no email is sent, the invitation is rolled back and the failure answers like a failed email', async () => {
         expect(response.status).toBe(502);
         await expect(response.json()).resolves.toEqual({
           error: { message: 'Invitation email failed', code: '42P01' },
         });
-        expect(inviteUserByEmail).not.toHaveBeenCalled();
+        expect(admin.inviteUserByEmail).not.toHaveBeenCalled();
         expect(client.rpc).toHaveBeenCalledWith('revoke_workspace_invitation', { p_invitation_id: 'invitation-1' });
         expect(event.error).toHaveBeenCalledExactlyOnceWith(failure, {
           toast: false,
@@ -471,25 +568,25 @@ describe('handleWorkspaceInvite', () => {
   });
 
   describe('GIVEN a pending invitation that is sent again while the email fails', () => {
-    let client: ReturnType<typeof primeServer>;
+    let client: ReturnType<typeof primeServerClient>;
 
     beforeEach(() => {
-      client = primeServer(
-        [{ data: { name: 'Acme Space' } }],
-        { id: 'user-resend', email: 'owner@acme.dev' },
-        {
+      client = primeServerClient(WORKSPACE_NAME_LOOKUP, {
+        user: { id: 'user-resend', email: 'owner@acme.dev' },
+        rpc: {
+          ...INVITE_RPCS,
           get_workspace_invitations: { data: [{ id: 'invitation-1', email: 'teammate@acme.dev' }] },
         },
-      );
-      inviteUserByEmail.mockResolvedValue({ data: null, error: { message: 'Email rate limit exceeded' } });
+      });
+      admin.inviteUserByEmail.mockResolvedValue({ data: null, error: { message: 'Email rate limit exceeded' } });
     });
 
     describe('WHEN the invite is submitted', () => {
-      test('THEN the failure surfaces and the invitation that existed before stays pending', async () => {
-        const response = await handleWorkspaceInvite(
-          inviteRequest({ workspaceId: 'ws-1', email: 'teammate@acme.dev', roleId: 'role-1' }),
-        );
+      beforeEach(async () => {
+        response = await handleWorkspaceInvite(inviteRequest(WORKSPACE_INVITE_REQUEST));
+      });
 
+      test('THEN the failure surfaces and the invitation that existed before stays pending', () => {
         expect(response.status).toBe(502);
         expect(client.rpc).not.toHaveBeenCalledWith('revoke_workspace_invitation', expect.anything());
         expect(event.error).toHaveBeenCalledExactlyOnceWith(
@@ -502,22 +599,19 @@ describe('handleWorkspaceInvite', () => {
 
   describe('GIVEN a new invitation whose email fails and whose rollback fails', () => {
     beforeEach(() => {
-      primeServer(
-        [{ data: { name: 'Acme Space' } }],
-        { id: 'user-1', email: 'owner@acme.dev' },
-        {
-          revoke_workspace_invitation: { error: { message: 'revoke failed' } },
-        },
-      );
-      inviteUserByEmail.mockResolvedValue({ data: null, error: { message: 'smtp unreachable' } });
+      primeServerClient(WORKSPACE_NAME_LOOKUP, {
+        user: { ...INVITER, id: 'user-rollback-fails' },
+        rpc: { ...INVITE_RPCS, revoke_workspace_invitation: { error: { message: 'revoke failed' } } },
+      });
+      admin.inviteUserByEmail.mockResolvedValue({ data: null, error: { message: 'smtp unreachable' } });
     });
 
     describe('WHEN the invite is submitted', () => {
-      test('THEN both failures are reported and the response stays a bad gateway', async () => {
-        const response = await handleWorkspaceInvite(
-          inviteRequest({ workspaceId: 'ws-1', email: 'teammate@acme.dev', roleId: 'role-1' }),
-        );
+      beforeEach(async () => {
+        response = await handleWorkspaceInvite(inviteRequest(WORKSPACE_INVITE_REQUEST));
+      });
 
+      test('THEN both failures are reported and the response stays a bad gateway', () => {
         expect(response.status).toBe(502);
         expect(vi.mocked(event.error).mock.calls).toEqual([
           [{ message: 'smtp unreachable' }, { toast: false, context: 'workspace.sendInviteEmail' }],
@@ -527,178 +621,30 @@ describe('handleWorkspaceInvite', () => {
     });
   });
 
-  describe('GIVEN a request sent from another site', () => {
-    let client: ReturnType<typeof primeServer>;
-
-    beforeEach(() => {
-      client = primeServer([], { id: 'user-1' });
-    });
-
-    describe('WHEN the browser marks the request as cross-site', () => {
-      test('THEN the request is forbidden before any invitation is created', async () => {
-        const response = await handleWorkspaceInvite(
-          inviteRequest(
-            { workspaceId: 'ws-1', email: 'a@b.dev', roleId: 'role-1' },
-            { 'sec-fetch-site': 'cross-site' },
-          ),
-        );
-
-        expect(response.status).toBe(403);
-        expect(client.rpc).not.toHaveBeenCalled();
-        expect(inviteUserByEmail).not.toHaveBeenCalled();
-      });
-    });
-
-    describe('WHEN only a foreign origin header identifies the caller', () => {
-      test('THEN the request is forbidden', async () => {
-        const response = await handleWorkspaceInvite(
-          inviteRequest(
-            { workspaceId: 'ws-1', email: 'a@b.dev', roleId: 'role-1' },
-            { origin: 'https://evil.example', host: 'localhost' },
-          ),
-        );
-
-        expect(response.status).toBe(403);
-        expect(client.rpc).not.toHaveBeenCalled();
-      });
-    });
-  });
-
-  describe('GIVEN an inviter and a workspace whose names carry markup, tabs and padding', () => {
-    beforeEach(() => {
-      primeServer([{ data: { name: `<b>Acme</b>\tLabs\n\t Space ${'x'.repeat(100)}` } }], {
-        id: 'user-markup',
-        email: 'owner@acme.dev',
-        user_metadata: { name: '<a href="https://evil.example">Support</a>' },
-      });
-      inviteUserByEmail.mockResolvedValue({ data: {}, error: null });
-    });
-
-    describe('WHEN the invite is submitted', () => {
-      test('THEN the names keep their characters for the escaping email template, with whitespace collapsed and the length capped', async () => {
-        await handleWorkspaceInvite(
-          inviteRequest({ workspaceId: 'ws-1', email: 'teammate@acme.dev', roleId: 'role-1' }),
-        );
-
-        const data = inviteUserByEmail.mock.calls[0]?.[1].data;
-
-        expect(data.workspaceName).toBe(`<b>Acme</b> Labs Space ${'x'.repeat(100)}`.slice(0, MAX_NAME_LENGTH));
-        expect(data.invitedByName).toBe('<a href="https://evil.example">Support</a>');
-      });
-    });
-  });
-
-  describe('GIVEN an inviter name with bidi controls and a workspace name cut inside an emoji', () => {
-    beforeEach(() => {
-      primeServer([{ data: { name: `${'x'.repeat(MAX_NAME_LENGTH - 1)}🚀 tail` } }], {
-        id: 'user-bidi',
-        email: 'owner@acme.dev',
-        user_metadata: { name: 'Support\u202Emoc.lapyap\u2066\u200F' },
-      });
-      inviteUserByEmail.mockResolvedValue({ data: {}, error: null });
-    });
-
-    describe('WHEN the invite is submitted', () => {
-      test('THEN the bidi controls are dropped and the length cap keeps the emoji whole', async () => {
-        await handleWorkspaceInvite(
-          inviteRequest({ workspaceId: 'ws-1', email: 'teammate@acme.dev', roleId: 'role-1' }),
-        );
-
-        const data = inviteUserByEmail.mock.calls[0]?.[1].data;
-
-        expect(data.invitedByName).toBe('Supportmoc.lapyap');
-        expect(data.workspaceName).toBe(`${'x'.repeat(MAX_NAME_LENGTH - 1)}🚀`);
-      });
-    });
-  });
-
-  describe('GIVEN an inviter whose metadata name is not a string', () => {
-    beforeEach(() => {
-      primeServer([{ data: { name: 'Acme Space' } }], {
-        id: 'user-object-name',
-        email: 'owner@acme.dev',
-        user_metadata: { name: { first: 'Owner' } },
-      });
-      inviteUserByEmail.mockResolvedValue({ data: {}, error: null });
-    });
-
-    describe('WHEN the invite is submitted', () => {
-      test('THEN the email prefix stands in for the inviter name', async () => {
-        const response = await handleWorkspaceInvite(
-          inviteRequest({ workspaceId: 'ws-1', email: 'teammate@acme.dev', roleId: 'role-1' }),
-        );
-
-        expect(response.status).toBe(200);
-        expect(inviteUserByEmail.mock.calls[0]?.[1].data.invitedByName).toBe('owner');
-      });
-    });
-  });
-
-  describe('GIVEN a signed-in inviter sending a request with a malformed email', () => {
-    beforeEach(() => {
-      primeServer([], { id: 'user-1' });
-    });
-
-    describe('WHEN the invite is submitted', () => {
-      test('THEN the request is rejected', async () => {
-        const response = await handleWorkspaceInvite(
-          inviteRequest({ workspaceId: 'ws-1', email: 'not an email', roleId: 'role-1' }),
-        );
-
-        expect(response.status).toBe(400);
-      });
-    });
-  });
-
-  describe('GIVEN a same-origin request with a mixed-case email', () => {
-    let client: ReturnType<typeof primeServer>;
-
-    beforeEach(() => {
-      client = primeServer([{ data: { name: 'Acme Space' } }], { id: 'user-case', email: 'owner@acme.dev' });
-      inviteUserByEmail.mockResolvedValue({ data: {}, error: null });
-    });
-
-    describe('WHEN the invite is submitted', () => {
-      test('THEN the invitation and the email use the normalized address', async () => {
-        const response = await handleWorkspaceInvite(
-          inviteRequest(
-            { workspaceId: 'ws-1', email: '  TeamMate@Acme.dev ', roleId: 'role-1' },
-            { 'sec-fetch-site': 'same-origin' },
-          ),
-        );
-
-        expect(response.status).toBe(200);
-        expect(client.rpc).toHaveBeenCalledWith(
-          'create_workspace_invitation',
-          expect.objectContaining({ p_email: 'teammate@acme.dev' }),
-        );
-        expect(inviteUserByEmail.mock.calls[0]?.[0]).toBe('teammate@acme.dev');
-      });
-    });
-  });
-
   describe('GIVEN an inviter who exhausted the invitation rate limit', () => {
     beforeEach(async () => {
-      primeServer([{ data: { name: 'Acme Space' } }], { id: 'user-flood', email: 'owner@acme.dev' });
-      inviteUserByEmail.mockResolvedValue({ data: {}, error: null });
+      primeServerClient(WORKSPACE_NAME_LOOKUP, {
+        user: { id: 'user-flood', email: 'owner@acme.dev' },
+        rpc: INVITE_RPCS,
+      });
       await Promise.all(
         Array.from({ length: WORKSPACE_INVITE_RATE_LIMIT_MAX_ATTEMPTS }, (_, index) =>
-          handleWorkspaceInvite(
-            inviteRequest({ workspaceId: 'ws-1', email: `guest${index}@acme.dev`, roleId: 'role-1' }),
-          ),
+          handleWorkspaceInvite(inviteRequest({ ...WORKSPACE_INVITE_REQUEST, email: `guest${index}@acme.dev` })),
         ),
       );
-      inviteUserByEmail.mockClear();
+      admin.inviteUserByEmail.mockClear();
     });
 
     describe('WHEN another invite is submitted', () => {
-      test('THEN the request is throttled and no email is sent', async () => {
-        const response = await handleWorkspaceInvite(
-          inviteRequest({ workspaceId: 'ws-1', email: 'one-more@acme.dev', roleId: 'role-1' }),
+      beforeEach(async () => {
+        response = await handleWorkspaceInvite(
+          inviteRequest({ ...WORKSPACE_INVITE_REQUEST, email: 'one-more@acme.dev' }),
         );
+      });
 
+      test('THEN the request is throttled and no email is sent', () => {
         expect(response.status).toBe(429);
-        expect(inviteUserByEmail).not.toHaveBeenCalled();
+        expect(admin.inviteUserByEmail).not.toHaveBeenCalled();
       });
     });
   });

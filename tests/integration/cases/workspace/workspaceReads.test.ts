@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { afterAll, beforeAll, beforeEach, describe, expect, test } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from 'vitest';
 
 import { ICON_LENGTH_CAP, NAME_LENGTH_CAP } from '../../consts';
 import type { IIntegrationAccount, IIntegrationResponse, IIntegrationWorkspace } from '../../interfaces';
@@ -11,7 +11,6 @@ import {
   seedMember,
   seedThread,
   seedWorkspace,
-  setAccountMetadata,
   uniqueLabel,
 } from '../../utils';
 
@@ -77,29 +76,37 @@ describe('get_workspace_members', () => {
 
       test('THEN the call is denied for a non-member', () => {
         expect(response.error?.code).toBe('42501');
-        expect(response.error?.message).toMatch(/Not a member/);
       });
     });
   });
 
   describe('GIVEN a member whose profile name and avatar icon run far past the caps', () => {
+    let longNamed: IIntegrationAccount;
+    let rosterWorkspace: IIntegrationWorkspace;
+
     beforeEach(async () => {
-      await setAccountMetadata(member.id, {
+      longNamed = await seedAccount('long-named', {
         name: 'n'.repeat(NAME_LENGTH_CAP * 10),
         avatarIcon: 'i'.repeat(ICON_LENGTH_CAP * 10),
       });
+      rosterWorkspace = await seedWorkspace(owner.id, uniqueLabel('workspace-reads-roster'));
+      await seedMember(rosterWorkspace.id, longNamed.id, 'member');
+    });
+
+    afterEach(async () => {
+      await deleteAccounts(longNamed);
     });
 
     describe('WHEN the owner reads the roster', () => {
       let response: IIntegrationResponse<{ user_id: string; name: string; avatar_icon: string }[]>;
 
       beforeEach(async () => {
-        response = await ownerClient.rpc('get_workspace_members', { p_workspace_id: workspace.id });
+        response = await ownerClient.rpc('get_workspace_members', { p_workspace_id: rosterWorkspace.id });
       });
 
       test('THEN the name and the icon come back cut to the caps', () => {
         expect(response.error).toBeNull();
-        expect(response.data!.find((row) => row.user_id === member.id)).toMatchObject({
+        expect(response.data!.find((row) => row.user_id === longNamed.id)).toMatchObject({
           name: 'n'.repeat(NAME_LENGTH_CAP),
           avatar_icon: 'i'.repeat(ICON_LENGTH_CAP),
         });

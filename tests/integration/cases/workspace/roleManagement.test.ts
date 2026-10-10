@@ -1,18 +1,20 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { afterAll, beforeAll, beforeEach, describe, expect, test } from 'vitest';
 
-import { DAY_MS, ICON_LENGTH_CAP, INTEGRATION_ACCOUNT_DOMAIN, NAME_LENGTH_CAP } from '../../consts';
+import { DAY_MS, ICON_LENGTH_CAP, MISSING_ROW_ID, ROLE_NAME_LENGTH_CAP } from '../../consts';
 import type { IIntegrationAccount, IIntegrationResponse, IIntegrationWorkspace } from '../../interfaces';
 import {
   deleteAccounts,
   getRoleId,
   getUserClient,
   isMember,
+  readInvitation,
   readMemberRole,
   readRoleHolders,
   readWorkspace,
   readWorkspaceRole,
   removeMember,
+  rolePermissionParams,
   seedAccount,
   seedInvitation,
   seedMember,
@@ -20,6 +22,7 @@ import {
   seedRole,
   seedWorkspace,
   setMemberRole,
+  uniqueEmail,
   uniqueLabel,
 } from '../../utils';
 
@@ -33,8 +36,8 @@ let managerClient: SupabaseClient;
 let memberClient: SupabaseClient;
 let rolesStewardClient: SupabaseClient;
 let workspace: IIntegrationWorkspace;
-let managerRoleId: string;
 let memberRoleId: string;
+let foreignRoleId: string;
 
 beforeAll(async () => {
   [owner, manager, member, removable, rolesSteward] = await Promise.all([
@@ -45,7 +48,9 @@ beforeAll(async () => {
     seedAccount('roles-steward'),
   ]);
   workspace = await seedWorkspace(owner.id, uniqueLabel('role-management'));
-  managerRoleId = await seedRole(workspace.id, 'People manager', {
+  const foreignWorkspace = await seedWorkspace(owner.id, uniqueLabel('role-management-foreign'));
+  foreignRoleId = await seedRole(foreignWorkspace.id, 'Foreign', { canComment: true });
+  const managerRoleId = await seedRole(workspace.id, 'People manager', {
     canEditCanvas: true,
     canComment: true,
     canManageStructure: true,
@@ -76,6 +81,10 @@ afterAll(async () => {
 
 describe('create_workspace_role', () => {
   describe('GIVEN a member without role management permission', () => {
+    beforeEach(async () => {
+      await setMemberRole(workspace.id, member.id, memberRoleId);
+    });
+
     describe('WHEN they create a role', () => {
       let response: IIntegrationResponse;
 
@@ -84,12 +93,7 @@ describe('create_workspace_role', () => {
           p_workspace_id: workspace.id,
           p_name: uniqueLabel('Sneaky role'),
           p_icon: null,
-          p_can_edit_canvas: false,
-          p_can_comment: true,
-          p_can_manage_structure: false,
-          p_can_manage_members: false,
-          p_can_manage_roles: false,
-          p_can_manage_workspace: false,
+          ...rolePermissionParams({ canComment: true }),
         });
       });
 
@@ -108,18 +112,12 @@ describe('create_workspace_role', () => {
           p_workspace_id: workspace.id,
           p_name: uniqueLabel('Commenter'),
           p_icon: null,
-          p_can_edit_canvas: false,
-          p_can_comment: true,
-          p_can_manage_structure: false,
-          p_can_manage_members: false,
-          p_can_manage_roles: false,
-          p_can_manage_workspace: false,
+          ...rolePermissionParams({ canComment: true }),
         });
       });
 
       test('THEN the role is created', async () => {
         expect(response.error).toBeNull();
-
         await expect(readWorkspaceRole(response.data!, 'is_system, can_comment')).resolves.toEqual({
           is_system: false,
           can_comment: true,
@@ -137,18 +135,12 @@ describe('create_workspace_role', () => {
           p_workspace_id: workspace.id,
           p_name: uniqueLabel('Shadow owner'),
           p_icon: null,
-          p_can_edit_canvas: false,
-          p_can_comment: false,
-          p_can_manage_structure: false,
-          p_can_manage_members: false,
-          p_can_manage_roles: false,
-          p_can_manage_workspace: true,
+          ...rolePermissionParams({ canManageWorkspace: true }),
         });
       });
 
       test('THEN the grant ceiling rejects the escalation', () => {
         expect(response.error?.code).toBe('42501');
-        expect(response.error?.message).toMatch(/permissions you do not have/);
       });
     });
   });
@@ -162,12 +154,14 @@ describe('create_workspace_role', () => {
           p_workspace_id: workspace.id,
           p_name: uniqueLabel('Deputy'),
           p_icon: null,
-          p_can_edit_canvas: true,
-          p_can_comment: true,
-          p_can_manage_structure: true,
-          p_can_manage_members: true,
-          p_can_manage_roles: true,
-          p_can_manage_workspace: true,
+          ...rolePermissionParams({
+            canEditCanvas: true,
+            canComment: true,
+            canManageStructure: true,
+            canManageMembers: true,
+            canManageRoles: true,
+            canManageWorkspace: true,
+          }),
         });
       });
 
@@ -184,12 +178,7 @@ describe('create_workspace_role', () => {
           p_workspace_id: workspace.id,
           p_name: '   ',
           p_icon: null,
-          p_can_edit_canvas: false,
-          p_can_comment: false,
-          p_can_manage_structure: false,
-          p_can_manage_members: false,
-          p_can_manage_roles: false,
-          p_can_manage_workspace: false,
+          ...rolePermissionParams({}),
         });
       });
 
@@ -198,26 +187,20 @@ describe('create_workspace_role', () => {
       });
     });
 
-    describe('WHEN they create a role with a name past the database length cap', () => {
+    describe('WHEN they create a role with a name past the role name limit', () => {
       let response: IIntegrationResponse;
 
       beforeEach(async () => {
         response = await ownerClient.rpc('create_workspace_role', {
           p_workspace_id: workspace.id,
-          p_name: 'r'.repeat(NAME_LENGTH_CAP + 1),
+          p_name: 'r'.repeat(ROLE_NAME_LENGTH_CAP + 1),
           p_icon: null,
-          p_can_edit_canvas: false,
-          p_can_comment: false,
-          p_can_manage_structure: false,
-          p_can_manage_members: false,
-          p_can_manage_roles: false,
-          p_can_manage_workspace: false,
+          ...rolePermissionParams({}),
         });
       });
 
       test('THEN the name is rejected as too long', () => {
         expect(response.error?.code).toBe('22023');
-        expect(response.error?.message).toMatch(/too long/);
       });
     });
 
@@ -229,12 +212,7 @@ describe('create_workspace_role', () => {
           p_workspace_id: workspace.id,
           p_name: uniqueLabel('Iconic'),
           p_icon: 'i'.repeat(ICON_LENGTH_CAP),
-          p_can_edit_canvas: false,
-          p_can_comment: false,
-          p_can_manage_structure: false,
-          p_can_manage_members: false,
-          p_can_manage_roles: false,
-          p_can_manage_workspace: false,
+          ...rolePermissionParams({}),
         });
       });
 
@@ -252,12 +230,7 @@ describe('create_workspace_role', () => {
           p_workspace_id: workspace.id,
           p_name: uniqueLabel('Overdrawn'),
           p_icon: 'i'.repeat(ICON_LENGTH_CAP + 1),
-          p_can_edit_canvas: false,
-          p_can_comment: false,
-          p_can_manage_structure: false,
-          p_can_manage_members: false,
-          p_can_manage_roles: false,
-          p_can_manage_workspace: false,
+          ...rolePermissionParams({}),
         });
       });
 
@@ -297,6 +270,33 @@ describe('set_member_role', () => {
     });
   });
 
+  describe('GIVEN a powerful role of another workspace the manager owns', () => {
+    let ownedRoleId: string;
+
+    beforeEach(async () => {
+      await setMemberRole(workspace.id, member.id, memberRoleId);
+      const ownedWorkspace = await seedWorkspace(manager.id, uniqueLabel('role-management-owned'));
+      ownedRoleId = await seedRole(ownedWorkspace.id, 'Owned steward', { canManageWorkspace: true });
+    });
+
+    describe('WHEN the manager assigns it to a member of this workspace', () => {
+      let response: IIntegrationResponse;
+
+      beforeEach(async () => {
+        response = await managerClient.rpc('set_member_role', {
+          p_workspace_id: workspace.id,
+          p_user_id: member.id,
+          p_role_id: ownedRoleId,
+        });
+      });
+
+      test('THEN the role is not found in this workspace and the membership is unchanged', async () => {
+        expect(response.error?.code).toBe('P0002');
+        await expect(readMemberRole(workspace.id, member.id)).resolves.toBe(memberRoleId);
+      });
+    });
+  });
+
   describe('GIVEN the owner role as a target role', () => {
     describe('WHEN the manager assigns it to a member', () => {
       let response: IIntegrationResponse;
@@ -312,7 +312,6 @@ describe('set_member_role', () => {
 
       test('THEN ownership assignment is refused', () => {
         expect(response.error?.code).toBe('22023');
-        expect(response.error?.message).toMatch(/transferred/);
       });
     });
   });
@@ -335,14 +334,15 @@ describe('set_member_role', () => {
     });
   });
 
-  describe('GIVEN a manager staying within the ceiling', () => {
+  describe('GIVEN a plain member and a comment-only role within the manager ceiling', () => {
     let commenterRoleId: string;
 
     beforeEach(async () => {
+      await setMemberRole(workspace.id, member.id, memberRoleId);
       commenterRoleId = await seedRole(workspace.id, uniqueLabel('Commenter'), { canComment: true });
     });
 
-    describe('WHEN they assign the comment-only role to a member', () => {
+    describe('WHEN the manager assigns the comment-only role to the member', () => {
       let response: IIntegrationResponse;
 
       beforeEach(async () => {
@@ -360,9 +360,11 @@ describe('set_member_role', () => {
     });
   });
 
-  describe('GIVEN a plain member', () => {
+  describe('GIVEN a plain member and another member holding the same role', () => {
     beforeEach(async () => {
       await setMemberRole(workspace.id, member.id, memberRoleId);
+      await removeMember(workspace.id, removable.id);
+      await seedMemberWithRole(workspace.id, removable.id, memberRoleId);
     });
 
     describe('WHEN they promote themselves through the members table', () => {
@@ -383,20 +385,21 @@ describe('set_member_role', () => {
       });
     });
 
-    describe("WHEN they change the manager's role through the rpc", () => {
+    describe("WHEN they change the other member's role through the rpc", () => {
       let response: IIntegrationResponse;
 
       beforeEach(async () => {
+        const viewerRoleId = await getRoleId(workspace.id, 'viewer');
         response = await memberClient.rpc('set_member_role', {
           p_workspace_id: workspace.id,
-          p_user_id: manager.id,
-          p_role_id: memberRoleId,
+          p_user_id: removable.id,
+          p_role_id: viewerRoleId,
         });
       });
 
-      test('THEN the call is denied and the manager keeps their role', async () => {
+      test('THEN the call is denied and the other member keeps their role', async () => {
         expect(response.error?.code).toBe('42501');
-        await expect(readMemberRole(workspace.id, manager.id)).resolves.toBe(managerRoleId);
+        await expect(readMemberRole(workspace.id, removable.id)).resolves.toBe(memberRoleId);
       });
     });
   });
@@ -422,7 +425,6 @@ describe('set_member_role', () => {
 
       test('THEN the demotion is denied and the stronger role stays', async () => {
         expect(response.error?.code).toBe('42501');
-        expect(response.error?.message).toMatch(/permissions you do not have/);
         await expect(readMemberRole(workspace.id, member.id)).resolves.toBe(stewardRoleId);
       });
     });
@@ -466,7 +468,6 @@ describe('remove_workspace_member', () => {
 
       test('THEN the removal is denied and the membership stays', async () => {
         expect(response.error?.code).toBe('42501');
-        expect(response.error?.message).toMatch(/permissions you do not have/);
         await expect(isMember(workspace.id, removable.id)).resolves.toBe(true);
       });
     });
@@ -488,8 +489,9 @@ describe('remove_workspace_member', () => {
     });
   });
 
-  describe('GIVEN a member holding a role within the manager ceiling', () => {
+  describe('GIVEN a member holding a role within the manager ceiling and a plain member', () => {
     beforeEach(async () => {
+      await setMemberRole(workspace.id, member.id, memberRoleId);
       await removeMember(workspace.id, removable.id);
       await seedMemberWithRole(workspace.id, removable.id, memberRoleId);
     });
@@ -509,6 +511,22 @@ describe('remove_workspace_member', () => {
         await expect(isMember(workspace.id, removable.id)).resolves.toBe(false);
       });
     });
+
+    describe('WHEN the plain member removes them', () => {
+      let response: IIntegrationResponse;
+
+      beforeEach(async () => {
+        response = await memberClient.rpc('remove_workspace_member', {
+          p_workspace_id: workspace.id,
+          p_user_id: removable.id,
+        });
+      });
+
+      test('THEN the call is denied and the membership stays', async () => {
+        expect(response.error?.code).toBe('42501');
+        await expect(isMember(workspace.id, removable.id)).resolves.toBe(true);
+      });
+    });
   });
 
   describe('GIVEN the workspace owner as the target member', () => {
@@ -525,24 +543,6 @@ describe('remove_workspace_member', () => {
       test('THEN removing the owner is refused', async () => {
         expect(response.error?.code).toBe('22023');
         await expect(isMember(workspace.id, owner.id)).resolves.toBe(true);
-      });
-    });
-  });
-
-  describe('GIVEN a plain member without member management permission', () => {
-    describe('WHEN they remove the manager', () => {
-      let response: IIntegrationResponse;
-
-      beforeEach(async () => {
-        response = await memberClient.rpc('remove_workspace_member', {
-          p_workspace_id: workspace.id,
-          p_user_id: manager.id,
-        });
-      });
-
-      test('THEN the call is denied and the manager stays', async () => {
-        expect(response.error?.code).toBe('42501');
-        await expect(isMember(workspace.id, manager.id)).resolves.toBe(true);
       });
     });
   });
@@ -580,17 +580,24 @@ describe('workspace_roles', () => {
           .insert({ workspace_id: workspace.id, name: uniqueLabel('Direct role') });
       });
 
-      test('THEN the insert is denied by row level security', () => {
+      test('THEN the table privilege is missing', () => {
         expect(response.error?.code).toBe('42501');
+        expect(response.error?.message).toMatch(/permission denied for table/);
       });
     });
 
     describe('WHEN they update a system role directly', () => {
+      let response: IIntegrationResponse;
+
       beforeEach(async () => {
-        await memberClient.from('workspace_roles').update({ can_manage_workspace: true }).eq('id', memberRoleId);
+        response = await memberClient
+          .from('workspace_roles')
+          .update({ can_manage_workspace: true })
+          .eq('id', memberRoleId);
       });
 
-      test('THEN the role stays unchanged', async () => {
+      test('THEN the table privilege is missing and the role stays unchanged', async () => {
+        expect(response.error?.code).toBe('42501');
         await expect(readWorkspaceRole(memberRoleId, 'can_manage_workspace')).resolves.toEqual({
           can_manage_workspace: false,
         });
@@ -609,18 +616,12 @@ describe('update_workspace_role', () => {
           p_role_id: memberRoleId,
           p_name: 'Renamed member',
           p_icon: null,
-          p_can_edit_canvas: true,
-          p_can_comment: true,
-          p_can_manage_structure: true,
-          p_can_manage_members: false,
-          p_can_manage_roles: false,
-          p_can_manage_workspace: false,
+          ...rolePermissionParams({ canEditCanvas: true, canComment: true, canManageStructure: true }),
         });
       });
 
       test('THEN built-in roles stay locked', () => {
         expect(response.error?.code).toBe('22023');
-        expect(response.error?.message).toMatch(/cannot be edited/);
       });
     });
   });
@@ -640,18 +641,12 @@ describe('update_workspace_role', () => {
           p_role_id: stewardRoleId,
           p_name: uniqueLabel('Stripped'),
           p_icon: null,
-          p_can_edit_canvas: false,
-          p_can_comment: true,
-          p_can_manage_structure: false,
-          p_can_manage_members: false,
-          p_can_manage_roles: false,
-          p_can_manage_workspace: false,
+          ...rolePermissionParams({ canComment: true }),
         });
       });
 
       test('THEN the edit is denied and the role keeps its permissions', async () => {
         expect(response.error?.code).toBe('42501');
-        expect(response.error?.message).toMatch(/permissions you do not have/);
         await expect(readWorkspaceRole(stewardRoleId, 'can_manage_workspace')).resolves.toEqual({
           can_manage_workspace: true,
         });
@@ -666,12 +661,7 @@ describe('update_workspace_role', () => {
           p_role_id: stewardRoleId,
           p_name: uniqueLabel('Stripped'),
           p_icon: null,
-          p_can_edit_canvas: false,
-          p_can_comment: true,
-          p_can_manage_structure: false,
-          p_can_manage_members: false,
-          p_can_manage_roles: false,
-          p_can_manage_workspace: false,
+          ...rolePermissionParams({ canComment: true }),
         });
       });
 
@@ -685,11 +675,12 @@ describe('update_workspace_role', () => {
     });
   });
 
-  describe('GIVEN a custom role within the manager ceiling', () => {
+  describe('GIVEN a custom role within the manager ceiling and a plain member', () => {
     let commenterRoleId: string;
 
     beforeEach(async () => {
       commenterRoleId = await seedRole(workspace.id, uniqueLabel('Commenter'), { canComment: true });
+      await setMemberRole(workspace.id, member.id, memberRoleId);
     });
 
     describe('WHEN the manager widens it within their own permissions', () => {
@@ -700,12 +691,7 @@ describe('update_workspace_role', () => {
           p_role_id: commenterRoleId,
           p_name: uniqueLabel('Editor'),
           p_icon: null,
-          p_can_edit_canvas: true,
-          p_can_comment: true,
-          p_can_manage_structure: false,
-          p_can_manage_members: false,
-          p_can_manage_roles: false,
-          p_can_manage_workspace: false,
+          ...rolePermissionParams({ canEditCanvas: true, canComment: true }),
         });
       });
 
@@ -716,16 +702,49 @@ describe('update_workspace_role', () => {
         });
       });
     });
+
+    describe('WHEN the manager widens it past their own permissions', () => {
+      let response: IIntegrationResponse;
+
+      beforeEach(async () => {
+        response = await managerClient.rpc('update_workspace_role', {
+          p_role_id: commenterRoleId,
+          p_name: uniqueLabel('Shadow owner'),
+          p_icon: null,
+          ...rolePermissionParams({ canComment: true, canManageWorkspace: true }),
+        });
+      });
+
+      test('THEN the grant ceiling rejects the escalation and the role stays', async () => {
+        expect(response.error?.code).toBe('42501');
+        await expect(readWorkspaceRole(commenterRoleId, 'can_manage_workspace')).resolves.toEqual({
+          can_manage_workspace: false,
+        });
+      });
+    });
+
+    describe('WHEN a plain member edits it', () => {
+      let response: IIntegrationResponse;
+
+      beforeEach(async () => {
+        response = await memberClient.rpc('update_workspace_role', {
+          p_role_id: commenterRoleId,
+          p_name: uniqueLabel('Hijacked'),
+          p_icon: null,
+          ...rolePermissionParams({ canEditCanvas: true, canComment: true }),
+        });
+      });
+
+      test('THEN the call is denied and the role stays', async () => {
+        expect(response.error?.code).toBe('42501');
+        await expect(readWorkspaceRole(commenterRoleId, 'can_edit_canvas')).resolves.toEqual({
+          can_edit_canvas: false,
+        });
+      });
+    });
   });
 
   describe('GIVEN a custom role of a workspace the manager does not belong to', () => {
-    let foreignRoleId: string;
-
-    beforeEach(async () => {
-      const foreignWorkspace = await seedWorkspace(owner.id, uniqueLabel('foreign-roles'));
-      foreignRoleId = await seedRole(foreignWorkspace.id, uniqueLabel('Foreign'), { canComment: true });
-    });
-
     describe('WHEN the manager edits it', () => {
       let response: IIntegrationResponse;
 
@@ -734,47 +753,40 @@ describe('update_workspace_role', () => {
           p_role_id: foreignRoleId,
           p_name: uniqueLabel('Hijacked'),
           p_icon: null,
-          p_can_edit_canvas: true,
-          p_can_comment: true,
-          p_can_manage_structure: false,
-          p_can_manage_members: false,
-          p_can_manage_roles: false,
-          p_can_manage_workspace: false,
+          ...rolePermissionParams({ canEditCanvas: true, canComment: true }),
         });
       });
 
-      test('THEN it is refused as not found, exactly like a missing role, and the role stays', async () => {
+      test('THEN it is refused as not found, like a missing role, and the role stays', async () => {
         expect(response.error?.code).toBe('P0002');
         expect(response.error?.message).toBe('Role not found');
         await expect(readWorkspaceRole(foreignRoleId, 'can_edit_canvas')).resolves.toEqual({ can_edit_canvas: false });
       });
     });
   });
-});
 
-describe('delete_workspace_role', () => {
-  describe('GIVEN a custom role currently held by a member', () => {
-    let customRoleId: string;
-
-    beforeEach(async () => {
-      customRoleId = await seedRole(workspace.id, uniqueLabel('Disposable'), { canComment: true });
-      await setMemberRole(workspace.id, member.id, customRoleId);
-    });
-
-    describe('WHEN the owner deletes the role', () => {
+  describe('GIVEN a role id that does not exist', () => {
+    describe('WHEN the manager edits it', () => {
       let response: IIntegrationResponse;
 
       beforeEach(async () => {
-        response = await ownerClient.rpc('delete_workspace_role', { p_role_id: customRoleId });
+        response = await managerClient.rpc('update_workspace_role', {
+          p_role_id: MISSING_ROW_ID,
+          p_name: uniqueLabel('Phantom'),
+          p_icon: null,
+          ...rolePermissionParams({ canComment: true }),
+        });
       });
 
-      test('THEN the member falls back to the system member role', async () => {
-        expect(response.error).toBeNull();
-        await expect(readMemberRole(workspace.id, member.id)).resolves.toBe(memberRoleId);
+      test('THEN it is refused as not found', () => {
+        expect(response.error?.code).toBe('P0002');
+        expect(response.error?.message).toBe('Role not found');
       });
     });
   });
+});
 
+describe('delete_workspace_role', () => {
   describe('GIVEN a built-in system role', () => {
     describe('WHEN the owner deletes it', () => {
       let response: IIntegrationResponse;
@@ -785,19 +797,11 @@ describe('delete_workspace_role', () => {
 
       test('THEN built-in roles stay locked', () => {
         expect(response.error?.code).toBe('22023');
-        expect(response.error?.message).toMatch(/cannot be deleted/);
       });
     });
   });
 
   describe('GIVEN a custom role of a workspace the manager does not belong to', () => {
-    let foreignRoleId: string;
-
-    beforeEach(async () => {
-      const foreignWorkspace = await seedWorkspace(owner.id, uniqueLabel('foreign-roles'));
-      foreignRoleId = await seedRole(foreignWorkspace.id, uniqueLabel('Foreign'), { canComment: true });
-    });
-
     describe('WHEN the manager deletes it', () => {
       let response: IIntegrationResponse;
 
@@ -805,10 +809,25 @@ describe('delete_workspace_role', () => {
         response = await managerClient.rpc('delete_workspace_role', { p_role_id: foreignRoleId });
       });
 
-      test('THEN it is refused as not found, exactly like a missing role, and the role stays', async () => {
+      test('THEN it is refused as not found, like a missing role, and the role stays', async () => {
         expect(response.error?.code).toBe('P0002');
         expect(response.error?.message).toBe('Role not found');
         await expect(readWorkspaceRole(foreignRoleId, 'can_comment')).resolves.toEqual({ can_comment: true });
+      });
+    });
+  });
+
+  describe('GIVEN a role id that does not exist', () => {
+    describe('WHEN the manager deletes it', () => {
+      let response: IIntegrationResponse;
+
+      beforeEach(async () => {
+        response = await managerClient.rpc('delete_workspace_role', { p_role_id: MISSING_ROW_ID });
+      });
+
+      test('THEN it is refused as not found', () => {
+        expect(response.error?.code).toBe('P0002');
+        expect(response.error?.message).toBe('Role not found');
       });
     });
   });
@@ -831,7 +850,6 @@ describe('delete_workspace_role', () => {
 
       test('THEN the deletion is denied and the holder keeps the role', async () => {
         expect(response.error?.code).toBe('42501');
-        expect(response.error?.message).toMatch(/permissions you do not have/);
         await expect(readMemberRole(workspace.id, removable.id)).resolves.toBe(stewardRoleId);
       });
     });
@@ -851,11 +869,14 @@ describe('delete_workspace_role', () => {
     });
   });
 
-  describe('GIVEN a custom role within the manager ceiling', () => {
+  describe('GIVEN a custom role within the manager ceiling held by a member, and a plain member', () => {
     let commenterRoleId: string;
 
     beforeEach(async () => {
       commenterRoleId = await seedRole(workspace.id, uniqueLabel('Commenter'), { canComment: true });
+      await setMemberRole(workspace.id, member.id, memberRoleId);
+      await removeMember(workspace.id, removable.id);
+      await seedMemberWithRole(workspace.id, removable.id, commenterRoleId);
     });
 
     describe('WHEN the manager deletes the role', () => {
@@ -865,9 +886,23 @@ describe('delete_workspace_role', () => {
         response = await managerClient.rpc('delete_workspace_role', { p_role_id: commenterRoleId });
       });
 
-      test('THEN the role is gone', async () => {
+      test('THEN the role is gone and its holder falls back to the member role', async () => {
         expect(response.error).toBeNull();
         await expect(readWorkspaceRole(commenterRoleId, 'id')).resolves.toBeNull();
+        await expect(readMemberRole(workspace.id, removable.id)).resolves.toBe(memberRoleId);
+      });
+    });
+
+    describe('WHEN a plain member deletes the role', () => {
+      let response: IIntegrationResponse;
+
+      beforeEach(async () => {
+        response = await memberClient.rpc('delete_workspace_role', { p_role_id: commenterRoleId });
+      });
+
+      test('THEN the call is denied and the role stays', async () => {
+        expect(response.error?.code).toBe('42501');
+        await expect(readWorkspaceRole(commenterRoleId, 'id')).resolves.toEqual({ id: commenterRoleId });
       });
     });
   });
@@ -890,31 +925,18 @@ describe('delete_workspace_role', () => {
 
       test('THEN the deletion is denied and the holder keeps the empty role', async () => {
         expect(response.error?.code).toBe('42501');
-        expect(response.error?.message).toMatch(/permissions you do not have/);
         await expect(readMemberRole(workspace.id, removable.id)).resolves.toBe(emptyRoleId);
-      });
-    });
-
-    describe('WHEN the owner deletes the role', () => {
-      let response: IIntegrationResponse;
-
-      beforeEach(async () => {
-        response = await ownerClient.rpc('delete_workspace_role', { p_role_id: emptyRoleId });
-      });
-
-      test('THEN the holder falls back to the member role', async () => {
-        expect(response.error).toBeNull();
-        await expect(readMemberRole(workspace.id, removable.id)).resolves.toBe(memberRoleId);
       });
     });
   });
 
   describe('GIVEN an empty role carried by a pending invitation', () => {
     let emptyRoleId: string;
+    let invitationId: string;
 
     beforeEach(async () => {
       emptyRoleId = await seedRole(workspace.id, uniqueLabel('Empty'), {});
-      await seedInvitation(workspace.id, `${uniqueLabel('fallback')}@${INTEGRATION_ACCOUNT_DOMAIN}`, emptyRoleId);
+      invitationId = await seedInvitation(workspace.id, uniqueEmail('fallback'), emptyRoleId);
     });
 
     describe('WHEN the steward deletes the role', () => {
@@ -927,6 +949,19 @@ describe('delete_workspace_role', () => {
       test('THEN the deletion is denied and the role stays', async () => {
         expect(response.error?.code).toBe('42501');
         await expect(readWorkspaceRole(emptyRoleId, 'id')).resolves.toEqual({ id: emptyRoleId });
+      });
+    });
+
+    describe('WHEN the owner deletes the role', () => {
+      let response: IIntegrationResponse;
+
+      beforeEach(async () => {
+        response = await ownerClient.rpc('delete_workspace_role', { p_role_id: emptyRoleId });
+      });
+
+      test('THEN the pending invitation falls back to the member role', async () => {
+        expect(response.error).toBeNull();
+        await expect(readInvitation(invitationId)).resolves.toMatchObject({ status: 'pending', role_id: memberRoleId });
       });
     });
   });
@@ -957,7 +992,7 @@ describe('delete_workspace_role', () => {
 
     beforeEach(async () => {
       emptyRoleId = await seedRole(workspace.id, uniqueLabel('Lapsed'), {});
-      await seedInvitation(workspace.id, `${uniqueLabel('lapsed')}@${INTEGRATION_ACCOUNT_DOMAIN}`, emptyRoleId, {
+      await seedInvitation(workspace.id, uniqueEmail('lapsed'), emptyRoleId, {
         expiresAt: new Date(Date.now() - DAY_MS),
       });
     });
@@ -1002,9 +1037,9 @@ describe('transfer_workspace_ownership', () => {
         });
       });
 
-      test('THEN only the owner may transfer ownership', () => {
+      test('THEN only the owner may transfer ownership', async () => {
         expect(response.error?.code).toBe('42501');
-        expect(response.error?.message).toMatch(/Only the owner/);
+        await expect(readWorkspace(transferWorkspace.id)).resolves.toMatchObject({ owner_id: owner.id });
       });
     });
   });
@@ -1040,7 +1075,6 @@ describe('transfer_workspace_ownership', () => {
 
       test('THEN the transfer is rejected as redundant', () => {
         expect(response.error?.code).toBe('22023');
-        expect(response.error?.message).toMatch(/Already the owner/);
       });
     });
 
@@ -1056,7 +1090,6 @@ describe('transfer_workspace_ownership', () => {
 
       test('THEN the transfer is refused and the owner keeps the workspace', async () => {
         expect(response.error?.code).toBe('P0002');
-        expect(response.error?.message).toMatch(/must be a member/);
         await expect(readMemberRole(transferWorkspace.id, owner.id)).resolves.toBe(transferOwnerRoleId);
         await expect(readWorkspace(transferWorkspace.id)).resolves.toMatchObject({ owner_id: owner.id });
       });

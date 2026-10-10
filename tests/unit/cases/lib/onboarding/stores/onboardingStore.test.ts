@@ -1,8 +1,7 @@
 import { afterEach, beforeEach, describe, expect, test } from 'vitest';
 
+import { LAST_GUIDE_ID } from '@mocks/onboarding';
 import { GUIDES, useOnboardingStore } from '@/lib/onboarding';
-
-const LAST_GUIDE_ID = GUIDES[GUIDES.length - 1]!.id;
 
 const finishGuide = (id: (typeof GUIDES)[number]['id']) => {
   const steps = GUIDES.find((guide) => guide.id === id)?.steps.length ?? 0;
@@ -291,6 +290,14 @@ describe('onboardingStore', () => {
 
       test('THEN nothing is recorded', () => {
         expect(useOnboardingStore.getState().signals.size).toBe(0);
+      });
+    });
+
+    describe('WHEN a step is advanced', () => {
+      beforeEach(() => useOnboardingStore.getState().advance());
+
+      test('THEN nothing starts and nothing is marked complete', () => {
+        expect(useOnboardingStore.getState()).toMatchObject({ run: null, completedGuides: [], pickerOpen: false });
       });
     });
   });

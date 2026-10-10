@@ -2,11 +2,10 @@ import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 import type { TLocale } from '@interfaces';
 
-import { LOCALE_COOKIE, setLocale } from '@/i18n';
+import { cookieStore } from '@mocks/nextHeaders';
+import { LOCALE_COOKIE, clearLocale, setLocale } from '@/i18n';
 
-const { cookieStore } = vi.hoisted(() => ({ cookieStore: { set: vi.fn(), delete: vi.fn() } }));
-
-vi.mock('next/headers', () => ({ cookies: async () => cookieStore }));
+vi.mock('next/headers', () => import('@mocks/nextHeaders'));
 
 describe('setLocale', () => {
   describe('GIVEN a supported language', () => {
@@ -33,6 +32,20 @@ describe('setLocale', () => {
 
       test('THEN no cookie is written', () => {
         expect(cookieStore.set).not.toHaveBeenCalled();
+      });
+    });
+  });
+});
+
+describe('clearLocale', () => {
+  describe('GIVEN a remembered language', () => {
+    describe('WHEN it is cleared', () => {
+      beforeEach(async () => {
+        await clearLocale();
+      });
+
+      test('THEN the locale cookie is deleted', () => {
+        expect(cookieStore.delete).toHaveBeenCalledExactlyOnceWith(LOCALE_COOKIE);
       });
     });
   });

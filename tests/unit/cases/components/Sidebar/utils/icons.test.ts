@@ -3,13 +3,11 @@ import { describe, expect, test } from 'vitest';
 
 import type { IFlattenedItem } from '@interfaces';
 
-import { folderItem, threadItem } from '@mocks/sidebar';
+import { MIXED_TREE } from '@mocks/sidebar';
 import { flattenTree, getNavItemIcon } from '@/components/Sidebar/utils';
 
-const TREE = [folderItem('f1', [threadItem('t1')]), folderItem('f2'), threadItem('t2')];
-
 const row = (id: string, collapsedIds = new Set<string>()): IFlattenedItem =>
-  flattenTree(TREE, collapsedIds).find((item) => item.id === id) as IFlattenedItem;
+  flattenTree(MIXED_TREE, collapsedIds).find((item) => item.id === id) as IFlattenedItem;
 
 describe('getNavItemIcon', () => {
   describe('GIVEN a thread row', () => {

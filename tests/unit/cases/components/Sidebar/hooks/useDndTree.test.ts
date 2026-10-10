@@ -2,47 +2,31 @@ import type { CollisionDetection } from '@dnd-kit/core';
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
-import type { TNavItem } from '@interfaces';
-
 import { domRect } from '@mocks/browser';
-import { dragEndEvent, dragMoveEvent, dragStartEvent } from '@mocks/dnd';
-import { folderItem, threadItem } from '@mocks/sidebar';
+import {
+  dragEndEvent,
+  dragMoveEvent,
+  dragStartEvent,
+  DND_ROW_RECTS,
+  GAP_POINTER,
+  ROW_HEIGHT,
+  clientRect,
+} from '@mocks/dnd';
+import {
+  BULK_SELECTED,
+  BULK_TREE,
+  DEEP_LAST_TREE,
+  DEEP_TREE,
+  FLAT_TREE,
+  FOLDER_THREADS_TREE,
+  SIDE_SELECTED,
+  SPREAD_SELECTED,
+} from '@mocks/sidebar';
 import { AUTO_EXPAND_DELAY_MS } from '@/components/Sidebar/consts';
 import { useDndTree } from '@/components/Sidebar/hooks';
 
-const ROW_HEIGHT = 32;
-
 const onMoveItem = vi.fn();
 const onBulkMove = vi.fn();
-
-const TREE: TNavItem[] = [folderItem('f1', [threadItem('t1'), threadItem('t2')]), threadItem('t3'), threadItem('t4')];
-
-const BULK_TREE: TNavItem[] = [
-  folderItem('f1', [threadItem('t1')]),
-  folderItem('f2', [threadItem('t2')]),
-  threadItem('t3'),
-];
-
-const DEEP_TREE: TNavItem[] = [
-  folderItem('f1', [threadItem('t1')]),
-  folderItem('fD', [folderItem('fE')]),
-  threadItem('t3'),
-  threadItem('t4'),
-];
-
-const DEEP_LAST_TREE: TNavItem[] = [folderItem('fD', [folderItem('fE')]), folderItem('f1', [threadItem('t1')])];
-
-const FLAT_TREE: TNavItem[] = [
-  threadItem('t1'),
-  threadItem('t2'),
-  threadItem('t3'),
-  threadItem('t4'),
-  threadItem('t5'),
-];
-
-const BULK_SELECTED = new Set(['f1', 'f2']);
-const SIDE_SELECTED = new Set(['t2', 't3']);
-const SPREAD_SELECTED = new Set(['t2', 't4']);
 
 const rowY = (index: number, ratio: number): number => (index + ratio) * ROW_HEIGHT;
 
@@ -60,18 +44,6 @@ const rowsElement = (ids: string[]): HTMLElement => {
   return host;
 };
 
-const clientRect = (top: number, height: number) => ({
-  top,
-  bottom: top + height,
-  left: 0,
-  right: 200,
-  width: 200,
-  height,
-});
-
-const ROW_RECTS = { a: clientRect(0, 32), b: clientRect(40, 32) };
-const GAP_POINTER = { x: 100, y: 36 };
-
 const collisionArgs = (
   pointer: { x: number; y: number },
   rects: Record<string, ReturnType<typeof clientRect>>,
@@ -86,15 +58,13 @@ const collisionArgs = (
   }) as never;
 
 let dnd: { current: ReturnType<typeof useDndTree> };
-let rows: HTMLElement | undefined;
 
 beforeEach(() => {
   vi.useFakeTimers();
 });
 
 afterEach(() => {
-  rows?.remove();
-  rows = undefined;
+  document.body.replaceChildren();
   vi.useRealTimers();
   vi.restoreAllMocks();
 });
@@ -102,7 +72,7 @@ afterEach(() => {
 describe('useDndTree', () => {
   describe('GIVEN a nested tree at rest', () => {
     beforeEach(() => {
-      dnd = renderHook(() => useDndTree({ items: TREE, onMoveItem, onBulkMove })).result;
+      dnd = renderHook(() => useDndTree({ items: FOLDER_THREADS_TREE, onMoveItem, onBulkMove })).result;
     });
 
     describe('WHEN the hook renders', () => {
@@ -157,7 +127,9 @@ describe('useDndTree', () => {
 
   describe('GIVEN an inline edit in progress', () => {
     beforeEach(() => {
-      dnd = renderHook(() => useDndTree({ items: TREE, onMoveItem, onBulkMove, editingId: 't1' })).result;
+      dnd = renderHook(() =>
+        useDndTree({ items: FOLDER_THREADS_TREE, onMoveItem, onBulkMove, editingId: 't1' }),
+      ).result;
     });
 
     describe('WHEN a drag starts on a row', () => {
@@ -174,7 +146,7 @@ describe('useDndTree', () => {
 
   describe('GIVEN a root thread dragged with the keyboard', () => {
     beforeEach(() => {
-      dnd = renderHook(() => useDndTree({ items: TREE, onMoveItem, onBulkMove })).result;
+      dnd = renderHook(() => useDndTree({ items: FOLDER_THREADS_TREE, onMoveItem, onBulkMove })).result;
       act(() => dnd.current.handleDragStart(dragStartEvent('t4')));
     });
 
@@ -204,8 +176,7 @@ describe('useDndTree', () => {
   describe('GIVEN a folder holding a subfolder dragged across the tree', () => {
     beforeEach(() => {
       dnd = renderHook(() => useDndTree({ items: DEEP_TREE, onMoveItem, onBulkMove })).result;
-      rows = rowsElement(['f1', 't1', 'fD', 't3', 't4']);
-      document.body.append(rows);
+      document.body.append(rowsElement(['f1', 't1', 'fD', 't3', 't4']));
       act(() => dnd.current.handleDragStart(dragStartEvent('fD')));
     });
 
@@ -245,8 +216,7 @@ describe('useDndTree', () => {
   describe('GIVEN a folder holding a subfolder above a folder that ends the tree', () => {
     beforeEach(() => {
       dnd = renderHook(() => useDndTree({ items: DEEP_LAST_TREE, onMoveItem, onBulkMove })).result;
-      rows = rowsElement(['fD', 'f1', 't1']);
-      document.body.append(rows);
+      document.body.append(rowsElement(['fD', 'f1', 't1']));
       act(() => dnd.current.handleDragStart(dragStartEvent('fD')));
     });
 
@@ -265,8 +235,7 @@ describe('useDndTree', () => {
   describe('GIVEN the nested thread that ends the tree dragged down past its own row', () => {
     beforeEach(() => {
       dnd = renderHook(() => useDndTree({ items: DEEP_LAST_TREE, onMoveItem, onBulkMove })).result;
-      rows = rowsElement(['fD', 'fE', 'f1', 't1']);
-      document.body.append(rows);
+      document.body.append(rowsElement(['fD', 'fE', 'f1', 't1']));
       act(() => dnd.current.handleDragStart(dragStartEvent('t1')));
       act(() => dnd.current.handleDragMove(dragMoveEvent('t1', 200)));
     });
@@ -287,8 +256,7 @@ describe('useDndTree', () => {
       dnd = renderHook(() =>
         useDndTree({ items: DEEP_TREE, onMoveItem, onBulkMove, selectedIds: new Set(['t3', 'fD']) }),
       ).result;
-      rows = rowsElement(['f1', 't1', 'fD', 't3', 't4']);
-      document.body.append(rows);
+      document.body.append(rowsElement(['f1', 't1', 'fD', 't3', 't4']));
       act(() => dnd.current.handleDragStart(dragStartEvent('t3')));
     });
 
@@ -318,9 +286,8 @@ describe('useDndTree', () => {
 
   describe('GIVEN a folder dragged across the tree', () => {
     beforeEach(() => {
-      dnd = renderHook(() => useDndTree({ items: TREE, onMoveItem, onBulkMove })).result;
-      rows = rowsElement(['f1', 't3', 't4']);
-      document.body.append(rows);
+      dnd = renderHook(() => useDndTree({ items: FOLDER_THREADS_TREE, onMoveItem, onBulkMove })).result;
+      document.body.append(rowsElement(['f1', 't3', 't4']));
     });
 
     describe('WHEN the drag starts on the expanded folder', () => {
@@ -394,9 +361,8 @@ describe('useDndTree', () => {
 
   describe('GIVEN a thread dragged out of its folder', () => {
     beforeEach(() => {
-      dnd = renderHook(() => useDndTree({ items: TREE, onMoveItem, onBulkMove })).result;
-      rows = rowsElement(['f1', 't1', 't2', 't3', 't4']);
-      document.body.append(rows);
+      dnd = renderHook(() => useDndTree({ items: FOLDER_THREADS_TREE, onMoveItem, onBulkMove })).result;
+      document.body.append(rowsElement(['f1', 't1', 't2', 't3', 't4']));
       act(() => dnd.current.handleDragStart(dragStartEvent('t1')));
     });
 
@@ -514,9 +480,8 @@ describe('useDndTree', () => {
 
   describe('GIVEN a thread dragged over folder rows', () => {
     beforeEach(() => {
-      dnd = renderHook(() => useDndTree({ items: TREE, onMoveItem, onBulkMove })).result;
-      rows = rowsElement(['f1', 't1', 't2', 't3', 't4']);
-      document.body.append(rows);
+      dnd = renderHook(() => useDndTree({ items: FOLDER_THREADS_TREE, onMoveItem, onBulkMove })).result;
+      document.body.append(rowsElement(['f1', 't1', 't2', 't3', 't4']));
       act(() => dnd.current.handleDragStart(dragStartEvent('t3')));
     });
 
@@ -610,10 +575,9 @@ describe('useDndTree', () => {
 
   describe('GIVEN a thread dragged over a collapsed folder', () => {
     beforeEach(() => {
-      dnd = renderHook(() => useDndTree({ items: TREE, onMoveItem, onBulkMove })).result;
+      dnd = renderHook(() => useDndTree({ items: FOLDER_THREADS_TREE, onMoveItem, onBulkMove })).result;
       act(() => dnd.current.toggleCollapse('f1'));
-      rows = rowsElement(['f1', 't3', 't4']);
-      document.body.append(rows);
+      document.body.append(rowsElement(['f1', 't3', 't4']));
       act(() => dnd.current.handleDragStart(dragStartEvent('t4')));
     });
 
@@ -692,8 +656,7 @@ describe('useDndTree', () => {
       dnd = renderHook(() =>
         useDndTree({ items: BULK_TREE, onMoveItem, onBulkMove, selectedIds: BULK_SELECTED }),
       ).result;
-      rows = rowsElement(['f1', 'f2', 't3']);
-      document.body.append(rows);
+      document.body.append(rowsElement(['f1', 'f2', 't3']));
     });
 
     describe('WHEN the drag starts on a selected folder', () => {
@@ -729,8 +692,7 @@ describe('useDndTree', () => {
       dnd = renderHook(() =>
         useDndTree({ items: FLAT_TREE, onMoveItem, onBulkMove, selectedIds: SPREAD_SELECTED }),
       ).result;
-      rows = rowsElement(['t1', 't2', 't3', 't4', 't5']);
-      document.body.append(rows);
+      document.body.append(rowsElement(['t1', 't2', 't3', 't4', 't5']));
       act(() => dnd.current.handleDragStart(dragStartEvent('t4')));
     });
 
@@ -772,8 +734,7 @@ describe('useDndTree', () => {
       dnd = renderHook(() =>
         useDndTree({ items: BULK_TREE, onMoveItem, onBulkMove, selectedIds: SIDE_SELECTED }),
       ).result;
-      rows = rowsElement(['f1', 'f2', 't2', 't3']);
-      document.body.append(rows);
+      document.body.append(rowsElement(['f1', 'f2', 't2', 't3']));
     });
 
     describe('WHEN the drag starts on the unselected folder', () => {
@@ -802,12 +763,12 @@ describe('useDndTree', () => {
 
   describe('GIVEN collision detection over droppable rects', () => {
     beforeEach(() => {
-      dnd = renderHook(() => useDndTree({ items: TREE, onMoveItem, onBulkMove })).result;
+      dnd = renderHook(() => useDndTree({ items: FOLDER_THREADS_TREE, onMoveItem, onBulkMove })).result;
     });
 
     describe('WHEN the pointer rests inside a row', () => {
       test('THEN the hovered row wins', () => {
-        expect(dnd.current.collisionDetection(collisionArgs({ x: 100, y: 16 }, ROW_RECTS))).toMatchObject([
+        expect(dnd.current.collisionDetection(collisionArgs({ x: 100, y: 16 }, DND_ROW_RECTS))).toMatchObject([
           { id: 'a' },
         ]);
       });
@@ -815,17 +776,17 @@ describe('useDndTree', () => {
 
     describe('WHEN the pointer slips into a gap after hovering a row', () => {
       beforeEach(() => {
-        dnd.current.collisionDetection(collisionArgs({ x: 100, y: 16 }, ROW_RECTS));
+        dnd.current.collisionDetection(collisionArgs({ x: 100, y: 16 }, DND_ROW_RECTS));
       });
 
       test('THEN the last hovered row stays sticky', () => {
-        expect(dnd.current.collisionDetection(collisionArgs(GAP_POINTER, ROW_RECTS))).toEqual([{ id: 'a' }]);
+        expect(dnd.current.collisionDetection(collisionArgs(GAP_POINTER, DND_ROW_RECTS))).toEqual([{ id: 'a' }]);
       });
     });
 
     describe('WHEN the sticky row leaves the droppable set', () => {
       beforeEach(() => {
-        dnd.current.collisionDetection(collisionArgs({ x: 100, y: 16 }, ROW_RECTS));
+        dnd.current.collisionDetection(collisionArgs({ x: 100, y: 16 }, DND_ROW_RECTS));
       });
 
       test('THEN the nearest center takes over', () => {
@@ -837,7 +798,7 @@ describe('useDndTree', () => {
 
     describe('WHEN no row was hovered yet', () => {
       test('THEN the centers rank the rows', () => {
-        expect(dnd.current.collisionDetection(collisionArgs(GAP_POINTER, ROW_RECTS, 48))).toMatchObject([
+        expect(dnd.current.collisionDetection(collisionArgs(GAP_POINTER, DND_ROW_RECTS, 48))).toMatchObject([
           { id: 'b' },
           { id: 'a' },
         ]);
@@ -846,12 +807,12 @@ describe('useDndTree', () => {
 
     describe('WHEN a new drag starts after a hover', () => {
       beforeEach(() => {
-        dnd.current.collisionDetection(collisionArgs({ x: 100, y: 16 }, ROW_RECTS));
+        dnd.current.collisionDetection(collisionArgs({ x: 100, y: 16 }, DND_ROW_RECTS));
         act(() => dnd.current.handleDragStart(dragStartEvent('t3')));
       });
 
       test('THEN the sticky memory resets', () => {
-        expect(dnd.current.collisionDetection(collisionArgs(GAP_POINTER, ROW_RECTS, 48))).toMatchObject([
+        expect(dnd.current.collisionDetection(collisionArgs(GAP_POINTER, DND_ROW_RECTS, 48))).toMatchObject([
           { id: 'b' },
           { id: 'a' },
         ]);

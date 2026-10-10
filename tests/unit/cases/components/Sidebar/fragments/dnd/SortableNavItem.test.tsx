@@ -6,9 +6,8 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import type { IFlattenedItem } from '@interfaces';
 import { MAX_NAME_LENGTH } from '@constants';
 import { TRANSLATIONS } from '@mocks/i18n';
-import { folderItem, inlineEdit, threadItem } from '@mocks/sidebar';
+import { inlineEdit, MIXED_ROWS } from '@mocks/sidebar';
 import { SortableNavItem } from '@/components/Sidebar/fragments/dnd';
-import { flattenTree } from '@/components/Sidebar/utils';
 import { usePermissionsStore } from '@/lib/stores';
 
 vi.mock('@/i18n', () => import('@mocks/i18n'));
@@ -20,9 +19,7 @@ const onRequestDelete = vi.fn();
 const startEditing = vi.fn();
 const onDragStart = vi.fn();
 
-const ROWS = flattenTree([folderItem('f1', [threadItem('t1')]), folderItem('f2'), threadItem('t2', true)], new Set());
-
-const row = (id: string): IFlattenedItem => ROWS.find((item) => item.id === id) as IFlattenedItem;
+const row = (id: string): IFlattenedItem => MIXED_ROWS.find((item) => item.id === id) as IFlattenedItem;
 
 const renderRow = (item: IFlattenedItem, overrides: Partial<Parameters<typeof SortableNavItem>[0]> = {}) =>
   render(

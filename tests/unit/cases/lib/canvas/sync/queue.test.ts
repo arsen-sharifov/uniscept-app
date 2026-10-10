@@ -27,6 +27,7 @@ import {
   updatePositionOp,
   updateStatusOp,
 } from '@mocks/canvas';
+import { TOTAL_RETRY_BACKOFF_MS } from '@mocks/canvasSync';
 import {
   FLUSH_DEBOUNCE_MS,
   MAX_RETRIES,
@@ -45,8 +46,6 @@ import { event } from '@/lib/events';
 
 vi.mock('@api/client', () => import('@mocks/canvasApi'));
 vi.mock('@/lib/events', () => import('@mocks/events'));
-
-const TOTAL_RETRY_BACKOFF_MS = RETRY_BASE_MS * (2 ** MAX_RETRIES - 1);
 
 const unsubscribers: Array<() => void> = [];
 
@@ -206,6 +205,21 @@ describe('queue', () => {
       });
     });
 
+    describe('WHEN a node created in the batch is deleted between two label updates of a persisted node', () => {
+      beforeEach(async () => {
+        enqueueOperation(createNodeOp('draft'));
+        enqueueOperation(updateLabelOp('n1', 'first'));
+        enqueueOperation(deleteNodeOp('draft'));
+        enqueueOperation(updateLabelOp('n1', 'final'));
+        await vi.advanceTimersByTimeAsync(FLUSH_DEBOUNCE_MS);
+      });
+
+      test('THEN the draft is never sent and only the final label is written once', () => {
+        expect(createCanvasNode).not.toHaveBeenCalled();
+        expect(updateCanvasNodeLabel).toHaveBeenCalledExactlyOnceWith('n1', 'final');
+      });
+    });
+
     describe('WHEN a label is updated twice and a status is set', () => {
       beforeEach(async () => {
         enqueueOperation(updateLabelOp('n1', 'draft'));
@@ -228,6 +242,17 @@ describe('queue', () => {
 
       test('THEN the comment delete is sent', () => {
         expect(deleteNodeComment).toHaveBeenCalledExactlyOnceWith('c1');
+      });
+    });
+
+    describe('WHEN an edge saved earlier is deleted', () => {
+      beforeEach(async () => {
+        enqueueOperation(deleteEdgeOp('e1'));
+        await vi.advanceTimersByTimeAsync(FLUSH_DEBOUNCE_MS);
+      });
+
+      test('THEN the edge delete is sent', () => {
+        expect(deleteCanvasEdge).toHaveBeenCalledExactlyOnceWith('e1');
       });
     });
 
@@ -404,6 +429,20 @@ describe('queue', () => {
 
       test('THEN the state reports saved', () => {
         expect(getSaveState().status).toBe('saved');
+      });
+    });
+
+    describe('WHEN the connection drops before the in-flight save settles', () => {
+      beforeEach(async () => {
+        Object.defineProperty(window.navigator, 'onLine', { configurable: true, value: false });
+        window.dispatchEvent(new Event('offline'));
+        settleInflight();
+        await vi.advanceTimersByTimeAsync(FLUSH_DEBOUNCE_MS);
+      });
+
+      test('THEN the queue reports offline with the queued operation still pending', () => {
+        expect(getSaveState()).toMatchObject({ status: 'offline', pendingCount: 1 });
+        expect(createCanvasNode).toHaveBeenCalledTimes(1);
       });
     });
   });
@@ -583,6 +622,20 @@ describe('queue', () => {
       test('THEN the operations are re-sent and saved', () => {
         expect(createCanvasNode).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ id: 'n1' }));
         expect(getSaveState()).toMatchObject({ status: 'saved', failedCount: 0, pendingCount: 0 });
+      });
+    });
+
+    describe('WHEN retryFailed is called while the browser is offline', () => {
+      beforeEach(async () => {
+        Object.defineProperty(window.navigator, 'onLine', { configurable: true, value: false });
+        window.dispatchEvent(new Event('offline'));
+        retryFailed();
+        await vi.advanceTimersByTimeAsync(FLUSH_DEBOUNCE_MS);
+      });
+
+      test('THEN the operations wait for the connection instead of being sent', () => {
+        expect(createCanvasNode).not.toHaveBeenCalled();
+        expect(getSaveState()).toMatchObject({ failedCount: 0, pendingCount: 1 });
       });
     });
 
@@ -1129,6 +1182,16 @@ describe('queue', () => {
         expect(getSaveState()).toMatchObject({ status: 'idle', failedCount: 0, pendingCount: 0 });
       });
     });
+
+    describe('WHEN discardFailed is called', () => {
+      beforeEach(() => {
+        discardFailed();
+      });
+
+      test('THEN the save state does not change', () => {
+        expect(getSaveState()).toMatchObject({ status: 'idle', failedCount: 0, pendingCount: 0 });
+      });
+    });
   });
 
   describe('GIVEN a saved queue with a save state subscriber', () => {
@@ -1221,6 +1284,25 @@ describe('queue', () => {
     });
   });
 
+  describe('GIVEN a queue that went offline while the browser stays offline', () => {
+    beforeEach(() => {
+      enqueueOperation(createNodeOp('n1'));
+      Object.defineProperty(window.navigator, 'onLine', { configurable: true, value: false });
+      window.dispatchEvent(new Event('offline'));
+    });
+
+    describe('WHEN the offline poll interval elapses', () => {
+      beforeEach(async () => {
+        await vi.advanceTimersByTimeAsync(OFFLINE_POLL_INTERVAL_MS + FLUSH_DEBOUNCE_MS);
+      });
+
+      test('THEN the queue keeps holding the operation offline', () => {
+        expect(createCanvasNode).not.toHaveBeenCalled();
+        expect(getSaveState()).toMatchObject({ status: 'offline', pendingCount: 1 });
+      });
+    });
+  });
+
   describe('GIVEN a queue that went offline without a browser online event', () => {
     beforeEach(() => {
       enqueueOperation(createNodeOp('n1'));
@@ -1288,33 +1370,6 @@ describe('queue', () => {
       test('THEN it flushes instead of waiting for an online event', () => {
         expect(createCanvasNode).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ id: 'fresh' }));
         expect(getSaveState().status).toBe('saved');
-      });
-    });
-  });
-
-  describe('GIVEN an in-flight flush with an operation queued behind it', () => {
-    let settleInflight: () => void;
-
-    beforeEach(async () => {
-      const deferred = Promise.withResolvers<void>();
-      settleInflight = deferred.resolve;
-      vi.mocked(createCanvasNode).mockReturnValueOnce(deferred.promise);
-      enqueueOperation(createNodeOp('n1'));
-      await vi.advanceTimersByTimeAsync(FLUSH_DEBOUNCE_MS);
-      enqueueOperation(createNodeOp('n2'));
-    });
-
-    describe('WHEN the connection drops before the in-flight save settles', () => {
-      beforeEach(async () => {
-        Object.defineProperty(window.navigator, 'onLine', { configurable: true, value: false });
-        window.dispatchEvent(new Event('offline'));
-        settleInflight();
-        await vi.advanceTimersByTimeAsync(FLUSH_DEBOUNCE_MS);
-      });
-
-      test('THEN the queue reports offline with the queued operation still pending', () => {
-        expect(getSaveState()).toMatchObject({ status: 'offline', pendingCount: 1 });
-        expect(createCanvasNode).toHaveBeenCalledTimes(1);
       });
     });
   });

@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { afterAll, beforeAll, beforeEach, describe, expect, test } from 'vitest';
 
+import { MISSING_ROW_ID } from '../../consts';
 import type { IIntegrationAccount, IIntegrationResponse, IIntegrationWorkspace } from '../../interfaces';
 import {
   deleteAccounts,
@@ -14,8 +15,6 @@ import {
   seedWorkspace,
   uniqueLabel,
 } from '../../utils';
-
-const MISSING_FOLDER_ID = '00000000-0000-4000-8000-000000000000';
 
 let owner: IIntegrationAccount;
 let editor: IIntegrationAccount;
@@ -181,7 +180,7 @@ describe('folders', () => {
 
       test('THEN the cross-workspace parent is rejected', async () => {
         expect(response.error?.code).toBe('22023');
-        expect(response.error?.message).toMatch(/own workspace/);
+        expect(response.error?.message).toBe('A folder can only be nested inside its own workspace');
         await expect(readFolder(folderId)).resolves.toMatchObject({ parent_folder_id: null });
       });
     });
@@ -228,15 +227,12 @@ describe('folders', () => {
       let response: IIntegrationResponse;
 
       beforeEach(async () => {
-        response = await editorClient
-          .from('folders')
-          .update({ parent_folder_id: MISSING_FOLDER_ID })
-          .eq('id', folderId);
+        response = await editorClient.from('folders').update({ parent_folder_id: MISSING_ROW_ID }).eq('id', folderId);
       });
 
       test('THEN it gets the same answer as a parent in another workspace', async () => {
         expect(response.error?.code).toBe('22023');
-        expect(response.error?.message).toMatch(/own workspace/);
+        expect(response.error?.message).toBe('A folder can only be nested inside its own workspace');
         await expect(readFolder(folderId)).resolves.toMatchObject({ parent_folder_id: null });
       });
     });
@@ -289,7 +285,7 @@ describe('threads', () => {
 
       test('THEN the cross-workspace folder is rejected and the thread stays at the root', async () => {
         expect(response.error?.code).toBe('22023');
-        expect(response.error?.message).toMatch(/own workspace/);
+        expect(response.error?.message).toBe('A thread can only be placed in a folder of its own workspace');
         await expect(readThread(threadId)).resolves.toMatchObject({ folder_id: null });
       });
     });
@@ -305,7 +301,7 @@ describe('threads', () => {
 
       test('THEN the insert is rejected', () => {
         expect(response.error?.code).toBe('22023');
-        expect(response.error?.message).toMatch(/own workspace/);
+        expect(response.error?.message).toBe('A thread can only be placed in a folder of its own workspace');
       });
     });
 
@@ -351,12 +347,12 @@ describe('threads', () => {
       let response: IIntegrationResponse;
 
       beforeEach(async () => {
-        response = await editorClient.from('threads').update({ folder_id: MISSING_FOLDER_ID }).eq('id', threadId);
+        response = await editorClient.from('threads').update({ folder_id: MISSING_ROW_ID }).eq('id', threadId);
       });
 
       test('THEN it gets the same answer as a folder in another workspace', async () => {
         expect(response.error?.code).toBe('22023');
-        expect(response.error?.message).toMatch(/own workspace/);
+        expect(response.error?.message).toBe('A thread can only be placed in a folder of its own workspace');
         await expect(readThread(threadId)).resolves.toMatchObject({ folder_id: null });
       });
     });

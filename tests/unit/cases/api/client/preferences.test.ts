@@ -76,6 +76,16 @@ describe('upsertPreferences', () => {
     });
   });
 
+  describe('GIVEN a failing upsert', () => {
+    describe('WHEN preferences are saved', () => {
+      test('THEN the error propagates', async () => {
+        primeSupabase([{ error: new Error('db down') }]);
+
+        await expect(upsertPreferences(PREFERENCES)).rejects.toThrow('db down');
+      });
+    });
+  });
+
   describe('GIVEN a preferences object with an unknown extra key', () => {
     describe('WHEN preferences are saved', () => {
       test('THEN the extra key is filtered from the upsert payload', async () => {

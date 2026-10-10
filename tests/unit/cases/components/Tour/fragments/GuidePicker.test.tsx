@@ -1,15 +1,12 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { canvasNode } from '@mocks/canvas';
 import { TRANSLATIONS } from '@mocks/i18n';
-import { snapshot } from '@mocks/onboarding';
+import { snapshot, READY_SNAPSHOT } from '@mocks/onboarding';
 import { GuidePicker } from '@/components/Tour';
 import { useOnboardingStore } from '@/lib/onboarding';
 
 vi.mock('@/i18n', () => import('@mocks/i18n'));
-
-const READY = snapshot({ workspaceCount: 1, threadId: 'thread-1', nodes: [canvasNode('n1')], referenceTargetCount: 1 });
 
 const guideRow = (title: string) =>
   screen.getAllByRole('button').find((button) => within(button).queryByText(title, { exact: true }) !== null)!;
@@ -24,7 +21,7 @@ describe('GuidePicker', () => {
 
     describe('WHEN the picker opens', () => {
       beforeEach(() => {
-        render(<GuidePicker snapshot={READY} />);
+        render(<GuidePicker snapshot={READY_SNAPSHOT} />);
       });
 
       test('THEN only the first canvas can start and the rest explain why they wait', () => {
@@ -43,7 +40,7 @@ describe('GuidePicker', () => {
 
     describe('WHEN the first canvas is chosen', () => {
       beforeEach(() => {
-        render(<GuidePicker snapshot={READY} />);
+        render(<GuidePicker snapshot={READY_SNAPSHOT} />);
         fireEvent.click(guideRow(TRANSLATIONS.platform.onboarding.guides.baseTitle));
       });
 

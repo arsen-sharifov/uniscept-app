@@ -5,18 +5,21 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import type { TCanvasNode } from '@interfaces';
 
 import { stubAnimationFrame } from '@mocks/browser';
-import { canvasNode } from '@mocks/canvas';
-import { FRESH_FIT_PADDING } from '@/components/Canvas/consts';
+import { canvasNode, questionNode } from '@mocks/canvas';
+import { VIEW, DEFAULT_VIEWPORT, REMEMBERED_VIEWPORT, MOVED_VIEWPORT } from '@mocks/geometry';
+import { routePath, router, searchParams } from '@mocks/navigation';
+import {
+  ARRIVAL_CLEANUP_MS,
+  ARRIVAL_FIT_DURATION_MS,
+  ARRIVAL_FIT_PADDING,
+  FIT_REQUEST_DURATION_MS,
+  FRESH_FIT_PADDING,
+} from '@/components/Canvas/consts';
 import { useCanvasViewport } from '@/components/Canvas/hooks';
 import { recallViewport, rememberViewport } from '@/lib/canvas';
 import { useCanvasStore } from '@/lib/stores';
 
 vi.mock('next/navigation', () => import('@mocks/navigation'));
-
-const VIEW = { width: 800, height: 600 };
-const DEFAULT_VIEWPORT = { x: 0, y: 0, zoom: 1 };
-const REMEMBERED_VIEWPORT = { x: 120, y: -40, zoom: 1.5 };
-const MOVED_VIEWPORT = { x: 10, y: 20, zoom: 0.8 };
 
 const onSetViewport = vi.fn();
 
@@ -37,6 +40,10 @@ beforeEach(() => {
 
 afterEach(() => {
   useCanvasStore.getState().clearCanvas();
+  searchParams.delete('focus');
+  searchParams.delete('node');
+  routePath.pathname = '/';
+  vi.useRealTimers();
   vi.unstubAllGlobals();
 });
 
@@ -156,6 +163,178 @@ describe('useCanvasViewport', () => {
 
       test('THEN the viewport is remembered for that thread', () => {
         expect(recallViewport('thread-moved')).toEqual(MOVED_VIEWPORT);
+      });
+    });
+  });
+
+  describe('GIVEN an arrival from a reference that names the node to show', () => {
+    beforeEach(() => {
+      vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+      searchParams.set('focus', 'ref');
+      searchParams.set('node', 'target');
+      routePath.pathname = '/platform/ws-1/thread-arrival';
+      harness = renderHook(
+        () => ({ viewport: useCanvasViewport({ threadId: 'thread-arrival', defaultZoom: 100 }), flow: useStoreApi() }),
+        { wrapper: ReactFlowProvider },
+      ).result;
+      harness.current.flow.setState({ ...VIEW, panZoom: { setViewport: onSetViewport } as never });
+    });
+
+    describe('WHEN the canvas has not loaded yet', () => {
+      test('THEN the arrival has not started', () => {
+        expect(harness.current.viewport.arriving).toBe(false);
+      });
+    });
+
+    describe('WHEN its canvas loads and the first frame runs', () => {
+      beforeEach(() => {
+        act(() =>
+          useCanvasStore.getState().loadCanvas('thread-arrival', { nodes: [nodeAt('target', 3000, 3000)], edges: [] }),
+        );
+        act(() => frames.flush());
+      });
+
+      test('THEN the arrival flies to the named node instead of applying the default viewport', () => {
+        expect(harness.current.viewport.arriving).toBe(true);
+        expect(harness.current.flow.getState()).toMatchObject({
+          fitViewQueued: true,
+          fitViewOptions: {
+            duration: ARRIVAL_FIT_DURATION_MS,
+            padding: ARRIVAL_FIT_PADDING,
+            nodes: [{ id: 'target' }],
+          },
+        });
+        expect(onSetViewport).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('WHEN its canvas holds only an unnamed question', () => {
+      beforeEach(() => {
+        act(() =>
+          useCanvasStore.getState().loadCanvas('thread-arrival', {
+            nodes: [questionNode('q', '')],
+            edges: [],
+          }),
+        );
+        act(() => frames.flush());
+      });
+
+      test('THEN the arrival does not open the question for editing', () => {
+        expect(useCanvasStore.getState().editingNodeId).toBeNull();
+      });
+    });
+
+    describe('WHEN its canvas loads and the arrival settles', () => {
+      beforeEach(() => {
+        act(() => useCanvasStore.getState().loadCanvas('thread-arrival', { nodes: [], edges: [] }));
+        act(() => vi.advanceTimersByTime(ARRIVAL_CLEANUP_MS));
+      });
+
+      test('THEN the arrival parameters leave the address without a scroll', () => {
+        expect(router.replace).toHaveBeenCalledExactlyOnceWith('/platform/ws-1/thread-arrival', { scroll: false });
+      });
+    });
+  });
+
+  describe('GIVEN an arrival from a reference without a node to show', () => {
+    beforeEach(() => {
+      searchParams.set('focus', 'ref');
+      harness = renderHook(
+        () => ({ viewport: useCanvasViewport({ threadId: 'thread-arrival', defaultZoom: 100 }), flow: useStoreApi() }),
+        { wrapper: ReactFlowProvider },
+      ).result;
+    });
+
+    describe('WHEN its canvas loads and the first frame runs', () => {
+      beforeEach(() => {
+        act(() => useCanvasStore.getState().loadCanvas('thread-arrival', { nodes: [nodeAt('n1', 0, 0)], edges: [] }));
+        act(() => frames.flush());
+      });
+
+      test('THEN the whole canvas is fitted', () => {
+        expect(harness.current.flow.getState().fitViewOptions).toEqual({
+          duration: ARRIVAL_FIT_DURATION_MS,
+          padding: ARRIVAL_FIT_PADDING,
+        });
+      });
+    });
+  });
+
+  describe('GIVEN a first open of a thread that holds only its unnamed question', () => {
+    beforeEach(() => {
+      harness = renderHook(
+        () => ({ viewport: useCanvasViewport({ threadId: 'thread-fresh', defaultZoom: 75 }), flow: useStoreApi() }),
+        { wrapper: ReactFlowProvider },
+      ).result;
+      harness.current.flow.setState({ ...VIEW, panZoom: { setViewport: onSetViewport } as never });
+    });
+
+    describe('WHEN its canvas loads and the first frame runs', () => {
+      beforeEach(() => {
+        act(() =>
+          useCanvasStore.getState().loadCanvas('thread-fresh', {
+            nodes: [questionNode('q', '  ')],
+            edges: [],
+          }),
+        );
+        act(() => frames.flush());
+      });
+
+      test('THEN the question opens for editing and is fitted without passing the default zoom', () => {
+        expect(useCanvasStore.getState().editingNodeId).toBe('q');
+        expect(harness.current.flow.getState()).toMatchObject({
+          fitViewQueued: true,
+          fitViewOptions: { duration: 0, padding: FRESH_FIT_PADDING, maxZoom: 0.75 },
+        });
+      });
+    });
+  });
+
+  describe('GIVEN a loaded thread', () => {
+    beforeEach(() => {
+      harness = renderHook(
+        () => ({ viewport: useCanvasViewport({ threadId: 'thread-fit', defaultZoom: 100 }), flow: useStoreApi() }),
+        { wrapper: ReactFlowProvider },
+      ).result;
+      act(() => useCanvasStore.getState().loadCanvas('thread-fit', { nodes: [nodeAt('n1', 0, 0)], edges: [] }));
+      act(() => frames.flush());
+      harness.current.flow.setState({ fitViewQueued: false, fitViewOptions: undefined });
+    });
+
+    describe('WHEN a fit is asked for with room kept free', () => {
+      beforeEach(() => {
+        act(() => useCanvasStore.getState().requestFit({ top: '80px' }));
+      });
+
+      test('THEN the canvas is fitted with that padding', () => {
+        expect(harness.current.flow.getState()).toMatchObject({
+          fitViewQueued: true,
+          fitViewOptions: { duration: FIT_REQUEST_DURATION_MS, padding: { top: '80px' }, maxZoom: 1 },
+        });
+      });
+    });
+
+    describe('WHEN a fit is asked for without padding', () => {
+      beforeEach(() => {
+        act(() => useCanvasStore.getState().requestFit());
+      });
+
+      test('THEN the canvas is fitted with the fresh padding', () => {
+        expect(harness.current.flow.getState().fitViewOptions).toEqual({
+          duration: FIT_REQUEST_DURATION_MS,
+          padding: FRESH_FIT_PADDING,
+          maxZoom: 1,
+        });
+      });
+    });
+
+    describe('WHEN something other than a fit request changes in the store', () => {
+      beforeEach(() => {
+        act(() => useCanvasStore.getState().setMiddlePan(true));
+      });
+
+      test('THEN nothing is fitted', () => {
+        expect(harness.current.flow.getState().fitViewQueued).toBe(false);
       });
     });
   });

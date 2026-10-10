@@ -2,7 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { TRANSLATIONS } from '@mocks/i18n';
-import { folderItem, threadItem } from '@mocks/sidebar';
+import { MOVE_TARGET_NAMES, NESTED_FOLDER_TREE } from '@mocks/sidebar';
 import { MoveDialog } from '@/components/Sidebar/fragments/actions';
 
 vi.mock('@/i18n', () => import('@mocks/i18n'));
@@ -10,14 +10,18 @@ vi.mock('@/i18n', () => import('@mocks/i18n'));
 const onMove = vi.fn();
 const onCancel = vi.fn();
 
-const TREE = [folderItem('f1', [folderItem('f2', [threadItem('t1')])]), folderItem('f3'), threadItem('t2')];
-
 const renderDialog = (selectedIds: string[]) =>
-  render(<MoveDialog open items={TREE} selectedIds={new Set(selectedIds)} onMove={onMove} onCancel={onCancel} />);
+  render(
+    <MoveDialog
+      open
+      items={NESTED_FOLDER_TREE}
+      selectedIds={new Set(selectedIds)}
+      onMove={onMove}
+      onCancel={onCancel}
+    />,
+  );
 
-const TARGET_NAMES = [TRANSLATIONS.platform.sidebar.rootLevel, 'Folder f1', 'Folder f2', 'Folder f3'];
-
-const offeredTargets = () => TARGET_NAMES.filter((name) => screen.queryByRole('button', { name }) !== null);
+const offeredTargets = () => MOVE_TARGET_NAMES.filter((name) => screen.queryByRole('button', { name }) !== null);
 
 describe('MoveDialog', () => {
   describe('GIVEN a selected folder holding a nested folder', () => {
@@ -76,7 +80,7 @@ describe('MoveDialog', () => {
 
     describe('WHEN the targets are listed', () => {
       test('THEN every folder is offered', () => {
-        expect(offeredTargets()).toEqual(TARGET_NAMES);
+        expect(offeredTargets()).toEqual(MOVE_TARGET_NAMES);
       });
 
       test('THEN the dialog is named by its heading', () => {

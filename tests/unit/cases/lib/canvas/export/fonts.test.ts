@@ -20,6 +20,14 @@ describe('parseUnicodeRanges', () => {
     });
   });
 
+  describe('GIVEN a unicode-range with a malformed entry', () => {
+    describe('WHEN the ranges are parsed', () => {
+      test('THEN the malformed entry is skipped', () => {
+        expect(parseUnicodeRanges('U+0041-005A, latin')).toEqual([{ start: 0x41, end: 0x5a }]);
+      });
+    });
+  });
+
   describe('GIVEN a face without a unicode-range', () => {
     describe('WHEN the ranges are parsed', () => {
       test('THEN no span is produced', () => {

@@ -1,4 +1,8 @@
+import { vi } from 'vitest';
+
 import type { IRect } from '@interfaces';
+
+export const exportCanvas = vi.fn();
 
 export const EXPORT_RECTS: IRect[] = [
   { x: -500, y: -200, width: 260, height: 80 },
@@ -26,3 +30,8 @@ export const SRGB_WASH_COLOR = 'color(srgb 0.862745 0.14902 0.14902 / 0.07)';
 export const OKLCH_COLOR = 'oklch(0.6 0.2 30)';
 
 export const LATIN_UNICODE_RANGE = 'U+0000-00FF, U+0131, U+2000-206F, U+4??';
+
+export const EXPORT_THREAD_NAME = 'Export thread';
+export const FAR_TARGET_X = 20_000;
+export const SAMPLED_COLOR = 'rgba(250, 250, 245, 1)';
+export const STAGE_SELECTOR = '[data-canvas-export-stage]';

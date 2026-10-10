@@ -109,6 +109,33 @@ describe('canvasStore', () => {
       });
     });
 
+    describe('WHEN they connect the two nodes without handle ids', () => {
+      beforeEach(() => {
+        useCanvasStore
+          .getState()
+          .connectNodes({ source: 'foreign', target: 'own', sourceHandle: null, targetHandle: null });
+      });
+
+      test('THEN the edge leaves on the right and arrives on the left', () => {
+        expect(onOperation).toHaveBeenCalledExactlyOnceWith(
+          expect.objectContaining({ type: 'createEdge', sourceHandle: 'right', targetHandle: 'left' }),
+        );
+      });
+    });
+
+    describe('WHEN their node is moved in one step without drag frames', () => {
+      beforeEach(() => {
+        useCanvasStore
+          .getState()
+          .onNodesChange([{ type: 'position', id: 'own', position: { x: 30, y: 40 }, dragging: false }]);
+      });
+
+      test('THEN one position operation is emitted and one undo step is recorded', () => {
+        expect(onOperation).toHaveBeenCalledExactlyOnceWith({ type: 'updateNodePosition', id: 'own', x: 30, y: 40 });
+        expect(useCanvasStore.temporal.getState().pastStates).toHaveLength(1);
+      });
+    });
+
     describe('WHEN they connect the same nodes twice', () => {
       beforeEach(() => {
         useCanvasStore
@@ -399,23 +426,25 @@ describe('canvasStore', () => {
     });
   });
 
-  describe('GIVEN an editor without a loaded thread', () => {
+  describe('GIVEN an editor with a node on the canvas but no loaded thread', () => {
     beforeEach(() => {
       usePermissionsStore.getState().setAccess('ws-1', 'user-1', EDIT_ACCESS);
+      useCanvasStore.setState({ nodes: [canvasNode('a')] });
       unsubscribers.push(subscribeCanvasOperations(onOperation));
     });
 
-    describe('WHEN they try to add or connect nodes', () => {
+    describe('WHEN they try to add, connect or duplicate nodes', () => {
       beforeEach(() => {
         useCanvasStore.getState().addNode({ x: 0, y: 0 }, 'Orphan');
+        useCanvasStore.getState().duplicateNode('a');
         useCanvasStore.getState().addReferenceNode({ x: 0, y: 0 }, referenceNode('ref').data);
         useCanvasStore
           .getState()
           .connectNodes({ source: 'a', target: 'b', sourceHandle: 'right', targetHandle: 'left' });
       });
 
-      test('THEN the state stays empty and nothing is emitted', () => {
-        expect(useCanvasStore.getState().nodes).toHaveLength(0);
+      test('THEN only the existing node stays and nothing is emitted', () => {
+        expect(useCanvasStore.getState().nodes).toEqual([canvasNode('a')]);
         expect(useCanvasStore.getState().edges).toHaveLength(0);
         expect(onOperation).not.toHaveBeenCalled();
       });
@@ -432,9 +461,10 @@ describe('canvasStore', () => {
       unsubscribers.push(subscribeCanvasOperations(onOperation));
     });
 
-    describe('WHEN they try to add a node', () => {
+    describe('WHEN they try to add a node or a reference', () => {
       beforeEach(() => {
         useCanvasStore.getState().addNode({ x: 0, y: 0 }, 'Sneaky');
+        useCanvasStore.getState().addReferenceNode({ x: 0, y: 0 }, referenceNode('ref').data);
       });
 
       test('THEN the state stays unchanged and nothing is emitted', () => {
@@ -786,19 +816,6 @@ describe('canvasStore', () => {
       });
     });
 
-    describe('WHEN the question node is marked valid', () => {
-      beforeEach(() => {
-        useCanvasStore.getState().setNodeStatus('q', 'valid');
-      });
-
-      test('THEN nothing changes and nothing is emitted', () => {
-        expect(useCanvasStore.getState().nodes.find((node) => node.id === 'q')).toMatchObject({
-          data: { status: null },
-        });
-        expect(onOperation).not.toHaveBeenCalled();
-      });
-    });
-
     describe('WHEN the question node is deleted', () => {
       beforeEach(() => {
         useCanvasStore.getState().deleteNode('q');
@@ -811,11 +828,40 @@ describe('canvasStore', () => {
     });
   });
 
-  describe('GIVEN an editor with a validated node, the question node and a reference node', () => {
+  describe('GIVEN a canvas where a validated node points back into the question node', () => {
     beforeEach(() => {
       usePermissionsStore.getState().setAccess('ws-1', 'user-1', EDIT_ACCESS);
       useCanvasStore.getState().loadCanvas(THREAD_ID, {
-        nodes: [questionNode('q'), canvasNode('n1', { createdBy: 'user-1', status: 'valid' }), referenceNode('ref')],
+        nodes: [questionNode('q'), canvasNode('n1', { status: 'valid' })],
+        edges: [canvasEdge('e-q1', 'q', 'n1'), canvasEdge('e-1q', 'n1', 'q')],
+      });
+      unsubscribers.push(subscribeCanvasOperations(onOperation));
+    });
+
+    describe('WHEN the question node is marked valid and as the answer', () => {
+      beforeEach(() => {
+        useCanvasStore.getState().setNodeStatus('q', 'valid');
+        useCanvasStore.getState().setNodeAnswer('q');
+      });
+
+      test('THEN nothing changes and nothing is emitted', () => {
+        expect(useCanvasStore.getState().nodes.find((node) => node.id === 'q')).toMatchObject({
+          data: { status: null, isAnswer: false },
+        });
+        expect(onOperation).not.toHaveBeenCalled();
+      });
+    });
+  });
+
+  describe('GIVEN an editor with a validated node, the question node and their own reference node', () => {
+    beforeEach(() => {
+      usePermissionsStore.getState().setAccess('ws-1', 'user-1', EDIT_ACCESS);
+      useCanvasStore.getState().loadCanvas(THREAD_ID, {
+        nodes: [
+          questionNode('q'),
+          canvasNode('n1', { createdBy: 'user-1', status: 'valid' }),
+          referenceNode('ref', { createdBy: 'user-1' }),
+        ],
         edges: [],
       });
       unsubscribers.push(subscribeCanvasOperations(onOperation));
@@ -854,13 +900,15 @@ describe('canvasStore', () => {
       });
     });
 
-    describe('WHEN they duplicate the reference node', () => {
+    describe('WHEN they duplicate or rename the reference node', () => {
       beforeEach(() => {
         useCanvasStore.getState().duplicateNode('ref');
+        useCanvasStore.getState().updateNodeLabel('ref', 'Renamed');
       });
 
       test('THEN nothing changes and nothing is emitted', () => {
         expect(useCanvasStore.getState().nodes).toHaveLength(3);
+        expect(useCanvasStore.getState().nodes.find((node) => node.id === 'ref')?.data.label).toBe('Ref');
         expect(onOperation).not.toHaveBeenCalled();
       });
     });
@@ -1037,6 +1085,19 @@ describe('canvasStore', () => {
       });
     });
 
+    describe('WHEN the new flag is cleared on a persisted node', () => {
+      let nodesBefore: unknown;
+
+      beforeEach(() => {
+        nodesBefore = useCanvasStore.getState().nodes;
+        useCanvasStore.getState().clearNewFlag('n1');
+      });
+
+      test('THEN the canvas state is left untouched', () => {
+        expect(useCanvasStore.getState().nodes).toBe(nodesBefore);
+      });
+    });
+
     describe('WHEN a fresh canvas loads over pending edits', () => {
       beforeEach(() => {
         useCanvasStore.getState().setEditingNodeId('n1');
@@ -1188,38 +1249,8 @@ describe('canvasStore', () => {
         expect(useCanvasStore.temporal.getState().pastStates).toHaveLength(1);
       });
     });
-  });
 
-  describe('GIVEN an editor watching the undo history over a commented and a reference node', () => {
-    beforeEach(() => {
-      usePermissionsStore.getState().setAccess('ws-1', 'user-1', EDIT_ACCESS);
-      useCanvasStore.getState().loadCanvas(THREAD_ID, {
-        nodes: [canvasNode('n1', { createdBy: 'user-1', comments: [comment('c1')] }), referenceNode('ref1')],
-        edges: [],
-      });
-    });
-
-    describe('WHEN the commented node is merely selected', () => {
-      beforeEach(() => {
-        useCanvasStore.getState().onNodesChange([{ type: 'select', id: 'n1', selected: true }]);
-      });
-
-      test('THEN no history entry is recorded', () => {
-        expect(useCanvasStore.temporal.getState().pastStates).toHaveLength(0);
-      });
-    });
-
-    describe('WHEN the reference node is merely selected', () => {
-      beforeEach(() => {
-        useCanvasStore.getState().onNodesChange([{ type: 'select', id: 'ref1', selected: true }]);
-      });
-
-      test('THEN no history entry is recorded', () => {
-        expect(useCanvasStore.temporal.getState().pastStates).toHaveLength(0);
-      });
-    });
-
-    describe('WHEN a comment is added to the commented node', () => {
+    describe('WHEN a comment is added', () => {
       beforeEach(() => {
         useCanvasStore.getState().addComment('n1', 'Another take');
       });

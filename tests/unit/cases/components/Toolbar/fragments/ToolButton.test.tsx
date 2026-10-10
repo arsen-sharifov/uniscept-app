@@ -1,14 +1,8 @@
 import { fireEvent, render, screen } from '@testing-library/react';
-import { Hand, Undo2, ZoomIn } from 'lucide-react';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
-import type { IToolItem } from '@interfaces';
-
+import { PAN_TOOL, UNDO_TOOL, ZOOM_IN_TOOL } from '@mocks/toolbar';
 import { ToolButton } from '@/components/Toolbar/fragments';
-
-const PAN: IToolItem = { id: 'pan', icon: Hand, label: 'Pan', shortcut: 'H' };
-const UNDO: IToolItem = { id: 'undo', icon: Undo2, label: 'Undo', kind: 'action' };
-const ZOOM_IN: IToolItem = { id: 'zoom-in', icon: ZoomIn, label: 'Zoom in', shortcut: '+' };
 
 const onClick = vi.fn();
 
@@ -17,7 +11,7 @@ const selectionMark = () => document.querySelector('span[aria-hidden]');
 describe('ToolButton', () => {
   describe('GIVEN the active mode tool', () => {
     beforeEach(() => {
-      render(<ToolButton tool={PAN} active onClick={onClick} />);
+      render(<ToolButton tool={PAN_TOOL} active onClick={onClick} />);
     });
 
     describe('WHEN it renders', () => {
@@ -28,9 +22,26 @@ describe('ToolButton', () => {
     });
   });
 
+  describe('GIVEN an inactive mode tool', () => {
+    beforeEach(() => {
+      render(<ToolButton tool={PAN_TOOL} active={false} onClick={onClick} />);
+    });
+
+    describe('WHEN it is clicked', () => {
+      beforeEach(() => {
+        fireEvent.click(screen.getByRole('button', { name: 'Pan' }));
+      });
+
+      test('THEN it asks to switch to the tool without flashing', () => {
+        expect(onClick).toHaveBeenCalledExactlyOnceWith('pan');
+        expect(screen.getByRole('button', { name: 'Pan' })).not.toHaveClass('scale-[1.06]');
+      });
+    });
+  });
+
   describe('GIVEN a tool bound to the plus key', () => {
     beforeEach(() => {
-      render(<ToolButton tool={ZOOM_IN} active={false} onClick={onClick} />);
+      render(<ToolButton tool={ZOOM_IN_TOOL} active={false} onClick={onClick} />);
     });
 
     describe('WHEN it renders', () => {
@@ -42,7 +53,7 @@ describe('ToolButton', () => {
 
   describe('GIVEN an inactive toned mode tool', () => {
     beforeEach(() => {
-      render(<ToolButton tool={{ ...PAN, tone: 'success' }} active={false} onClick={onClick} />);
+      render(<ToolButton tool={{ ...PAN_TOOL, tone: 'success' }} active={false} onClick={onClick} />);
     });
 
     describe('WHEN it renders', () => {
@@ -56,7 +67,7 @@ describe('ToolButton', () => {
 
   describe('GIVEN an action tool', () => {
     beforeEach(() => {
-      render(<ToolButton tool={UNDO} active={false} onClick={onClick} />);
+      render(<ToolButton tool={UNDO_TOOL} active={false} onClick={onClick} />);
     });
 
     describe('WHEN it is clicked', () => {
@@ -73,7 +84,7 @@ describe('ToolButton', () => {
 
   describe('GIVEN a disabled action tool', () => {
     beforeEach(() => {
-      render(<ToolButton tool={{ ...UNDO, disabled: true }} active={false} onClick={onClick} />);
+      render(<ToolButton tool={{ ...UNDO_TOOL, disabled: true }} active={false} onClick={onClick} />);
     });
 
     describe('WHEN it is clicked', () => {

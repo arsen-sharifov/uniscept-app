@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { listenOnPage } from '@mocks/browser';
 import { TRANSLATIONS } from '@mocks/i18n';
 import { ExpandToggle } from '@/components/Canvas/fragments';
 
@@ -11,13 +12,7 @@ const onPageClick = vi.fn();
 const onPagePress = vi.fn();
 
 beforeEach(() => {
-  document.body.addEventListener('click', onPageClick);
-  document.body.addEventListener('mousedown', onPagePress);
-});
-
-afterEach(() => {
-  document.body.removeEventListener('click', onPageClick);
-  document.body.removeEventListener('mousedown', onPagePress);
+  listenOnPage({ click: onPageClick, mousedown: onPagePress });
 });
 
 describe('ExpandToggle', () => {

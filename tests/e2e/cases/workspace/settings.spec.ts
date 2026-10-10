@@ -1,4 +1,4 @@
-import { COPY, E2E_ACCOUNT_DOMAIN } from '../../consts';
+import { COPY, E2E_ACCOUNT_DOMAIN, CUSTOM_ROLE_NAME } from '../../consts';
 import { expect, test } from '../../fixtures';
 import type { IE2ESeededAccount } from '../../interfaces';
 import {
@@ -17,8 +17,6 @@ import {
 } from '../../utils';
 
 const uniqueTeammateEmail = () => `${uniqueLabel('teammate')}@${E2E_ACCOUNT_DOMAIN}`;
-
-const CUSTOM_ROLE = 'Reviewer';
 
 test.describe('workspace general settings', () => {
   test.describe('GIVEN the workspace settings dialog', () => {
@@ -111,13 +109,13 @@ test.describe('workspace general settings', () => {
 
     test.describe('WHEN a custom role is created', () => {
       test.beforeEach(async ({ page }) => {
-        await createRole(getWorkspaceSettingsModal(page), CUSTOM_ROLE);
+        await createRole(getWorkspaceSettingsModal(page), CUSTOM_ROLE_NAME);
       });
 
       test('THEN it joins the role list', async ({ page }) => {
         await expect(getStatusToast(page, COPY.platform.workspaceSettings.roles.created)).toBeVisible();
         await expect(
-          getWorkspaceSettingsModal(page).getByRole('heading', { name: CUSTOM_ROLE, exact: true }),
+          getWorkspaceSettingsModal(page).getByRole('heading', { name: CUSTOM_ROLE_NAME, exact: true }),
         ).toBeVisible();
       });
     });
@@ -125,7 +123,7 @@ test.describe('workspace general settings', () => {
     test.describe('WHEN the custom role is renamed through its editor', () => {
       test.beforeEach(async ({ page }) => {
         const modal = getWorkspaceSettingsModal(page);
-        await createRole(modal, CUSTOM_ROLE);
+        await createRole(modal, CUSTOM_ROLE_NAME);
         await modal.getByRole('button', { name: COPY.platform.workspaceSettings.roles.edit, exact: true }).click();
         await modal.getByPlaceholder(COPY.platform.workspaceSettings.roles.namePlaceholder).fill('Auditor');
         await modal.getByRole('button', { name: COPY.platform.workspaceSettings.roles.save, exact: true }).click();
@@ -142,7 +140,7 @@ test.describe('workspace general settings', () => {
     test.describe('WHEN the custom role is deleted again', () => {
       test.beforeEach(async ({ page }) => {
         const modal = getWorkspaceSettingsModal(page);
-        await createRole(modal, CUSTOM_ROLE);
+        await createRole(modal, CUSTOM_ROLE_NAME);
         await modal.getByRole('button', { name: COPY.platform.workspaceSettings.roles.delete, exact: true }).click();
         await modal
           .getByRole('button', { name: COPY.platform.workspaceSettings.roles.deleteConfirm, exact: true })
@@ -152,7 +150,7 @@ test.describe('workspace general settings', () => {
       test('THEN it is gone from the role list', async ({ page }) => {
         await expect(getStatusToast(page, COPY.platform.workspaceSettings.roles.deleted)).toBeVisible();
         await expect(
-          getWorkspaceSettingsModal(page).getByRole('heading', { name: CUSTOM_ROLE, exact: true }),
+          getWorkspaceSettingsModal(page).getByRole('heading', { name: CUSTOM_ROLE_NAME, exact: true }),
         ).toHaveCount(0);
       });
     });

@@ -4,8 +4,9 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import type { TReferenceNode } from '@interfaces';
 
-import { nodeProps, referenceNode } from '@mocks/canvas';
-import { TRANSLATIONS } from '@mocks/i18n';
+import { listenOnPage } from '@mocks/browser';
+import { nodeProps, referenceNode, REFERENCE_TARGET_URL } from '@mocks/canvas';
+import { TRANSLATIONS, translate } from '@mocks/i18n';
 import { router } from '@mocks/navigation';
 import { FULL_ACCESS } from '@mocks/roles';
 import { ReferenceNode } from '@/components/Canvas/fragments';
@@ -14,7 +15,7 @@ import { usePermissionsStore } from '@/lib/stores';
 vi.mock('@/i18n', () => import('@mocks/i18n'));
 vi.mock('next/navigation', () => import('@mocks/navigation'));
 
-const TARGET_URL = '/platform/ws-2/th-2?focus=ref&node=origin';
+const onPagePress = vi.fn();
 
 const renderReference = (node: TReferenceNode) =>
   render(
@@ -25,8 +26,12 @@ const renderReference = (node: TReferenceNode) =>
 
 const openButton = () =>
   screen.queryByRole('button', {
-    name: TRANSLATIONS.platform.canvas.reference.openLabel.replace('{name}', referenceNode('ref').data.sourceNodeLabel),
+    name: translate('platform.canvas.reference.openLabel', { name: referenceNode('ref').data.sourceNodeLabel }),
   });
+
+beforeEach(() => {
+  listenOnPage({ mousedown: onPagePress });
+});
 
 afterEach(() => {
   usePermissionsStore.getState().clearAccess();
@@ -55,7 +60,17 @@ describe('ReferenceNode', () => {
       });
 
       test('THEN the referenced node opens in its thread', () => {
-        expect(router.push).toHaveBeenCalledExactlyOnceWith(TARGET_URL);
+        expect(router.push).toHaveBeenCalledExactlyOnceWith(REFERENCE_TARGET_URL);
+      });
+    });
+
+    describe('WHEN the pointer goes down on the open button', () => {
+      beforeEach(() => {
+        fireEvent.mouseDown(openButton()!);
+      });
+
+      test('THEN the press stays on the button instead of reaching the canvas', () => {
+        expect(onPagePress).not.toHaveBeenCalled();
       });
     });
   });

@@ -1,57 +1,34 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 import type { IWorkspaceRole } from '@interfaces';
 
 import { TRANSLATIONS } from '@mocks/i18n';
-import { FULL_ACCESS, workspaceInvitation, workspaceMember, workspaceRole } from '@mocks/roles';
+import { OWNER_ROLE, MEMBER_MANAGER_ROLE, TIERED_ROLES, WORKSPACE_MEMBERS, PENDING_INVITATIONS } from '@mocks/roles';
 import { MembersSection } from '@/app/platform/components/WorkspaceSettings/fragments';
 
 vi.mock('@/i18n', () => import('@mocks/i18n'));
 
-const OWNER_ROLE = workspaceRole('role-owner', { ...FULL_ACCESS, key: 'owner', name: 'Owner', isSystem: true });
-const ADMIN_ROLE = workspaceRole('role-admin', { name: 'Admin', canManageMembers: true, canManageRoles: true });
-const MANAGER_ROLE = workspaceRole('role-manager', { name: 'Manager', canManageMembers: true });
-const MEMBER_ROLE = workspaceRole('role-member', { key: 'member', name: 'Member', isSystem: true });
-const VIEWER_ROLE = workspaceRole('role-viewer', {
-  key: 'viewer',
-  name: 'Viewer',
-  isSystem: true,
-  canEditCanvas: false,
-  canComment: false,
-  canManageStructure: false,
-});
-
-const ROLES = [OWNER_ROLE, ADMIN_ROLE, MANAGER_ROLE, MEMBER_ROLE, VIEWER_ROLE];
-
-const MEMBERS = [
-  workspaceMember('u-owner', 'role-owner', { isOwner: true, roleKey: 'owner' }),
-  workspaceMember('u-self', 'role-manager'),
-  workspaceMember('u-member', 'role-member', { roleKey: 'member' }),
-  workspaceMember('u-admin', 'role-admin', { roleName: 'Admin' }),
-];
-
-const INVITATIONS = [
-  workspaceInvitation('inv-member'),
-  { ...workspaceInvitation('inv-admin'), roleId: 'role-admin', roleKey: null, roleName: 'Admin' },
-];
-
 const onAssignRole = vi.fn();
+const onRemoveMember = vi.fn();
+const onTransferOwnership = vi.fn();
+const onInvite = vi.fn();
+const onRevokeInvitation = vi.fn();
 
 const renderSection = (currentUserId: string, currentRole: IWorkspaceRole) =>
   render(
     <MembersSection
-      members={MEMBERS}
-      roles={ROLES}
-      invitations={INVITATIONS}
+      members={WORKSPACE_MEMBERS}
+      roles={TIERED_ROLES}
+      invitations={PENDING_INVITATIONS}
       currentUserId={currentUserId}
       currentRole={currentRole}
       canManageMembers
       onAssignRole={onAssignRole}
-      onRemoveMember={vi.fn()}
-      onTransferOwnership={vi.fn()}
-      onInvite={vi.fn()}
-      onRevokeInvitation={vi.fn()}
+      onRemoveMember={onRemoveMember}
+      onTransferOwnership={onTransferOwnership}
+      onInvite={onInvite}
+      onRevokeInvitation={onRevokeInvitation}
     />,
   );
 
@@ -63,7 +40,7 @@ const changeRoleLabel = (roleName: string) =>
 describe('MembersSection', () => {
   describe('GIVEN a member manager who cannot manage roles', () => {
     beforeEach(() => {
-      renderSection('u-self', MANAGER_ROLE);
+      renderSection('u-self', MEMBER_MANAGER_ROLE);
     });
 
     describe('WHEN the role picker of a member opens', () => {
@@ -184,6 +161,142 @@ describe('MembersSection', () => {
           TRANSLATIONS.platform.workspaceSettings.roleNames.member,
           TRANSLATIONS.platform.workspaceSettings.roleNames.viewer,
         ]);
+      });
+    });
+
+    describe('WHEN the owner role is picked for a member and the transfer is confirmed', () => {
+      beforeEach(() => {
+        fireEvent.click(
+          screen.getByRole('button', {
+            name: changeRoleLabel(TRANSLATIONS.platform.workspaceSettings.roleNames.member),
+          }),
+        );
+        fireEvent.click(screen.getByRole('option', { name: TRANSLATIONS.platform.workspaceSettings.roleNames.owner }));
+        fireEvent.click(
+          within(screen.getByRole('alertdialog')).getByRole('button', {
+            name: TRANSLATIONS.platform.workspaceSettings.members.transferConfirm,
+          }),
+        );
+      });
+
+      test('THEN the ownership goes to that member instead of a role change', () => {
+        expect(onTransferOwnership).toHaveBeenCalledExactlyOnceWith('u-member');
+        expect(onAssignRole).not.toHaveBeenCalled();
+        expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+      });
+    });
+
+    describe('WHEN the transfer is cancelled', () => {
+      beforeEach(() => {
+        fireEvent.click(
+          screen.getByRole('button', {
+            name: changeRoleLabel(TRANSLATIONS.platform.workspaceSettings.roleNames.member),
+          }),
+        );
+        fireEvent.click(screen.getByRole('option', { name: TRANSLATIONS.platform.workspaceSettings.roleNames.owner }));
+        fireEvent.click(
+          within(screen.getByRole('alertdialog')).getByRole('button', {
+            name: TRANSLATIONS.platform.workspaceSettings.members.cancel,
+          }),
+        );
+      });
+
+      test('THEN the confirmation closes without a transfer', () => {
+        expect(onTransferOwnership).not.toHaveBeenCalled();
+        expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+      });
+    });
+
+    describe('WHEN the removal of a member is confirmed', () => {
+      beforeEach(() => {
+        fireEvent.click(
+          screen.getAllByRole('button', { name: TRANSLATIONS.platform.workspaceSettings.members.remove })[0]!,
+        );
+        fireEvent.click(
+          screen.getAllByRole('button', { name: TRANSLATIONS.platform.workspaceSettings.members.removeConfirm })[0]!,
+        );
+      });
+
+      test('THEN that member is removed', () => {
+        expect(onRemoveMember).toHaveBeenCalledExactlyOnceWith('u-self');
+      });
+    });
+
+    describe('WHEN a pending invitation is revoked', () => {
+      beforeEach(() => {
+        fireEvent.click(
+          screen.getAllByRole('button', { name: TRANSLATIONS.platform.workspaceSettings.members.revoke })[0]!,
+        );
+      });
+
+      test('THEN that invitation is revoked', () => {
+        expect(onRevokeInvitation).toHaveBeenCalledExactlyOnceWith('inv-member');
+      });
+    });
+
+    describe('WHEN a teammate is invited with the default role', () => {
+      beforeEach(async () => {
+        onInvite.mockResolvedValue(true);
+        fireEvent.change(
+          screen.getByPlaceholderText(TRANSLATIONS.platform.workspaceSettings.members.emailPlaceholder),
+          { target: { value: ' new@uniscept.dev ' } },
+        );
+        await act(async () => {
+          fireEvent.click(
+            screen.getByRole('button', { name: TRANSLATIONS.platform.workspaceSettings.members.sendInvite }),
+          );
+        });
+      });
+
+      test('THEN the trimmed email is invited as a member and the field clears', () => {
+        expect(onInvite).toHaveBeenCalledExactlyOnceWith('new@uniscept.dev', 'role-member');
+        expect(
+          screen.getByPlaceholderText(TRANSLATIONS.platform.workspaceSettings.members.emailPlaceholder),
+        ).toHaveValue('');
+      });
+    });
+
+    describe('WHEN an invalid email is typed', () => {
+      beforeEach(() => {
+        fireEvent.change(
+          screen.getByPlaceholderText(TRANSLATIONS.platform.workspaceSettings.members.emailPlaceholder),
+          { target: { value: 'not-an-email' } },
+        );
+      });
+
+      test('THEN the invite cannot be sent', () => {
+        expect(
+          screen.getByRole('button', { name: TRANSLATIONS.platform.workspaceSettings.members.sendInvite }),
+        ).toBeDisabled();
+      });
+    });
+  });
+
+  describe('GIVEN the workspace owner with an invitation that fails', () => {
+    beforeEach(() => {
+      onInvite.mockResolvedValue(false);
+      renderSection('u-owner', OWNER_ROLE);
+      fireEvent.change(screen.getByPlaceholderText(TRANSLATIONS.platform.workspaceSettings.members.emailPlaceholder), {
+        target: { value: 'new@uniscept.dev' },
+      });
+    });
+
+    describe('WHEN the invite is sent', () => {
+      beforeEach(async () => {
+        await act(async () => {
+          fireEvent.click(
+            screen.getByRole('button', { name: TRANSLATIONS.platform.workspaceSettings.members.sendInvite }),
+          );
+        });
+      });
+
+      test('THEN the email stays for another try', () => {
+        expect(
+          screen.getByPlaceholderText(TRANSLATIONS.platform.workspaceSettings.members.emailPlaceholder),
+        ).toHaveValue('new@uniscept.dev');
+        expect(
+          screen.getByRole('button', { name: TRANSLATIONS.platform.workspaceSettings.members.sendInvite }),
+        ).toBeEnabled();
       });
     });
   });

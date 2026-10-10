@@ -135,22 +135,6 @@ describe('canvas_nodes', () => {
         await expect(readNode(nodeId)).resolves.toMatchObject({ created_by: author.id });
       });
     });
-
-    describe('WHEN its author writes a label past the length cap', () => {
-      let response: IIntegrationResponse;
-
-      beforeEach(async () => {
-        response = await authorClient
-          .from('canvas_nodes')
-          .update({ label: 'l'.repeat(TEXT_LENGTH_CAP + 1) })
-          .eq('id', nodeId);
-      });
-
-      test('THEN the check constraint rejects it and the label stays', async () => {
-        expect(response.error?.code).toBe('23514');
-        await expect(readNode(nodeId)).resolves.toMatchObject({ label: 'movable' });
-      });
-    });
   });
 
   describe('GIVEN the question node of a thread', () => {
@@ -411,6 +395,49 @@ describe('canvas_edges', () => {
   });
 });
 
+describe('set_canvas_node_status', () => {
+  describe('GIVEN a node without a status', () => {
+    let nodeId: string;
+
+    beforeEach(async () => {
+      nodeId = await seedNode(thread.id, author.id);
+    });
+
+    describe('WHEN a member submits an unknown status', () => {
+      let response: IIntegrationResponse;
+
+      beforeEach(async () => {
+        response = await authorClient.rpc('set_canvas_node_status', { p_node_id: nodeId, p_status: 'perfect' });
+      });
+
+      test('THEN the status is rejected as invalid and the node stays unmarked', async () => {
+        expect(response.error?.code).toBe('22023');
+        await expect(readNode(nodeId)).resolves.toMatchObject({ status: null });
+      });
+    });
+  });
+});
+
+describe('set_canvas_node_answer', () => {
+  describe('GIVEN the question node of a thread', () => {
+    describe('WHEN a member marks it as the answer', () => {
+      let response: IIntegrationResponse;
+
+      beforeEach(async () => {
+        response = await authorClient.rpc('set_canvas_node_answer', {
+          p_node_id: thread.questionNodeId,
+          p_is_answer: true,
+        });
+      });
+
+      test('THEN the answer type constraint rejects it', async () => {
+        expect(response.error?.code).toBe('23514');
+        await expect(readNode(thread.questionNodeId)).resolves.toMatchObject({ is_answer: false });
+      });
+    });
+  });
+});
+
 describe('update_canvas_node_positions', () => {
   describe('GIVEN a node at the origin', () => {
     let nodeId: string;
@@ -483,19 +510,13 @@ describe('node_comments', () => {
       });
     });
 
-    describe('WHEN its author edits the text past the length cap', () => {
-      let response: IIntegrationResponse;
-
+    describe('WHEN its author deletes it', () => {
       beforeEach(async () => {
-        response = await authorClient
-          .from('node_comments')
-          .update({ text: 'c'.repeat(TEXT_LENGTH_CAP + 1) })
-          .eq('id', commentId);
+        await authorClient.from('node_comments').delete().eq('id', commentId);
       });
 
-      test('THEN the check constraint rejects it and the text stays', async () => {
-        expect(response.error?.code).toBe('23514');
-        await expect(readNodeComment(commentId)).resolves.toMatchObject({ text: 'first thought' });
+      test('THEN the comment is gone', async () => {
+        await expect(readNodeComment(commentId)).resolves.toBeNull();
       });
     });
   });

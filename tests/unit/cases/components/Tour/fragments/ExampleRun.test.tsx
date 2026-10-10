@@ -1,14 +1,14 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { StrictMode } from 'react';
+import { type ReactNode, StrictMode } from 'react';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import type { TTourStepKey } from '@interfaces';
-import { EXAMPLE_CANVAS_TIMEOUT_MS, EXAMPLE_STEP_DELAY_MS } from '@constants';
-import { setElementLayout, stubResizeObserver } from '@mocks/browser';
+import { EXAMPLE_CANVAS_TIMEOUT_MS } from '@constants';
+import { stubAnimationFrame, stubResizeObserver } from '@mocks/browser';
 import { THREAD_ID, questionNode } from '@mocks/canvas';
 import { event } from '@mocks/events';
 import { TRANSLATIONS } from '@mocks/i18n';
-import { snapshot } from '@mocks/onboarding';
+import { snapshot, EXAMPLE_CREATE_ERROR } from '@mocks/onboarding';
 import { FULL_ACCESS } from '@mocks/roles';
 import { ECanvasTool } from '@/components/tools';
 import { ExampleRun } from '@/components/Tour';
@@ -25,56 +25,30 @@ const onDeleteExample = vi.fn<(id: string) => Promise<void>>();
 
 const indexOf = (copyKey: TTourStepKey) => guide.steps.findIndex((step) => step.copyKey === copyKey);
 
-let observer: ReturnType<typeof stubResizeObserver>;
+const threadStep = indexOf('exampleThread');
+const capsuleStep = indexOf('exampleCapsule');
 
-const reveal = () => {
-  setElementLayout(document.querySelector<HTMLElement>('[data-tour-card]')!, { offsetWidth: 400, offsetHeight: 220 });
-  act(() => observer.resize());
-};
-
-const renderAt = (copyKey: TTourStepKey) => {
-  const stepIndex = indexOf(copyKey);
-  useOnboardingStore.setState({ run: { guideId: EXAMPLE_GUIDE_ID, stepIndex } });
-  const { rerender } = render(
-    <ExampleRun
-      guide={guide}
-      stepIndex={stepIndex}
-      snapshot={snapshot()}
-      onCreateExample={onCreateExample}
-      onDeleteExample={onDeleteExample}
-    />,
-  );
-  reveal();
-
-  return (nextIndex: number) => {
-    useOnboardingStore.setState({ run: { guideId: EXAMPLE_GUIDE_ID, stepIndex: nextIndex } });
-    rerender(
-      <ExampleRun
-        guide={guide}
-        stepIndex={nextIndex}
-        snapshot={snapshot()}
-        onCreateExample={onCreateExample}
-        onDeleteExample={onDeleteExample}
-      />,
-    );
-    reveal();
-  };
-};
-
-const settle = () => act(() => vi.advanceTimersByTimeAsync(0));
-
-const playOut = () => act(() => vi.advanceTimersByTimeAsync(EXAMPLE_STEP_DELAY_MS * 12));
-
-const openExampleCanvas = () =>
-  act(() => useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [questionNode('q')], edges: [] }));
+const exampleRun = (stepIndex: number) => (
+  <ExampleRun
+    guide={guide}
+    stepIndex={stepIndex}
+    snapshot={snapshot()}
+    onCreateExample={onCreateExample}
+    onDeleteExample={onDeleteExample}
+  />
+);
 
 const button = (name: string) => screen.queryByRole('button', { name });
 
-let goTo: (nextIndex: number) => void;
+let observer: ReturnType<typeof stubResizeObserver>;
+let rerender: (ui: ReactNode) => void;
 
 beforeEach(() => {
   vi.useFakeTimers();
+  stubAnimationFrame();
   observer = stubResizeObserver();
+  vi.spyOn(HTMLDialogElement.prototype, 'offsetWidth', 'get').mockReturnValue(400);
+  vi.spyOn(HTMLDialogElement.prototype, 'offsetHeight', 'get').mockReturnValue(220);
   usePermissionsStore.getState().setAccess('ws-1', 'user-1', FULL_ACCESS);
   onCreateExample.mockResolvedValue(THREAD_ID);
   onDeleteExample.mockResolvedValue();
@@ -85,14 +59,20 @@ afterEach(() => {
   useCanvasStore.getState().clearCanvas();
   usePermissionsStore.getState().clearAccess();
   vi.useRealTimers();
+  vi.unstubAllGlobals();
 });
 
 describe('ExampleRun', () => {
   describe('GIVEN the scene that creates the example thread', () => {
+    beforeEach(() => {
+      useOnboardingStore.setState({ run: { guideId: EXAMPLE_GUIDE_ID, stepIndex: threadStep } });
+    });
+
     describe('WHEN it starts and the canvas is still on its way', () => {
       beforeEach(async () => {
-        renderAt('exampleThread');
-        await settle();
+        render(exampleRun(threadStep));
+        act(() => observer.resize());
+        await act(() => vi.advanceTimersByTimeAsync(0));
       });
 
       test('THEN the thread is created under the example name and next waits for it', () => {
@@ -103,10 +83,11 @@ describe('ExampleRun', () => {
 
     describe('WHEN the canvas of the new thread opens', () => {
       beforeEach(async () => {
-        renderAt('exampleThread');
-        await settle();
-        openExampleCanvas();
-        await playOut();
+        render(exampleRun(threadStep));
+        act(() => observer.resize());
+        await act(() => vi.advanceTimersByTimeAsync(0));
+        act(() => useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [questionNode('q')], edges: [] }));
+        await act(() => vi.runAllTimersAsync());
       });
 
       test('THEN the opener writes the question and next is offered', () => {
@@ -120,8 +101,8 @@ describe('ExampleRun', () => {
     describe('WHEN the thread cannot be created', () => {
       beforeEach(async () => {
         onCreateExample.mockResolvedValue(null);
-        renderAt('exampleThread');
-        await settle();
+        render(exampleRun(threadStep));
+        await act(() => vi.advanceTimersByTimeAsync(0));
       });
 
       test('THEN the tour steps out', () => {
@@ -129,9 +110,28 @@ describe('ExampleRun', () => {
       });
     });
 
+    describe('WHEN the example closes while the thread is created and creation then fails', () => {
+      beforeEach(async () => {
+        const creation = Promise.withResolvers<string | null>();
+        onCreateExample.mockReturnValue(creation.promise);
+        render(exampleRun(threadStep));
+        cleanup();
+        creation.reject(EXAMPLE_CREATE_ERROR);
+        await act(() => vi.advanceTimersByTimeAsync(0));
+      });
+
+      test('THEN the failure is only logged and the run is left to whoever closed it', () => {
+        expect(event.error).toHaveBeenCalledExactlyOnceWith(EXAMPLE_CREATE_ERROR, {
+          toast: false,
+          context: 'onboarding.example',
+        });
+        expect(useOnboardingStore.getState().run).not.toBeNull();
+      });
+    });
+
     describe('WHEN the canvas never opens', () => {
       beforeEach(async () => {
-        renderAt('exampleThread');
+        render(exampleRun(threadStep));
         await act(() => vi.advanceTimersByTimeAsync(EXAMPLE_CANVAS_TIMEOUT_MS));
       });
 
@@ -147,16 +147,19 @@ describe('ExampleRun', () => {
 
   describe('GIVEN the example canvas is open', () => {
     beforeEach(async () => {
-      goTo = renderAt('exampleThread');
-      await settle();
-      openExampleCanvas();
-      await playOut();
+      useOnboardingStore.setState({ run: { guideId: EXAMPLE_GUIDE_ID, stepIndex: threadStep } });
+      rerender = render(exampleRun(threadStep)).rerender;
+      act(() => observer.resize());
+      await act(() => vi.advanceTimersByTimeAsync(0));
+      act(() => useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [questionNode('q')], edges: [] }));
+      await act(() => vi.runAllTimersAsync());
     });
 
     describe('WHEN the other user takes their turn', () => {
       beforeEach(async () => {
-        goTo(indexOf('exampleCapsule'));
-        await playOut();
+        useOnboardingStore.setState({ run: { guideId: EXAMPLE_GUIDE_ID, stepIndex: capsuleStep } });
+        rerender(exampleRun(capsuleStep));
+        await act(() => vi.runAllTimersAsync());
       });
 
       test('THEN their answer and the reason under it are placed, written and linked by themselves', () => {
@@ -174,12 +177,13 @@ describe('ExampleRun', () => {
 
     describe('WHEN another thread is opened in the middle of a turn', () => {
       beforeEach(async () => {
-        goTo(indexOf('exampleCapsule'));
-        await settle();
+        useOnboardingStore.setState({ run: { guideId: EXAMPLE_GUIDE_ID, stepIndex: capsuleStep } });
+        rerender(exampleRun(capsuleStep));
+        await act(() => vi.advanceTimersByTimeAsync(0));
         act(() =>
           useCanvasStore.getState().loadCanvas('other-thread', { nodes: [questionNode('other-q')], edges: [] }),
         );
-        await playOut();
+        await act(() => vi.runAllTimersAsync());
       });
 
       test('THEN the tour steps out and nothing is written into the other thread', () => {
@@ -210,7 +214,8 @@ describe('ExampleRun', () => {
 
     describe('WHEN the last scene asks what to do with the example', () => {
       beforeEach(() => {
-        goTo(lastIndex);
+        useOnboardingStore.setState({ run: { guideId: EXAMPLE_GUIDE_ID, stepIndex: lastIndex } });
+        rerender(exampleRun(lastIndex));
       });
 
       test('THEN it offers to keep or delete it instead of next', () => {
@@ -222,7 +227,8 @@ describe('ExampleRun', () => {
 
     describe('WHEN the user keeps the example', () => {
       beforeEach(() => {
-        goTo(lastIndex);
+        useOnboardingStore.setState({ run: { guideId: EXAMPLE_GUIDE_ID, stepIndex: lastIndex } });
+        rerender(exampleRun(lastIndex));
         fireEvent.click(button(TRANSLATIONS.platform.onboarding.example.keep)!);
       });
 
@@ -235,9 +241,10 @@ describe('ExampleRun', () => {
     describe('WHEN the user deletes the example and its canvas closes on the way', () => {
       beforeEach(async () => {
         onDeleteExample.mockImplementation(async () => useCanvasStore.getState().clearCanvas());
-        goTo(lastIndex);
+        useOnboardingStore.setState({ run: { guideId: EXAMPLE_GUIDE_ID, stepIndex: lastIndex } });
+        rerender(exampleRun(lastIndex));
         fireEvent.click(button(TRANSLATIONS.platform.onboarding.example.remove)!);
-        await settle();
+        await act(() => vi.advanceTimersByTimeAsync(0));
       });
 
       test('THEN the example thread is deleted and the guide finishes', () => {
@@ -248,22 +255,14 @@ describe('ExampleRun', () => {
   });
 
   describe('GIVEN the app renders in strict mode', () => {
+    beforeEach(() => {
+      useOnboardingStore.setState({ run: { guideId: EXAMPLE_GUIDE_ID, stepIndex: threadStep } });
+    });
+
     describe('WHEN the thread scene mounts and its effects run twice', () => {
       beforeEach(async () => {
-        const stepIndex = indexOf('exampleThread');
-        useOnboardingStore.setState({ run: { guideId: EXAMPLE_GUIDE_ID, stepIndex } });
-        render(
-          <StrictMode>
-            <ExampleRun
-              guide={guide}
-              stepIndex={stepIndex}
-              snapshot={snapshot()}
-              onCreateExample={onCreateExample}
-              onDeleteExample={onDeleteExample}
-            />
-          </StrictMode>,
-        );
-        await settle();
+        render(<StrictMode>{exampleRun(threadStep)}</StrictMode>);
+        await act(() => vi.advanceTimersByTimeAsync(0));
       });
 
       test('THEN the example thread is still created only once', () => {
@@ -273,9 +272,13 @@ describe('ExampleRun', () => {
   });
 
   describe('GIVEN a running example', () => {
+    beforeEach(() => {
+      useOnboardingStore.setState({ run: { guideId: EXAMPLE_GUIDE_ID, stepIndex: indexOf('exampleIntro') } });
+      render(exampleRun(indexOf('exampleIntro')));
+    });
+
     describe('WHEN the user leaves it', () => {
       beforeEach(() => {
-        renderAt('exampleIntro');
         fireEvent.click(screen.getByTitle(TRANSLATIONS.platform.onboarding.quit));
       });
 

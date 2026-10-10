@@ -1,4 +1,4 @@
-import { COPY } from '../../consts';
+import { COPY, ONBOARDING_QUESTION, ONBOARDING_CLAIM } from '../../consts';
 import { expect, test } from '../../fixtures';
 import {
   addNodeAt,
@@ -31,10 +31,6 @@ import {
   walkToQuestionStep,
   watchExample,
 } from '../../utils';
-
-const QUESTION = 'Do we ship on Friday?';
-
-const CLAIM = 'The release checklist is green';
 
 test.describe('the first sign-in offer', () => {
   test.describe('GIVEN an account that has never answered the offer', () => {
@@ -244,7 +240,7 @@ test.describe('the base pass', () => {
     test.describe('WHEN the central question is written', () => {
       test.beforeEach(async ({ page }) => {
         await walkToQuestionStep(page);
-        await editQuestion(page, QUESTION);
+        await editQuestion(page, ONBOARDING_QUESTION);
       });
 
       test('THEN the run explains how an argument is built before asking for one', async ({ page }) => {
@@ -255,7 +251,7 @@ test.describe('the base pass', () => {
     test.describe('WHEN the argument explanation is read', () => {
       test.beforeEach(async ({ page }) => {
         await walkToQuestionStep(page);
-        await editQuestion(page, QUESTION);
+        await editQuestion(page, ONBOARDING_QUESTION);
         await readOnStep(page, COPY.platform.onboarding.steps.baseArgue.title);
       });
 
@@ -267,7 +263,7 @@ test.describe('the base pass', () => {
     test.describe('WHEN a reasoning node is added', () => {
       test.beforeEach(async ({ page }) => {
         await walkToQuestionStep(page);
-        await editQuestion(page, QUESTION);
+        await editQuestion(page, ONBOARDING_QUESTION);
         await readOnStep(page, COPY.platform.onboarding.steps.baseArgue.title);
         await addNodeAt(page, 260, 520);
         await expect(getNodes(page)).toHaveCount(1);
@@ -281,11 +277,11 @@ test.describe('the base pass', () => {
     test.describe('WHEN the new claim is written', () => {
       test.beforeEach(async ({ page }) => {
         await walkToQuestionStep(page);
-        await editQuestion(page, QUESTION);
+        await editQuestion(page, ONBOARDING_QUESTION);
         await readOnStep(page, COPY.platform.onboarding.steps.baseArgue.title);
         await addNodeAt(page, 260, 520);
         await expect(getNodes(page)).toHaveCount(1);
-        await renameNode(page, getNodes(page).first(), CLAIM);
+        await renameNode(page, getNodes(page).first(), ONBOARDING_CLAIM);
       });
 
       test('THEN the run moves to the connect step', async ({ page }) => {
@@ -296,7 +292,7 @@ test.describe('the base pass', () => {
     test.describe('WHEN the run is quit halfway', () => {
       test.beforeEach(async ({ page }) => {
         await walkToQuestionStep(page);
-        await editQuestion(page, QUESTION);
+        await editQuestion(page, ONBOARDING_QUESTION);
         await readOnStep(page, COPY.platform.onboarding.steps.baseArgue.title);
         await addNodeAt(page, 260, 520);
         await expect(getNodes(page)).toHaveCount(1);
@@ -308,14 +304,14 @@ test.describe('the base pass', () => {
       test('THEN the tour closes and everything created along the way stays', async ({ page }) => {
         await expect(getStepCard(page, COPY.platform.onboarding.steps.baseNodeText.title)).toBeHidden();
         await expect(getNode(page, COPY.platform.canvas.node.defaultLabel)).toBeVisible();
-        await expect(page.getByText(QUESTION)).toBeVisible();
+        await expect(page.getByText(ONBOARDING_QUESTION)).toBeVisible();
       });
     });
 
     test.describe('WHEN the guides are opened after quitting halfway', () => {
       test.beforeEach(async ({ page }) => {
         await walkToQuestionStep(page);
-        await editQuestion(page, QUESTION);
+        await editQuestion(page, ONBOARDING_QUESTION);
         await readOnStep(page, COPY.platform.onboarding.steps.baseArgue.title);
         await getStepCard(page, COPY.platform.onboarding.steps.baseNode.title)
           .getByRole('button', { name: COPY.platform.onboarding.quit })

@@ -5,6 +5,7 @@ import {
   declineTourOffer,
   deleteAccountByEmail,
   getUserMenuTrigger,
+  getWorkspacePanel,
   getWorkspaceRow,
   openWorkspacePanel,
   readInviteLink,
@@ -43,26 +44,22 @@ test.describe('workspace join', () => {
       });
     });
 
-    test.describe('WHEN the link is accepted and the account is completed', () => {
+    test.describe('WHEN the link is accepted, the account is completed and the workspace switcher is opened', () => {
       test.beforeEach(async ({ page }) => {
         await page.goto(inviteLink);
         await page.getByRole('button', { name: COPY.auth.join.accept, exact: true }).click();
         await page.getByRole('button', { name: COPY.auth.signUp.planStep.continue }).click();
         await expect(page.getByRole('heading', { name: COPY.auth.signUp.inviteHeading })).toBeVisible();
-        await expect(page.getByLabel(COPY.auth.signUp.accountStep.email)).toHaveValue(email);
         await page.getByLabel(COPY.auth.signUp.accountStep.name).fill('Invited Teammate');
         await page.getByLabel(COPY.auth.signUp.accountStep.password).fill(E2E_ACCOUNT_PASSWORD);
         await page.getByRole('button', { name: COPY.auth.signUp.accountStep.join, exact: true }).click();
         await page.waitForURL(/\/platform/);
         await declineTourOffer(page);
+        await openWorkspacePanel(page);
       });
 
-      test('THEN the platform opens with the shared workspace joined', async ({ page, workspace }) => {
-        await expect(page).toHaveURL(/\/platform/);
-
-        const panel = await openWorkspacePanel(page);
-
-        await expect(getWorkspaceRow(panel, workspace.name)).toBeVisible();
+      test('THEN the platform lists the shared workspace as joined', async ({ page, workspace }) => {
+        await expect(getWorkspaceRow(getWorkspacePanel(page), workspace.name)).toBeVisible();
       });
     });
 

@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from 'vitest';
 
-import { INTEGRATION_ACCOUNT_DOMAIN, INTEGRATION_ACCOUNT_PASSWORD } from '../../consts';
+import { ALLOWANCE_TTL_MS, INTEGRATION_ACCOUNT_PASSWORD } from '../../consts';
 import type { IIntegrationAccount, IIntegrationResponse } from '../../interfaces';
 import {
   createAnonClient,
@@ -17,10 +17,9 @@ import {
   seedInvitation,
   seedSignupAllowance,
   seedWorkspace,
+  uniqueEmail,
   uniqueLabel,
 } from '../../utils';
-
-const ALLOWANCE_TTL_MS = 10 * 60 * 1000;
 
 let owner: IIntegrationAccount;
 let ownerClient: SupabaseClient;
@@ -36,7 +35,7 @@ afterAll(async () => {
 });
 
 beforeEach(() => {
-  email = `${uniqueLabel('signup')}@${INTEGRATION_ACCOUNT_DOMAIN}`;
+  email = uniqueEmail('signup');
 });
 
 afterEach(async () => {

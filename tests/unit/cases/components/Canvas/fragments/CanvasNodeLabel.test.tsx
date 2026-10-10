@@ -1,8 +1,8 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { stubResizeObserver } from '@mocks/browser';
-import { THREAD_ID, canvasNode } from '@mocks/canvas';
+import { listenOnPage, stubResizeObserver } from '@mocks/browser';
+import { THREAD_ID, canvasNode, overflowLabels, resetLabelOverflow } from '@mocks/canvas';
 import { TRANSLATIONS } from '@mocks/i18n';
 import { FULL_ACCESS, READONLY_ACCESS } from '@mocks/roles';
 import { CanvasNodeLabel } from '@/components/Canvas/fragments';
@@ -15,22 +15,13 @@ vi.mock('@/i18n', () => import('@mocks/i18n'));
 const onPageClick = vi.fn();
 const onPagePress = vi.fn();
 
-const overflowLabels = () => {
-  Object.defineProperty(HTMLParagraphElement.prototype, 'scrollHeight', { configurable: true, value: 200 });
-  Object.defineProperty(HTMLParagraphElement.prototype, 'clientHeight', { configurable: true, value: 100 });
-};
-
 beforeEach(() => {
   stubResizeObserver();
-  document.body.addEventListener('click', onPageClick);
-  document.body.addEventListener('mousedown', onPagePress);
+  listenOnPage({ click: onPageClick, mousedown: onPagePress });
 });
 
 afterEach(() => {
-  document.body.removeEventListener('click', onPageClick);
-  document.body.removeEventListener('mousedown', onPagePress);
-  Reflect.deleteProperty(HTMLParagraphElement.prototype, 'scrollHeight');
-  Reflect.deleteProperty(HTMLParagraphElement.prototype, 'clientHeight');
+  resetLabelOverflow();
   useOnboardingStore.getState().forget();
   useCanvasStore.getState().clearCanvas();
   usePermissionsStore.getState().clearAccess();

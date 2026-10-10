@@ -109,7 +109,7 @@ describe('updatePassword', () => {
 describe('deleteAccount', () => {
   describe('GIVEN the server confirms the password', () => {
     describe('WHEN the account is deleted', () => {
-      test('THEN the password is posted to the delete route and the session is signed out', async () => {
+      test('THEN the password is posted to the delete route and every session of the account is signed out', async () => {
         const { client } = primeSupabase([]);
         const fetchSpy = primeFetch(200, { success: true });
 
@@ -120,7 +120,7 @@ describe('deleteAccount', () => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ password: 'correct-horse' }),
         });
-        expect(client.auth.signOut).toHaveBeenCalledTimes(1);
+        expect(client.auth.signOut).toHaveBeenCalledExactlyOnceWith(undefined);
       });
     });
   });

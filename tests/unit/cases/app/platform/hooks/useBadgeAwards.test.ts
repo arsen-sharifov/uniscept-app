@@ -2,44 +2,39 @@ import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { createCommentOp } from '@mocks/canvas';
-import { event } from '@mocks/events';
-import { TRANSLATIONS } from '@mocks/i18n';
+import { TRANSLATIONS, translate } from '@mocks/i18n';
 import { addUserBadge, getUser } from '@mocks/userApi';
 import { useBadgeAwards } from '@/app/platform/hooks';
 import { awardBadge, useBadgeStore } from '@/lib/badges';
 import { emitCanvasOperation } from '@/lib/canvas';
+import { event } from '@/lib/events';
 
 vi.mock('@api/client', () => import('@mocks/userApi'));
 vi.mock('@/i18n', () => import('@mocks/i18n'));
 vi.mock('@/lib/events', () => import('@mocks/events'));
 
-const mountHydrated = async () => {
-  const hook = renderHook(() => useBadgeAwards());
-  await vi.waitUntil(() => useBadgeStore.getState().earned !== null);
-
-  return hook;
-};
+let unmountAwards: () => void;
 
 afterEach(() => useBadgeStore.getState().forget());
 
 describe('useBadgeAwards', () => {
-  describe('GIVEN an account with stored badges', () => {
-    beforeEach(() => {
+  describe('GIVEN the platform mounted for an account with stored badges', () => {
+    beforeEach(async () => {
       getUser.mockResolvedValue({ data: { user: { id: 'user-1', user_metadata: { badges: ['founder', 'voice'] } } } });
       addUserBadge.mockResolvedValue(undefined);
+      await act(async () => {
+        unmountAwards = renderHook(() => useBadgeAwards()).unmount;
+      });
     });
 
-    describe('WHEN the platform mounts it', () => {
-      beforeEach(mountHydrated);
-
+    describe('WHEN it renders', () => {
       test('THEN the stored badges are loaded', () => {
         expect(useBadgeStore.getState().earned).toEqual(['founder', 'voice']);
       });
     });
 
     describe('WHEN a new badge is awarded', () => {
-      beforeEach(async () => {
-        await mountHydrated();
+      beforeEach(() => {
         act(() => awardBadge('critic'));
       });
 
@@ -47,15 +42,16 @@ describe('useBadgeAwards', () => {
         expect(event.success).toHaveBeenCalledExactlyOnceWith(
           TRANSLATIONS.platform.settings.profile.badges.criticUnlock,
           {
-            title: `New badge: ${TRANSLATIONS.platform.settings.profile.badges.badgeCritic}`,
+            title: translate('platform.settings.profile.badgeEarned', {
+              name: TRANSLATIONS.platform.settings.profile.badges.badgeCritic,
+            }),
           },
         );
       });
     });
 
     describe('WHEN a badge is awarded quietly', () => {
-      beforeEach(async () => {
-        await mountHydrated();
+      beforeEach(() => {
         act(() => awardBadge('initiate', { quiet: true }));
       });
 
@@ -66,8 +62,7 @@ describe('useBadgeAwards', () => {
     });
 
     describe('WHEN a comment is posted on the canvas', () => {
-      beforeEach(async () => {
-        await mountHydrated();
+      beforeEach(() => {
         act(() => emitCanvasOperation(createCommentOp('c1')));
       });
 
@@ -78,9 +73,8 @@ describe('useBadgeAwards', () => {
     });
 
     describe('WHEN the platform unmounts', () => {
-      beforeEach(async () => {
-        const { unmount } = await mountHydrated();
-        unmount();
+      beforeEach(() => {
+        unmountAwards();
         emitCanvasOperation(createCommentOp('c1'));
       });
 
@@ -91,17 +85,20 @@ describe('useBadgeAwards', () => {
     });
   });
 
-  describe('GIVEN an account without badges', () => {
-    beforeEach(() => {
+  describe('GIVEN the platform mounted for an account without badges', () => {
+    beforeEach(async () => {
       getUser.mockResolvedValue({ data: { user: { id: 'user-1', user_metadata: {} } } });
       addUserBadge.mockResolvedValue(undefined);
+      await act(async () => {
+        renderHook(() => useBadgeAwards());
+      });
     });
 
     describe('WHEN a comment is posted on the canvas', () => {
       beforeEach(async () => {
-        await mountHydrated();
-        act(() => emitCanvasOperation(createCommentOp('c1')));
-        await vi.waitUntil(() => addUserBadge.mock.calls.length > 0);
+        await act(async () => {
+          emitCanvasOperation(createCommentOp('c1'));
+        });
       });
 
       test('THEN Voice is earned, announced and saved', () => {
@@ -109,7 +106,9 @@ describe('useBadgeAwards', () => {
         expect(event.success).toHaveBeenCalledExactlyOnceWith(
           TRANSLATIONS.platform.settings.profile.badges.voiceUnlock,
           {
-            title: `New badge: ${TRANSLATIONS.platform.settings.profile.badges.badgeVoice}`,
+            title: translate('platform.settings.profile.badgeEarned', {
+              name: TRANSLATIONS.platform.settings.profile.badges.badgeVoice,
+            }),
           },
         );
         expect(addUserBadge).toHaveBeenCalledExactlyOnceWith('voice');
@@ -118,20 +117,22 @@ describe('useBadgeAwards', () => {
   });
 
   describe('GIVEN the account cannot be loaded', () => {
-    const loadError = new Error('auth down');
-
     beforeEach(() => {
-      getUser.mockRejectedValue(loadError);
+      getUser.mockRejectedValue(new Error('auth down'));
     });
 
     describe('WHEN the platform mounts it', () => {
       beforeEach(async () => {
-        renderHook(() => useBadgeAwards());
-        await vi.waitUntil(() => vi.mocked(event.error).mock.calls.length > 0);
+        await act(async () => {
+          renderHook(() => useBadgeAwards());
+        });
       });
 
       test('THEN the failure is logged without a toast and nothing is announced', () => {
-        expect(event.error).toHaveBeenCalledExactlyOnceWith(loadError, { toast: false, context: 'badges.load' });
+        expect(event.error).toHaveBeenCalledExactlyOnceWith(expect.any(Error), {
+          toast: false,
+          context: 'badges.load',
+        });
         expect(useBadgeStore.getState().earned).toBeNull();
       });
     });

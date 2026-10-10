@@ -1,33 +1,30 @@
-import { render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 import type { IWorkspaceInvitation, IWorkspaceRole } from '@interfaces';
 
 import { TRANSLATIONS } from '@mocks/i18n';
-import { FULL_ACCESS, workspaceInvitation, workspaceRole } from '@mocks/roles';
+import {
+  OWNER_ROLE,
+  workspaceInvitation,
+  CUSTOM_ROLES,
+  HELPER_ROLE,
+  MANAGER_ROLE,
+  MEMBER_STEWARD_ROLE,
+  STEWARD_ROLE,
+  STEWARD_ROLES,
+} from '@mocks/roles';
 import { RolesSection } from '@/app/platform/components/WorkspaceSettings/fragments';
 
 vi.mock('@/i18n', () => import('@mocks/i18n'));
 
-const OWNER_ROLE = workspaceRole('role-owner', { ...FULL_ACCESS, key: 'owner', name: 'Owner', isSystem: true });
-const MEMBER_ROLE = workspaceRole('role-member', { key: 'member', name: 'Member', isSystem: true });
-const MANAGER_ROLE = workspaceRole('role-manager', { name: 'Manager', canManageRoles: true });
-const HELPER_ROLE = workspaceRole('role-helper', { name: 'Helper' });
-const ADMIN_ROLE = workspaceRole('role-admin', { name: 'Admin', canManageWorkspace: true });
-
-const COMMENT_ONLY = { canEditCanvas: false, canManageStructure: false };
-const STEWARD_ROLE = workspaceRole('role-steward', { ...COMMENT_ONLY, name: 'Steward', canManageRoles: true });
-const MEMBER_STEWARD_ROLE = { ...STEWARD_ROLE, canManageMembers: true };
-const HELD_ROLE = workspaceRole('role-held', { ...COMMENT_ONLY, name: 'Held' });
-const EMPTY_ROLE = workspaceRole('role-empty', { ...COMMENT_ONLY, name: 'Empty', memberCount: 0 });
-
-const ROLES = [OWNER_ROLE, MEMBER_ROLE, MANAGER_ROLE, HELPER_ROLE, ADMIN_ROLE];
-
-const STEWARD_ROLES = [OWNER_ROLE, MEMBER_ROLE, STEWARD_ROLE, HELD_ROLE, EMPTY_ROLE];
+const onCreateRole = vi.fn();
+const onUpdateRole = vi.fn();
+const onDeleteRole = vi.fn();
 
 const renderSection = (
   currentRole: IWorkspaceRole,
-  roles: IWorkspaceRole[] = ROLES,
+  roles: IWorkspaceRole[] = CUSTOM_ROLES,
   invitations: IWorkspaceInvitation[] = [],
 ) =>
   render(
@@ -36,9 +33,9 @@ const renderSection = (
       invitations={invitations}
       currentRole={currentRole}
       canManageRoles
-      onCreateRole={vi.fn()}
-      onUpdateRole={vi.fn()}
-      onDeleteRole={vi.fn()}
+      onCreateRole={onCreateRole}
+      onUpdateRole={onUpdateRole}
+      onDeleteRole={onDeleteRole}
     />,
   );
 
@@ -67,6 +64,98 @@ describe('RolesSection', () => {
       test('THEN every custom role offers edit and delete', () => {
         expect(actionButtons(TRANSLATIONS.platform.workspaceSettings.roles.edit)).toHaveLength(3);
         expect(actionButtons(TRANSLATIONS.platform.workspaceSettings.roles.delete)).toHaveLength(3);
+      });
+    });
+
+    describe('WHEN a new role is named and created', () => {
+      beforeEach(async () => {
+        onCreateRole.mockResolvedValue(true);
+        fireEvent.click(screen.getByRole('button', { name: TRANSLATIONS.platform.workspaceSettings.roles.newRole }));
+        fireEvent.change(
+          screen.getByRole('textbox', { name: TRANSLATIONS.platform.workspaceSettings.roles.nameLabel }),
+          { target: { value: 'Reviewers' } },
+        );
+        await act(async () => {
+          fireEvent.click(screen.getByRole('button', { name: TRANSLATIONS.platform.workspaceSettings.roles.create }));
+        });
+      });
+
+      test('THEN the role is created and the list returns', () => {
+        expect(onCreateRole).toHaveBeenCalledExactlyOnceWith('Reviewers', 'shield', expect.any(Object));
+        expect(onUpdateRole).not.toHaveBeenCalled();
+        expect(actionButtons(TRANSLATIONS.platform.workspaceSettings.roles.edit)).toHaveLength(3);
+      });
+    });
+
+    describe('WHEN a custom role is edited and saved', () => {
+      beforeEach(async () => {
+        onUpdateRole.mockResolvedValue(true);
+        fireEvent.click(actionButtons(TRANSLATIONS.platform.workspaceSettings.roles.edit)[1]!);
+        await act(async () => {
+          fireEvent.click(screen.getByRole('button', { name: TRANSLATIONS.platform.workspaceSettings.roles.save }));
+        });
+      });
+
+      test('THEN that role is updated with its own values', () => {
+        expect(onUpdateRole).toHaveBeenCalledExactlyOnceWith('role-helper', 'Helper', 'shield', {
+          canEditCanvas: true,
+          canComment: true,
+          canManageStructure: true,
+          canManageMembers: false,
+          canManageRoles: false,
+          canManageWorkspace: false,
+        });
+        expect(onCreateRole).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('WHEN the editor is opened and cancelled', () => {
+      beforeEach(() => {
+        fireEvent.click(screen.getByRole('button', { name: TRANSLATIONS.platform.workspaceSettings.roles.newRole }));
+        fireEvent.click(screen.getByRole('button', { name: TRANSLATIONS.platform.workspaceSettings.roles.cancel }));
+      });
+
+      test('THEN the list returns without saving', () => {
+        expect(actionButtons(TRANSLATIONS.platform.workspaceSettings.roles.edit)).toHaveLength(3);
+        expect(onCreateRole).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('WHEN a custom role delete is confirmed', () => {
+      beforeEach(() => {
+        fireEvent.click(actionButtons(TRANSLATIONS.platform.workspaceSettings.roles.delete)[0]!);
+        fireEvent.click(
+          screen.getByRole('button', { name: TRANSLATIONS.platform.workspaceSettings.roles.deleteConfirm }),
+        );
+      });
+
+      test('THEN that role is deleted', () => {
+        expect(onDeleteRole).toHaveBeenCalledExactlyOnceWith('role-manager');
+      });
+    });
+  });
+
+  describe('GIVEN a member who cannot manage roles', () => {
+    beforeEach(() => {
+      render(
+        <RolesSection
+          roles={CUSTOM_ROLES}
+          invitations={[]}
+          currentRole={HELPER_ROLE}
+          canManageRoles={false}
+          onCreateRole={onCreateRole}
+          onUpdateRole={onUpdateRole}
+          onDeleteRole={onDeleteRole}
+        />,
+      );
+    });
+
+    describe('WHEN the role list renders', () => {
+      test('THEN neither a new role nor any role action is offered', () => {
+        expect(
+          screen.queryByRole('button', { name: TRANSLATIONS.platform.workspaceSettings.roles.newRole }),
+        ).not.toBeInTheDocument();
+        expect(screen.queryAllByRole('button')).toEqual([]);
       });
     });
   });

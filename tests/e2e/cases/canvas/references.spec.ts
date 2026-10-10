@@ -26,7 +26,7 @@ test.describe('cross-canvas references', () => {
       await waitForCanvas(page);
     });
 
-    test.describe('WHEN the cross-reference tool links that node through the search panel', () => {
+    test.describe('WHEN the cross-reference tool links that node through the search panel and the page is reloaded', () => {
       test.beforeEach(async ({ page }) => {
         await selectTool(page, COPY.platform.canvas.tools.items.crossReference.label);
         await getPane(page).click({ position: { x: 480, y: 600 } });
@@ -35,17 +35,15 @@ test.describe('cross-canvas references', () => {
         await expect(panel).toBeVisible();
         await panel.getByRole('combobox').fill('Key insight');
         await panel.getByRole('option', { name: 'Key insight' }).click();
+        await expect(getReferenceNode(page)).toBeVisible();
         await expectSaved(page);
-      });
-
-      test('THEN the reference card names its source and survives a reload', async ({ page }) => {
-        await expect(getReferenceNode(page)).toContainText('Key insight');
-        await expect(getReferenceNode(page)).toContainText('Source thread');
-
         await page.reload();
         await waitForCanvas(page);
+      });
 
+      test('THEN the reference card names its source node and thread', async ({ page }) => {
         await expect(getReferenceNode(page)).toContainText('Key insight');
+        await expect(getReferenceNode(page)).toContainText('Source thread');
       });
     });
   });
@@ -82,19 +80,17 @@ test.describe('cross-canvas references', () => {
       });
     });
 
-    test.describe('WHEN the reference is deleted from its context menu', () => {
+    test.describe('WHEN the reference is deleted from its context menu and the page is reloaded', () => {
       test.beforeEach(async ({ page }) => {
         const menu = await openNodeMenu(page, getReferenceNode(page));
         await menu.getByRole('menuitem', { name: COPY.platform.canvas.context.deleteReference }).click();
-        await expectSaved(page);
-      });
-
-      test('THEN it stays gone after a reload', async ({ page }) => {
         await expect(getReferenceNode(page)).toHaveCount(0);
-
+        await expectSaved(page);
         await page.reload();
         await waitForCanvas(page);
+      });
 
+      test('THEN it stays gone', async ({ page }) => {
         await expect(getReferenceNode(page)).toHaveCount(0);
       });
     });

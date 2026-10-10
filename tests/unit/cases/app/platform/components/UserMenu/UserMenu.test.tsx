@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { clearLocale, TRANSLATIONS } from '@mocks/i18n';
@@ -25,8 +25,10 @@ describe('UserMenu', () => {
 
     describe('WHEN the user opens the menu after loading settles', () => {
       beforeEach(async () => {
-        render(<UserMenu />);
-        fireEvent.click(await screen.findByText(TRANSLATIONS.common.userAvatar));
+        await act(async () => {
+          render(<UserMenu />);
+        });
+        fireEvent.click(screen.getByText(TRANSLATIONS.common.userAvatar));
       });
 
       test('THEN settings and sign out remain available', () => {
@@ -43,8 +45,10 @@ describe('UserMenu', () => {
 
     describe('WHEN the user opens the menu', () => {
       beforeEach(async () => {
-        render(<UserMenu />);
-        fireEvent.click(await screen.findByText(TRANSLATIONS.common.userAvatar));
+        await act(async () => {
+          render(<UserMenu />);
+        });
+        fireEvent.click(screen.getByText(TRANSLATIONS.common.userAvatar));
       });
 
       test('THEN sign out remains available', () => {
@@ -54,8 +58,10 @@ describe('UserMenu', () => {
 
     describe('WHEN the user opens Settings from the menu', () => {
       beforeEach(async () => {
-        render(<UserMenu onSettingsClick={onSettingsClick} />);
-        fireEvent.click(await screen.findByText(TRANSLATIONS.common.userAvatar));
+        await act(async () => {
+          render(<UserMenu onSettingsClick={onSettingsClick} />);
+        });
+        fireEvent.click(screen.getByText(TRANSLATIONS.common.userAvatar));
         fireEvent.click(screen.getByRole('button', { name: TRANSLATIONS.platform.settings.title }));
       });
 
@@ -77,10 +83,13 @@ describe('UserMenu', () => {
     describe('WHEN the user signs out', () => {
       beforeEach(async () => {
         signOut.mockResolvedValue(undefined);
-        render(<UserMenu />);
-        fireEvent.click(await screen.findByText(TRANSLATIONS.common.userAvatar));
-        fireEvent.click(screen.getByRole('button', { name: TRANSLATIONS.platform.sidebar.signOut }));
-        await vi.waitUntil(() => router.push.mock.calls.length > 0);
+        await act(async () => {
+          render(<UserMenu />);
+        });
+        fireEvent.click(screen.getByText(TRANSLATIONS.common.userAvatar));
+        await act(async () => {
+          fireEvent.click(screen.getByRole('button', { name: TRANSLATIONS.platform.sidebar.signOut }));
+        });
       });
 
       test('THEN the progress is forgotten before the sign-in page opens', () => {
@@ -96,10 +105,13 @@ describe('UserMenu', () => {
     describe('WHEN signing out fails on the api after the local session is gone', () => {
       beforeEach(async () => {
         signOut.mockRejectedValue(new Error('network down'));
-        render(<UserMenu />);
-        fireEvent.click(await screen.findByText(TRANSLATIONS.common.userAvatar));
-        fireEvent.click(screen.getByRole('button', { name: TRANSLATIONS.platform.sidebar.signOut }));
-        await vi.waitUntil(() => router.push.mock.calls.length > 0);
+        await act(async () => {
+          render(<UserMenu />);
+        });
+        fireEvent.click(screen.getByText(TRANSLATIONS.common.userAvatar));
+        await act(async () => {
+          fireEvent.click(screen.getByRole('button', { name: TRANSLATIONS.platform.sidebar.signOut }));
+        });
       });
 
       test('THEN the failure is reported without a toast', () => {
@@ -120,10 +132,13 @@ describe('UserMenu', () => {
       beforeEach(async () => {
         signOut.mockResolvedValue(undefined);
         clearLocale.mockRejectedValue(new Error('cookie store down'));
-        render(<UserMenu />);
-        fireEvent.click(await screen.findByText(TRANSLATIONS.common.userAvatar));
-        fireEvent.click(screen.getByRole('button', { name: TRANSLATIONS.platform.sidebar.signOut }));
-        await vi.waitUntil(() => router.push.mock.calls.length > 0);
+        await act(async () => {
+          render(<UserMenu />);
+        });
+        fireEvent.click(screen.getByText(TRANSLATIONS.common.userAvatar));
+        await act(async () => {
+          fireEvent.click(screen.getByRole('button', { name: TRANSLATIONS.platform.sidebar.signOut }));
+        });
       });
 
       test('THEN the sign-in page still opens', () => {

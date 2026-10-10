@@ -1,8 +1,9 @@
-import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, test, vi, type MockInstance } from 'vitest';
 
 import { createRootAttributeSubscription } from '@/lib/utils';
 
 const onChange = vi.fn();
+const onOtherChange = vi.fn();
 
 let unsubscribe: () => void;
 
@@ -57,6 +58,46 @@ describe('createRootAttributeSubscription', () => {
 
       test('THEN the subscriber is not notified', () => {
         expect(onChange).not.toHaveBeenCalled();
+      });
+    });
+  });
+
+  describe('GIVEN two subscribers of one subscription', () => {
+    let unsubscribeOther: () => void;
+    let disconnect: MockInstance<MutationObserver['disconnect']>;
+
+    beforeEach(() => {
+      disconnect = vi.spyOn(MutationObserver.prototype, 'disconnect');
+      const subscribe = createRootAttributeSubscription(['data-watched']);
+      unsubscribe = subscribe(onChange);
+      unsubscribeOther = subscribe(onOtherChange);
+    });
+
+    afterEach(() => {
+      unsubscribe();
+    });
+
+    describe('WHEN one leaves and the watched attribute changes', () => {
+      beforeEach(async () => {
+        unsubscribeOther();
+        document.documentElement.setAttribute('data-watched', 'on');
+        await Promise.resolve();
+      });
+
+      test('THEN the one that stayed is still notified', () => {
+        expect(onChange).toHaveBeenCalledOnce();
+        expect(onOtherChange).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('WHEN both leave', () => {
+      beforeEach(() => {
+        unsubscribeOther();
+        unsubscribe();
+      });
+
+      test('THEN the observer disconnects', () => {
+        expect(disconnect).toHaveBeenCalledOnce();
       });
     });
   });

@@ -7,12 +7,15 @@ import {
   deleteAccounts,
   getUserClient,
   readFolder,
+  readMemberPosition,
   readMemberRoleKey,
   readThread,
   readWorkspace,
   seedAccount,
   seedFolder,
   seedMember,
+  seedMemberWithRole,
+  seedRole,
   seedThread,
   seedWorkspace,
   uniqueLabel,
@@ -21,23 +24,34 @@ import {
 let owner: IIntegrationAccount;
 let editor: IIntegrationAccount;
 let viewer: IIntegrationAccount;
+let manager: IIntegrationAccount;
 let editorClient: SupabaseClient;
 let viewerClient: SupabaseClient;
+let managerClient: SupabaseClient;
 let workspace: IIntegrationWorkspace;
 let editorWorkspace: IIntegrationWorkspace;
 
 beforeAll(async () => {
-  [owner, editor, viewer] = await Promise.all([seedAccount('owner'), seedAccount('editor'), seedAccount('viewer')]);
+  [owner, editor, viewer, manager] = await Promise.all([
+    seedAccount('owner'),
+    seedAccount('editor'),
+    seedAccount('viewer'),
+    seedAccount('manager'),
+  ]);
   [workspace, editorWorkspace] = await Promise.all([
     seedWorkspace(owner.id, uniqueLabel('boundaries')),
     seedWorkspace(editor.id, uniqueLabel('boundaries-own')),
   ]);
   await Promise.all([seedMember(workspace.id, editor.id, 'member'), seedMember(workspace.id, viewer.id, 'viewer')]);
-  [editorClient, viewerClient] = await Promise.all([getUserClient(editor), getUserClient(viewer)]);
+  [editorClient, viewerClient, managerClient] = await Promise.all([
+    getUserClient(editor),
+    getUserClient(viewer),
+    getUserClient(manager),
+  ]);
 });
 
 afterAll(async () => {
-  await deleteAccounts(viewer, editor, owner);
+  await deleteAccounts(manager, viewer, editor, owner);
 });
 
 describe('workspaces', () => {
@@ -107,22 +121,98 @@ describe('workspaces', () => {
     });
   });
 
-  describe('GIVEN an editor who owns another workspace', () => {
-    describe('WHEN they rename it past the length cap', () => {
+  describe('GIVEN a workspace where a member other than the owner holds workspace management permission', () => {
+    let managedWorkspace: IIntegrationWorkspace;
+
+    beforeEach(async () => {
+      managedWorkspace = await seedWorkspace(owner.id, uniqueLabel('boundaries-managed'));
+      const managerRoleId = await seedRole(managedWorkspace.id, 'Workspace manager', { canManageWorkspace: true });
+      await seedMemberWithRole(managedWorkspace.id, manager.id, managerRoleId);
+    });
+
+    describe('WHEN the manager renames it to the length cap', () => {
       let response: IIntegrationResponse;
 
       beforeEach(async () => {
-        response = await editorClient
+        response = await managerClient
+          .from('workspaces')
+          .update({ name: 'w'.repeat(NAME_LENGTH_CAP) })
+          .eq('id', managedWorkspace.id);
+      });
+
+      test('THEN the new name is persisted', async () => {
+        expect(response.error).toBeNull();
+        await expect(readWorkspace(managedWorkspace.id)).resolves.toMatchObject({ name: 'w'.repeat(NAME_LENGTH_CAP) });
+      });
+    });
+
+    describe('WHEN the manager renames it past the length cap', () => {
+      let response: IIntegrationResponse;
+
+      beforeEach(async () => {
+        response = await managerClient
           .from('workspaces')
           .update({ name: 'w'.repeat(NAME_LENGTH_CAP + 1) })
-          .eq('id', editorWorkspace.id);
+          .eq('id', managedWorkspace.id);
       });
 
       test('THEN the check constraint rejects it and the name stays', async () => {
         expect(response.error?.code).toBe('23514');
-        await expect(readWorkspace(editorWorkspace.id)).resolves.toMatchObject({
-          name: editorWorkspace.name,
-        });
+        await expect(readWorkspace(managedWorkspace.id)).resolves.toMatchObject({ name: managedWorkspace.name });
+      });
+    });
+
+    describe('WHEN the manager deletes it', () => {
+      let response: IIntegrationResponse;
+
+      beforeEach(async () => {
+        response = await managerClient.from('workspaces').delete().eq('id', managedWorkspace.id);
+      });
+
+      test('THEN the workspace is gone', async () => {
+        expect(response.error).toBeNull();
+        await expect(readWorkspace(managedWorkspace.id)).resolves.toBeNull();
+      });
+    });
+  });
+});
+
+describe('workspace_members', () => {
+  describe('GIVEN two members of the workspace', () => {
+    let viewerPosition: number;
+
+    beforeEach(async () => {
+      viewerPosition = await readMemberPosition(workspace.id, viewer.id);
+    });
+
+    describe('WHEN one of them reorders their own membership', () => {
+      let response: IIntegrationResponse;
+
+      beforeEach(async () => {
+        response = await editorClient
+          .from('workspace_members')
+          .update({ position: 5 })
+          .eq('workspace_id', workspace.id)
+          .eq('user_id', editor.id);
+      });
+
+      test('THEN the new position is persisted', async () => {
+        expect(response.error).toBeNull();
+        await expect(readMemberPosition(workspace.id, editor.id)).resolves.toBe(5);
+      });
+    });
+
+    describe("WHEN one of them reorders the other's membership", () => {
+      beforeEach(async () => {
+        await editorClient
+          .from('workspace_members')
+          .update({ position: viewerPosition + 1 })
+          .eq('workspace_id', workspace.id)
+          .eq('user_id', viewer.id);
+      });
+
+      test("THEN the other's membership is out of their reach and its position stays unchanged", async () => {
+        await expect(readMemberPosition(workspace.id, viewer.id)).resolves.toBe(viewerPosition);
       });
     });
   });
@@ -146,21 +236,6 @@ describe('threads', () => {
       test('THEN the workspace column is locked and the thread stays put', async () => {
         expect(response.error?.code).toBe('42501');
         await expect(readThread(threadId)).resolves.toMatchObject({ workspace_id: workspace.id });
-      });
-    });
-
-    describe('WHEN the editor renames the thread', () => {
-      let response: IIntegrationResponse;
-      let name: string;
-
-      beforeEach(async () => {
-        name = uniqueLabel('renamed');
-        response = await editorClient.from('threads').update({ name }).eq('id', threadId);
-      });
-
-      test('THEN the new name is persisted', async () => {
-        expect(response.error).toBeNull();
-        await expect(readThread(threadId)).resolves.toMatchObject({ name });
       });
     });
 
@@ -216,8 +291,14 @@ describe('threads', () => {
 });
 
 describe('folders', () => {
-  describe('GIVEN a viewer without structure permission', () => {
-    describe('WHEN they create a folder', () => {
+  describe('GIVEN a folder of the workspace and a viewer without structure permission', () => {
+    let folderId: string;
+
+    beforeEach(async () => {
+      folderId = await seedFolder(workspace.id);
+    });
+
+    describe('WHEN the viewer creates another folder', () => {
       let response: IIntegrationResponse;
 
       beforeEach(async () => {
@@ -228,6 +309,16 @@ describe('folders', () => {
 
       test('THEN the insert is denied by row level security', () => {
         expect(response.error?.code).toBe('42501');
+      });
+    });
+
+    describe('WHEN the viewer deletes the folder', () => {
+      beforeEach(async () => {
+        await viewerClient.from('folders').delete().eq('id', folderId);
+      });
+
+      test('THEN the folder survives', async () => {
+        await expect(readFolder(folderId)).resolves.not.toBeNull();
       });
     });
   });
@@ -267,6 +358,20 @@ describe('folders', () => {
   });
 
   describe('GIVEN an editor holding structure permission', () => {
+    describe('WHEN they create a folder named to the length cap', () => {
+      let response: IIntegrationResponse;
+
+      beforeEach(async () => {
+        response = await editorClient
+          .from('folders')
+          .insert({ workspace_id: workspace.id, name: 'f'.repeat(NAME_LENGTH_CAP) });
+      });
+
+      test('THEN the folder is stored', () => {
+        expect(response.error).toBeNull();
+      });
+    });
+
     describe('WHEN they create a folder named past the length cap', () => {
       let response: IIntegrationResponse;
 

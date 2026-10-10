@@ -1,21 +1,11 @@
 import { type RenderResult, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
-import type { ISaveState } from '@interfaces';
-
-import { TRANSLATIONS } from '@mocks/i18n';
+import { saveState } from '@mocks/canvas';
+import { TRANSLATIONS, translate } from '@mocks/i18n';
 import { SaveStatus } from '@/components/Canvas/fragments';
 
 vi.mock('@/i18n', () => import('@mocks/i18n'));
-
-const saveState = (overrides: Partial<ISaveState>): ISaveState => ({
-  status: 'idle',
-  lastSavedAt: null,
-  retryAttempt: 0,
-  pendingCount: 0,
-  failedCount: 0,
-  ...overrides,
-});
 
 let view: RenderResult;
 
@@ -28,7 +18,7 @@ describe('SaveStatus', () => {
 
       test('THEN a polite status output names the retry and its attempt', () => {
         expect(screen.getByRole('status', { name: TRANSLATIONS.platform.canvas.save.retrying })).toHaveTextContent(
-          'Attempt 2',
+          translate('platform.canvas.save.retryAttempt', { n: 2 }),
         );
         expect(screen.getByRole('status')).toHaveAttribute('aria-live', 'polite');
         expect(screen.getByRole('status').tagName).toBe('OUTPUT');
@@ -44,7 +34,7 @@ describe('SaveStatus', () => {
 
       test('THEN a polite status output counts the pending changes', () => {
         expect(screen.getByRole('status', { name: TRANSLATIONS.platform.canvas.save.offline })).toHaveTextContent(
-          '3 changes pending',
+          translate('platform.canvas.save.offlinePending', { count: 3 }),
         );
       });
     });
@@ -80,7 +70,7 @@ describe('SaveStatus', () => {
 
       test('THEN the alert counts the unsaved changes', () => {
         expect(screen.getByRole('alert', { name: TRANSLATIONS.platform.canvas.save.errorTitle })).toHaveTextContent(
-          '2 changes',
+          translate('platform.canvas.save.errorChanges', { count: 2 }),
         );
       });
     });

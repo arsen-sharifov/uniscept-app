@@ -3,7 +3,7 @@ import { defineConfig } from '@playwright/test';
 const isOfficialVisualContainer = process.platform === 'linux' && process.env.VISUAL_CONTAINER === '1';
 const isExplicitNativeRun = process.env.VISUAL_ALLOW_NATIVE === '1';
 const snapshotPathTemplate = isExplicitNativeRun
-  ? 'test-results/visual/native-screenshots/{arg}{ext}'
+  ? 'artifacts/visual/results/native-screenshots/{arg}{ext}'
   : '{testDir}/__screenshots__/{arg}{ext}';
 
 if (!isOfficialVisualContainer && !isExplicitNativeRun) {
@@ -14,12 +14,12 @@ if (!isOfficialVisualContainer && !isExplicitNativeRun) {
 
 export default defineConfig({
   testDir: 'tests/visual',
-  outputDir: 'test-results/visual',
+  outputDir: 'artifacts/visual/results',
   snapshotPathTemplate,
   fullyParallel: true,
   forbidOnly: !!process.env.GITHUB_ACTIONS,
   retries: process.env.GITHUB_ACTIONS ? 1 : 0,
-  reporter: [['list'], ['html', { open: 'never', outputFolder: 'playwright-report/visual' }]],
+  reporter: [['list'], ['html', { open: 'never', outputFolder: 'artifacts/visual/report' }]],
   expect: {
     timeout: 15_000,
     toHaveScreenshot: { animations: 'disabled', caret: 'hide' },
@@ -35,7 +35,7 @@ export default defineConfig({
     trace: 'on-first-retry',
   },
   webServer: {
-    command: 'pnpm exec http-server storybook-static --port 6106 --silent',
+    command: 'pnpm exec http-server artifacts/storybook --port 6106 --silent',
     url: 'http://127.0.0.1:6106/iframe.html',
     reuseExistingServer: !process.env.CI,
     timeout: 30_000,

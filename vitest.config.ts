@@ -29,6 +29,7 @@ export default defineConfig({
       include: ['src/**'],
       exclude: ['src/**/index.ts', 'src/lib/interfaces/**'],
       reporter: ['text-summary', 'html', 'lcov', 'json-summary'],
+      reportsDirectory: 'artifacts/coverage',
       thresholds: {
         statements: 95,
         branches: 91,

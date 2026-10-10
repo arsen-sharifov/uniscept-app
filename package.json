@@ -16,19 +16,19 @@
     "prestorybook": "pnpm icons:collect",
     "storybook": "storybook dev -p 6006",
     "prebuild-storybook": "pnpm icons:collect",
-    "build-storybook": "storybook build",
+    "build-storybook": "storybook build --output-dir artifacts/storybook",
     "test": "pnpm test:unit && pnpm test:integration && pnpm test:e2e && pnpm test:visual",
     "test:watch": "vitest --project unit",
     "test:coverage": "vitest run --project unit --coverage",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:headed": "playwright test --headed",
-    "test:e2e:report": "playwright show-report playwright-report/e2e",
+    "test:e2e:report": "playwright show-report artifacts/e2e/report",
     "test:e2e:install": "playwright install chromium",
     "test:integration": "vitest run --project integration",
     "test:unit": "vitest run --project unit",
     "test:visual": "node scripts/visual/test.mjs",
-    "test:visual:report": "playwright show-report playwright-report/visual",
+    "test:visual:report": "playwright show-report artifacts/visual/report",
     "test:visual:update": "node scripts/visual/test.mjs --update",
     "icons:collect": "node scripts/visual/collect-used-icons.mjs",
     "type-check": "tsc --noEmit",
@@ -43,7 +43,7 @@
     "db:reset": "supabase db reset",
     "db:migrate": "supabase migration up",
     "db:push": "supabase db push",
-    "clean": "node -e \"['.next','node_modules','storybook-static','.cache'].forEach(p=>require('fs').rmSync(p,{recursive:true,force:true}))\""
+    "clean": "node -e \"['.next','node_modules','artifacts','.cache'].forEach(p=>require('fs').rmSync(p,{recursive:true,force:true}))\""
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,mjs,cjs,mts,cts}": [

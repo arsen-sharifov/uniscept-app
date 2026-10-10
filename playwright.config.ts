@@ -6,14 +6,14 @@ const baseURL = `http://localhost:${port}`;
 
 export default defineConfig({
   testDir: 'tests/e2e',
-  outputDir: 'test-results/e2e',
+  outputDir: 'artifacts/e2e/results',
   globalSetup: './tests/e2e/globalSetup.ts',
   fullyParallel: true,
   forbidOnly: isCi,
   retries: isCi ? 2 : 0,
   workers: isCi ? 2 : 4,
   timeout: 60_000,
-  reporter: [['list'], ['html', { open: 'never', outputFolder: 'playwright-report/e2e' }]],
+  reporter: [['list'], ['html', { open: 'never', outputFolder: 'artifacts/e2e/report' }]],
   expect: { timeout: 10_000 },
   use: {
     baseURL,

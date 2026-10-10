@@ -24,7 +24,7 @@ export const EXAMPLE_SCENES: readonly (keyof typeof en.platform.onboarding.steps
   'exampleWrap',
 ];
 
-export const E2E_AUTH_STATE_DIR = 'test-results/e2e-auth';
+export const E2E_AUTH_STATE_DIR = 'artifacts/e2e/auth';
 
 export const E2E_ACCOUNT_DOMAIN = 'e2e.uniscept.test';
 

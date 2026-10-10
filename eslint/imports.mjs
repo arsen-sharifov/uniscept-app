@@ -18,7 +18,7 @@ const restrictedImportPatterns = [
   {
     group: ['../**/lib/**', '../**/api/**'],
     message:
-      'Use the matching alias (`@interfaces`, `@constants`, `@hooks`, `@api`, or `@/lib/...`) instead of a relative path.',
+      'Use the matching alias (`@interfaces`, `@constants`, `@hooks`, `@api/client`, `@api/server`, or `@/lib/...`) instead of a relative path.',
   },
   {
     group: ['@/lib/interfaces/**'],
@@ -34,7 +34,7 @@ const restrictedImportPatterns = [
   },
   {
     group: ['@/api/**'],
-    message: 'Import via the `@api` barrel.',
+    message: 'Import via the `@api/client` or `@api/server` barrel.',
   },
 ];
 

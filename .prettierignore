@@ -7,12 +7,9 @@ pnpm-lock.yaml
 out
 build
 dist
-storybook-static
-coverage
 
-# Playwright
-test-results
-playwright-report
+# Artifacts
+artifacts
 
 # IDE
 .idea

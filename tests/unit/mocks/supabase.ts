@@ -2,9 +2,19 @@ import { vi } from 'vitest';
 
 export const createClient = vi.fn();
 
+export const NO_ROW_ERROR = { code: 'PGRST116', message: 'Cannot coerce the result to a single JSON object' };
+
+export const PERMISSION_DENIED_ERROR = { message: 'permission denied', code: '42501' };
+
+export const positionReads = (folderPosition: number | null, threadPosition: number | null) =>
+  [folderPosition, threadPosition].map((position) => ({ data: position === null ? null : { position } }));
+
 export const primeSupabase = (
   results: Array<{ data?: unknown; error?: unknown; count?: number }>,
-  options?: { user: { id: string; email?: string; user_metadata?: Record<string, unknown> } | null },
+  options?: {
+    user?: { id: string; email?: string; user_metadata?: Record<string, unknown> } | null;
+    rpc?: Record<string, { data?: unknown; error?: unknown }>;
+  },
 ) => {
   const queries = results.map((result) => {
     const resolve = async () => ({
@@ -21,6 +31,7 @@ export const primeSupabase = (
       is: () => query,
       order: () => query,
       limit: () => query,
+      range: () => query,
       returns: resolve,
       maybeSingle: resolve,
       single: resolve,
@@ -41,14 +52,17 @@ export const primeSupabase = (
 
   const client = {
     from: vi.fn(() => queries[Math.min(nextQueryIndex++, queries.length - 1)]),
-    rpc: vi.fn(async (): Promise<{ data: unknown; error: unknown }> => ({ data: null, error: null })),
+    rpc: vi.fn(async (name: string, _params?: Record<string, unknown>): Promise<{ data: unknown; error: unknown }> => ({
+      data: options?.rpc?.[name]?.data ?? null,
+      error: options?.rpc?.[name]?.error ?? null,
+    })),
     auth: {
       getUser: vi.fn(async () => ({
-        data: { user: options ? options.user : { id: 'user-1' } },
+        data: { user: options?.user === undefined ? { id: 'user-1' } : options.user },
         error: null,
       })),
       getSession: vi.fn(async () => ({ data: { session: null }, error: null })),
-      setSession: vi.fn(async () => ({ data: { session: null }, error: null })),
+      verifyOtp: vi.fn(async () => ({ data: { user: null, session: null }, error: null })),
       signInWithPassword: vi.fn(async () => ({ data: { session: null }, error: null })),
       signUp: vi.fn(async () => ({ data: { user: null }, error: null })),
       signOut: vi.fn(async () => ({ error: null })),

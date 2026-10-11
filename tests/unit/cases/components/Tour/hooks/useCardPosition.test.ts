@@ -5,9 +5,8 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import type { IAnchorRect } from '@interfaces';
 
 import { setElementLayout, stubResizeObserver } from '@mocks/browser';
+import { PLACEMENT_ANCHOR_RECT } from '@mocks/geometry';
 import { useCardPosition } from '@/components/Tour/hooks';
-
-const RECT: IAnchorRect = { top: 400, left: 700, width: 120, height: 40 };
 
 let observer: ReturnType<typeof stubResizeObserver>;
 let cardRef: RefObject<HTMLElement | null>;
@@ -34,7 +33,7 @@ describe('useCardPosition', () => {
     describe('WHEN it renders before the card has been measured', () => {
       beforeEach(() => {
         view = renderHook(({ rect }: { rect: IAnchorRect | null }) => useCardPosition(cardRef, rect, 'right'), {
-          initialProps: { rect: RECT as IAnchorRect | null },
+          initialProps: { rect: PLACEMENT_ANCHOR_RECT as IAnchorRect | null },
         });
       });
 
@@ -46,7 +45,7 @@ describe('useCardPosition', () => {
     describe('WHEN the card reports its size', () => {
       beforeEach(() => {
         view = renderHook(({ rect }: { rect: IAnchorRect | null }) => useCardPosition(cardRef, rect, 'right'), {
-          initialProps: { rect: RECT as IAnchorRect | null },
+          initialProps: { rect: PLACEMENT_ANCHOR_RECT as IAnchorRect | null },
         });
         act(() => observer.resize());
       });
@@ -63,14 +62,14 @@ describe('useCardPosition', () => {
       setElementLayout(card, { offsetWidth: 300, offsetHeight: 160 });
       cardRef = { current: card };
       view = renderHook(({ rect }: { rect: IAnchorRect | null }) => useCardPosition(cardRef, rect, 'right'), {
-        initialProps: { rect: RECT as IAnchorRect | null },
+        initialProps: { rect: PLACEMENT_ANCHOR_RECT as IAnchorRect | null },
       });
       act(() => observer.resize());
     });
 
     describe('WHEN the anchor moves up', () => {
       beforeEach(() => {
-        view.rerender({ rect: { ...RECT, top: 200 } });
+        view.rerender({ rect: { ...PLACEMENT_ANCHOR_RECT, top: 200 } });
       });
 
       test('THEN the card follows it', () => {

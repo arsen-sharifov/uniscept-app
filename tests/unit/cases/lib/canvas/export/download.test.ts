@@ -2,7 +2,13 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import type { TCanvasExportOutcome } from '@interfaces';
 
-import { LONG_THREAD_NAME, UNICODE_THREAD_NAME } from '@mocks/canvasExport';
+import {
+  BIDI_SAFE_FILENAME,
+  BIDI_THREAD_NAME,
+  LONG_THREAD_NAME,
+  UNICODE_THREAD_NAME,
+  FAR_TARGET_X,
+} from '@mocks/canvasExport';
 import {
   EXPORT_BLOB_URL,
   EXPORT_FIXTURE,
@@ -10,9 +16,7 @@ import {
   buildExportCanvas,
   installExportEnvironment,
 } from '@mocks/canvasExportDom';
-import { exportCanvas, getExportFilename, getRasterDimensions } from '@/lib/canvas/export';
-
-const FAR_TARGET_X = 20_000;
+import { EXPORT_URL_LIFETIME_MS, exportCanvas, getExportFilename, getRasterDimensions } from '@/lib/canvas/export';
 
 let root: HTMLElement;
 let outcome: TCanvasExportOutcome;
@@ -40,6 +44,7 @@ beforeEach(() => {
 
 afterEach(() => {
   root?.remove();
+  vi.useRealTimers();
 });
 
 describe('getExportFilename', () => {
@@ -57,6 +62,14 @@ describe('getExportFilename', () => {
         expect(getExportFilename('CON', 'png')).toBe('_CON.png');
         expect(getExportFilename('LPT1.notes', 'jpg')).toBe('_LPT1.notes.jpg');
         expect(getExportFilename(' ... ', 'svg')).toBe('Uniscept.svg');
+      });
+    });
+  });
+
+  describe('GIVEN a thread name with bidi control characters', () => {
+    describe('WHEN the export filename is created', () => {
+      test('THEN the controls are removed so the name cannot disguise its extension', () => {
+        expect(getExportFilename(BIDI_THREAD_NAME, 'svg')).toBe(BIDI_SAFE_FILENAME);
       });
     });
   });
@@ -109,10 +122,23 @@ describe('exportCanvas', () => {
         outcome = await exportCanvas(root, EXPORT_FIXTURE.thread, 'svg');
       });
 
-      test('THEN the vector file downloads under the thread name', () => {
+      test('THEN the vector file downloads under the thread name while its URL stays alive', () => {
         expect(outcome).toBe('downloaded');
         expect(downloads).toEqual([`${EXPORT_FIXTURE.thread}.svg`]);
         expect(blobs.map((blob) => blob.type)).toEqual(['image/svg+xml']);
+        expect(URL.revokeObjectURL).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('WHEN it is exported as SVG and the download URL outlives its lifetime', () => {
+      beforeEach(async () => {
+        vi.useFakeTimers({ toFake: ['setTimeout'] });
+        await exportCanvas(root, EXPORT_FIXTURE.thread, 'svg');
+        vi.advanceTimersByTime(EXPORT_URL_LIFETIME_MS);
+      });
+
+      test('THEN the download URL is released', () => {
+        expect(URL.revokeObjectURL).toHaveBeenCalledExactlyOnceWith(EXPORT_BLOB_URL);
       });
     });
 
@@ -181,12 +207,15 @@ describe('exportCanvas', () => {
   });
 
   describe('GIVEN a graph too wide for a sharp bitmap', () => {
-    beforeEach(async () => {
+    beforeEach(() => {
       root = buildExportCanvas(FAR_TARGET_X);
-      outcome = await exportCanvas(root, EXPORT_FIXTURE.thread, 'png');
     });
 
     describe('WHEN it is exported as PNG', () => {
+      beforeEach(async () => {
+        outcome = await exportCanvas(root, EXPORT_FIXTURE.thread, 'png');
+      });
+
       test('THEN the export stops before rasterising and reports the graph as too large', () => {
         expect(outcome).toBe('too-large');
         expect(downloads).toEqual([]);

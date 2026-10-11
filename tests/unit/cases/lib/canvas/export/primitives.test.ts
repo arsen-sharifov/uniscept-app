@@ -2,13 +2,33 @@ import { beforeEach, describe, expect, test, vi, type Mock } from 'vitest';
 
 import type { ICanvasExportContext } from '@interfaces';
 
-import { NESTED_CSS_LIST, OKLCH_COLOR, SRGB_WASH_COLOR } from '@mocks/canvasExport';
+import { NESTED_CSS_LIST, OKLCH_COLOR, SRGB_WASH_COLOR, SAMPLED_COLOR } from '@mocks/canvasExport';
 import { colorContext, definitionContext, scratchContext } from '@mocks/canvasExportDom';
-import { defineOnce, parseCssColor, resolveExportColor, splitCssList, svgElement } from '@/lib/canvas/export';
-
-const SAMPLED_COLOR = 'rgba(250, 250, 245, 1)';
+import {
+  defineOnce,
+  getCanvasContext,
+  parseCssColor,
+  resolveExportColor,
+  splitCssList,
+  svgElement,
+  toXmlText,
+} from '@/lib/canvas/export';
 
 let context: ICanvasExportContext;
+
+describe('getCanvasContext', () => {
+  describe('GIVEN a browser without 2D canvas rendering', () => {
+    beforeEach(() => {
+      vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
+    });
+
+    describe('WHEN a drawing context is asked for', () => {
+      test('THEN the export stops with a clear error', () => {
+        expect(() => getCanvasContext(document.createElement('canvas'))).toThrow('Canvas rendering is unavailable');
+      });
+    });
+  });
+});
 
 describe('splitCssList', () => {
   describe('GIVEN a comma-separated list whose items contain nested function calls', () => {
@@ -27,6 +47,35 @@ describe('splitCssList', () => {
     describe('WHEN the list is split', () => {
       test('THEN it yields no items', () => {
         expect(splitCssList('')).toEqual([]);
+      });
+    });
+  });
+});
+
+describe('toXmlText', () => {
+  describe('GIVEN text with control characters, a lone surrogate and noncharacters', () => {
+    describe('WHEN it is prepared for XML', () => {
+      test('THEN only the characters XML allows survive', () => {
+        const text = [
+          'a',
+          String.fromCodePoint(0x00),
+          'b',
+          String.fromCodePoint(0xd8_00),
+          'c',
+          String.fromCodePoint(0xff_fe),
+        ];
+
+        expect(toXmlText(text.join(''))).toBe('abc');
+      });
+    });
+  });
+
+  describe('GIVEN text with whitespace controls and astral characters', () => {
+    describe('WHEN it is prepared for XML', () => {
+      test('THEN it passes through untouched', () => {
+        const text = ['tab', 'line', 'return', 'emoji'].join(String.fromCodePoint(0x09, 0x0a, 0x0d, 0x1_f6_00));
+
+        expect(toXmlText(text)).toBe(text);
       });
     });
   });

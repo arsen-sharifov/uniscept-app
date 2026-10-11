@@ -24,13 +24,15 @@ export const EXAMPLE_SCENES: readonly (keyof typeof en.platform.onboarding.steps
   'exampleWrap',
 ];
 
-export const E2E_AUTH_STATE_DIR = 'test-results/e2e-auth';
+export const E2E_AUTH_STATE_DIR = 'artifacts/e2e/auth';
 
 export const E2E_ACCOUNT_DOMAIN = 'e2e.uniscept.test';
 
 export const E2E_ACCOUNT_PASSWORD = 'Uniscept-E2E-1!';
 
 export const E2E_ACCOUNT_PLAN = 'beta';
+
+export const E2E_MAILPIT_URL = 'http://127.0.0.1:54324';
 
 export const CANVAS_NODE_TYPE = 'canvas-node';
 
@@ -75,3 +77,17 @@ export const EXPORT_THREAD_NAME = 'Export thread';
 export const PNG_SIGNATURE = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 
 export const JPEG_SIGNATURE = Buffer.from([0xff, 0xd8, 0xff]);
+
+export const REJECTED_EMAIL = `rejected@${E2E_ACCOUNT_DOMAIN}`;
+
+export const NEW_PASSWORD = 'Uniscept-E2E-2!';
+
+export const ONBOARDING_QUESTION = 'Do we ship on Friday?';
+
+export const ONBOARDING_CLAIM = 'The release checklist is green';
+
+export const DEFAULT_WORKSPACE_NAME = 'New Workspace';
+
+export const SHARED_WORKSPACE_NAME = 'Invitation source';
+
+export const CUSTOM_ROLE_NAME = 'Reviewer';

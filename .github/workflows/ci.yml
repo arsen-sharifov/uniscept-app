@@ -84,6 +84,19 @@ jobs:
       - name: pnpm dedupe check
         run: pnpm dedupe --check
 
+  secret-scan:
+    name: Secret scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Gitleaks
+        run: docker run --rm -v "$PWD:/repo" ghcr.io/gitleaks/gitleaks:v8.30.1 git /repo --redact --no-banner --verbose
+
   test:
     name: Unit tests
     runs-on: ubuntu-latest
@@ -103,27 +116,27 @@ jobs:
       - name: Coverage summary
         if: ${{ !cancelled() }}
         run: |
-          if [ -f coverage/coverage-summary.json ]; then
+          if [ -f artifacts/coverage/coverage-summary.json ]; then
             {
               echo "### Unit coverage"
-              jq -r '"| Metric | % |\n|---|---|\n| Statements | \(.total.statements.pct)% |\n| Branches | \(.total.branches.pct)% |\n| Functions | \(.total.functions.pct)% |\n| Lines | \(.total.lines.pct)% |"' coverage/coverage-summary.json
+              jq -r '"| Metric | % |\n|---|---|\n| Statements | \(.total.statements.pct)% |\n| Branches | \(.total.branches.pct)% |\n| Functions | \(.total.functions.pct)% |\n| Lines | \(.total.lines.pct)% |"' artifacts/coverage/coverage-summary.json
             } >> "$GITHUB_STEP_SUMMARY"
           fi
 
       - name: Upload coverage report
-        if: ${{ !cancelled() && hashFiles('coverage/lcov.info') != '' }}
+        if: ${{ !cancelled() && hashFiles('artifacts/coverage/lcov.info') != '' }}
         uses: actions/upload-artifact@v7
         with:
           name: coverage-report
-          path: coverage/lcov.info
+          path: artifacts/coverage/lcov.info
           retention-days: 14
 
       - name: Resolve project version
-        if: ${{ !cancelled() && hashFiles('coverage/lcov.info') != '' && github.event.pull_request.head.repo.fork != true }}
+        if: ${{ !cancelled() && hashFiles('artifacts/coverage/lcov.info') != '' && github.event.pull_request.head.repo.fork != true }}
         run: echo "SONAR_VERSION=$(jq -er '.version' package.json)" >> "$GITHUB_ENV"
 
       - name: SonarQube scan
-        if: ${{ !cancelled() && hashFiles('coverage/lcov.info') != '' && github.event.pull_request.head.repo.fork != true }}
+        if: ${{ !cancelled() && hashFiles('artifacts/coverage/lcov.info') != '' && github.event.pull_request.head.repo.fork != true }}
         uses: SonarSource/sonarqube-scan-action@v8
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -209,8 +222,8 @@ jobs:
         with:
           name: e2e-report
           path: |
-            playwright-report/e2e
-            test-results/e2e
+            artifacts/e2e/report
+            artifacts/e2e/results
           retention-days: 14
 
       - name: Stop Supabase
@@ -243,8 +256,8 @@ jobs:
       - name: Upload Storybook build
         uses: actions/upload-artifact@v7
         with:
-          name: storybook-static
-          path: storybook-static
+          name: storybook
+          path: artifacts/storybook
           retention-days: 7
 
   visual:
@@ -267,8 +280,8 @@ jobs:
       - name: Download Storybook build
         uses: actions/download-artifact@v7
         with:
-          name: storybook-static
-          path: storybook-static
+          name: storybook
+          path: artifacts/storybook
 
       - name: Visual tests
         run: pnpm exec playwright test --config=playwright.visual.config.ts
@@ -279,6 +292,6 @@ jobs:
         with:
           name: visual-report
           path: |
-            playwright-report/visual
-            test-results/visual
+            artifacts/visual/report
+            artifacts/visual/results
           retention-days: 14

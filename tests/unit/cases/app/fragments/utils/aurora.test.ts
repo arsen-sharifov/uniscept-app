@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { REDUCED_MOTION_QUERY } from '@constants';
 import { createAuroraRenderer, draw, renderer } from '@mocks/auroraRenderer';
 import {
   stubAnimationFrame,
@@ -8,7 +9,7 @@ import {
   stubResizeObserver,
   stubWorker,
 } from '@mocks/browser';
-import { AURORA_IDLE_STOP_MS, LIGHT_SCHEME_QUERY, REDUCED_MOTION_QUERY } from '@/app/fragments/consts';
+import { AURORA_IDLE_STOP_MS, LIGHT_SCHEME_QUERY } from '@/app/fragments/consts';
 import type { attachAurora, auroraReady, detachAurora } from '@/app/fragments/utils';
 
 vi.mock('@/app/fragments/utils/auroraRenderer', () => ({ createAuroraRenderer }));
@@ -103,6 +104,44 @@ describe('aurora', () => {
       test('THEN the failed worker is terminated and the fallback stays mounted', () => {
         expect(worker.terminate).toHaveBeenCalledOnce();
         expect(slot.querySelector('canvas')).not.toBeNull();
+        expect(frames.pending()).toBe(1);
+      });
+    });
+  });
+
+  describe('GIVEN a browser that cannot hand a canvas to a worker', () => {
+    beforeEach(() => {
+      offscreen.restore();
+    });
+
+    describe('WHEN the background mounts', () => {
+      beforeEach(() => {
+        aurora.attachAurora(slot);
+      });
+
+      test('THEN no worker is started and the main loop keeps drawing', () => {
+        expect(worker.construct).not.toHaveBeenCalled();
+        expect(slot.querySelectorAll('canvas')).toHaveLength(1);
+        expect(frames.pending()).toBe(1);
+      });
+    });
+  });
+
+  describe('GIVEN a background that was just detached', () => {
+    beforeEach(() => {
+      offscreen.restore();
+      aurora.attachAurora(slot);
+      aurora.detachAurora();
+    });
+
+    describe('WHEN it is attached again before the idle stop', () => {
+      beforeEach(() => {
+        aurora.attachAurora(slot);
+        vi.advanceTimersByTime(AURORA_IDLE_STOP_MS);
+      });
+
+      test('THEN the idle stop is cancelled and it keeps animating', () => {
+        expect(slot.querySelectorAll('canvas')).toHaveLength(1);
         expect(frames.pending()).toBe(1);
       });
     });

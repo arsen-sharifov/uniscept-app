@@ -1,12 +1,12 @@
 import { act, cleanup, renderHook, type RenderHookResult } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
-import type { ITourSnapshot, ITourSnapshotInput, TNavItem, TTourSignal } from '@interfaces';
+import type { ITourSnapshot, ITourSnapshotInput, TTourSignal } from '@interfaces';
 import { ANCHOR_POLL_MS } from '@constants';
-import { THREAD_ID, canvasEdge, canvasNode, questionNode } from '@mocks/canvas';
+import { THREAD_ID, CANVAS_CONTENT } from '@mocks/canvas';
 import { countReferenceTargets } from '@mocks/canvasApi';
 import { event } from '@mocks/events';
-import { FULL_TOUR_ACCESS } from '@mocks/onboarding';
+import { FULL_TOUR_ACCESS, NAV_TREE } from '@mocks/onboarding';
 import { FULL_ACCESS } from '@mocks/roles';
 import { ECanvasTool } from '@/components/tools';
 import { useTourSnapshot } from '@/components/Tour/hooks';
@@ -16,20 +16,8 @@ import { useCanvasStore, usePermissionsStore } from '@/lib/stores';
 vi.mock('@api/client', () => import('@mocks/canvasApi'));
 vi.mock('@/lib/events', () => import('@mocks/events'));
 
-const TREE: TNavItem[] = [
-  { type: 'thread', id: 'loose', name: 'Loose thread' },
-  {
-    type: 'folder',
-    id: 'research',
-    name: 'Research',
-    items: [{ type: 'thread', id: 'nested', name: 'Nested thread' }],
-  },
-];
-
-const CANVAS = { nodes: [questionNode('q'), canvasNode('n1')], edges: [canvasEdge('e1', 'q', 'n1')] };
-
 const tourInput = (overrides: Partial<ITourSnapshotInput> = {}): ITourSnapshotInput => ({
-  items: TREE,
+  items: NAV_TREE,
   workspaceId: 'ws-1',
   workspaceCount: 2,
   threadId: THREAD_ID,
@@ -56,7 +44,7 @@ afterEach(() => {
 describe('useTourSnapshot', () => {
   describe('GIVEN the canvas of the open thread is loaded', () => {
     beforeEach(() => {
-      useCanvasStore.getState().loadCanvas(THREAD_ID, CANVAS);
+      useCanvasStore.getState().loadCanvas(THREAD_ID, CANVAS_CONTENT);
     });
 
     describe('WHEN the tour is running', () => {
@@ -66,7 +54,11 @@ describe('useTourSnapshot', () => {
       });
 
       test('THEN the snapshot carries the open thread with its nodes and edges', () => {
-        expect(view.result.current).toMatchObject({ threadId: THREAD_ID, nodes: CANVAS.nodes, edges: CANVAS.edges });
+        expect(view.result.current).toMatchObject({
+          threadId: THREAD_ID,
+          nodes: CANVAS_CONTENT.nodes,
+          edges: CANVAS_CONTENT.edges,
+        });
       });
     });
 
@@ -84,7 +76,7 @@ describe('useTourSnapshot', () => {
 
   describe('GIVEN the store still holds the canvas of a thread the user has left', () => {
     beforeEach(() => {
-      useCanvasStore.getState().loadCanvas('thread-left', CANVAS);
+      useCanvasStore.getState().loadCanvas('thread-left', CANVAS_CONTENT);
     });
 
     describe('WHEN the tour runs while another thread is open', () => {
@@ -113,7 +105,7 @@ describe('useTourSnapshot', () => {
   describe('GIVEN a workspace with three reference targets outside the open thread', () => {
     beforeEach(() => {
       countReferenceTargets.mockResolvedValue(3);
-      useCanvasStore.getState().loadCanvas(THREAD_ID, CANVAS);
+      useCanvasStore.getState().loadCanvas(THREAD_ID, CANVAS_CONTENT);
     });
 
     describe('WHEN the tour is running', () => {
@@ -172,7 +164,7 @@ describe('useTourSnapshot', () => {
       const stale = Promise.withResolvers<number>();
       settleStale = stale.resolve;
       countReferenceTargets.mockReturnValueOnce(stale.promise).mockResolvedValueOnce(1);
-      useCanvasStore.getState().loadCanvas(THREAD_ID, CANVAS);
+      useCanvasStore.getState().loadCanvas(THREAD_ID, CANVAS_CONTENT);
 
       view = renderHook((input) => useTourSnapshot(input), { initialProps: tourInput() });
       await act(() => vi.advanceTimersByTimeAsync(0));
@@ -287,7 +279,7 @@ describe('useTourSnapshot', () => {
   describe('GIVEN a member with full rights who has started a connection and opened the comments of a node', () => {
     beforeEach(() => {
       usePermissionsStore.getState().setAccess('ws-1', 'user-1', FULL_ACCESS);
-      useCanvasStore.getState().loadCanvas(THREAD_ID, CANVAS);
+      useCanvasStore.getState().loadCanvas(THREAD_ID, CANVAS_CONTENT);
       useCanvasStore.setState({ activeTool: ECanvasTool.Connect, pendingConnection: 'q', openCommentsNodeId: 'n1' });
       useOnboardingStore.setState({ signals: new Set<TTourSignal>(['nodeLabelled']) });
     });

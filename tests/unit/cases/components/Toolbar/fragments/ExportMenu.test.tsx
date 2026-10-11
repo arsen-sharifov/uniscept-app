@@ -1,7 +1,9 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { awardBadge } from '@mocks/badges';
 import { THREAD_ID, canvasNode } from '@mocks/canvas';
+import { EXPORT_THREAD_NAME } from '@mocks/canvasExport';
 import { event } from '@mocks/events';
 import { TRANSLATIONS } from '@mocks/i18n';
 import { ExportMenu } from '@/components/Toolbar/fragments';
@@ -10,25 +12,21 @@ import { useOnboardingStore } from '@/lib/onboarding';
 import { useCanvasStore } from '@/lib/stores';
 
 vi.mock('@/i18n', () => import('@mocks/i18n'));
+vi.mock('@/lib/badges', () => import('@mocks/badges'));
 vi.mock('@/lib/events', () => import('@mocks/events'));
-vi.mock('@/lib/canvas/export', () => ({ exportCanvas: vi.fn() }));
-
-const THREAD_NAME = 'Export thread';
-const copy = TRANSLATIONS.platform.canvas.export;
+vi.mock('@/lib/canvas/export', () => import('@mocks/canvasExport'));
 
 const root = document.createElement('div');
 root.dataset.canvasThread = THREAD_ID;
 
-const exportButton = () => screen.getByRole('button', { name: copy.label });
-const loadingButton = () => screen.getByRole('button', { name: copy.loading });
+const exportButton = () => screen.getByRole('button', { name: TRANSLATIONS.platform.canvas.export.label });
+const loadingButton = () => screen.getByRole('button', { name: TRANSLATIONS.platform.canvas.export.loading });
 const menuItem = (format: string) => screen.getByRole('menuitem', { name: new RegExp(format) });
-const openWithPointer = () => fireEvent.click(exportButton(), { detail: 1 });
-const chooseFormat = (format: string) => fireEvent.click(menuItem(format));
 
 beforeEach(() => {
   document.body.append(root);
   useCanvasStore.setState({ hydrated: true, threadId: THREAD_ID, nodes: [canvasNode('n1')] });
-  render(<ExportMenu threadId={THREAD_ID} threadName={THREAD_NAME} />);
+  render(<ExportMenu threadId={THREAD_ID} threadName={EXPORT_THREAD_NAME} />);
 });
 
 afterEach(() => {
@@ -40,7 +38,7 @@ describe('ExportMenu', () => {
   describe('GIVEN a hydrated canvas with nodes', () => {
     describe('WHEN the export button is clicked with the pointer', () => {
       beforeEach(() => {
-        openWithPointer();
+        fireEvent.click(exportButton(), { detail: 1 });
       });
 
       test('THEN the menu opens with every format and takes focus itself', () => {
@@ -71,55 +69,68 @@ describe('ExportMenu', () => {
     });
 
     describe('WHEN a format is chosen and the export succeeds', () => {
-      beforeEach(() => {
+      beforeEach(async () => {
         vi.mocked(exportCanvas).mockResolvedValue('downloaded');
-        openWithPointer();
-        chooseFormat('PNG');
+        fireEvent.click(exportButton(), { detail: 1 });
+        fireEvent.click(menuItem('PNG'));
+        await act(async () => {
+          await vi.dynamicImportSettled();
+        });
       });
 
-      test('THEN the canvas root, thread name and format reach the exporter and the menu closes onto the button', async () => {
-        await waitFor(() => expect(exportButton()).toHaveFocus());
+      test('THEN the canvas root, thread name and format reach the exporter and the menu closes onto the button', () => {
+        expect(exportButton()).toHaveFocus();
         expect(screen.queryByRole('menu')).not.toBeInTheDocument();
-        expect(exportCanvas).toHaveBeenCalledExactlyOnceWith(root, THREAD_NAME, 'png');
+        expect(exportCanvas).toHaveBeenCalledExactlyOnceWith(root, EXPORT_THREAD_NAME, 'png');
+      });
+
+      test('THEN the Cartographer badge is awarded', () => {
+        expect(awardBadge).toHaveBeenCalledExactlyOnceWith('cartographer');
       });
     });
 
     describe('WHEN the graph is too large for a bitmap', () => {
-      beforeEach(() => {
+      beforeEach(async () => {
         vi.mocked(exportCanvas).mockResolvedValue('too-large');
-        openWithPointer();
-        chooseFormat('JPG');
+        fireEvent.click(exportButton(), { detail: 1 });
+        fireEvent.click(menuItem('JPG'));
+        await act(async () => {
+          await vi.dynamicImportSettled();
+        });
       });
 
-      test('THEN the menu stays open with the vector hint and nothing is reported as an error', async () => {
-        await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent(copy.tooLarge));
+      test('THEN the menu stays open with the vector hint and nothing is reported as an error', () => {
+        expect(screen.getByRole('status')).toHaveTextContent(TRANSLATIONS.platform.canvas.export.tooLarge);
         expect(screen.getByRole('menu')).toBeInTheDocument();
         expect(event.error).not.toHaveBeenCalled();
+        expect(awardBadge).not.toHaveBeenCalled();
       });
     });
 
     describe('WHEN the export fails', () => {
-      beforeEach(() => {
+      beforeEach(async () => {
         vi.mocked(exportCanvas).mockRejectedValue(new Error('boom'));
-        openWithPointer();
-        chooseFormat('SVG');
+        fireEvent.click(exportButton(), { detail: 1 });
+        fireEvent.click(menuItem('SVG'));
+        await act(async () => {
+          await vi.dynamicImportSettled();
+        });
       });
 
-      test('THEN the failure goes through the event channel under the export title and the menu stays open', async () => {
-        await waitFor(() =>
-          expect(event.error).toHaveBeenCalledExactlyOnceWith(expect.any(Error), {
-            title: TRANSLATIONS.common.errorTitles.exportFailed,
-            context: 'canvas.export',
-          }),
-        );
+      test('THEN the failure goes through the event channel under the export title and the menu stays open', () => {
+        expect(event.error).toHaveBeenCalledExactlyOnceWith(expect.any(Error), {
+          title: TRANSLATIONS.common.errorTitles.exportFailed,
+          context: 'canvas.export',
+        });
         expect(screen.getByRole('menu')).toBeInTheDocument();
         expect(screen.queryByRole('status')).not.toBeInTheDocument();
+        expect(awardBadge).not.toHaveBeenCalled();
       });
     });
 
     describe('WHEN the user leaves the open menu with Escape', () => {
       beforeEach(() => {
-        openWithPointer();
+        fireEvent.click(exportButton(), { detail: 1 });
         fireEvent.keyDown(window, { key: 'Escape' });
       });
 
@@ -131,7 +142,7 @@ describe('ExportMenu', () => {
 
     describe('WHEN the user tabs out of the open menu', () => {
       beforeEach(() => {
-        openWithPointer();
+        fireEvent.click(exportButton(), { detail: 1 });
         fireEvent.keyDown(screen.getByRole('menu'), { key: 'Tab' });
       });
 
@@ -143,7 +154,7 @@ describe('ExportMenu', () => {
 
     describe('WHEN the user clicks outside the open menu', () => {
       beforeEach(() => {
-        openWithPointer();
+        fireEvent.click(exportButton(), { detail: 1 });
         fireEvent.mouseDown(document.body);
       });
 
@@ -155,8 +166,8 @@ describe('ExportMenu', () => {
 
     describe('WHEN the export button is clicked again while the menu is open', () => {
       beforeEach(() => {
-        openWithPointer();
-        openWithPointer();
+        fireEvent.click(exportButton(), { detail: 1 });
+        fireEvent.click(exportButton(), { detail: 1 });
       });
 
       test('THEN the menu closes', () => {
@@ -166,47 +177,93 @@ describe('ExportMenu', () => {
     });
 
     describe('WHEN the canvas element has left the page before a format is chosen', () => {
-      beforeEach(() => {
+      beforeEach(async () => {
         root.remove();
-        openWithPointer();
-        chooseFormat('PNG');
+        fireEvent.click(exportButton(), { detail: 1 });
+        fireEvent.click(menuItem('PNG'));
+        await act(async () => {
+          await vi.dynamicImportSettled();
+        });
       });
 
-      test('THEN the failure is reported through the event channel and nothing is exported', async () => {
-        await waitFor(() =>
-          expect(event.error).toHaveBeenCalledExactlyOnceWith(
-            expect.objectContaining({ message: 'The active canvas is unavailable' }),
-            expect.objectContaining({ context: 'canvas.export' }),
-          ),
+      test('THEN the failure is reported through the event channel and nothing is exported', () => {
+        expect(event.error).toHaveBeenCalledExactlyOnceWith(
+          expect.objectContaining({ message: 'The active canvas is unavailable' }),
+          expect.objectContaining({ context: 'canvas.export' }),
         );
         expect(exportCanvas).not.toHaveBeenCalled();
       });
     });
 
-    describe('WHEN the user escapes while an export is still running', () => {
-      let finishExport: (outcome: 'downloaded') => void = () => {};
-
+    describe('WHEN a format is chosen from the keyboard and the export is still running', () => {
       beforeEach(async () => {
-        vi.mocked(exportCanvas).mockImplementation(
-          () =>
-            new Promise((resolve) => {
-              finishExport = resolve;
-            }),
-        );
-        openWithPointer();
-        chooseFormat('PNG');
-        await vi.waitUntil(() => vi.mocked(exportCanvas).mock.calls.length > 0);
+        vi.mocked(exportCanvas).mockImplementation(() => new Promise(() => {}));
+        fireEvent.click(exportButton(), { detail: 0 });
+        fireEvent.click(menuItem('PNG'));
+        await act(async () => {
+          await vi.dynamicImportSettled();
+        });
+      });
+
+      test('THEN the formats are marked unavailable and keep the focus', () => {
+        expect(menuItem('PNG')).toHaveAttribute('aria-disabled', 'true');
+        expect(menuItem('PNG')).toBeEnabled();
+        expect(menuItem('PNG')).toHaveFocus();
+      });
+    });
+
+    describe('WHEN another format is chosen while the export is still running', () => {
+      beforeEach(async () => {
+        vi.mocked(exportCanvas).mockImplementation(() => new Promise(() => {}));
+        fireEvent.click(exportButton(), { detail: 1 });
+        fireEvent.click(menuItem('PNG'));
+        await act(async () => {
+          await vi.dynamicImportSettled();
+        });
+        fireEvent.click(menuItem('SVG'));
+      });
+
+      test('THEN only the first export runs', () => {
+        expect(exportCanvas).toHaveBeenCalledExactlyOnceWith(root, EXPORT_THREAD_NAME, 'png');
+      });
+    });
+
+    describe('WHEN the user escapes while an export is still running', () => {
+      beforeEach(async () => {
+        vi.mocked(exportCanvas).mockImplementation(() => new Promise(() => {}));
+        fireEvent.click(exportButton(), { detail: 1 });
+        fireEvent.click(menuItem('PNG'));
+        await act(async () => {
+          await vi.dynamicImportSettled();
+        });
         fireEvent.keyDown(window, { key: 'Escape' });
       });
 
-      test('THEN the menu closes at once and focus returns to the button only after the export settles', async () => {
+      test('THEN the menu closes at once while the busy button keeps the focus away', () => {
         expect(screen.queryByRole('menu')).not.toBeInTheDocument();
         expect(loadingButton()).toBeDisabled();
         expect(loadingButton()).not.toHaveFocus();
+      });
+    });
 
-        finishExport('downloaded');
+    describe('WHEN the user escapes while an export is running and the export then settles', () => {
+      beforeEach(async () => {
+        const runningExport = Promise.withResolvers<'downloaded'>();
 
-        await waitFor(() => expect(exportButton()).toHaveFocus());
+        vi.mocked(exportCanvas).mockReturnValue(runningExport.promise);
+        fireEvent.click(exportButton(), { detail: 1 });
+        fireEvent.click(menuItem('PNG'));
+        await act(async () => {
+          await vi.dynamicImportSettled();
+        });
+        fireEvent.keyDown(window, { key: 'Escape' });
+        await act(async () => {
+          runningExport.resolve('downloaded');
+        });
+      });
+
+      test('THEN focus returns to the enabled button', () => {
+        expect(exportButton()).toHaveFocus();
         expect(exportButton()).toBeEnabled();
       });
     });
@@ -218,26 +275,32 @@ describe('ExportMenu', () => {
     });
 
     describe('WHEN a format is chosen and the file downloads', () => {
-      beforeEach(() => {
+      beforeEach(async () => {
         vi.mocked(exportCanvas).mockResolvedValue('downloaded');
-        openWithPointer();
-        chooseFormat('PNG');
+        fireEvent.click(exportButton(), { detail: 1 });
+        fireEvent.click(menuItem('PNG'));
+        await act(async () => {
+          await vi.dynamicImportSettled();
+        });
       });
 
-      test('THEN the guide learns that the canvas was exported', async () => {
-        await waitFor(() => expect(useOnboardingStore.getState().signals.has('canvasExported')).toBe(true));
+      test('THEN the guide learns that the canvas was exported', () => {
+        expect(useOnboardingStore.getState().signals.has('canvasExported')).toBe(true);
       });
     });
 
     describe('WHEN the graph is too large for a bitmap', () => {
-      beforeEach(() => {
+      beforeEach(async () => {
         vi.mocked(exportCanvas).mockResolvedValue('too-large');
-        openWithPointer();
-        chooseFormat('JPG');
+        fireEvent.click(exportButton(), { detail: 1 });
+        fireEvent.click(menuItem('JPG'));
+        await act(async () => {
+          await vi.dynamicImportSettled();
+        });
       });
 
-      test('THEN the guide does not count it as an export', async () => {
-        await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent(copy.tooLarge));
+      test('THEN the guide does not count it as an export', () => {
+        expect(screen.getByRole('status')).toHaveTextContent(TRANSLATIONS.platform.canvas.export.tooLarge);
         expect(useOnboardingStore.getState().signals.has('canvasExported')).toBe(false);
       });
     });
@@ -263,7 +326,7 @@ describe('ExportMenu', () => {
     describe('WHEN the toolbar renders the export action', () => {
       test('THEN the button is disabled and explains why', () => {
         expect(exportButton()).toBeDisabled();
-        expect(exportButton()).toHaveAttribute('title', copy.unavailable);
+        expect(exportButton()).toHaveAttribute('title', TRANSLATIONS.platform.canvas.export.unavailable);
       });
     });
   });
@@ -276,7 +339,7 @@ describe('ExportMenu', () => {
     describe('WHEN the toolbar renders the export action', () => {
       test('THEN the button is disabled and explains why', () => {
         expect(exportButton()).toBeDisabled();
-        expect(exportButton()).toHaveAttribute('title', copy.unavailable);
+        expect(exportButton()).toHaveAttribute('title', TRANSLATIONS.platform.canvas.export.unavailable);
       });
     });
   });

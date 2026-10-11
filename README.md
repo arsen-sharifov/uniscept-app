@@ -37,7 +37,7 @@ Node version is pinned in [`.nvmrc`](./.nvmrc). pnpm is pinned via the `packageM
 | `@interfaces`       | `./src/lib/interfaces`    |
 | `@constants`        | `./src/lib/constants`     |
 | `@hooks`            | `./src/lib/hooks`         |
-| `@api`              | `./src/api`               |
+| `@api/*`            | `./src/api/*`             |
 | `@story-interfaces` | `./.storybook/interfaces` |
 
 Never reach into `src/lib/` via relative paths. ESLint enforces these via `no-restricted-imports`.

@@ -2,8 +2,6 @@ import { COPY } from '../../consts';
 import { expect, test } from '../../fixtures';
 import { addNodeComment, expectSaved, getNode, seedNodes, seedThread, waitForCanvas } from '../../utils';
 
-const { canvas } = COPY.platform;
-
 test.describe('node comments', () => {
   test.describe('GIVEN a canvas node without comments', () => {
     test.beforeEach(async ({ page, workspace, account }) => {
@@ -13,41 +11,39 @@ test.describe('node comments', () => {
       await waitForCanvas(page);
     });
 
-    test.describe('WHEN a comment is posted on the node', () => {
+    test.describe('WHEN a comment is posted on the node and the page is reloaded', () => {
       test.beforeEach(async ({ page }) => {
         await addNodeComment(getNode(page, 'Risky bet'), 'Needs a cost estimate first.');
-        await expectSaved(page);
-      });
-
-      test('THEN the comment is listed on the node after a reload', async ({ page }) => {
         await expect(getNode(page, 'Risky bet')).toContainText('Needs a cost estimate first.');
-
+        await expectSaved(page);
         await page.reload();
         await waitForCanvas(page);
+      });
 
-        await expect(getNode(page, 'Risky bet').getByRole('button', { name: canvas.node.viewComments })).toContainText(
-          '1',
-        );
+      test('THEN the node still counts the comment', async ({ page }) => {
+        await expect(
+          getNode(page, 'Risky bet').getByRole('button', { name: COPY.platform.canvas.node.viewComments }),
+        ).toContainText('1');
       });
     });
 
-    test.describe('WHEN an own comment is posted and deleted again', () => {
+    test.describe('WHEN an own comment is posted, deleted again and the page is reloaded', () => {
       test.beforeEach(async ({ page }) => {
         const node = getNode(page, 'Risky bet');
         await addNodeComment(node, 'Scratch that.');
         await expect(node).toContainText('Scratch that.');
         await node.getByText('Scratch that.').hover();
-        await node.getByRole('button', { name: canvas.comments.deleteAriaLabel }).click();
+        await node.getByRole('button', { name: COPY.platform.canvas.comments.deleteAriaLabel }).click();
+        await expect(node).not.toContainText('Scratch that.');
         await expectSaved(page);
-      });
-
-      test('THEN the node carries no comments after a reload', async ({ page }) => {
-        await expect(getNode(page, 'Risky bet')).not.toContainText('Scratch that.');
-
         await page.reload();
         await waitForCanvas(page);
+      });
 
-        await expect(getNode(page, 'Risky bet').getByRole('button', { name: canvas.node.viewComments })).toHaveCount(0);
+      test('THEN the node carries no comments', async ({ page }) => {
+        await expect(
+          getNode(page, 'Risky bet').getByRole('button', { name: COPY.platform.canvas.node.viewComments }),
+        ).toHaveCount(0);
       });
     });
   });
@@ -65,8 +61,8 @@ test.describe('node comments', () => {
       test.beforeEach(async ({ page }) => {
         const node = getNode(page, 'Risky bet');
         await node.hover();
-        await node.getByRole('button', { name: canvas.node.addComment }).click();
-        await expect(node.getByPlaceholder(canvas.node.addCommentPlaceholder)).toBeVisible();
+        await node.getByRole('button', { name: COPY.platform.canvas.node.addComment }).click();
+        await expect(node.getByPlaceholder(COPY.platform.canvas.node.addCommentPlaceholder)).toBeVisible();
       });
 
       test('THEN the panel sits on top of the newer node', async ({ page }) => {

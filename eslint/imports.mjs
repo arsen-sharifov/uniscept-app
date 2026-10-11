@@ -8,9 +8,9 @@ const restrictedImportPaths = [
   },
   {
     name: 'next-intl',
-    importNames: ['useMessages'],
+    importNames: ['useMessages', 'useTranslations'],
     message:
-      'Use `useTranslations` from `@/i18n` for full `TTranslations`. Use next-intl `useTranslations` directly only when you need scoped reads with interpolation.',
+      'Use `useTranslations` from `@/i18n`: it returns the typed `TTranslations` object and a typed translator, so call `t(key, params)` for interpolation and plurals.',
   },
 ];
 
@@ -18,7 +18,7 @@ const restrictedImportPatterns = [
   {
     group: ['../**/lib/**', '../**/api/**'],
     message:
-      'Use the matching alias (`@interfaces`, `@constants`, `@hooks`, `@api`, or `@/lib/...`) instead of a relative path.',
+      'Use the matching alias (`@interfaces`, `@constants`, `@hooks`, `@api/client`, `@api/server`, or `@/lib/...`) instead of a relative path.',
   },
   {
     group: ['@/lib/interfaces/**'],
@@ -34,7 +34,7 @@ const restrictedImportPatterns = [
   },
   {
     group: ['@/api/**'],
-    message: 'Import via the `@api` barrel.',
+    message: 'Import via the `@api/client` or `@api/server` barrel.',
   },
 ];
 

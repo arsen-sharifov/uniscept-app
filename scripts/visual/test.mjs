@@ -3,7 +3,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { parseArgs } from 'node:util';
 
 const VERSION_PATTERN = /^\d+\.\d+\.\d+$/;
-const STORYBOOK_INDEX_PATH = 'storybook-static/index.html';
+const STORYBOOK_INDEX_PATH = 'artifacts/storybook/index.html';
 const CONTAINER_VOLUMES = [
   `${process.cwd()}:/work`,
   'uniscept-visual-node-modules:/work/node_modules',

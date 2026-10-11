@@ -2,29 +2,31 @@ import type { CollisionDetection } from '@dnd-kit/core';
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
-import type { TNavItem } from '@interfaces';
-
 import { domRect } from '@mocks/browser';
-import { dragEndEvent, dragMoveEvent, dragStartEvent } from '@mocks/dnd';
-import { folderItem, threadItem } from '@mocks/sidebar';
+import {
+  dragEndEvent,
+  dragMoveEvent,
+  dragStartEvent,
+  DND_ROW_RECTS,
+  GAP_POINTER,
+  ROW_HEIGHT,
+  clientRect,
+} from '@mocks/dnd';
+import {
+  BULK_SELECTED,
+  BULK_TREE,
+  DEEP_LAST_TREE,
+  DEEP_TREE,
+  FLAT_TREE,
+  FOLDER_THREADS_TREE,
+  SIDE_SELECTED,
+  SPREAD_SELECTED,
+} from '@mocks/sidebar';
 import { AUTO_EXPAND_DELAY_MS } from '@/components/Sidebar/consts';
 import { useDndTree } from '@/components/Sidebar/hooks';
 
-const ROW_HEIGHT = 32;
-
 const onMoveItem = vi.fn();
 const onBulkMove = vi.fn();
-
-const TREE: TNavItem[] = [folderItem('f1', [threadItem('t1'), threadItem('t2')]), threadItem('t3'), threadItem('t4')];
-
-const BULK_TREE: TNavItem[] = [
-  folderItem('f1', [threadItem('t1')]),
-  folderItem('f2', [threadItem('t2')]),
-  threadItem('t3'),
-];
-
-const BULK_SELECTED = new Set(['f1', 'f2']);
-const SIDE_SELECTED = new Set(['t2', 't3']);
 
 const rowY = (index: number, ratio: number): number => (index + ratio) * ROW_HEIGHT;
 
@@ -42,18 +44,6 @@ const rowsElement = (ids: string[]): HTMLElement => {
   return host;
 };
 
-const clientRect = (top: number, height: number) => ({
-  top,
-  bottom: top + height,
-  left: 0,
-  right: 200,
-  width: 200,
-  height,
-});
-
-const ROW_RECTS = { a: clientRect(0, 32), b: clientRect(40, 32) };
-const GAP_POINTER = { x: 100, y: 36 };
-
 const collisionArgs = (
   pointer: { x: number; y: number },
   rects: Record<string, ReturnType<typeof clientRect>>,
@@ -68,15 +58,13 @@ const collisionArgs = (
   }) as never;
 
 let dnd: { current: ReturnType<typeof useDndTree> };
-let rows: HTMLElement | undefined;
 
 beforeEach(() => {
   vi.useFakeTimers();
 });
 
 afterEach(() => {
-  rows?.remove();
-  rows = undefined;
+  document.body.replaceChildren();
   vi.useRealTimers();
   vi.restoreAllMocks();
 });
@@ -84,7 +72,7 @@ afterEach(() => {
 describe('useDndTree', () => {
   describe('GIVEN a nested tree at rest', () => {
     beforeEach(() => {
-      dnd = renderHook(() => useDndTree({ items: TREE, onMoveItem, onBulkMove })).result;
+      dnd = renderHook(() => useDndTree({ items: FOLDER_THREADS_TREE, onMoveItem, onBulkMove })).result;
     });
 
     describe('WHEN the hook renders', () => {
@@ -139,7 +127,9 @@ describe('useDndTree', () => {
 
   describe('GIVEN an inline edit in progress', () => {
     beforeEach(() => {
-      dnd = renderHook(() => useDndTree({ items: TREE, onMoveItem, onBulkMove, editingId: 't1' })).result;
+      dnd = renderHook(() =>
+        useDndTree({ items: FOLDER_THREADS_TREE, onMoveItem, onBulkMove, editingId: 't1' }),
+      ).result;
     });
 
     describe('WHEN a drag starts on a row', () => {
@@ -154,11 +144,150 @@ describe('useDndTree', () => {
     });
   });
 
+  describe('GIVEN a root thread dragged with the keyboard', () => {
+    beforeEach(() => {
+      dnd = renderHook(() => useDndTree({ items: FOLDER_THREADS_TREE, onMoveItem, onBulkMove })).result;
+      act(() => dnd.current.handleDragStart(dragStartEvent('t4')));
+    });
+
+    describe('WHEN it steps up onto the thread above and drops', () => {
+      beforeEach(() => {
+        act(() => dnd.current.handleDragMove(dragMoveEvent('t3')));
+        act(() => dnd.current.handleDragEnd(dragEndEvent('t4', 't3')));
+      });
+
+      test('THEN it lands before that thread', () => {
+        expect(onMoveItem).toHaveBeenCalledExactlyOnceWith('t4', null, 1);
+      });
+    });
+
+    describe('WHEN it steps back down onto its own slot', () => {
+      beforeEach(() => {
+        act(() => dnd.current.handleDragMove(dragMoveEvent('t3')));
+        act(() => dnd.current.handleDragMove(dragMoveEvent('t4')));
+      });
+
+      test('THEN no drop is projected', () => {
+        expect(dnd.current.projected).toBeNull();
+      });
+    });
+  });
+
+  describe('GIVEN a folder holding a subfolder dragged across the tree', () => {
+    beforeEach(() => {
+      dnd = renderHook(() => useDndTree({ items: DEEP_TREE, onMoveItem, onBulkMove })).result;
+      document.body.append(rowsElement(['f1', 't1', 'fD', 't3', 't4']));
+      act(() => dnd.current.handleDragStart(dragStartEvent('fD')));
+    });
+
+    describe('WHEN it hovers beside a thread nested in another folder', () => {
+      beforeEach(() => {
+        act(() => dnd.current.handleDragMove(dragMoveEvent('t1', rowY(1, 0.8))));
+      });
+
+      test('THEN no drop is projected because its subtree would exceed the depth limit', () => {
+        expect(dnd.current.projected).toBeNull();
+      });
+    });
+
+    describe('WHEN it is dropped there', () => {
+      beforeEach(() => {
+        act(() => dnd.current.handleDragMove(dragMoveEvent('t1', rowY(1, 0.8))));
+        act(() => dnd.current.handleDragEnd(dragEndEvent('fD', 't1')));
+      });
+
+      test('THEN nothing moves', () => {
+        expect(onMoveItem).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('WHEN it is dropped on the body of another root folder', () => {
+      beforeEach(() => {
+        act(() => dnd.current.handleDragMove(dragMoveEvent('f1', rowY(0, 0.6))));
+        act(() => dnd.current.handleDragEnd(dragEndEvent('fD', 'f1')));
+      });
+
+      test('THEN it stays at the root, placed before that folder', () => {
+        expect(onMoveItem).toHaveBeenCalledExactlyOnceWith('fD', null, 0);
+      });
+    });
+  });
+
+  describe('GIVEN a folder holding a subfolder above a folder that ends the tree', () => {
+    beforeEach(() => {
+      dnd = renderHook(() => useDndTree({ items: DEEP_LAST_TREE, onMoveItem, onBulkMove })).result;
+      document.body.append(rowsElement(['fD', 'f1', 't1']));
+      act(() => dnd.current.handleDragStart(dragStartEvent('fD')));
+    });
+
+    describe('WHEN it is dropped below the last nested row', () => {
+      beforeEach(() => {
+        act(() => dnd.current.handleDragMove(dragMoveEvent('t1', 200)));
+        act(() => dnd.current.handleDragEnd(dragEndEvent('fD', 't1')));
+      });
+
+      test('THEN it still moves to the end of the root', () => {
+        expect(onMoveItem).toHaveBeenCalledExactlyOnceWith('fD', null, 1);
+      });
+    });
+  });
+
+  describe('GIVEN the nested thread that ends the tree dragged down past its own row', () => {
+    beforeEach(() => {
+      dnd = renderHook(() => useDndTree({ items: DEEP_LAST_TREE, onMoveItem, onBulkMove })).result;
+      document.body.append(rowsElement(['fD', 'fE', 'f1', 't1']));
+      act(() => dnd.current.handleDragStart(dragStartEvent('t1')));
+      act(() => dnd.current.handleDragMove(dragMoveEvent('t1', 200)));
+    });
+
+    describe('WHEN it is dropped there', () => {
+      beforeEach(() => {
+        act(() => dnd.current.handleDragEnd(dragEndEvent('t1', 't1')));
+      });
+
+      test('THEN it leaves the folder for the end of the root', () => {
+        expect(onMoveItem).toHaveBeenCalledExactlyOnceWith('t1', null, 2);
+      });
+    });
+  });
+
+  describe('GIVEN a thread dragged together with a selected folder holding a subfolder', () => {
+    beforeEach(() => {
+      dnd = renderHook(() =>
+        useDndTree({ items: DEEP_TREE, onMoveItem, onBulkMove, selectedIds: new Set(['t3', 'fD']) }),
+      ).result;
+      document.body.append(rowsElement(['f1', 't1', 'fD', 't3', 't4']));
+      act(() => dnd.current.handleDragStart(dragStartEvent('t3')));
+    });
+
+    describe('WHEN the pair is dropped beside a nested thread', () => {
+      beforeEach(() => {
+        act(() => dnd.current.handleDragMove(dragMoveEvent('t1', rowY(1, 0.8))));
+        act(() => dnd.current.handleDragEnd(dragEndEvent('t3', 't1')));
+      });
+
+      test('THEN the deepest selected subtree blocks the drop', () => {
+        expect(dnd.current.projected).toBeNull();
+        expect(onBulkMove).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('WHEN the pair is dropped at the top of the root', () => {
+      beforeEach(() => {
+        act(() => dnd.current.handleDragMove(dragMoveEvent('f1', rowY(0, 0.1))));
+        act(() => dnd.current.handleDragEnd(dragEndEvent('t3', 'f1')));
+      });
+
+      test('THEN the whole selection moves in one bulk call', () => {
+        expect(onBulkMove).toHaveBeenCalledExactlyOnceWith(new Set(['t3', 'fD']), null, 0);
+      });
+    });
+  });
+
   describe('GIVEN a folder dragged across the tree', () => {
     beforeEach(() => {
-      dnd = renderHook(() => useDndTree({ items: TREE, onMoveItem, onBulkMove })).result;
-      rows = rowsElement(['f1', 't3', 't4']);
-      document.body.append(rows);
+      dnd = renderHook(() => useDndTree({ items: FOLDER_THREADS_TREE, onMoveItem, onBulkMove })).result;
+      document.body.append(rowsElement(['f1', 't3', 't4']));
     });
 
     describe('WHEN the drag starts on the expanded folder', () => {
@@ -219,7 +348,7 @@ describe('useDndTree', () => {
       });
 
       test('THEN the folder moves after the thread at the root', () => {
-        expect(onMoveItem).toHaveBeenCalledExactlyOnceWith('f1', 'folder', null, 1);
+        expect(onMoveItem).toHaveBeenCalledExactlyOnceWith('f1', null, 1);
       });
 
       test('THEN the drag state resets and the folder reopens after the drop', () => {
@@ -232,9 +361,8 @@ describe('useDndTree', () => {
 
   describe('GIVEN a thread dragged out of its folder', () => {
     beforeEach(() => {
-      dnd = renderHook(() => useDndTree({ items: TREE, onMoveItem, onBulkMove })).result;
-      rows = rowsElement(['f1', 't1', 't2', 't3', 't4']);
-      document.body.append(rows);
+      dnd = renderHook(() => useDndTree({ items: FOLDER_THREADS_TREE, onMoveItem, onBulkMove })).result;
+      document.body.append(rowsElement(['f1', 't1', 't2', 't3', 't4']));
       act(() => dnd.current.handleDragStart(dragStartEvent('t1')));
     });
 
@@ -334,7 +462,7 @@ describe('useDndTree', () => {
       });
 
       test('THEN the thread moves to the root before that row', () => {
-        expect(onMoveItem).toHaveBeenCalledExactlyOnceWith('t1', 'thread', null, 1);
+        expect(onMoveItem).toHaveBeenCalledExactlyOnceWith('t1', null, 1);
       });
     });
 
@@ -345,16 +473,15 @@ describe('useDndTree', () => {
       });
 
       test('THEN the thread moves to the end of the root', () => {
-        expect(onMoveItem).toHaveBeenCalledExactlyOnceWith('t1', 'thread', null, 3);
+        expect(onMoveItem).toHaveBeenCalledExactlyOnceWith('t1', null, 3);
       });
     });
   });
 
   describe('GIVEN a thread dragged over folder rows', () => {
     beforeEach(() => {
-      dnd = renderHook(() => useDndTree({ items: TREE, onMoveItem, onBulkMove })).result;
-      rows = rowsElement(['f1', 't1', 't2', 't3', 't4']);
-      document.body.append(rows);
+      dnd = renderHook(() => useDndTree({ items: FOLDER_THREADS_TREE, onMoveItem, onBulkMove })).result;
+      document.body.append(rowsElement(['f1', 't1', 't2', 't3', 't4']));
       act(() => dnd.current.handleDragStart(dragStartEvent('t3')));
     });
 
@@ -407,7 +534,7 @@ describe('useDndTree', () => {
       });
 
       test('THEN the thread moves into the folder at the first slot', () => {
-        expect(onMoveItem).toHaveBeenCalledExactlyOnceWith('t3', 'thread', 'f1', 0);
+        expect(onMoveItem).toHaveBeenCalledExactlyOnceWith('t3', 'f1', 0);
       });
     });
 
@@ -418,7 +545,7 @@ describe('useDndTree', () => {
       });
 
       test('THEN the thread moves into the folder after that child', () => {
-        expect(onMoveItem).toHaveBeenCalledExactlyOnceWith('t3', 'thread', 'f1', 1);
+        expect(onMoveItem).toHaveBeenCalledExactlyOnceWith('t3', 'f1', 1);
       });
     });
 
@@ -448,10 +575,9 @@ describe('useDndTree', () => {
 
   describe('GIVEN a thread dragged over a collapsed folder', () => {
     beforeEach(() => {
-      dnd = renderHook(() => useDndTree({ items: TREE, onMoveItem, onBulkMove })).result;
+      dnd = renderHook(() => useDndTree({ items: FOLDER_THREADS_TREE, onMoveItem, onBulkMove })).result;
       act(() => dnd.current.toggleCollapse('f1'));
-      rows = rowsElement(['f1', 't3', 't4']);
-      document.body.append(rows);
+      document.body.append(rowsElement(['f1', 't3', 't4']));
       act(() => dnd.current.handleDragStart(dragStartEvent('t4')));
     });
 
@@ -519,7 +645,7 @@ describe('useDndTree', () => {
       });
 
       test('THEN the thread moves into the still collapsed folder', () => {
-        expect(onMoveItem).toHaveBeenCalledExactlyOnceWith('t4', 'thread', 'f1', 0);
+        expect(onMoveItem).toHaveBeenCalledExactlyOnceWith('t4', 'f1', 0);
         expect(dnd.current.sortedIds).toEqual(['f1', 't3', 't4']);
       });
     });
@@ -530,8 +656,7 @@ describe('useDndTree', () => {
       dnd = renderHook(() =>
         useDndTree({ items: BULK_TREE, onMoveItem, onBulkMove, selectedIds: BULK_SELECTED }),
       ).result;
-      rows = rowsElement(['f1', 'f2', 't3']);
-      document.body.append(rows);
+      document.body.append(rowsElement(['f1', 'f2', 't3']));
     });
 
     describe('WHEN the drag starts on a selected folder', () => {
@@ -551,8 +676,8 @@ describe('useDndTree', () => {
         act(() => dnd.current.handleDragEnd(dragEndEvent('f1', 't3')));
       });
 
-      test('THEN the whole selection moves in one bulk call', () => {
-        expect(onBulkMove).toHaveBeenCalledExactlyOnceWith(new Set(['f1', 'f2']), null, 2);
+      test('THEN the whole selection moves in one bulk call to the end of the rows that stay', () => {
+        expect(onBulkMove).toHaveBeenCalledExactlyOnceWith(new Set(['f1', 'f2']), null, 1);
         expect(onMoveItem).not.toHaveBeenCalled();
       });
 
@@ -562,13 +687,54 @@ describe('useDndTree', () => {
     });
   });
 
+  describe('GIVEN a bulk drag whose other selected row sits above the drop slot', () => {
+    beforeEach(() => {
+      dnd = renderHook(() =>
+        useDndTree({ items: FLAT_TREE, onMoveItem, onBulkMove, selectedIds: SPREAD_SELECTED }),
+      ).result;
+      document.body.append(rowsElement(['t1', 't2', 't3', 't4', 't5']));
+      act(() => dnd.current.handleDragStart(dragStartEvent('t4')));
+    });
+
+    describe('WHEN the drop lands before the row between them', () => {
+      beforeEach(() => {
+        act(() => dnd.current.handleDragMove(dragMoveEvent('t3', rowY(2, 0.2))));
+        act(() => dnd.current.handleDragEnd(dragEndEvent('t4', 't3')));
+      });
+
+      test('THEN the slot is counted among the rows that stay', () => {
+        expect(onBulkMove).toHaveBeenCalledExactlyOnceWith(SPREAD_SELECTED, null, 1);
+      });
+    });
+
+    describe('WHEN the drop lands back on the dragged row own slot', () => {
+      beforeEach(() => {
+        act(() => dnd.current.handleDragMove(dragMoveEvent('t3', rowY(2, 0.8))));
+      });
+
+      test('THEN the slot stays a target because the other selected row moves there too', () => {
+        expect(dnd.current.projected).toEqual({ depth: 0, parentId: null, zone: 'after' });
+      });
+    });
+
+    describe('WHEN the drop on the dragged row own slot ends', () => {
+      beforeEach(() => {
+        act(() => dnd.current.handleDragMove(dragMoveEvent('t3', rowY(2, 0.8))));
+        act(() => dnd.current.handleDragEnd(dragEndEvent('t4', 't3')));
+      });
+
+      test('THEN the selection gathers at that slot among the rows that stay', () => {
+        expect(onBulkMove).toHaveBeenCalledExactlyOnceWith(SPREAD_SELECTED, null, 2);
+      });
+    });
+  });
+
   describe('GIVEN a multi selection that skips the dragged row', () => {
     beforeEach(() => {
       dnd = renderHook(() =>
         useDndTree({ items: BULK_TREE, onMoveItem, onBulkMove, selectedIds: SIDE_SELECTED }),
       ).result;
-      rows = rowsElement(['f1', 'f2', 't2', 't3']);
-      document.body.append(rows);
+      document.body.append(rowsElement(['f1', 'f2', 't2', 't3']));
     });
 
     describe('WHEN the drag starts on the unselected folder', () => {
@@ -589,7 +755,7 @@ describe('useDndTree', () => {
       });
 
       test('THEN the folder moves alone', () => {
-        expect(onMoveItem).toHaveBeenCalledExactlyOnceWith('f1', 'folder', null, 2);
+        expect(onMoveItem).toHaveBeenCalledExactlyOnceWith('f1', null, 2);
         expect(onBulkMove).not.toHaveBeenCalled();
       });
     });
@@ -597,12 +763,12 @@ describe('useDndTree', () => {
 
   describe('GIVEN collision detection over droppable rects', () => {
     beforeEach(() => {
-      dnd = renderHook(() => useDndTree({ items: TREE, onMoveItem, onBulkMove })).result;
+      dnd = renderHook(() => useDndTree({ items: FOLDER_THREADS_TREE, onMoveItem, onBulkMove })).result;
     });
 
     describe('WHEN the pointer rests inside a row', () => {
       test('THEN the hovered row wins', () => {
-        expect(dnd.current.collisionDetection(collisionArgs({ x: 100, y: 16 }, ROW_RECTS))).toMatchObject([
+        expect(dnd.current.collisionDetection(collisionArgs({ x: 100, y: 16 }, DND_ROW_RECTS))).toMatchObject([
           { id: 'a' },
         ]);
       });
@@ -610,17 +776,17 @@ describe('useDndTree', () => {
 
     describe('WHEN the pointer slips into a gap after hovering a row', () => {
       beforeEach(() => {
-        dnd.current.collisionDetection(collisionArgs({ x: 100, y: 16 }, ROW_RECTS));
+        dnd.current.collisionDetection(collisionArgs({ x: 100, y: 16 }, DND_ROW_RECTS));
       });
 
       test('THEN the last hovered row stays sticky', () => {
-        expect(dnd.current.collisionDetection(collisionArgs(GAP_POINTER, ROW_RECTS))).toEqual([{ id: 'a' }]);
+        expect(dnd.current.collisionDetection(collisionArgs(GAP_POINTER, DND_ROW_RECTS))).toEqual([{ id: 'a' }]);
       });
     });
 
     describe('WHEN the sticky row leaves the droppable set', () => {
       beforeEach(() => {
-        dnd.current.collisionDetection(collisionArgs({ x: 100, y: 16 }, ROW_RECTS));
+        dnd.current.collisionDetection(collisionArgs({ x: 100, y: 16 }, DND_ROW_RECTS));
       });
 
       test('THEN the nearest center takes over', () => {
@@ -632,7 +798,7 @@ describe('useDndTree', () => {
 
     describe('WHEN no row was hovered yet', () => {
       test('THEN the centers rank the rows', () => {
-        expect(dnd.current.collisionDetection(collisionArgs(GAP_POINTER, ROW_RECTS, 48))).toMatchObject([
+        expect(dnd.current.collisionDetection(collisionArgs(GAP_POINTER, DND_ROW_RECTS, 48))).toMatchObject([
           { id: 'b' },
           { id: 'a' },
         ]);
@@ -641,12 +807,12 @@ describe('useDndTree', () => {
 
     describe('WHEN a new drag starts after a hover', () => {
       beforeEach(() => {
-        dnd.current.collisionDetection(collisionArgs({ x: 100, y: 16 }, ROW_RECTS));
+        dnd.current.collisionDetection(collisionArgs({ x: 100, y: 16 }, DND_ROW_RECTS));
         act(() => dnd.current.handleDragStart(dragStartEvent('t3')));
       });
 
       test('THEN the sticky memory resets', () => {
-        expect(dnd.current.collisionDetection(collisionArgs(GAP_POINTER, ROW_RECTS, 48))).toMatchObject([
+        expect(dnd.current.collisionDetection(collisionArgs(GAP_POINTER, DND_ROW_RECTS, 48))).toMatchObject([
           { id: 'b' },
           { id: 'a' },
         ]);

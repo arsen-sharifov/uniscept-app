@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test } from 'vitest';
 
-import { EDIT_ACCESS, FULL_ACCESS } from '@mocks/roles';
+import { EDIT_ACCESS, FULL_ACCESS, READONLY_ACCESS } from '@mocks/roles';
 import { usePermissionsStore } from '@/lib/stores';
 
 afterEach(() => {
@@ -14,17 +14,12 @@ describe('permissionsStore', () => {
         usePermissionsStore.getState().setAccess('ws-1', 'user-1', EDIT_ACCESS);
       });
 
-      test('THEN the workspace, user and permissions are stored', () => {
+      test('THEN the workspace, user and permissions are stored as resolved', () => {
         expect(usePermissionsStore.getState()).toMatchObject({
           workspaceId: 'ws-1',
           userId: 'user-1',
-          isOwner: false,
-          canEditCanvas: true,
-          canComment: true,
-          canManageStructure: false,
-          canManageMembers: false,
-          canManageRoles: false,
-          canManageWorkspace: false,
+          resolved: true,
+          ...EDIT_ACCESS,
         });
       });
     });
@@ -35,17 +30,7 @@ describe('permissionsStore', () => {
       });
 
       test('THEN every permission flag lands on its own field', () => {
-        expect(usePermissionsStore.getState()).toMatchObject({
-          workspaceId: 'ws-1',
-          userId: 'user-1',
-          isOwner: true,
-          canEditCanvas: true,
-          canComment: true,
-          canManageStructure: true,
-          canManageMembers: true,
-          canManageRoles: true,
-          canManageWorkspace: true,
-        });
+        expect(usePermissionsStore.getState()).toMatchObject({ workspaceId: 'ws-1', userId: 'user-1', ...FULL_ACCESS });
       });
     });
 
@@ -54,17 +39,12 @@ describe('permissionsStore', () => {
         usePermissionsStore.getState().setAccess('ws-1', 'user-1', null);
       });
 
-      test('THEN every permission falls back to denied', () => {
+      test('THEN the access resolves with every permission denied', () => {
         expect(usePermissionsStore.getState()).toMatchObject({
           workspaceId: 'ws-1',
           userId: 'user-1',
-          isOwner: false,
-          canEditCanvas: false,
-          canComment: false,
-          canManageStructure: false,
-          canManageMembers: false,
-          canManageRoles: false,
-          canManageWorkspace: false,
+          resolved: true,
+          ...READONLY_ACCESS,
         });
       });
     });
@@ -84,13 +64,23 @@ describe('permissionsStore', () => {
         expect(usePermissionsStore.getState()).toMatchObject({
           workspaceId: null,
           userId: null,
-          isOwner: false,
-          canEditCanvas: false,
-          canComment: false,
-          canManageStructure: false,
-          canManageMembers: false,
-          canManageRoles: false,
-          canManageWorkspace: false,
+          resolved: false,
+          ...READONLY_ACCESS,
+        });
+      });
+    });
+
+    describe('WHEN access is cleared for a workspace that is about to load', () => {
+      beforeEach(() => {
+        usePermissionsStore.getState().clearAccess('ws-2');
+      });
+
+      test('THEN the pending workspace is kept with nothing resolved or granted', () => {
+        expect(usePermissionsStore.getState()).toMatchObject({
+          workspaceId: 'ws-2',
+          userId: null,
+          resolved: false,
+          ...READONLY_ACCESS,
         });
       });
     });

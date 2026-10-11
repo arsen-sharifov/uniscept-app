@@ -39,8 +39,9 @@ describe('useToolbar', () => {
         ]);
       });
 
-      test('THEN the select tool is active', () => {
+      test('THEN the select tool is active and no group waits for loading', () => {
         expect(toolbar.current.activeTool).toBe(ECanvasTool.Select);
+        expect(toolbar.current.pendingGroups).toEqual([]);
       });
 
       test('THEN only the history tools are disabled', () => {
@@ -158,6 +159,48 @@ describe('useToolbar', () => {
           expect.objectContaining({ id: ECanvasTool.Undo, disabled: false }),
           expect.objectContaining({ id: ECanvasTool.Redo, disabled: true }),
         ]);
+      });
+    });
+  });
+
+  describe('GIVEN a workspace that is still loading', () => {
+    beforeEach(() => {
+      toolbar = renderHook(() => useToolbar(true)).result;
+    });
+
+    describe('WHEN the toolbar renders', () => {
+      test('THEN every group waits as a placeholder', () => {
+        expect(toolbar.current.pendingGroups.map((group) => group.id)).toEqual([
+          'navigate',
+          'history',
+          'build',
+          'decide',
+          'link',
+        ]);
+      });
+    });
+  });
+
+  describe('GIVEN a workspace whose grants are still being resolved', () => {
+    beforeEach(() => {
+      usePermissionsStore.getState().clearAccess('ws-1');
+      toolbar = renderHook(() => useToolbar()).result;
+    });
+
+    describe('WHEN the grants arrive', () => {
+      beforeEach(() => {
+        act(() => usePermissionsStore.getState().setAccess('ws-1', 'user-1', EDIT_ACCESS));
+      });
+
+      test('THEN the placeholder groups give way to the tools', () => {
+        expect(toolbar.current.pendingGroups).toEqual([]);
+        expect(toolbar.current.groups).toHaveLength(5);
+      });
+    });
+
+    describe('WHEN the toolbar renders before the grants arrive', () => {
+      test('THEN the groups wait as placeholders', () => {
+        expect(toolbar.current.pendingGroups).toHaveLength(5);
       });
     });
   });

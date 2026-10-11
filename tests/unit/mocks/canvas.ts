@@ -1,10 +1,24 @@
-import type { Edge, Node } from '@xyflow/react';
+import {
+  type Edge,
+  type EdgeProps,
+  type Node,
+  type NodeProps,
+  Position,
+  ReactFlowProvider,
+  type Transform,
+  useStoreApi,
+} from '@xyflow/react';
+import { createElement, type ReactNode, useState } from 'react';
+import { vi } from 'vitest';
 
 import {
   ECanvasNodeType,
   type IComment,
   type ICanvasNodeData,
   type INodeReference,
+  type IReferenceNodeData,
+  type ISaveState,
+  type TCanvasEdge,
   type TCanvasNode,
   type TCanvasOperation,
   type TNodeStatus,
@@ -12,6 +26,8 @@ import {
 } from '@interfaces';
 
 export const THREAD_ID = 'thread-1';
+
+export const Canvas = vi.fn(() => null);
 
 export const createNodeOp = (id: string): TCanvasOperation => ({
   type: 'createCanvasNode',
@@ -73,14 +89,14 @@ export const canvasNode = (id: string, data?: Partial<ICanvasNodeData>): TCanvas
   data: { label: `Node ${id}`, status: null, isAnswer: false, comments: [], ...data },
 });
 
-export const questionNode = (id: string): TCanvasNode => ({
+export const questionNode = (id: string, label = 'Main question'): TCanvasNode => ({
   id,
   type: ECanvasNodeType.Question,
   position: { x: 0, y: 0 },
-  data: { label: 'Main question', status: null, isAnswer: false, comments: [] },
+  data: { label, status: null, isAnswer: false, comments: [] },
 });
 
-export const referenceNode = (id: string): TReferenceNode => ({
+export const referenceNode = (id: string, data?: Partial<IReferenceNodeData>): TReferenceNode => ({
   id,
   type: ECanvasNodeType.Reference,
   position: { x: 0, y: 0 },
@@ -92,6 +108,7 @@ export const referenceNode = (id: string): TReferenceNode => ({
     sourceThreadName: 'Other thread',
     sourceWorkspaceId: 'ws-2',
     sourceWorkspaceName: 'Other workspace',
+    ...data,
   },
 });
 
@@ -104,6 +121,24 @@ export const createReferenceNodeOp = (id: string): TCanvasOperation => ({
   data: referenceNode(id).data,
 });
 
+export const nodeProps = <TNode extends Node>(node: TNode, selected = false): NodeProps<TNode> =>
+  ({
+    id: node.id,
+    data: node.data,
+    selected,
+    type: node.type,
+    dragging: false,
+    zIndex: 0,
+    isConnectable: true,
+    positionAbsoluteX: 0,
+    positionAbsoluteY: 0,
+    selectable: true,
+    deletable: true,
+    draggable: true,
+    width: 240,
+    height: 96,
+  }) as unknown as NodeProps<TNode>;
+
 export const canvasEdge = (id: string, source: string, target: string): Edge => ({
   id,
   source,
@@ -112,6 +147,45 @@ export const canvasEdge = (id: string, source: string, target: string): Edge => 
   targetHandle: 'left',
   type: 'default',
 });
+
+export const edgeProps = (edge: TCanvasEdge): EdgeProps<TCanvasEdge> =>
+  ({
+    id: edge.id,
+    source: edge.source,
+    target: edge.target,
+    sourceHandleId: edge.sourceHandle,
+    targetHandleId: edge.targetHandle,
+    sourceX: 0,
+    sourceY: 0,
+    targetX: 200,
+    targetY: 100,
+    sourcePosition: Position.Right,
+    targetPosition: Position.Left,
+    style: edge.style,
+    data: edge.data,
+  }) as EdgeProps<TCanvasEdge>;
+
+export const overflowLabels = () => {
+  Object.defineProperty(HTMLParagraphElement.prototype, 'scrollHeight', { configurable: true, value: 200 });
+  Object.defineProperty(HTMLParagraphElement.prototype, 'clientHeight', { configurable: true, value: 100 });
+};
+
+export const resetLabelOverflow = () => {
+  Reflect.deleteProperty(HTMLParagraphElement.prototype, 'scrollHeight');
+  Reflect.deleteProperty(HTMLParagraphElement.prototype, 'clientHeight');
+};
+
+const PANNED_TRANSFORM: Transform = [20, 40, 2];
+
+const PannedViewport = ({ children }: { children: ReactNode }) => {
+  const flow = useStoreApi();
+  useState(() => flow.setState({ domNode: document.createElement('div'), transform: PANNED_TRANSFORM }));
+
+  return children;
+};
+
+export const PannedFlowProvider = ({ children }: { children: ReactNode }) =>
+  createElement(ReactFlowProvider, null, createElement(PannedViewport, null, children));
 
 export const measuredNode = (id: string, x: number, y: number, width: number, height: number): Node => ({
   id,
@@ -141,3 +215,20 @@ export const nodeReference = (id: string): INodeReference => ({
   workspaceId: 'ws-1',
   workspaceName: 'Workspace one',
 });
+
+export const saveState = (overrides: Partial<ISaveState>): ISaveState => ({
+  status: 'idle',
+  lastSavedAt: null,
+  retryAttempt: 0,
+  pendingCount: 0,
+  failedCount: 0,
+  ...overrides,
+});
+
+export const WORKSPACE_ID = 'ws-1';
+export const REFERENCE_TARGET_URL = '/platform/ws-2/th-2?focus=ref&node=origin';
+
+export const CANVAS_CONTENT = {
+  nodes: [questionNode('q'), canvasNode('n1')],
+  edges: [canvasEdge('e1', 'q', 'n1')],
+};

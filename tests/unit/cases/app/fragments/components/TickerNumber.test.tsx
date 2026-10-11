@@ -1,9 +1,10 @@
 import { act, cleanup, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { stubAnimationFrame, stubIntersectionObserver, stubMediaQueries } from '@mocks/browser';
+import { REDUCED_MOTION_QUERY } from '@constants';
+import { stubAnimationFrame, stubIntersectionObserver, stubMediaQueries, stubPerformanceNow } from '@mocks/browser';
 import { TickerNumber } from '@/app/fragments/components';
-import { REDUCED_MOTION_QUERY } from '@/app/fragments/consts';
+import { TICKER_DURATION_MS } from '@/app/fragments/consts';
 
 let frames: ReturnType<typeof stubAnimationFrame>;
 let visibility: ReturnType<typeof stubIntersectionObserver>;
@@ -13,6 +14,7 @@ beforeEach(() => {
   frames = stubAnimationFrame();
   visibility = stubIntersectionObserver();
   media = stubMediaQueries();
+  stubPerformanceNow();
 });
 
 afterEach(() => {
@@ -25,6 +27,28 @@ describe('TickerNumber', () => {
     beforeEach(() => {
       render(<TickerNumber value={100} />);
       act(() => visibility.intersect());
+    });
+
+    describe('WHEN half of the count-up has run', () => {
+      beforeEach(() => {
+        act(() => frames.flush(TICKER_DURATION_MS / 2));
+      });
+
+      test('THEN the price has eased most of the way up and keeps counting', () => {
+        expect(screen.getByText('88')).toBeInTheDocument();
+        expect(frames.pending()).toBe(1);
+      });
+    });
+
+    describe('WHEN the whole count-up has run', () => {
+      beforeEach(() => {
+        act(() => frames.flush(TICKER_DURATION_MS));
+      });
+
+      test('THEN the final price shows and counting stops', () => {
+        expect(screen.getByText('100')).toBeInTheDocument();
+        expect(frames.pending()).toBe(0);
+      });
     });
 
     describe('WHEN its card unmounts', () => {

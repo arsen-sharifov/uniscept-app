@@ -1,32 +1,12 @@
 import { act, cleanup, renderHook, type RenderHookResult } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
-import type { IAnchorRect, ITrackedGeometry } from '@interfaces';
-import { ANCHOR_SEPARATOR, LOST_TARGET_MS } from '@constants';
-import { domRect, stubAnimationFrame, stubPerformanceNow } from '@mocks/browser';
+import type { ITrackedGeometry } from '@interfaces';
+import { LOST_TARGET_MS } from '@constants';
+import { domRect, elementAt, stubAnimationFrame, stubPerformanceNow } from '@mocks/browser';
+import { FRAME_MS, HELP_RECT, MOVED_RECT, COVER_RECT, CREATE_RECT, SWITCHER_RECT } from '@mocks/geometry';
+import { WORKSPACE_ANCHORS } from '@mocks/onboarding';
 import { useTourGeometry } from '@/components/Tour/hooks';
-
-const FRAME_MS = 16;
-
-const HELP_RECT: IAnchorRect = { top: 820, left: 1380, width: 36, height: 36 };
-
-const MOVED_RECT: IAnchorRect = { top: 760, left: 1380, width: 36, height: 36 };
-
-const COVER_RECT: IAnchorRect = { top: 40, left: 150, width: 1240, height: 820 };
-
-const CREATE_RECT: IAnchorRect = { top: 130, left: 180, width: 90, height: 24 };
-
-const SWITCHER_RECT: IAnchorRect = { top: 60, left: 10, width: 250, height: 50 };
-
-const WORKSPACE_ANCHORS = ['sidebarWorkspaceCreate', 'sidebarWorkspaceSwitcher'].join(ANCHOR_SEPARATOR);
-
-const boxAt = (attributes: Record<string, string>, rect: IAnchorRect): HTMLElement => {
-  const element = document.createElement('div');
-  Object.entries(attributes).forEach(([name, value]) => element.setAttribute(name, value));
-  vi.spyOn(element, 'getBoundingClientRect').mockReturnValue(domRect(rect));
-
-  return element;
-};
 
 let frames: ReturnType<typeof stubAnimationFrame>;
 let clock: ReturnType<typeof stubPerformanceNow>;
@@ -52,7 +32,7 @@ afterEach(() => {
 describe('useTourGeometry', () => {
   describe('GIVEN a step whose target is on screen', () => {
     beforeEach(() => {
-      document.body.append(boxAt({ 'data-tour': 'toolbarHelp' }, HELP_RECT));
+      document.body.append(elementAt({ 'data-tour': 'toolbarHelp' }, HELP_RECT));
       view = renderHook(({ anchorKey }: { anchorKey: string }) => useTourGeometry(anchorKey, ''), {
         initialProps: { anchorKey: 'toolbarHelp' },
       });
@@ -82,7 +62,7 @@ describe('useTourGeometry', () => {
     let target: HTMLElement;
 
     beforeEach(() => {
-      target = boxAt({ 'data-tour': 'toolbarHelp' }, HELP_RECT);
+      target = elementAt({ 'data-tour': 'toolbarHelp' }, HELP_RECT);
       document.body.append(target);
       view = renderHook(({ anchorKey }: { anchorKey: string }) => useTourGeometry(anchorKey, ''), {
         initialProps: { anchorKey: 'toolbarHelp' },
@@ -110,7 +90,7 @@ describe('useTourGeometry', () => {
 
     describe('WHEN a dialog covers it for less than the lost-target delay', () => {
       beforeEach(() => {
-        document.body.append(boxAt({ role: 'dialog' }, COVER_RECT));
+        document.body.append(elementAt({ role: 'dialog' }, COVER_RECT));
         clock.advance(FRAME_MS);
         act(() => frames.flush());
         clock.advance(LOST_TARGET_MS - 1);
@@ -129,7 +109,7 @@ describe('useTourGeometry', () => {
 
     describe('WHEN the dialog stays over it for the whole delay', () => {
       beforeEach(() => {
-        document.body.append(boxAt({ role: 'dialog' }, COVER_RECT));
+        document.body.append(elementAt({ role: 'dialog' }, COVER_RECT));
         clock.advance(FRAME_MS);
         act(() => frames.flush());
         clock.advance(LOST_TARGET_MS);
@@ -221,7 +201,10 @@ describe('useTourGeometry', () => {
 
   describe('GIVEN a step whose target a dialog covers from the start', () => {
     beforeEach(() => {
-      document.body.append(boxAt({ 'data-tour': 'toolbarHelp' }, HELP_RECT), boxAt({ role: 'dialog' }, COVER_RECT));
+      document.body.append(
+        elementAt({ 'data-tour': 'toolbarHelp' }, HELP_RECT),
+        elementAt({ role: 'dialog' }, COVER_RECT),
+      );
       view = renderHook(({ anchorKey }: { anchorKey: string }) => useTourGeometry(anchorKey, ''), {
         initialProps: { anchorKey: 'toolbarHelp' },
       });
@@ -241,7 +224,10 @@ describe('useTourGeometry', () => {
 
   describe('GIVEN a target that a dialog already covers', () => {
     beforeEach(() => {
-      document.body.append(boxAt({ 'data-tour': 'toolbarHelp' }, HELP_RECT), boxAt({ role: 'dialog' }, COVER_RECT));
+      document.body.append(
+        elementAt({ 'data-tour': 'toolbarHelp' }, HELP_RECT),
+        elementAt({ role: 'dialog' }, COVER_RECT),
+      );
       view = renderHook(({ anchorKey }: { anchorKey: string }) => useTourGeometry(anchorKey, ''), {
         initialProps: { anchorKey: 'toolbarHelp' },
       });
@@ -272,8 +258,8 @@ describe('useTourGeometry', () => {
   describe('GIVEN a step whose specific anchor is spotlighted ahead of its broader fallback', () => {
     beforeEach(() => {
       document.body.append(
-        boxAt({ 'data-tour': 'sidebarWorkspaceCreate' }, CREATE_RECT),
-        boxAt({ 'data-tour': 'sidebarWorkspaceSwitcher' }, SWITCHER_RECT),
+        elementAt({ 'data-tour': 'sidebarWorkspaceCreate' }, CREATE_RECT),
+        elementAt({ 'data-tour': 'sidebarWorkspaceSwitcher' }, SWITCHER_RECT),
       );
       view = renderHook(({ anchorKey }: { anchorKey: string }) => useTourGeometry(anchorKey, ''), {
         initialProps: { anchorKey: WORKSPACE_ANCHORS },
@@ -317,7 +303,7 @@ describe('useTourGeometry', () => {
 
   describe('GIVEN a step whose broader fallback is spotlighted while its specific anchor is missing', () => {
     beforeEach(() => {
-      document.body.append(boxAt({ 'data-tour': 'sidebarWorkspaceSwitcher' }, SWITCHER_RECT));
+      document.body.append(elementAt({ 'data-tour': 'sidebarWorkspaceSwitcher' }, SWITCHER_RECT));
       view = renderHook(({ anchorKey }: { anchorKey: string }) => useTourGeometry(anchorKey, ''), {
         initialProps: { anchorKey: WORKSPACE_ANCHORS },
       });
@@ -327,7 +313,7 @@ describe('useTourGeometry', () => {
 
     describe('WHEN the specific anchor appears', () => {
       beforeEach(() => {
-        document.body.append(boxAt({ 'data-tour': 'sidebarWorkspaceCreate' }, CREATE_RECT));
+        document.body.append(elementAt({ 'data-tour': 'sidebarWorkspaceCreate' }, CREATE_RECT));
         clock.advance(FRAME_MS);
         act(() => frames.flush());
       });

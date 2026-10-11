@@ -7,12 +7,9 @@ pnpm-lock.yaml
 out
 build
 dist
-storybook-static
-coverage
 
-# Playwright
-test-results
-playwright-report
+# Artifacts
+artifacts
 
 # IDE
 .idea
@@ -37,7 +34,6 @@ playwright-report
 next-env.d.ts
 
 # Supabase generated
-src/lib/supabase/database.types.ts
 supabase/.branches
 supabase/.temp
 supabase/migrations

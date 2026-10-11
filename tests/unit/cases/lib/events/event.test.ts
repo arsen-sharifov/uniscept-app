@@ -1,11 +1,13 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { TOAST_DEFAULT_DURATION_MS, TOAST_ERROR_DURATION_MS } from '@constants';
+import { reportError } from '@mocks/events';
 import { event, useToastStore } from '@/lib/events';
+
+vi.mock('@/lib/events/errorSinks', () => ({ reportError }));
 
 afterEach(() => {
   useToastStore.getState().clear();
-  vi.restoreAllMocks();
 });
 
 describe('event', () => {
@@ -58,10 +60,6 @@ describe('event', () => {
   });
 
   describe('GIVEN a failing backend call', () => {
-    beforeEach(() => {
-      vi.spyOn(console, 'error').mockImplementation(() => {});
-    });
-
     describe('WHEN the error event is raised', () => {
       let normalized: ReturnType<typeof event.error>;
 
@@ -69,10 +67,12 @@ describe('event', () => {
         normalized = event.error({ code: '42501', message: 'denied' }, { context: 'workspace.save' });
       });
 
-      test('THEN the error is reported to the console sink with its context', () => {
-        expect(console.error).toHaveBeenCalledExactlyOnceWith('[permission] workspace.save', 'denied', {
-          code: '42501',
+      test('THEN the normalized error is reported to the sinks with its context', () => {
+        expect(reportError).toHaveBeenCalledExactlyOnceWith({
+          category: 'permission',
           message: 'denied',
+          cause: { code: '42501', message: 'denied' },
+          context: 'workspace.save',
         });
       });
 
@@ -92,8 +92,8 @@ describe('event', () => {
         event.error(new Error('silent'), { toast: false });
       });
 
-      test('THEN the console sink still fires but no toast appears', () => {
-        expect(console.error).toHaveBeenCalledTimes(1);
+      test('THEN it is still reported but no toast appears', () => {
+        expect(reportError).toHaveBeenCalledOnce();
         expect(useToastStore.getState().toasts).toEqual([]);
       });
     });
@@ -126,8 +126,8 @@ describe('event', () => {
         event.error(cause, { toast: false });
       });
 
-      test('THEN the sink logs the bare category with the cause', () => {
-        expect(console.error).toHaveBeenCalledExactlyOnceWith('[unknown]', 'boom', cause);
+      test('THEN it is reported without a context', () => {
+        expect(reportError).toHaveBeenCalledExactlyOnceWith({ category: 'unknown', message: 'boom', cause });
       });
     });
   });

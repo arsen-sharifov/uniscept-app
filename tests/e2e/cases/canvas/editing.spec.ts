@@ -19,9 +19,6 @@ import {
   waitForCanvas,
 } from '../../utils';
 
-const { canvas } = COPY.platform;
-const { items: tools } = canvas.tools;
-
 test.describe('central question', () => {
   test.describe('GIVEN a thread that already carries a question', () => {
     test.beforeEach(async ({ page, workspace, account }) => {
@@ -30,16 +27,15 @@ test.describe('central question', () => {
       await waitForCanvas(page);
     });
 
-    test.describe('WHEN the question is rewritten on the central node', () => {
+    test.describe('WHEN the question is rewritten on the central node and the page is reloaded', () => {
       test.beforeEach(async ({ page }) => {
         await editQuestion(page, 'Do we ship the beta in March?');
         await expectSaved(page);
-      });
-
-      test('THEN the node keeps the new question after a reload', async ({ page }) => {
         await page.reload();
         await waitForCanvas(page);
+      });
 
+      test('THEN the node keeps the new question', async ({ page }) => {
         await expect(getQuestionNode(page)).toContainText('Do we ship the beta in March?');
       });
     });
@@ -54,18 +50,17 @@ test.describe('node building', () => {
       await waitForCanvas(page);
     });
 
-    test.describe('WHEN a node is dropped and renamed', () => {
+    test.describe('WHEN a node is dropped and renamed and the page is reloaded', () => {
       test.beforeEach(async ({ page }) => {
         await addNodeAt(page, 480, 480);
         await expect(getNodes(page)).toHaveCount(1);
         await renameNode(page, getNodes(page).first(), 'Hire a designer');
         await expectSaved(page);
-      });
-
-      test('THEN the node survives a reload', async ({ page }) => {
         await page.reload();
         await waitForCanvas(page);
+      });
 
+      test('THEN the renamed node is still there', async ({ page }) => {
         await expect(getNode(page, 'Hire a designer')).toBeVisible();
       });
     });
@@ -74,7 +69,7 @@ test.describe('node building', () => {
       test.beforeEach(async ({ page }) => {
         await addNodeAt(page, 480, 480);
         await expect(getNodes(page)).toHaveCount(1);
-        await selectTool(page, tools.undo.label);
+        await selectTool(page, COPY.platform.canvas.tools.items.undo.label);
       });
 
       test('THEN the canvas is back to the question alone', async ({ page }) => {
@@ -83,39 +78,35 @@ test.describe('node building', () => {
       });
     });
 
-    test.describe('WHEN an undone node is redone', () => {
+    test.describe('WHEN an undone node is redone and the page is reloaded', () => {
       test.beforeEach(async ({ page }) => {
         await addNodeAt(page, 480, 480);
         await expect(getNodes(page)).toHaveCount(1);
-        await selectTool(page, tools.undo.label);
+        await selectTool(page, COPY.platform.canvas.tools.items.undo.label);
         await expect(getNodes(page)).toHaveCount(0);
-        await selectTool(page, tools.redo.label);
-        await expectSaved(page);
-      });
-
-      test('THEN the node is back after a reload', async ({ page }) => {
+        await selectTool(page, COPY.platform.canvas.tools.items.redo.label);
         await expect(getNodes(page)).toHaveCount(1);
-
+        await expectSaved(page);
         await page.reload();
         await waitForCanvas(page);
+      });
 
+      test('THEN the node is back', async ({ page }) => {
         await expect(getNodes(page)).toHaveCount(1);
       });
     });
 
-    test.describe('WHEN a node is added from the pane context menu', () => {
+    test.describe('WHEN a node is added from the pane context menu and the page is reloaded', () => {
       test.beforeEach(async ({ page }) => {
         const menu = await openPaneMenu(page, { x: 300, y: 620 });
-        await menu.getByRole('menuitem', { name: canvas.context.addNode }).click();
-        await expectSaved(page);
-      });
-
-      test('THEN the node survives a reload', async ({ page }) => {
+        await menu.getByRole('menuitem', { name: COPY.platform.canvas.context.addNode }).click();
         await expect(getNodes(page)).toHaveCount(1);
-
+        await expectSaved(page);
         await page.reload();
         await waitForCanvas(page);
+      });
 
+      test('THEN the node is still there', async ({ page }) => {
         await expect(getNodes(page)).toHaveCount(1);
       });
     });
@@ -135,20 +126,18 @@ test.describe('node wiring', () => {
       await expect(getEdges(page)).toHaveCount(0);
     });
 
-    test.describe('WHEN the connect tool links them', () => {
+    test.describe('WHEN the connect tool links them and the page is reloaded', () => {
       test.beforeEach(async ({ page }) => {
-        await selectTool(page, tools.connect.label);
+        await selectTool(page, COPY.platform.canvas.tools.items.connect.label);
         await getNode(page, 'Cause').click();
         await getNode(page, 'Effect').click();
-        await expectSaved(page);
-      });
-
-      test('THEN the edge survives a reload', async ({ page }) => {
         await expect(getEdges(page)).toHaveCount(1);
-
+        await expectSaved(page);
         await page.reload();
         await waitForCanvas(page);
+      });
 
+      test('THEN the edge is still there', async ({ page }) => {
         await expect(getEdges(page)).toHaveCount(1);
       });
     });
@@ -167,19 +156,17 @@ test.describe('node wiring', () => {
       await expect(getEdges(page)).toHaveCount(1);
     });
 
-    test.describe('WHEN the edge is deleted from its context menu', () => {
+    test.describe('WHEN the edge is deleted from its context menu and the page is reloaded', () => {
       test.beforeEach(async ({ page }) => {
         const menu = await openEdgeMenu(page);
-        await menu.getByRole('menuitem', { name: canvas.context.deleteEdge }).click();
-        await expectSaved(page);
-      });
-
-      test('THEN the nodes stay unconnected after a reload', async ({ page }) => {
+        await menu.getByRole('menuitem', { name: COPY.platform.canvas.context.deleteEdge }).click();
         await expect(getEdges(page)).toHaveCount(0);
-
+        await expectSaved(page);
         await page.reload();
         await waitForCanvas(page);
+      });
 
+      test('THEN both nodes stay unconnected', async ({ page }) => {
         await expect(getEdges(page)).toHaveCount(0);
         await expect(getNodes(page)).toHaveCount(2);
       });
@@ -194,10 +181,10 @@ test.describe('node dragging', () => {
       await seedNodes(thread.id, account.id, [{ label: 'Wanderer', x: 460, y: 440 }]);
       await page.goto(`/platform/${workspace.id}/${thread.id}`);
       await waitForCanvas(page);
-      await selectTool(page, tools.select.label);
+      await selectTool(page, COPY.platform.canvas.tools.items.select.label);
     });
 
-    test.describe('WHEN the node is dragged to a new spot', () => {
+    test.describe('WHEN the node is dragged to a new spot and the page is reloaded', () => {
       let draggedBox: { x: number; y: number };
 
       test.beforeEach(async ({ page }) => {
@@ -212,12 +199,11 @@ test.describe('node dragging', () => {
 
         const landed = (await node.boundingBox())!;
         draggedBox = { x: landed.x, y: landed.y };
-      });
-
-      test('THEN the node keeps its new position after a reload', async ({ page }) => {
         await page.reload();
         await waitForCanvas(page);
+      });
 
+      test('THEN the node keeps its new position', async ({ page }) => {
         const box = (await getNode(page, 'Wanderer').boundingBox())!;
 
         expect(Math.abs(box.x - draggedBox.x)).toBeLessThan(2);
@@ -236,17 +222,16 @@ test.describe('node context menu', () => {
       await waitForCanvas(page);
     });
 
-    test.describe('WHEN the node is duplicated from its context menu', () => {
+    test.describe('WHEN the node is duplicated from its context menu and the page is reloaded', () => {
       test.beforeEach(async ({ page }) => {
         const menu = await openNodeMenu(page, getNode(page, 'Original idea'));
-        await menu.getByRole('menuitem', { name: canvas.context.duplicate }).click();
+        await menu.getByRole('menuitem', { name: COPY.platform.canvas.context.duplicate }).click();
         await expectSaved(page);
-      });
-
-      test('THEN both copies survive a reload', async ({ page }) => {
         await page.reload();
         await waitForCanvas(page);
+      });
 
+      test('THEN both copies are still there', async ({ page }) => {
         await expect(getNode(page, 'Original idea')).toHaveCount(2);
       });
     });
@@ -257,11 +242,11 @@ test.describe('node context menu', () => {
       });
 
       test('THEN marking the node valid is refused with a hint', async ({ page }) => {
-        const menu = page.getByRole('menu', { name: canvas.context.ariaLabel });
-        const markValid = menu.getByRole('menuitem', { name: new RegExp(canvas.context.markValid) });
+        const menu = page.getByRole('menu', { name: COPY.platform.canvas.context.ariaLabel });
+        const markValid = menu.getByRole('menuitem', { name: new RegExp(COPY.platform.canvas.context.markValid) });
 
         await expect(markValid).toBeDisabled();
-        await expect(markValid).toContainText(canvas.context.needsValidParent);
+        await expect(markValid).toContainText(COPY.platform.canvas.context.needsValidParent);
       });
     });
   });

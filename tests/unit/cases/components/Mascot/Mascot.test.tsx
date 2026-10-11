@@ -1,28 +1,18 @@
 import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, test } from 'vitest';
 
-import type { TMascotCharacter, TMascotPose } from '@interfaces';
-
+import { MASCOT_LABEL } from '@mocks/mascot';
 import { Mascot } from '@/components/Mascot';
 
-const LABEL = 'Nodi, your guide';
-
-let pose: TMascotPose;
-let character: TMascotCharacter;
-
-const mascot = () => screen.getByRole('img', { name: LABEL });
+const mascot = () => screen.getByRole('img', { name: MASCOT_LABEL });
 
 const blinkingEyes = () => mascot().querySelectorAll('ellipse.animate-mascot-blink');
 
 describe('Mascot', () => {
   describe('GIVEN the mascot at rest', () => {
-    beforeEach(() => {
-      pose = 'idle';
-    });
-
     describe('WHEN it is rendered', () => {
       beforeEach(() => {
-        render(<Mascot label={LABEL} pose={pose} />);
+        render(<Mascot label={MASCOT_LABEL} pose="idle" />);
       });
 
       test('THEN it carries its label and blinks with both eyes', () => {
@@ -37,13 +27,9 @@ describe('Mascot', () => {
   });
 
   describe('GIVEN the mascot celebrating', () => {
-    beforeEach(() => {
-      pose = 'cheer';
-    });
-
     describe('WHEN it is rendered', () => {
       beforeEach(() => {
-        render(<Mascot label={LABEL} pose={pose} />);
+        render(<Mascot label={MASCOT_LABEL} pose="cheer" />);
       });
 
       test('THEN the round eyes turn into happy arcs', () => {
@@ -53,13 +39,9 @@ describe('Mascot', () => {
   });
 
   describe('GIVEN the friend from the example guide', () => {
-    beforeEach(() => {
-      character = 'ergo';
-    });
-
     describe('WHEN it is rendered', () => {
       beforeEach(() => {
-        render(<Mascot label={LABEL} pose="idle" character={character} />);
+        render(<Mascot label={MASCOT_LABEL} pose="idle" character="ergo" />);
       });
 
       test('THEN it wears an antenna and taller oval eyes', () => {

@@ -2,9 +2,12 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import type { ITourGeometry } from '@interfaces';
 
+import { domRect } from '@mocks/browser';
 import {
   dismissOverlays,
   findAnchorElement,
+  joinAnchors,
+  parseAnchors,
   readTourGeometry,
   readVisibleAnchors,
   sameRect,
@@ -23,14 +26,7 @@ const stubRect = (selector: string, rect: { top: number; left: number; width: nu
   const element = document.querySelector<HTMLElement>(selector);
   if (!element) throw new Error(`No element for ${selector}`);
 
-  vi.spyOn(element, 'getBoundingClientRect').mockReturnValue({
-    ...rect,
-    bottom: 0,
-    right: 0,
-    x: 0,
-    y: 0,
-    toJSON: () => ({}),
-  });
+  vi.spyOn(element, 'getBoundingClientRect').mockReturnValue(domRect(rect));
 };
 
 const stubVisibility = (selector: string, visible: boolean) => {
@@ -112,6 +108,24 @@ describe('findAnchorElement', () => {
   });
 });
 
+describe('joinAnchors', () => {
+  describe('GIVEN an ordered list of anchors', () => {
+    describe('WHEN it is joined into a key and parsed back', () => {
+      test('THEN the anchors come back in the same order', () => {
+        expect(parseAnchors(joinAnchors(['toolbarHelp', 'toolbar']))).toEqual(['toolbarHelp', 'toolbar']);
+      });
+    });
+  });
+
+  describe('GIVEN no anchors', () => {
+    describe('WHEN they are joined', () => {
+      test('THEN the key is empty', () => {
+        expect(joinAnchors()).toBe('');
+      });
+    });
+  });
+});
+
 describe('sameRect', () => {
   describe('GIVEN two rects', () => {
     describe('WHEN they are compared', () => {
@@ -143,10 +157,13 @@ describe('sameRects', () => {
 });
 
 describe('dismissOverlays', () => {
+  beforeEach(() => {
+    document.addEventListener('keydown', onKeyDown);
+  });
+
   describe('GIVEN an app dialog left open', () => {
     beforeEach(() => {
       mount('<div role="dialog"><p>settings</p></div>');
-      document.addEventListener('keydown', onKeyDown);
     });
 
     describe('WHEN the tour takes over the screen', () => {
@@ -164,7 +181,56 @@ describe('dismissOverlays', () => {
   describe("GIVEN only the tour's own window", () => {
     beforeEach(() => {
       mount('<div role="dialog"><div data-tour-panel></div></div>');
-      document.addEventListener('keydown', onKeyDown);
+    });
+
+    describe('WHEN the tour takes over the screen', () => {
+      beforeEach(() => {
+        dismissOverlays();
+      });
+
+      test('THEN nothing is closed', () => {
+        expect(onKeyDown).not.toHaveBeenCalled();
+      });
+    });
+  });
+
+  describe('GIVEN a native app dialog left open', () => {
+    beforeEach(() => {
+      mount('<dialog open><p>settings</p></dialog>');
+    });
+
+    describe('WHEN the tour takes over the screen', () => {
+      beforeEach(() => {
+        dismissOverlays();
+      });
+
+      test('THEN it asks the app to close it', () => {
+        expect(onKeyDown).toHaveBeenCalledOnce();
+        expect(onKeyDown.mock.calls[0]?.[0]).toMatchObject({ key: 'Escape' });
+      });
+    });
+  });
+
+  describe('GIVEN an app alert dialog left open', () => {
+    beforeEach(() => {
+      mount('<div role="alertdialog"><p>transfer ownership</p></div>');
+    });
+
+    describe('WHEN the tour takes over the screen', () => {
+      beforeEach(() => {
+        dismissOverlays();
+      });
+
+      test('THEN it asks the app to close it', () => {
+        expect(onKeyDown).toHaveBeenCalledOnce();
+        expect(onKeyDown.mock.calls[0]?.[0]).toMatchObject({ key: 'Escape' });
+      });
+    });
+  });
+
+  describe("GIVEN only the tour's step card and continue hint", () => {
+    beforeEach(() => {
+      mount('<dialog open data-tour-card></dialog><dialog open data-tour-hint></dialog>');
     });
 
     describe('WHEN the tour takes over the screen', () => {

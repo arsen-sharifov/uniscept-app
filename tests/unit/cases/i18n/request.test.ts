@@ -1,34 +1,26 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { primeSupabase } from '@mocks/supabase';
-import { createClient as createServerClient } from '@mocks/supabaseServer';
+import { cookieStore, headers } from '@mocks/nextHeaders';
+import { createClient as createServerClient, primeServerClient } from '@mocks/supabaseServer';
 import requestConfig from '@/i18n/request';
 import en from '@/locales/en.json';
 import fr from '@/locales/fr.json';
 import uk from '@/locales/uk.json';
 
-const resolveConfig = requestConfig as unknown as () => Promise<{ locale: string; messages: unknown }>;
-
-const { cookies, headers } = vi.hoisted(() => ({ cookies: vi.fn(), headers: vi.fn() }));
-
-vi.mock('next-intl/server', () => ({
-  getRequestConfig: (factory: () => Promise<unknown>) => factory,
-}));
-
-vi.mock('next/headers', () => ({ cookies, headers }));
-
+vi.mock('next-intl/server', () => import('@mocks/nextIntlServer'));
+vi.mock('next/headers', () => import('@mocks/nextHeaders'));
 vi.mock('@/lib/supabase/server', () => import('@mocks/supabaseServer'));
+
+const resolveConfig = requestConfig as unknown as () => Promise<{ locale: string; messages: unknown }>;
 
 const primeRequest = (options: { pathname?: string; cookieLocale?: string; accepted?: string }) => {
   headers.mockResolvedValue(
-    new Map<string, string>([
-      ...(options.pathname ? ([['x-pathname', options.pathname]] as const) : []),
-      ...(options.accepted ? ([['accept-language', options.accepted]] as const) : []),
-    ]),
+    new Headers({
+      ...(options.pathname ? { 'x-pathname': options.pathname } : {}),
+      ...(options.accepted ? { 'accept-language': options.accepted } : {}),
+    }),
   );
-  cookies.mockResolvedValue({
-    get: () => (options.cookieLocale ? { value: options.cookieLocale } : undefined),
-  });
+  cookieStore.get.mockReturnValue(options.cookieLocale ? { value: options.cookieLocale } : undefined);
 };
 
 describe('requestConfig', () => {
@@ -108,8 +100,7 @@ describe('requestConfig', () => {
   describe('GIVEN an unsupported cookie locale and a stored user preference', () => {
     beforeEach(() => {
       primeRequest({ pathname: '/platform', cookieLocale: 'xx' });
-      const { client } = primeSupabase([{ data: { language: 'fr' } }], { user: { id: 'user-1' } });
-      vi.mocked(createServerClient).mockResolvedValue(client as never);
+      primeServerClient([{ data: { language: 'fr' } }], { user: { id: 'user-1' } });
     });
 
     describe('WHEN the request locale is resolved', () => {
@@ -122,8 +113,7 @@ describe('requestConfig', () => {
   describe('GIVEN no cookie and no authenticated user', () => {
     beforeEach(() => {
       primeRequest({ pathname: '/platform', accepted: 'pt-PT,pt;q=0.9' });
-      const { client } = primeSupabase([], { user: null });
-      vi.mocked(createServerClient).mockResolvedValue(client as never);
+      primeServerClient([], { user: null });
     });
 
     describe('WHEN the request locale is resolved', () => {
@@ -136,12 +126,24 @@ describe('requestConfig', () => {
   describe('GIVEN an authenticated user without a preferences row, browsing in french', () => {
     beforeEach(() => {
       primeRequest({ pathname: '/platform', accepted: 'fr-FR,fr;q=0.9' });
-      const { client } = primeSupabase([{ data: null }], { user: { id: 'user-1' } });
-      vi.mocked(createServerClient).mockResolvedValue(client as never);
+      primeServerClient([{ data: null }], { user: { id: 'user-1' } });
     });
 
     describe('WHEN the request locale is resolved', () => {
       test('THEN the browser language is served', async () => {
+        await expect(resolveConfig()).resolves.toMatchObject({ locale: 'fr', messages: fr });
+      });
+    });
+  });
+
+  describe('GIVEN a stored preference outside the supported languages, browsing in french', () => {
+    beforeEach(() => {
+      primeRequest({ pathname: '/platform', accepted: 'fr-FR,fr;q=0.9' });
+      primeServerClient([{ data: { language: '../en' } }], { user: { id: 'user-1' } });
+    });
+
+    describe('WHEN the request locale is resolved', () => {
+      test('THEN the stored value is ignored and the browser language is served', async () => {
         await expect(resolveConfig()).resolves.toMatchObject({ locale: 'fr', messages: fr });
       });
     });

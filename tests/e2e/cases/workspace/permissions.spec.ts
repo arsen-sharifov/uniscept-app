@@ -25,8 +25,6 @@ import {
   waitForCanvas,
 } from '../../utils';
 
-const { sidebar, canvas } = COPY.platform;
-
 const test = base.extend<{
   hostedWorkspace: IE2EWorkspace;
   commenterWorkspace: IE2EWorkspace;
@@ -86,8 +84,8 @@ test.describe('viewer access', () => {
       });
 
       test('THEN the structure is readable but not editable', async ({ page }) => {
-        await expect(getStructureHeader(page).getByTitle(sidebar.newThread)).toHaveCount(0);
-        await expect(getStructureHeader(page).getByTitle(sidebar.newFolder)).toHaveCount(0);
+        await expect(getStructureHeader(page).getByTitle(COPY.platform.sidebar.newThread)).toHaveCount(0);
+        await expect(getStructureHeader(page).getByTitle(COPY.platform.sidebar.newFolder)).toHaveCount(0);
       });
     });
 
@@ -95,7 +93,7 @@ test.describe('viewer access', () => {
       test.beforeEach(async ({ page }) => {
         await getNavItem(page, 'Shared thread').click();
         await waitForCanvas(page);
-        await selectTool(page, canvas.tools.items.select.label);
+        await selectTool(page, COPY.platform.canvas.tools.items.select.label);
         await getNode(page, 'Owner idea').dblclick();
       });
 
@@ -118,7 +116,7 @@ test.describe('comment-only access', () => {
 
     test.describe('WHEN the host node is double-clicked', () => {
       test.beforeEach(async ({ page }) => {
-        await selectTool(page, canvas.tools.items.select.label);
+        await selectTool(page, COPY.platform.canvas.tools.items.select.label);
         await getNode(page, 'Host proposal').dblclick();
       });
 
@@ -128,20 +126,18 @@ test.describe('comment-only access', () => {
       });
     });
 
-    test.describe('WHEN a comment is posted on the host node', () => {
+    test.describe('WHEN a comment is posted on the host node and the page is reloaded', () => {
       test.beforeEach(async ({ page }) => {
         await addNodeComment(getNode(page, 'Host proposal'), 'Can we estimate the cost?');
-        await expectSaved(page);
-      });
-
-      test('THEN the comment is listed on the node after a reload', async ({ page }) => {
         await expect(getNode(page, 'Host proposal')).toContainText('Can we estimate the cost?');
-
+        await expectSaved(page);
         await page.reload();
         await waitForCanvas(page);
+      });
 
+      test('THEN the node still counts the comment', async ({ page }) => {
         await expect(
-          getNode(page, 'Host proposal').getByRole('button', { name: canvas.node.viewComments }),
+          getNode(page, 'Host proposal').getByRole('button', { name: COPY.platform.canvas.node.viewComments }),
         ).toContainText('1');
       });
     });
@@ -161,8 +157,8 @@ test.describe('editor access', () => {
       });
 
       test('THEN the structure creation actions are available', async ({ page }) => {
-        await expect(getStructureHeader(page).getByTitle(sidebar.newThread)).toBeVisible();
-        await expect(getStructureHeader(page).getByTitle(sidebar.newFolder)).toBeVisible();
+        await expect(getStructureHeader(page).getByTitle(COPY.platform.sidebar.newThread)).toBeVisible();
+        await expect(getStructureHeader(page).getByTitle(COPY.platform.sidebar.newFolder)).toBeVisible();
       });
     });
 
@@ -170,7 +166,7 @@ test.describe('editor access', () => {
       test.beforeEach(async ({ page }) => {
         await getNavItem(page, 'Editor thread').click();
         await waitForCanvas(page);
-        await selectTool(page, canvas.tools.items.select.label);
+        await selectTool(page, COPY.platform.canvas.tools.items.select.label);
         await getNode(page, 'Host claim').dblclick();
       });
 
@@ -180,19 +176,18 @@ test.describe('editor access', () => {
       });
     });
 
-    test.describe('WHEN the member drops and renames their own node', () => {
+    test.describe('WHEN the member drops and renames their own node and the page is reloaded', () => {
       test.beforeEach(async ({ page }) => {
         await getNavItem(page, 'Editor thread').click();
         await waitForCanvas(page);
         await addNodeAt(page, 700, 300);
         await renameNode(page, getNodes(page).last(), 'Member insight');
         await expectSaved(page);
-      });
-
-      test('THEN the member node survives a reload', async ({ page }) => {
         await page.reload();
         await waitForCanvas(page);
+      });
 
+      test('THEN the member node is still there', async ({ page }) => {
         await expect(getNode(page, 'Member insight')).toBeVisible();
       });
     });

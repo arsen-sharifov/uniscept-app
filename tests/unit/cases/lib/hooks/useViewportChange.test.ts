@@ -1,14 +1,12 @@
-import { renderHook } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, test, vi, type MockInstance } from 'vitest';
+import { renderHook, type RenderHookResult } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { useViewportChange } from '@hooks';
 
 const onScroll = vi.fn();
 const onResize = vi.fn();
 
-afterEach(() => {
-  vi.restoreAllMocks();
-});
+const scroller = document.createElement('div');
 
 describe('useViewportChange', () => {
   describe('GIVEN listeners for scroll and resize', () => {
@@ -75,47 +73,77 @@ describe('useViewportChange', () => {
     });
   });
 
-  describe('GIVEN a hook without callbacks', () => {
-    let addListener: MockInstance<typeof window.addEventListener>;
+  describe('GIVEN only a resize listener', () => {
+    beforeEach(() => {
+      renderHook(() => useViewportChange({ onResize }));
+    });
 
-    describe('WHEN it mounts', () => {
+    describe('WHEN the window scrolls and resizes', () => {
       beforeEach(() => {
-        addListener = vi.spyOn(window, 'addEventListener');
-        renderHook(() => useViewportChange({}));
+        window.dispatchEvent(new Event('scroll'));
+        window.dispatchEvent(new Event('resize'));
       });
 
-      test('THEN no viewport listener registers', () => {
-        expect(addListener.mock.calls.filter(([type]) => type === 'scroll' || type === 'resize')).toEqual([]);
+      test('THEN only the resize callback fires', () => {
+        expect(onResize).toHaveBeenCalledOnce();
+        expect(onScroll).not.toHaveBeenCalled();
       });
     });
   });
 
   describe('GIVEN capture-phase listeners', () => {
-    let addListener: MockInstance<typeof window.addEventListener>;
+    let view: RenderHookResult<void, unknown>;
 
-    describe('WHEN the hook mounts', () => {
+    beforeEach(() => {
+      document.body.append(scroller);
+      view = renderHook(() => useViewportChange({ onScroll, onResize, capture: true }));
+    });
+
+    afterEach(() => {
+      scroller.remove();
+    });
+
+    describe('WHEN a scroll container inside the page scrolls', () => {
       beforeEach(() => {
-        addListener = vi.spyOn(window, 'addEventListener');
-        renderHook(() => useViewportChange({ onScroll, onResize, capture: true }));
+        scroller.dispatchEvent(new Event('scroll'));
       });
 
-      test('THEN the listeners register in the capture phase', () => {
-        expect(addListener).toHaveBeenCalledWith('scroll', onScroll, true);
-        expect(addListener).toHaveBeenCalledWith('resize', onResize, true);
+      test('THEN the scroll callback fires even though scroll events do not bubble', () => {
+        expect(onScroll).toHaveBeenCalledOnce();
       });
     });
 
-    describe('WHEN the hook unmounts', () => {
-      let removeListener: MockInstance<typeof window.removeEventListener>;
-
+    describe('WHEN the hook unmounts and then a scroll container scrolls and the window resizes', () => {
       beforeEach(() => {
-        removeListener = vi.spyOn(window, 'removeEventListener');
-        renderHook(() => useViewportChange({ onScroll, onResize, capture: true })).unmount();
+        view.unmount();
+        scroller.dispatchEvent(new Event('scroll'));
+        window.dispatchEvent(new Event('resize'));
       });
 
-      test('THEN the listeners are removed with the same capture flag', () => {
-        expect(removeListener).toHaveBeenCalledWith('scroll', onScroll, true);
-        expect(removeListener).toHaveBeenCalledWith('resize', onResize, true);
+      test('THEN both capture listeners are gone', () => {
+        expect(onScroll).not.toHaveBeenCalled();
+        expect(onResize).not.toHaveBeenCalled();
+      });
+    });
+  });
+
+  describe('GIVEN bubble-phase listeners', () => {
+    beforeEach(() => {
+      document.body.append(scroller);
+      renderHook(() => useViewportChange({ onScroll, onResize }));
+    });
+
+    afterEach(() => {
+      scroller.remove();
+    });
+
+    describe('WHEN a scroll container inside the page scrolls', () => {
+      beforeEach(() => {
+        scroller.dispatchEvent(new Event('scroll'));
+      });
+
+      test('THEN only window scrolls reach the callback', () => {
+        expect(onScroll).not.toHaveBeenCalled();
       });
     });
   });

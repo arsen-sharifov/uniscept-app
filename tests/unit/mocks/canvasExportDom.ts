@@ -161,9 +161,9 @@ const exportNode = (id: string, x: number, y: number, label: string): HTMLDivEle
     borderTopWidth: '1px',
     borderTopColor: 'rgb(200, 200, 200)',
     borderTopLeftRadius: '12px',
-    boxShadow: SHADOW,
     overflow: 'hidden',
   });
+  source.style.setProperty('box-shadow', SHADOW, 'important');
   const handle = document.createElement('div');
   handle.className = 'react-flow__handle';
   const omitted = document.createElement('button');

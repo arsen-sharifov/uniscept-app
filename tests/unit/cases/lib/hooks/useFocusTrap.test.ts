@@ -17,6 +17,7 @@ const emptyContainer = document.createElement('div');
 container.tabIndex = -1;
 emptyContainer.tabIndex = -1;
 container.append(first, last);
+tourCard.open = true;
 tourCard.setAttribute('data-tour-card', '');
 tourCard.append(tourCardFirst, tourCardLast);
 innerContainer.append(innerFirst, innerLast);

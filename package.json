@@ -1,6 +1,6 @@
 {
   "name": "uniscept-app",
-  "version": "0.25.0",
+  "version": "0.26.0",
   "private": true,
   "description": "Uniscept — a tool that structures complex thinking and discussions into a clear logical system.",
   "homepage": "https://github.com/arsen-sharifov/uniscept-app#readme",
@@ -105,7 +105,7 @@
   },
   "packageManager": "pnpm@10.29.3",
   "engines": {
-    "node": ">=22.0.0",
+    "node": "22.x",
     "pnpm": ">=10.0.0"
   },
   "pnpm": {

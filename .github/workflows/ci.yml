@@ -97,6 +97,42 @@ jobs:
       - name: Gitleaks
         run: docker run --rm -v "$PWD:/repo" ghcr.io/gitleaks/gitleaks:v8.30.1 git /repo --redact --no-banner --verbose
 
+  migrations:
+    name: Migration check
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Check released migrations
+        run: |
+          release_tag=$(git describe --tags --abbrev=0 --match 'v*' HEAD 2>/dev/null || true)
+          if [ -z "$release_tag" ]; then
+            echo "No release yet, so every migration can still change"
+            exit 0
+          fi
+          edited=$(git diff --name-status --no-renames "$release_tag" HEAD -- supabase/migrations | grep -v '^A' || true)
+          if [ -n "$edited" ]; then
+            echo "::error::Migrations released in $release_tag cannot change, add a new migration instead"
+            echo "$edited"
+            exit 1
+          fi
+          latest_released=$(git ls-tree --name-only "$release_tag" supabase/migrations/ | sort | tail -n1)
+          pending=$(git diff --name-only --diff-filter=A "$release_tag" HEAD -- supabase/migrations | sort)
+          outdated=$(echo "$pending" | awk -v latest="$latest_released" 'NF && $0 <= latest')
+          if [ -n "$outdated" ]; then
+            echo "::error::New migrations must be newer than ${latest_released##*/}"
+            echo "$outdated"
+            exit 1
+          fi
+          {
+            echo "### Migrations since $release_tag"
+            if [ -n "$pending" ]; then echo "$pending" | awk -F/ '{ print "- " $NF }'; else echo "None"; fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
   test:
     name: Unit tests
     runs-on: ubuntu-latest
@@ -295,3 +331,26 @@ jobs:
             artifacts/visual/report
             artifacts/visual/results
           retention-days: 14
+
+  release-status:
+    name: Release status
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: [validate, audit, secret-scan, migrations, test, e2e, build-storybook, visual]
+    if: ${{ github.event_name == 'push' }}
+    permissions:
+      statuses: write
+    steps:
+      - name: Mark as waiting for release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          state=$(gh api "repos/$GITHUB_REPOSITORY/commits/$GITHUB_SHA/statuses" \
+            --jq '[.[] | select(.context == "Release")][0].state // ""')
+          if [ "$state" = success ]; then
+            echo "Already released"
+            exit 0
+          fi
+          gh api "repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA" --silent \
+            -f state=pending -f context=Release -f description='Waiting for release' \
+            -f target_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/workflows/release.yml"

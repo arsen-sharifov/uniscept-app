@@ -415,6 +415,7 @@ sender_name = "Uniscept"
 
 [remotes.production.storage.analytics]
 enabled = true
+max_namespaces = 10
 
 [remotes.production.storage.vector]
 enabled = true

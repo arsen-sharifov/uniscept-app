@@ -1,0 +1,69 @@
+name: Back up the database
+description: Dump roles, schema, data and migration history of the linked Supabase project, encrypt the dump, and upload it as an artifact.
+
+inputs:
+  name:
+    description: Artifact name
+    required: true
+  access-token:
+    description: Supabase access token
+    required: true
+  database-password:
+    description: Password of the linked database
+    required: true
+  passphrase:
+    description: Passphrase that encrypts the dump
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Dump database
+      shell: bash
+      env:
+        SUPABASE_ACCESS_TOKEN: ${{ inputs.access-token }}
+        SUPABASE_DB_PASSWORD: ${{ inputs.database-password }}
+      run: |
+        mkdir -p backup
+        pnpm exec supabase db dump --linked --role-only -f backup/roles.sql
+        pnpm exec supabase db dump --linked -f backup/schema.sql
+        pnpm exec supabase db dump --linked --data-only --use-copy \
+          -x storage.buckets_vectors -x storage.vector_indexes -f backup/data.sql
+        history=$(pnpm exec supabase db query --linked --agent no --output-format json \
+          "select exists (select 1 from pg_namespace where nspname = 'supabase_migrations') as present" \
+          | jq -r '(.rows? // .)[0].present')
+        case "$history" in
+          true)
+            pnpm exec supabase db dump --linked --schema supabase_migrations -f backup/history_schema.sql
+            pnpm exec supabase db dump --linked --data-only --use-copy --schema supabase_migrations -f backup/history_data.sql
+            ;;
+          false)
+            echo "No migration history yet"
+            ;;
+          *)
+            echo "::error::Could not tell whether the migration history exists ($history)"
+            exit 1
+            ;;
+        esac
+
+    - name: Encrypt dump
+      shell: bash
+      env:
+        BACKUP_PASSPHRASE: ${{ inputs.passphrase }}
+      run: |
+        if [ -z "$BACKUP_PASSPHRASE" ]; then
+          echo "::error::The backup passphrase is not set"
+          exit 1
+        fi
+        tar -czf backup.tar.gz -C backup .
+        gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 --symmetric --cipher-algo AES256 \
+          --output backup.tar.gz.gpg backup.tar.gz <<< "$BACKUP_PASSPHRASE"
+        rm -rf backup backup.tar.gz
+
+    - name: Upload dump
+      uses: actions/upload-artifact@v7
+      with:
+        name: ${{ inputs.name }}
+        path: backup.tar.gz.gpg
+        retention-days: 30
+        if-no-files-found: error

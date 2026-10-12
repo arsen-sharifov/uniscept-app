@@ -16,6 +16,7 @@ extra_search_path = ["public", "extensions"]
 # The maximum number of rows returns from a view, table, or stored procedure. Limits payload size
 # for accidental or malicious requests.
 max_rows = 1000
+auto_expose_new_tables = false
 
 [api.tls]
 # Enable HTTPS endpoints locally using a self-signed certificate.
@@ -389,3 +390,31 @@ s3_region = "env(S3_REGION)"
 s3_access_key = "env(S3_ACCESS_KEY)"
 # Configures AWS_SECRET_ACCESS_KEY for S3 bucket
 s3_secret_key = "env(S3_SECRET_KEY)"
+
+[remotes.production]
+project_id = "fdavdrfhvuhsmndhxaxc"
+
+[remotes.production.auth]
+site_url = "env(SITE_URL)"
+additional_redirect_urls = []
+
+[remotes.production.auth.rate_limit]
+email_sent = 30
+
+[remotes.production.auth.email]
+max_frequency = "60s"
+
+[remotes.production.auth.email.smtp]
+enabled = true
+host = "env(SMTP_HOST)"
+port = 465
+user = "env(SMTP_USER)"
+pass = "env(SMTP_PASS)"
+admin_email = "env(SMTP_ADMIN_EMAIL)"
+sender_name = "Uniscept"
+
+[remotes.production.storage.analytics]
+enabled = true
+
+[remotes.production.storage.vector]
+enabled = true

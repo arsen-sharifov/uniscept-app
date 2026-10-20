@@ -7,7 +7,7 @@ import { groupBy } from '@/lib/utils';
 
 import { getCanvasEdges } from './canvasEdge';
 import { createCanvasNode, getCanvasNodes } from './canvasNode';
-import { ANSWERED_THREAD_SELECT, THREAD_SELECT } from './consts';
+import { ANSWERED_THREAD_SELECT, RESOLUTION_NODE_SELECT, THREAD_SELECT } from './consts';
 import { deleteRowsByIds, getNextPosition, readAllRows, rowToEdge, rowToNode, toThread } from './utils';
 
 const getAnsweredThreadIds = async (workspaceId: string): Promise<string[]> => {
@@ -28,7 +28,10 @@ const getAnsweredThreadIds = async (workspaceId: string): Promise<string[]> => {
 
 const getResolvedThreadIds = async (workspaceId: string): Promise<Set<string>> => {
   const answeredIds = await getAnsweredThreadIds(workspaceId);
-  const [nodeRows, edgeRows] = await Promise.all([getCanvasNodes(answeredIds), getCanvasEdges(answeredIds)]);
+  const [nodeRows, edgeRows] = await Promise.all([
+    getCanvasNodes(answeredIds, RESOLUTION_NODE_SELECT),
+    getCanvasEdges(answeredIds),
+  ]);
   const nodesByThread = groupBy(nodeRows, (row) => row.thread_id);
   const edgesByThread = groupBy(edgeRows, (row) => row.thread_id);
 

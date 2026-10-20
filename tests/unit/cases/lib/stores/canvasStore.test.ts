@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { THREAD_ID, canvasEdge, canvasNode, comment, questionNode, referenceNode } from '@mocks/canvas';
+import { FORMATTED_DOCUMENT, FORMATTED_TEXT, RESTYLED_DOCUMENT } from '@mocks/richText';
 import { COMMENT_ACCESS, EDIT_ACCESS, FULL_ACCESS, READONLY_ACCESS } from '@mocks/roles';
 import { ECanvasTool } from '@/components/tools';
 import { subscribeCanvasOperations } from '@/lib/canvas';
@@ -225,6 +226,27 @@ describe('canvasStore', () => {
       });
     });
 
+    describe('WHEN they format the label of their own node', () => {
+      beforeEach(() => {
+        useCanvasStore.getState().updateNodeLabel('own', FORMATTED_TEXT, FORMATTED_DOCUMENT);
+      });
+
+      test('THEN the node keeps the text and its formatting', () => {
+        expect(useCanvasStore.getState().nodes.find((node) => node.id === 'own')).toMatchObject({
+          data: { label: FORMATTED_TEXT, richLabel: FORMATTED_DOCUMENT },
+        });
+      });
+
+      test('THEN a label operation carrying the formatting is emitted', () => {
+        expect(onOperation).toHaveBeenCalledExactlyOnceWith({
+          type: 'updateNodeLabel',
+          id: 'own',
+          label: FORMATTED_TEXT,
+          richLabel: FORMATTED_DOCUMENT,
+        });
+      });
+    });
+
     describe('WHEN they rename the foreign node', () => {
       beforeEach(() => {
         useCanvasStore.getState().updateNodeLabel('foreign', 'Hijacked');
@@ -376,6 +398,120 @@ describe('canvasStore', () => {
       test('THEN a single create operation is emitted', () => {
         expect(onOperation).toHaveBeenCalledExactlyOnceWith(
           expect.objectContaining({ type: 'createCanvasNode', label: 'Node own' }),
+        );
+      });
+
+      test('THEN neither the copy nor its create operation carries formatting', () => {
+        const copy = useCanvasStore
+          .getState()
+          .nodes.find((node) => node.data.label === 'Node own' && node.id !== 'own');
+
+        expect(copy?.data).toMatchObject({ richLabel: undefined });
+        expect(onOperation.mock.calls[0]?.[0]).not.toHaveProperty('richLabel');
+      });
+    });
+  });
+
+  describe('GIVEN an editor whose own node carries a formatted label', () => {
+    beforeEach(() => {
+      usePermissionsStore.getState().setAccess('ws-1', 'user-1', EDIT_ACCESS);
+      useCanvasStore.getState().loadCanvas(THREAD_ID, {
+        nodes: [canvasNode('own', { createdBy: 'user-1', label: FORMATTED_TEXT, richLabel: FORMATTED_DOCUMENT })],
+        edges: [],
+      });
+      unsubscribers.push(subscribeCanvasOperations(onOperation));
+    });
+
+    describe('WHEN they rewrite the label as plain text', () => {
+      beforeEach(() => {
+        useCanvasStore.getState().updateNodeLabel('own', 'Plain');
+      });
+
+      test('THEN the formatting is cleared from the node', () => {
+        expect(useCanvasStore.getState().nodes[0]).toMatchObject({ data: { label: 'Plain', richLabel: undefined } });
+      });
+
+      test('THEN a label operation without a formatting key is emitted', () => {
+        expect(onOperation.mock.calls.map(([operation]) => operation)).toStrictEqual([
+          { type: 'updateNodeLabel', id: 'own', label: 'Plain' },
+        ]);
+      });
+    });
+
+    describe('WHEN a change that only restyles the label is undone', () => {
+      beforeEach(() => {
+        useCanvasStore.getState().updateNodeLabel('own', FORMATTED_TEXT, RESTYLED_DOCUMENT);
+        onOperation.mockClear();
+        useCanvasStore.getState().undo();
+      });
+
+      test('THEN the original formatting comes back', () => {
+        expect(useCanvasStore.getState().nodes[0]).toMatchObject({
+          data: { label: FORMATTED_TEXT, richLabel: FORMATTED_DOCUMENT },
+        });
+      });
+
+      test('THEN a label operation restoring the original formatting is replayed', () => {
+        expect(onOperation).toHaveBeenCalledExactlyOnceWith({
+          type: 'updateNodeLabel',
+          id: 'own',
+          label: FORMATTED_TEXT,
+          richLabel: FORMATTED_DOCUMENT,
+        });
+      });
+    });
+
+    describe('WHEN the undone restyle is redone', () => {
+      beforeEach(() => {
+        useCanvasStore.getState().updateNodeLabel('own', FORMATTED_TEXT, RESTYLED_DOCUMENT);
+        useCanvasStore.getState().undo();
+        onOperation.mockClear();
+        useCanvasStore.getState().redo();
+      });
+
+      test('THEN the restyled formatting returns', () => {
+        expect(useCanvasStore.getState().nodes[0]).toMatchObject({ data: { richLabel: RESTYLED_DOCUMENT } });
+      });
+
+      test('THEN a label operation carrying the restyled formatting is replayed', () => {
+        expect(onOperation).toHaveBeenCalledExactlyOnceWith({
+          type: 'updateNodeLabel',
+          id: 'own',
+          label: FORMATTED_TEXT,
+          richLabel: RESTYLED_DOCUMENT,
+        });
+      });
+    });
+
+    describe('WHEN the undone removal of the formatting is redone', () => {
+      beforeEach(() => {
+        useCanvasStore.getState().updateNodeLabel('own', FORMATTED_TEXT);
+        useCanvasStore.getState().undo();
+        onOperation.mockClear();
+        useCanvasStore.getState().redo();
+      });
+
+      test('THEN a label operation without a formatting key is replayed', () => {
+        expect(onOperation.mock.calls.map(([operation]) => operation)).toStrictEqual([
+          { type: 'updateNodeLabel', id: 'own', label: FORMATTED_TEXT },
+        ]);
+      });
+    });
+
+    describe('WHEN they duplicate the formatted node', () => {
+      beforeEach(() => {
+        useCanvasStore.getState().duplicateNode('own');
+      });
+
+      test('THEN the copy carries the formatting over', () => {
+        expect(useCanvasStore.getState().nodes.find((node) => node.id !== 'own')).toMatchObject({
+          data: { label: FORMATTED_TEXT, richLabel: FORMATTED_DOCUMENT, comments: [] },
+        });
+      });
+
+      test('THEN the create operation carries the formatting', () => {
+        expect(onOperation).toHaveBeenCalledExactlyOnceWith(
+          expect.objectContaining({ type: 'createCanvasNode', label: FORMATTED_TEXT, richLabel: FORMATTED_DOCUMENT }),
         );
       });
     });
@@ -637,6 +773,42 @@ describe('canvasStore', () => {
       test('THEN a create comment operation is emitted', () => {
         expect(onOperation).toHaveBeenCalledExactlyOnceWith(
           expect.objectContaining({ type: 'createComment', nodeId: 'n1', text: 'Nice catch' }),
+        );
+      });
+
+      test('THEN neither the comment nor its operation carries formatting', () => {
+        expect(useCanvasStore.getState().nodes[0]?.data).toMatchObject({
+          comments: expect.arrayContaining([expect.objectContaining({ text: 'Nice catch', richText: undefined })]),
+        });
+        expect(onOperation.mock.calls[0]?.[0]).not.toHaveProperty('richText');
+      });
+    });
+
+    describe('WHEN they add a formatted comment', () => {
+      beforeEach(() => {
+        useCanvasStore.getState().addComment('n1', FORMATTED_TEXT, FORMATTED_DOCUMENT);
+      });
+
+      test('THEN the comment keeps its formatting and their authorship', () => {
+        expect(useCanvasStore.getState().nodes[0]).toMatchObject({
+          data: {
+            comments: [
+              comment('c-own', { text: 'mine' }),
+              comment('c-foreign', { text: 'theirs', authorId: 'user-2' }),
+              expect.objectContaining({ text: FORMATTED_TEXT, richText: FORMATTED_DOCUMENT, authorId: 'user-1' }),
+            ],
+          },
+        });
+      });
+
+      test('THEN a create comment operation carrying the formatting is emitted', () => {
+        expect(onOperation).toHaveBeenCalledExactlyOnceWith(
+          expect.objectContaining({
+            type: 'createComment',
+            nodeId: 'n1',
+            text: FORMATTED_TEXT,
+            richText: FORMATTED_DOCUMENT,
+          }),
         );
       });
     });

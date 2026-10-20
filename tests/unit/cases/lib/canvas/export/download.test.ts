@@ -2,20 +2,20 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import type { TCanvasExportOutcome } from '@interfaces';
 
+import { EXPORT_THREAD_NAME } from '@mocks/canvasExport';
 import {
-  BIDI_SAFE_FILENAME,
-  BIDI_THREAD_NAME,
-  LONG_THREAD_NAME,
-  UNICODE_THREAD_NAME,
-  FAR_TARGET_X,
-} from '@mocks/canvasExport';
-import {
-  EXPORT_BLOB_URL,
   EXPORT_FIXTURE,
-  breakImageLoading,
+  EXPORT_SCENES,
   buildExportCanvas,
-  installExportEnvironment,
+  encodeAsPng,
+  encodeAsRequested,
+  encodeNothing,
+  stubCanvasExport,
+  stubDownloads,
+  stubImageDecoding,
+  stubObjectUrls,
 } from '@mocks/canvasExportDom';
+import { BIDI_SAFE_FILENAME, BIDI_THREAD_NAME, LONG_THREAD_NAME, UNICODE_THREAD_NAME } from '@mocks/canvasExportValues';
 import { EXPORT_URL_LIFETIME_MS, exportCanvas, getExportFilename, getRasterDimensions } from '@/lib/canvas/export';
 
 let root: HTMLElement;
@@ -23,27 +23,7 @@ let outcome: TCanvasExportOutcome;
 let downloads: string[];
 let blobs: Blob[];
 
-const encodeAsRequested = (callback: BlobCallback, type?: string) => callback(new Blob(['image'], { type }));
-const encodeNothing = (callback: BlobCallback) => callback(null);
-const encodeAsPng = (callback: BlobCallback) => callback(new Blob(['image'], { type: 'image/png' }));
-
-beforeEach(() => {
-  installExportEnvironment();
-  downloads = [];
-  blobs = [];
-  vi.mocked(URL.createObjectURL).mockImplementation((blob) => {
-    blobs.push(blob as Blob);
-
-    return EXPORT_BLOB_URL;
-  });
-  vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (this: HTMLAnchorElement) {
-    downloads.push(this.download);
-  });
-  vi.spyOn(HTMLCanvasElement.prototype, 'toBlob').mockImplementation(encodeAsRequested);
-});
-
 afterEach(() => {
-  root?.remove();
   vi.useRealTimers();
 });
 
@@ -112,6 +92,14 @@ describe('getRasterDimensions', () => {
 });
 
 describe('exportCanvas', () => {
+  beforeEach(() => {
+    stubCanvasExport();
+    stubImageDecoding();
+    blobs = stubObjectUrls();
+    downloads = stubDownloads();
+    vi.spyOn(HTMLCanvasElement.prototype, 'toBlob').mockImplementation(encodeAsRequested);
+  });
+
   describe('GIVEN a small connected graph', () => {
     beforeEach(() => {
       root = buildExportCanvas();
@@ -119,12 +107,12 @@ describe('exportCanvas', () => {
 
     describe('WHEN it is exported as SVG', () => {
       beforeEach(async () => {
-        outcome = await exportCanvas(root, EXPORT_FIXTURE.thread, 'svg');
+        outcome = await exportCanvas(root, EXPORT_THREAD_NAME, 'svg');
       });
 
       test('THEN the vector file downloads under the thread name while its URL stays alive', () => {
         expect(outcome).toBe('downloaded');
-        expect(downloads).toEqual([`${EXPORT_FIXTURE.thread}.svg`]);
+        expect(downloads).toEqual([`${EXPORT_THREAD_NAME}.svg`]);
         expect(blobs.map((blob) => blob.type)).toEqual(['image/svg+xml']);
         expect(URL.revokeObjectURL).not.toHaveBeenCalled();
       });
@@ -133,36 +121,36 @@ describe('exportCanvas', () => {
     describe('WHEN it is exported as SVG and the download URL outlives its lifetime', () => {
       beforeEach(async () => {
         vi.useFakeTimers({ toFake: ['setTimeout'] });
-        await exportCanvas(root, EXPORT_FIXTURE.thread, 'svg');
+        await exportCanvas(root, EXPORT_THREAD_NAME, 'svg');
         vi.advanceTimersByTime(EXPORT_URL_LIFETIME_MS);
       });
 
       test('THEN the download URL is released', () => {
-        expect(URL.revokeObjectURL).toHaveBeenCalledExactlyOnceWith(EXPORT_BLOB_URL);
+        expect(URL.revokeObjectURL).toHaveBeenCalledExactlyOnceWith(EXPORT_FIXTURE.blobUrl);
       });
     });
 
     describe('WHEN it is exported as PNG', () => {
       beforeEach(async () => {
-        outcome = await exportCanvas(root, EXPORT_FIXTURE.thread, 'png');
+        outcome = await exportCanvas(root, EXPORT_THREAD_NAME, 'png');
       });
 
       test('THEN the rasterised file downloads and the intermediate SVG URL is released', () => {
         expect(outcome).toBe('downloaded');
-        expect(downloads).toEqual([`${EXPORT_FIXTURE.thread}.png`]);
+        expect(downloads).toEqual([`${EXPORT_THREAD_NAME}.png`]);
         expect(blobs.map((blob) => blob.type)).toEqual(['image/svg+xml', 'image/png']);
-        expect(URL.revokeObjectURL).toHaveBeenCalledWith(EXPORT_BLOB_URL);
+        expect(URL.revokeObjectURL).toHaveBeenCalledWith(EXPORT_FIXTURE.blobUrl);
       });
     });
 
     describe('WHEN it is exported as JPG', () => {
       beforeEach(async () => {
-        outcome = await exportCanvas(root, EXPORT_FIXTURE.thread, 'jpg');
+        outcome = await exportCanvas(root, EXPORT_THREAD_NAME, 'jpg');
       });
 
       test('THEN the bitmap is encoded as JPEG under the jpg extension', () => {
         expect(outcome).toBe('downloaded');
-        expect(downloads).toEqual([`${EXPORT_FIXTURE.thread}.jpg`]);
+        expect(downloads).toEqual([`${EXPORT_THREAD_NAME}.jpg`]);
         expect(blobs.map((blob) => blob.type)).toEqual(['image/svg+xml', 'image/jpeg']);
       });
     });
@@ -170,7 +158,7 @@ describe('exportCanvas', () => {
     describe('WHEN the browser cannot encode the bitmap', () => {
       beforeEach(async () => {
         vi.spyOn(HTMLCanvasElement.prototype, 'toBlob').mockImplementation(encodeNothing);
-        outcome = await exportCanvas(root, EXPORT_FIXTURE.thread, 'jpg');
+        outcome = await exportCanvas(root, EXPORT_THREAD_NAME, 'jpg');
       });
 
       test('THEN the export reports the graph as too large and downloads nothing', () => {
@@ -185,35 +173,33 @@ describe('exportCanvas', () => {
       });
 
       test('THEN the export fails instead of shipping a mislabelled file', async () => {
-        await expect(exportCanvas(root, EXPORT_FIXTURE.thread, 'jpg')).rejects.toThrow('Could not encode the image');
+        await expect(exportCanvas(root, EXPORT_THREAD_NAME, 'jpg')).rejects.toThrow('Could not encode the image');
         expect(downloads).toEqual([]);
-        expect(URL.revokeObjectURL).toHaveBeenCalledWith(EXPORT_BLOB_URL);
+        expect(URL.revokeObjectURL).toHaveBeenCalledWith(EXPORT_FIXTURE.blobUrl);
       });
     });
 
     describe('WHEN the intermediate SVG cannot be decoded as an image', () => {
       beforeEach(() => {
-        breakImageLoading();
+        stubImageDecoding('error');
       });
 
       test('THEN the export fails and still releases the SVG URL', async () => {
-        await expect(exportCanvas(root, EXPORT_FIXTURE.thread, 'png')).rejects.toThrow(
-          'Could not load the export image',
-        );
+        await expect(exportCanvas(root, EXPORT_THREAD_NAME, 'png')).rejects.toThrow('Could not load the export image');
         expect(HTMLCanvasElement.prototype.toBlob).not.toHaveBeenCalled();
-        expect(URL.revokeObjectURL).toHaveBeenCalledWith(EXPORT_BLOB_URL);
+        expect(URL.revokeObjectURL).toHaveBeenCalledWith(EXPORT_FIXTURE.blobUrl);
       });
     });
   });
 
   describe('GIVEN a graph too wide for a sharp bitmap', () => {
     beforeEach(() => {
-      root = buildExportCanvas(FAR_TARGET_X);
+      root = buildExportCanvas(EXPORT_SCENES.wide);
     });
 
     describe('WHEN it is exported as PNG', () => {
       beforeEach(async () => {
-        outcome = await exportCanvas(root, EXPORT_FIXTURE.thread, 'png');
+        outcome = await exportCanvas(root, EXPORT_THREAD_NAME, 'png');
       });
 
       test('THEN the export stops before rasterising and reports the graph as too large', () => {

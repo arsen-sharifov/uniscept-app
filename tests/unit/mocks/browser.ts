@@ -276,3 +276,27 @@ export const listenOnPage = (listeners: Record<string, EventListener>) => {
   entries.forEach(([type, listener]) => document.body.addEventListener(type, listener));
   onTestFinished(() => entries.forEach(([type, listener]) => document.body.removeEventListener(type, listener)));
 };
+
+export const stubProperty = (owner: object, property: PropertyKey, value: unknown) => {
+  const original = Object.getOwnPropertyDescriptor(owner, property);
+
+  Object.defineProperty(owner, property, { configurable: true, writable: true, value });
+  onTestFinished(() => {
+    if (original) {
+      Object.defineProperty(owner, property, original);
+
+      return;
+    }
+
+    Reflect.deleteProperty(owner, property);
+  });
+};
+
+export const stubRangeRects = (rectOf: (range: Range) => DOMRect) => {
+  stubProperty(Range.prototype, 'getBoundingClientRect', function (this: Range) {
+    return rectOf(this);
+  });
+  stubProperty(Range.prototype, 'getClientRects', function (this: Range) {
+    return [rectOf(this)];
+  });
+};

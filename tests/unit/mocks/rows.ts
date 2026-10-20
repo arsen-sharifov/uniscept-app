@@ -64,6 +64,7 @@ export const nodeCommentRow = (overrides?: Partial<INodeCommentRow>): INodeComme
   node_id: 'n1',
   author_id: 'user-1',
   text: 'Comment',
+  rich_text: null,
   created_at: '2026-01-01T00:00:00Z',
   ...overrides,
 });
@@ -75,6 +76,7 @@ export const canvasNodeRow = (overrides?: Partial<ICanvasNodeRow>): ICanvasNodeR
   position_x: 10,
   position_y: 20,
   label: 'Node',
+  rich_label: null,
   status: null,
   is_answer: false,
   source_node_id: null,

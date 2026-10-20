@@ -111,7 +111,8 @@
       "loadFailed": "Не вдалося завантажити",
       "saveFailed": "Не вдалося зберегти",
       "searchFailed": "Пошук не вдався",
-      "exportFailed": "Не вдалося експортувати"
+      "exportFailed": "Не вдалося експортувати",
+      "editFailed": "Не вдалося редагувати"
     },
     "errorPages": {
       "notFoundTitle": "Сторінку не знайдено",
@@ -316,6 +317,32 @@
       "comments": {
         "deleteAriaLabel": "Видалити коментар",
         "deleteTitle": "Видалити коментар"
+      },
+      "formatting": {
+        "toolbar": "Форматування тексту",
+        "bold": "Жирний",
+        "italic": "Курсив",
+        "underline": "Підкреслений",
+        "strike": "Закреслений",
+        "link": "Гіперпосилання",
+        "color": "Колір тексту",
+        "bulletList": "Маркований список",
+        "orderedList": "Нумерований список",
+        "back": "Назад",
+        "linkAddress": "Адреса посилання",
+        "linkPlaceholder": "Вставте або введіть адресу",
+        "applyLink": "Застосувати посилання",
+        "removeLink": "Прибрати посилання",
+        "invalidLink": "Введіть вебадресу або адресу електронної пошти.",
+        "colors": {
+          "default": "Типовий",
+          "red": "Червоний",
+          "amber": "Бурштиновий",
+          "green": "Зелений",
+          "blue": "Синій",
+          "violet": "Фіолетовий"
+        },
+        "shortcutsGroup": "Текст"
       },
       "save": {
         "retrying": "Повтор…",

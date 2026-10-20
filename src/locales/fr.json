@@ -111,7 +111,8 @@
       "loadFailed": "Impossible de charger",
       "saveFailed": "Impossible d'enregistrer",
       "searchFailed": "La recherche a échoué",
-      "exportFailed": "Impossible d'exporter"
+      "exportFailed": "Impossible d'exporter",
+      "editFailed": "Impossible de modifier"
     },
     "errorPages": {
       "notFoundTitle": "Page introuvable",
@@ -316,6 +317,32 @@
       "comments": {
         "deleteAriaLabel": "Supprimer le commentaire",
         "deleteTitle": "Supprimer le commentaire"
+      },
+      "formatting": {
+        "toolbar": "Mise en forme du texte",
+        "bold": "Gras",
+        "italic": "Italique",
+        "underline": "Souligné",
+        "strike": "Barré",
+        "link": "Lien hypertexte",
+        "color": "Couleur du texte",
+        "bulletList": "Liste à puces",
+        "orderedList": "Liste numérotée",
+        "back": "Retour",
+        "linkAddress": "Adresse du lien",
+        "linkPlaceholder": "Collez ou saisissez un lien",
+        "applyLink": "Appliquer le lien",
+        "removeLink": "Supprimer le lien",
+        "invalidLink": "Saisissez une adresse web ou une adresse e-mail.",
+        "colors": {
+          "default": "Par défaut",
+          "red": "Rouge",
+          "amber": "Ambre",
+          "green": "Vert",
+          "blue": "Bleu",
+          "violet": "Violet"
+        },
+        "shortcutsGroup": "Texte"
       },
       "save": {
         "retrying": "Nouvelle tentative…",

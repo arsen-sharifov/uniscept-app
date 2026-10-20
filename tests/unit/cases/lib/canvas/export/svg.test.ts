@@ -1,35 +1,23 @@
-import { afterEach, beforeEach, describe, expect, test } from 'vitest';
+import { beforeEach, describe, expect, test } from 'vitest';
 
 import type { ICanvasExportImage } from '@interfaces';
 
-import { EXPORT_RECTS, STAGE_SELECTOR } from '@mocks/canvasExport';
+import { EXPORT_THREAD_NAME } from '@mocks/canvasExport';
 import {
   EXPORT_FIXTURE,
+  EXPORT_SCENES,
+  LIST_FIXTURE,
+  SAMPLED_COLOR,
   buildExportCanvas,
-  buildLabelledCanvas,
-  buildMultilineCanvas,
-  buildOrphanEdgeCanvas,
-  buildPlaceholderCanvas,
-  buildUnreadyNodeCanvas,
-  buildUnsidedEdgeCanvas,
-  installExportEnvironment,
+  parseExportSvg,
+  stubCanvasExport,
 } from '@mocks/canvasExportDom';
-import { EXPORT_MARK_TEXT, createCanvasSvg, getExportBounds } from '@/lib/canvas/export';
+import { DECORATION_FIXTURE } from '@mocks/canvasExportText';
+import { EXPORT_RECTS } from '@mocks/canvasExportValues';
+import { EXPORT_MARK_TEXT, EXPORT_STAGE_SELECTOR, createCanvasSvg, getExportBounds } from '@/lib/canvas/export';
 
 let root: HTMLElement;
 let image: ICanvasExportImage;
-
-const parseSvg = (svg: string): Document => new DOMParser().parseFromString(svg, 'image/svg+xml');
-
-const edgePath = (id: string, start: string) => `data-edge-id="${id}" data-tone="valid" d="${start}`;
-
-beforeEach(() => {
-  installExportEnvironment();
-});
-
-afterEach(() => {
-  root?.remove();
-});
 
 describe('getExportBounds', () => {
   describe('GIVEN nodes at negative and distant coordinates and an edge bending beyond them', () => {
@@ -50,17 +38,21 @@ describe('getExportBounds', () => {
 });
 
 describe('createCanvasSvg', () => {
-  describe('GIVEN two connected nodes with helpers, an icon, an open textarea and a wash', () => {
+  beforeEach(() => {
+    stubCanvasExport();
+  });
+
+  describe('GIVEN two connected nodes with helpers, an icon, an open label editor and a wash', () => {
     beforeEach(async () => {
-      root = buildExportCanvas();
-      image = await createCanvasSvg(root, EXPORT_FIXTURE.thread);
+      root = buildExportCanvas(EXPORT_SCENES.editing);
+      image = await createCanvasSvg(root, EXPORT_THREAD_NAME);
     });
 
     describe('WHEN the graph is rendered to SVG', () => {
       test('THEN the frame wraps both nodes with padding and room for the product mark', () => {
         expect(image.width).toBe(EXPORT_FIXTURE.frame.width);
         expect(image.height).toBe(EXPORT_FIXTURE.frame.height);
-        expect(image.svg).toContain(`<title>${EXPORT_FIXTURE.thread}</title>`);
+        expect(image.svg).toContain(`<title>${EXPORT_THREAD_NAME}</title>`);
         expect(image.svg).toContain(`viewBox="0 0 ${EXPORT_FIXTURE.frame.width} ${EXPORT_FIXTURE.frame.height}"`);
       });
 
@@ -85,11 +77,11 @@ describe('createCanvasSvg', () => {
 
       test('THEN the wash, the icon and the product mark are painted and the stage is torn down', () => {
         expect(image.svg).toContain(`fill="${EXPORT_FIXTURE.washColor}"`);
-        expect(image.svg).toContain(`fill="${EXPORT_FIXTURE.background}"`);
+        expect(image.svg).toContain(`fill="${SAMPLED_COLOR}"`);
         expect(image.svg).toContain('id="product-mark"');
         expect(image.svg).toContain(EXPORT_MARK_TEXT);
         expect(image.svg.match(/<svg /g)).toHaveLength(3);
-        expect(root.querySelector(STAGE_SELECTOR)).toBeNull();
+        expect(root.querySelector(EXPORT_STAGE_SELECTOR)).toBeNull();
       });
 
       test('THEN icons carry their computed paint as attributes instead of classes', () => {
@@ -98,15 +90,15 @@ describe('createCanvasSvg', () => {
       });
 
       test('THEN edges leave the declared handle sides', () => {
-        expect(image.svg).toContain(edgePath('e1', EXPORT_FIXTURE.sidedEdgeStart));
+        expect(image.svg).toContain(EXPORT_FIXTURE.sidedEdgePath);
       });
     });
   });
 
   describe('GIVEN a label that spans two lines', () => {
     beforeEach(async () => {
-      root = buildMultilineCanvas();
-      image = await createCanvasSvg(root, EXPORT_FIXTURE.thread);
+      root = buildExportCanvas(EXPORT_SCENES.multiline);
+      image = await createCanvasSvg(root, EXPORT_THREAD_NAME);
     });
 
     describe('WHEN the graph is rendered to SVG', () => {
@@ -122,13 +114,13 @@ describe('createCanvasSvg', () => {
 
   describe('GIVEN a label and a thread name that carry markup', () => {
     beforeEach(async () => {
-      root = buildLabelledCanvas(EXPORT_FIXTURE.markupLabel);
+      root = buildExportCanvas(EXPORT_SCENES.markup);
       image = await createCanvasSvg(root, EXPORT_FIXTURE.markupThread);
     });
 
     describe('WHEN the exported file is opened as SVG', () => {
       test('THEN the markup stays literal text and never becomes elements', () => {
-        const document = parseSvg(image.svg);
+        const document = parseExportSvg(image.svg);
 
         expect(document.querySelector('parsererror')).toBeNull();
         expect(document.getElementsByTagName('script')).toHaveLength(0);
@@ -143,13 +135,13 @@ describe('createCanvasSvg', () => {
 
   describe('GIVEN a label and a thread name with characters XML forbids', () => {
     beforeEach(async () => {
-      root = buildLabelledCanvas(EXPORT_FIXTURE.controlLabel);
+      root = buildExportCanvas(EXPORT_SCENES.control);
       image = await createCanvasSvg(root, EXPORT_FIXTURE.controlLabel);
     });
 
     describe('WHEN the exported file is opened as SVG', () => {
       test('THEN it still parses and keeps the readable text', () => {
-        const document = parseSvg(image.svg);
+        const document = parseExportSvg(image.svg);
 
         expect(document.querySelector('parsererror')).toBeNull();
         expect(document.querySelector('title')?.textContent).toBe(EXPORT_FIXTURE.controlSafeLabel);
@@ -160,55 +152,103 @@ describe('createCanvasSvg', () => {
     });
   });
 
-  describe('GIVEN a node whose label editor is open and empty', () => {
-    beforeEach(async () => {
-      root = buildPlaceholderCanvas();
-      image = await createCanvasSvg(root, EXPORT_FIXTURE.thread);
+  describe('GIVEN a node whose label editor is open and empty next to one whose editor holds a draft', () => {
+    beforeEach(() => {
+      root = buildExportCanvas(EXPORT_SCENES.placeholder);
     });
 
     describe('WHEN the graph is rendered to SVG', () => {
-      test('THEN the placeholder stands in for the missing label', () => {
-        expect(image.svg).toContain(EXPORT_FIXTURE.placeholderLabel);
-        expect(image.svg).not.toContain(EXPORT_FIXTURE.draftLabel);
-        expect(image.svg).not.toContain('<textarea');
+      beforeEach(async () => {
+        image = await createCanvasSvg(root, EXPORT_THREAD_NAME);
+      });
+
+      test('THEN the placeholder stands in for the empty label while the draft keeps its own text', () => {
+        const document = parseExportSvg(image.svg);
+        const source = document.querySelector('[data-node-id="source"]')?.textContent;
+        const target = document.querySelector('[data-node-id="target"]')?.textContent;
+
+        expect(source).toContain(EXPORT_FIXTURE.placeholderLabel);
+        expect(source).not.toContain(EXPORT_FIXTURE.draftLabel);
+        expect(target).toContain(EXPORT_FIXTURE.draftLabel);
+        expect(target).not.toContain(EXPORT_FIXTURE.placeholderLabel);
+      });
+    });
+  });
+
+  describe('GIVEN a node label with a bullet list, an ordered list and an ordered list that starts at three', () => {
+    beforeEach(() => {
+      root = buildExportCanvas(EXPORT_SCENES.lists);
+    });
+
+    describe('WHEN the graph is rendered to SVG', () => {
+      beforeEach(async () => {
+        image = await createCanvasSvg(root, EXPORT_THREAD_NAME);
+      });
+
+      test('THEN every list item is exported as text after its marker', () => {
+        const runs = parseExportSvg(image.svg).querySelectorAll('[data-node-id="source"] text');
+
+        expect(Array.from(runs, (run) => run.textContent)).toEqual(LIST_FIXTURE.runs);
+      });
+    });
+  });
+
+  describe('GIVEN a node label that underlines a word', () => {
+    beforeEach(() => {
+      root = buildExportCanvas(EXPORT_SCENES.underlined);
+    });
+
+    describe('WHEN the graph is rendered to SVG', () => {
+      beforeEach(async () => {
+        image = await createCanvasSvg(root, EXPORT_THREAD_NAME);
+      });
+
+      test('THEN one thin line in the decoration colour is painted under the word inside its node', () => {
+        const lines = parseExportSvg(image.svg).querySelectorAll(
+          `[data-node-id="source"] rect[fill="${DECORATION_FIXTURE.color}"]`,
+        );
+
+        expect(lines).toHaveLength(1);
+        expect(lines[0]?.getAttribute('width')).toBe(DECORATION_FIXTURE.wordWidth);
+        expect(lines[0]?.getAttribute('height')).toBe(DECORATION_FIXTURE.thickness);
       });
     });
   });
 
   describe('GIVEN an edge without handle sides in its markup', () => {
     beforeEach(async () => {
-      root = buildUnsidedEdgeCanvas();
-      image = await createCanvasSvg(root, EXPORT_FIXTURE.thread);
+      root = buildExportCanvas(EXPORT_SCENES.unsided);
+      image = await createCanvasSvg(root, EXPORT_THREAD_NAME);
     });
 
     describe('WHEN the graph is rendered to SVG', () => {
       test('THEN it falls back to leaving the source bottom for the target top', () => {
-        expect(image.svg).toContain(edgePath('e1', EXPORT_FIXTURE.unsidedEdgeStart));
+        expect(image.svg).toContain(EXPORT_FIXTURE.unsidedEdgePath);
       });
     });
   });
 
   describe('GIVEN an edge that points at a node missing from the canvas', () => {
     beforeEach(() => {
-      root = buildOrphanEdgeCanvas();
+      root = buildExportCanvas(EXPORT_SCENES.orphan);
     });
 
     describe('WHEN the graph is rendered to SVG', () => {
       test('THEN the export refuses instead of drawing a dangling edge', async () => {
-        await expect(createCanvasSvg(root, EXPORT_FIXTURE.thread)).rejects.toThrow('A canvas edge is not ready');
-        expect(root.querySelector(STAGE_SELECTOR)).toBeNull();
+        await expect(createCanvasSvg(root, EXPORT_THREAD_NAME)).rejects.toThrow('A canvas edge is not ready');
+        expect(root.querySelector(EXPORT_STAGE_SELECTOR)).toBeNull();
       });
     });
   });
 
   describe('GIVEN a node wrapper whose card has not mounted yet', () => {
     beforeEach(() => {
-      root = buildUnreadyNodeCanvas();
+      root = buildExportCanvas(EXPORT_SCENES.unmounted);
     });
 
     describe('WHEN the graph is rendered to SVG', () => {
       test('THEN the export refuses', async () => {
-        await expect(createCanvasSvg(root, EXPORT_FIXTURE.thread)).rejects.toThrow('A canvas node is not ready');
+        await expect(createCanvasSvg(root, EXPORT_THREAD_NAME)).rejects.toThrow('A canvas node is not ready');
       });
     });
   });
@@ -221,7 +261,7 @@ describe('createCanvasSvg', () => {
 
     describe('WHEN the graph is rendered to SVG', () => {
       test('THEN the export refuses', async () => {
-        await expect(createCanvasSvg(root, EXPORT_FIXTURE.thread)).rejects.toThrow('The active canvas changed');
+        await expect(createCanvasSvg(root, EXPORT_THREAD_NAME)).rejects.toThrow('The active canvas changed');
       });
     });
   });

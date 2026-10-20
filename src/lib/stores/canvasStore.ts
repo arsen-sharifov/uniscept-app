@@ -20,6 +20,7 @@ import {
   type ICanvasSnapshot,
   type IComment,
   type IReferenceNodeData,
+  type IRichTextDocument,
   type TCanvasNode,
   type TFitPadding,
   type TNodeStatus,
@@ -37,7 +38,9 @@ import {
   isCanvasNodeData,
   isHandleId,
   isSameHistoryState,
+  toCreateCommentOperation,
   toCreateOperations,
+  toUpdateLabelOperation,
   withReverseEdgeIds,
 } from '@/lib/canvas';
 import { canDeleteNode, canEditNode } from '@/lib/utils';
@@ -77,8 +80,8 @@ interface ICanvasStore extends ICanvasState {
   setPendingConnection: (nodeId: string | null) => void;
   setNodeStatus: (id: string, status: TNodeStatus) => void;
   setNodeAnswer: (id: string) => void;
-  updateNodeLabel: (id: string, label: string) => void;
-  addComment: (nodeId: string, text: string) => void;
+  updateNodeLabel: (id: string, label: string, richLabel?: IRichTextDocument) => void;
+  addComment: (nodeId: string, text: string, richText?: IRichTextDocument) => void;
   deleteComment: (nodeId: string, commentId: string) => void;
   duplicateNode: (id: string) => void;
   setEditingNodeId: (id: string | null) => void;
@@ -430,16 +433,16 @@ export const useCanvasStore = create<ICanvasStore>()(
           );
         },
 
-        updateNodeLabel: (id, label) => {
+        updateNodeLabel: (id, label, richLabel) => {
           const target = get().nodes.find((node) => node.id === id);
           if (!target || !isCanvasNodeData(target.data)) return;
           if (!canEditNode(target.data.createdBy, usePermissionsStore.getState())) return;
 
           patchCanvasNodes(
             (nodeId) => nodeId === id,
-            () => ({ label }),
+            () => ({ label, richLabel }),
           );
-          emitCanvasOperation({ type: 'updateNodeLabel', id, label });
+          emitCanvasOperation(toUpdateLabelOperation(id, label, richLabel));
         },
 
         duplicateNode: (id) => {
@@ -460,6 +463,7 @@ export const useCanvasStore = create<ICanvasStore>()(
           };
           const data: ICanvasNodeData = {
             label: source.data.label,
+            richLabel: source.data.richLabel,
             status: source.data.status,
             isAnswer: false,
             comments: [],
@@ -476,19 +480,19 @@ export const useCanvasStore = create<ICanvasStore>()(
           toCreateOperations(newNodeId, threadId, position, data).forEach(emitCanvasOperation);
         },
 
-        addComment: (nodeId, text) => {
+        addComment: (nodeId, text, richText) => {
           const { userId, canComment } = usePermissionsStore.getState();
           if (!userId || !canComment) return;
 
           const id = crypto.randomUUID();
-          const comment: IComment = { id, text, authorId: userId };
+          const comment: IComment = { id, text, richText, authorId: userId };
 
           patchCanvasNodes(
             (candidateId) => candidateId === nodeId,
             (data) => ({ comments: [...data.comments, comment] }),
           );
 
-          emitCanvasOperation({ type: 'createComment', id, nodeId, text });
+          emitCanvasOperation(toCreateCommentOperation(comment, nodeId));
         },
 
         deleteComment: (nodeId, commentId) => {

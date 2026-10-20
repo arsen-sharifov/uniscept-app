@@ -33,3 +33,40 @@ export const BACKDATED_TIMESTAMP = '2000-01-01T00:00:00Z';
 export const MISSING_ROW_ID = '00000000-0000-4000-8000-000000000000';
 
 export const CLIENT_OPTIONS = { auth: { autoRefreshToken: false, persistSession: false } };
+
+export const RICH_TEXT_SIZE_CAP = 100_000;
+
+export const RICH_LABEL_DOCUMENT = {
+  type: 'doc',
+  content: [
+    {
+      type: 'paragraph',
+      content: [
+        { type: 'text', text: 'Ship ' },
+        { type: 'text', text: 'now', marks: [{ type: 'bold' }] },
+      ],
+    },
+  ],
+};
+
+export const RESTYLED_LABEL_DOCUMENT = {
+  type: 'doc',
+  content: [
+    {
+      type: 'paragraph',
+      content: [
+        { type: 'text', text: 'Ship ' },
+        { type: 'text', text: 'now', marks: [{ type: 'italic' }] },
+      ],
+    },
+  ],
+};
+
+export const RICH_LABEL_TEXT = 'Ship now';
+
+export const OVERSIZED_RICH_DOCUMENT = {
+  type: 'doc',
+  content: [{ type: 'paragraph', content: [{ type: 'text', text: 'x'.repeat(RICH_TEXT_SIZE_CAP) }] }],
+};
+
+export const NOT_A_DOCUMENT = { type: 'paragraph', content: [] };

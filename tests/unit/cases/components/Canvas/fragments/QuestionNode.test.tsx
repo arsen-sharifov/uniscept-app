@@ -1,12 +1,21 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { ReactFlowProvider } from '@xyflow/react';
-import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { stubResizeObserver } from '@mocks/browser';
-import { THREAD_ID, nodeProps, overflowLabels, questionNode, resetLabelOverflow } from '@mocks/canvas';
+import {
+  THREAD_ID,
+  formattedQuestionNode,
+  nodeProps,
+  overflowLabels,
+  questionNode,
+  resetLabelOverflow,
+} from '@mocks/canvas';
 import { TRANSLATIONS } from '@mocks/i18n';
+import { editorOf, stubEditorLayout } from '@mocks/richText';
 import { FULL_ACCESS, READONLY_ACCESS } from '@mocks/roles';
 import { QuestionNode } from '@/components/Canvas/fragments';
+import { preloadRichTextEditor } from '@/components/RichTextEditor';
 import { MAX_NODE_LABEL_LENGTH, subscribeCanvasOperations } from '@/lib/canvas';
 import { useCanvasStore, usePermissionsStore } from '@/lib/stores';
 
@@ -16,8 +25,13 @@ const onOperation = vi.fn();
 
 const unsubscribers: Array<() => void> = [];
 
+beforeAll(async () => {
+  await preloadRichTextEditor();
+});
+
 beforeEach(() => {
   stubResizeObserver();
+  stubEditorLayout();
 });
 
 afterEach(() => {
@@ -84,8 +98,25 @@ describe('QuestionNode', () => {
     });
   });
 
-  describe('GIVEN an owner editing the question', () => {
+  describe('GIVEN a formatted question a viewer is reading', () => {
     beforeEach(() => {
+      usePermissionsStore.getState().setAccess('ws-1', 'user-1', READONLY_ACCESS);
+      render(
+        <ReactFlowProvider>
+          <QuestionNode {...nodeProps(formattedQuestionNode('q'))} />
+        </ReactFlowProvider>,
+      );
+    });
+
+    describe('WHEN it renders', () => {
+      test('THEN the formatting shows in the question', () => {
+        expect(screen.getByText('now').tagName).toBe('STRONG');
+      });
+    });
+  });
+
+  describe('GIVEN an owner editing the question', () => {
+    beforeEach(async () => {
       usePermissionsStore.getState().setAccess('ws-1', 'user-1', FULL_ACCESS);
       useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [questionNode('q')], edges: [] });
       useCanvasStore.getState().setEditingNodeId('q');
@@ -94,28 +125,35 @@ describe('QuestionNode', () => {
           <QuestionNode {...nodeProps(questionNode('q'))} />
         </ReactFlowProvider>,
       );
+      await screen.findByRole('textbox', { name: TRANSLATIONS.platform.canvas.question.ariaLabel });
     });
 
     describe('WHEN the editor opens', () => {
-      test('THEN a focused, labelled textarea replaces the question', () => {
-        expect(screen.getByRole('textbox', { name: TRANSLATIONS.platform.canvas.question.ariaLabel })).toHaveValue(
-          'Main question',
-        );
-        expect(screen.getByRole('textbox')).toHaveFocus();
-        expect(screen.getByRole('textbox')).toHaveAttribute(
-          'placeholder',
-          TRANSLATIONS.platform.canvas.question.placeholder,
-        );
+      test('THEN a focused, labelled editor replaces the question', async () => {
+        expect(
+          screen.getByRole('textbox', { name: TRANSLATIONS.platform.canvas.question.ariaLabel }),
+        ).toHaveTextContent('Main question');
+        await waitFor(() => expect(screen.getByRole('textbox')).toHaveFocus());
+      });
+    });
+
+    describe('WHEN more text than the canvas stores is inserted', () => {
+      beforeEach(() => {
+        act(() => {
+          editorOf(screen.getByRole('textbox')).commands.insertContent('x'.repeat(MAX_NODE_LABEL_LENGTH));
+        });
       });
 
-      test('THEN the textarea stops at the longest label the canvas stores', () => {
-        expect(screen.getByRole('textbox')).toHaveAttribute('maxlength', String(MAX_NODE_LABEL_LENGTH));
+      test('THEN the editor refuses the insertion', () => {
+        expect(screen.getByRole('textbox')).toHaveTextContent(/^Main question$/);
       });
     });
 
     describe('WHEN a new question is committed with Enter', () => {
       beforeEach(() => {
-        fireEvent.change(screen.getByRole('textbox'), { target: { value: 'Which bet wins?' } });
+        act(() => {
+          editorOf(screen.getByRole('textbox')).commands.setContent('<p>Which bet wins?</p>');
+        });
         fireEvent.keyDown(screen.getByRole('textbox'), { key: 'Enter' });
       });
 
@@ -127,7 +165,9 @@ describe('QuestionNode', () => {
 
     describe('WHEN the edit is cancelled with Escape', () => {
       beforeEach(() => {
-        fireEvent.change(screen.getByRole('textbox'), { target: { value: 'Discarded draft' } });
+        act(() => {
+          editorOf(screen.getByRole('textbox')).commands.setContent('<p>Discarded draft</p>');
+        });
         fireEvent.keyDown(screen.getByRole('textbox'), { key: 'Escape' });
       });
 
@@ -138,10 +178,33 @@ describe('QuestionNode', () => {
     });
   });
 
+  describe('GIVEN an owner opening an empty question for editing', () => {
+    beforeEach(async () => {
+      usePermissionsStore.getState().setAccess('ws-1', 'user-1', FULL_ACCESS);
+      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [questionNode('q', '')], edges: [] });
+      useCanvasStore.getState().setEditingNodeId('q');
+      render(
+        <ReactFlowProvider>
+          <QuestionNode {...nodeProps(questionNode('q', ''))} />
+        </ReactFlowProvider>,
+      );
+      await screen.findByRole('textbox');
+    });
+
+    describe('WHEN the editor opens', () => {
+      test('THEN the question prompt shows as the placeholder', () => {
+        expect(screen.getByRole('textbox').querySelector('p')).toHaveAttribute(
+          'data-placeholder',
+          TRANSLATIONS.platform.canvas.question.placeholder,
+        );
+      });
+    });
+  });
+
   describe('GIVEN a fresh question opened for editing before React Flow measured it', () => {
     let rerender: ReturnType<typeof render>['rerender'];
 
-    beforeEach(() => {
+    beforeEach(async () => {
       usePermissionsStore.getState().setAccess('ws-1', 'user-1', FULL_ACCESS);
       useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [questionNode('q', '  ')], edges: [] });
       useCanvasStore.getState().setEditingNodeId('q');
@@ -151,10 +214,11 @@ describe('QuestionNode', () => {
           <QuestionNode {...nodeProps(questionNode('q', '  '))} width={0} height={0} />
         </ReactFlowProvider>,
       ).rerender;
+      await screen.findByRole('textbox');
     });
 
     describe('WHEN the hidden node renders its editor', () => {
-      test('THEN the textarea is in place but not focused yet', () => {
+      test('THEN the editor is in place but not focused yet', () => {
         expect(
           screen.getByRole('textbox', { name: TRANSLATIONS.platform.canvas.question.ariaLabel }),
         ).not.toHaveFocus();
@@ -170,8 +234,10 @@ describe('QuestionNode', () => {
         );
       });
 
-      test('THEN the textarea takes focus so typing goes into the question', () => {
-        expect(screen.getByRole('textbox', { name: TRANSLATIONS.platform.canvas.question.ariaLabel })).toHaveFocus();
+      test('THEN the editor takes focus so typing goes into the question', async () => {
+        await waitFor(() =>
+          expect(screen.getByRole('textbox', { name: TRANSLATIONS.platform.canvas.question.ariaLabel })).toHaveFocus(),
+        );
       });
     });
 

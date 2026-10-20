@@ -1,328 +1,289 @@
-import { vi } from 'vitest';
+import { onTestFinished, vi } from 'vitest';
 
 import type { ICanvasExportContext } from '@interfaces';
 
-import { EXPORT_NODE_SELECTOR, SVG_NAMESPACE } from '@/lib/canvas/export';
+import { svgElement } from '@/lib/canvas/export';
 
-const GLYPH_WIDTH = 8;
-const LINE_HEIGHT = 20;
-const NODE_WIDTH = 200;
-const NODE_HEIGHT = 60;
-const EDGE_BOX = { x: 240, y: 110, width: 160, height: 0 };
-const TRANSLATE_PATTERN = /translate\((-?[\d.]+)px, (-?[\d.]+)px\)/;
-const EXPORT_THREAD = 'Thread';
-const SOURCE_LABEL = 'Origin claim';
-const TARGET_LABEL = 'Refuted premise';
-const DRAFT_LABEL = 'Draft label';
-const PLACEHOLDER_LABEL = 'Type a label';
-const MULTILINE_LABEL = 'First line\nSecond line';
-const MARKUP_LABEL = '</text><script>alert(1)</script><a href="javascript:alert(2)">go</a>';
-const MARKUP_THREAD = 'Plan"><script>alert(3)</script>';
-const CONTROL_LABEL = `Bell${String.fromCodePoint(0x07)} form${String.fromCodePoint(0x0c)} feed${String.fromCodePoint(0xff_ff)} end`;
-const CONTROL_SAFE_LABEL = 'Bell form feed end';
-const OMITTED_LABEL = 'Show more';
-const HIDDEN_LABEL = 'Hidden helper';
-const EDGE_STROKE = 'rgb(21, 128, 61)';
-const WASH_COLOR = 'rgba(220, 38, 38, 0.07)';
-const SHADOW = 'rgba(0, 0, 0, 0.1) 0px 1px 2px 0px';
-const BACKGROUND = 'rgba(250, 250, 245, 1)';
-const ICON_FILL = 'rgb(1, 2, 3)';
-
-export const EXPORT_BLOB_URL = 'blob:export';
+import type { IUnitExportScene, IUnitExportSceneEdge, IUnitExportSceneNode } from '../interfaces';
+import { stubFontsReady, stubProperty, stubRangeRects } from './browser';
+import { DECORATION_MARKUP } from './canvasExportText';
 
 export const EXPORT_FIXTURE = {
-  thread: EXPORT_THREAD,
-  sourceLabel: SOURCE_LABEL,
-  targetLabel: TARGET_LABEL,
-  draftLabel: DRAFT_LABEL,
-  placeholderLabel: PLACEHOLDER_LABEL,
-  multilineLabel: MULTILINE_LABEL,
-  markupLabel: MARKUP_LABEL,
-  markupThread: MARKUP_THREAD,
-  controlLabel: CONTROL_LABEL,
-  controlSafeLabel: CONTROL_SAFE_LABEL,
-  omittedLabel: OMITTED_LABEL,
-  hiddenLabel: HIDDEN_LABEL,
-  edgeStroke: EDGE_STROKE,
-  washColor: WASH_COLOR,
-  background: BACKGROUND,
-  iconFill: ICON_FILL,
-  sidedEdgeStart: 'M240,110 ',
-  unsidedEdgeStart: 'M140,140 ',
+  sourceLabel: 'Origin claim',
+  draftLabel: 'Draft label',
+  placeholderLabel: 'Describe the claim',
+  multilineLabel: 'First line\nSecond line',
+  markupLabel: '</text><script>alert(1)</script><a href="javascript:alert(2)">go</a>',
+  markupThread: 'Plan"><script>alert(3)</script>',
+  controlLabel: `Bell${String.fromCodePoint(0x07)} form${String.fromCodePoint(0x0c)} feed${String.fromCodePoint(0xff_ff)} end`,
+  controlSafeLabel: 'Bell form feed end',
+  omittedLabel: 'Show more',
+  hiddenLabel: 'Hidden helper',
+  edgeStroke: 'rgb(21, 128, 61)',
+  washColor: 'rgba(220, 38, 38, 0.07)',
+  iconFill: 'rgb(1, 2, 3)',
+  blobUrl: 'blob:export',
+  sidedEdgePath: 'data-edge-id="e1" data-tone="valid" d="M240,110 ',
+  unsidedEdgePath: 'data-edge-id="e1" data-tone="valid" d="M140,140 ',
   frame: { width: 656, height: 196 },
 } as const;
 
-class TranslationMatrix {
-  m41: number;
-  m42: number;
-
-  constructor(transform: string) {
-    const [, x = '0', y = '0'] = TRANSLATE_PATTERN.exec(transform) ?? [];
-    this.m41 = Number(x);
-    this.m42 = Number(y);
-  }
-}
-
-class InstantImage {
-  onload: (() => void) | null = null;
-  onerror: (() => void) | null = null;
-  source = '';
-
-  set src(value: string) {
-    this.source = value;
-    queueMicrotask(() => this.onload?.());
-  }
-}
-
-class BrokenImage extends InstantImage {
-  override set src(value: string) {
-    this.source = value;
-    queueMicrotask(() => this.onerror?.());
-  }
-}
-
-const rect = (x: number, y: number, width: number, height: number): DOMRect =>
-  ({ x, y, width, height, left: x, top: y, right: x + width, bottom: y + height, toJSON: () => ({}) }) as DOMRect;
-
-const styleRect = function (this: Element): DOMRect {
-  const style = this instanceof HTMLElement ? this.style : null;
-
-  return rect(
-    Number.parseFloat(style?.left ?? '') || 0,
-    Number.parseFloat(style?.top ?? '') || 0,
-    NODE_WIDTH,
-    NODE_HEIGHT,
-  );
-};
-
-const rangeRect = function (this: Range): DOMRect {
-  const text = this.startContainer instanceof Text ? this.startContainer.data : '';
-  const lines = text.slice(0, this.startOffset).split('\n');
-  const column = lines.at(-1)?.length ?? 0;
-
-  return rect(column * GLYPH_WIDTH, (lines.length - 1) * LINE_HEIGHT, GLYPH_WIDTH, LINE_HEIGHT);
-};
-
-export const scratchContext = {
-  font: '',
-  fillStyle: '',
-  measureText: () => ({ fontBoundingBoxAscent: 12, fontBoundingBoxDescent: 4 }),
-  clearRect: () => {},
-  fillRect: () => {},
-  drawImage: () => {},
-  getImageData: () => ({ data: Uint8ClampedArray.of(250, 250, 245, 255) }),
-};
-
-export const installExportEnvironment = (): void => {
-  vi.stubGlobal('DOMMatrix', TranslationMatrix);
-  vi.stubGlobal('Image', InstantImage);
-  Object.defineProperty(document, 'fonts', { configurable: true, value: { ready: Promise.resolve() } });
-  Object.defineProperty(Range.prototype, 'getBoundingClientRect', { configurable: true, value: rangeRect });
-  Object.defineProperty(Element.prototype, 'getBoundingClientRect', { configurable: true, value: styleRect });
-  Object.defineProperty(SVGElement.prototype, 'getBBox', {
-    configurable: true,
-    value: () => rect(EDGE_BOX.x, EDGE_BOX.y, EDGE_BOX.width, EDGE_BOX.height),
-  });
-  URL.createObjectURL = vi.fn(() => EXPORT_BLOB_URL);
-  URL.revokeObjectURL = vi.fn();
-  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(
-    scratchContext as unknown as CanvasRenderingContext2D,
-  );
-};
-
-export const breakImageLoading = (): void => {
-  vi.stubGlobal('Image', BrokenImage);
-};
-
-const svgChild = (name: string): SVGElement => document.createElementNS(SVG_NAMESPACE, name);
-
-export const colorContext = (): ICanvasExportContext =>
-  ({ stage: document.body, scratch: scratchContext, colors: new Map() }) as unknown as ICanvasExportContext;
-
-export const definitionContext = (): ICanvasExportContext =>
-  ({ defs: svgChild('defs'), definitions: new Map() }) as unknown as ICanvasExportContext;
-
-export const glyphContext = (text: string, family: string): ICanvasExportContext =>
-  ({
-    fonts: new Set([family]),
-    codePoints: new Set(Array.from(text, (character) => character.codePointAt(0) ?? 0)),
-  }) as unknown as ICanvasExportContext;
-
-const exportNode = (id: string, x: number, y: number, label: string): HTMLDivElement => {
-  const wrapper = document.createElement('div');
-  wrapper.className = 'react-flow__node';
-  wrapper.dataset.id = id;
-  wrapper.style.transform = `translate(${x}px, ${y}px)`;
-  const source = document.createElement('div');
-  source.dataset.exportNode = '';
-  Object.assign(source.style, {
-    backgroundColor: 'rgb(255, 255, 255)',
-    backgroundImage: `linear-gradient(${WASH_COLOR}, ${WASH_COLOR})`,
-    borderTopWidth: '1px',
-    borderTopColor: 'rgb(200, 200, 200)',
-    borderTopLeftRadius: '12px',
-    overflow: 'hidden',
-  });
-  source.style.setProperty('box-shadow', SHADOW, 'important');
-  const handle = document.createElement('div');
-  handle.className = 'react-flow__handle';
-  const omitted = document.createElement('button');
-  omitted.dataset.exportOmit = '';
-  omitted.textContent = OMITTED_LABEL;
-  const hidden = document.createElement('span');
-  hidden.style.display = 'none';
-  hidden.textContent = HIDDEN_LABEL;
-  const paragraph = document.createElement('p');
-  paragraph.textContent = label;
-  paragraph.style.color = 'rgb(20, 20, 20)';
-  paragraph.style.textTransform = 'uppercase';
-  const icon = svgChild('svg');
-  icon.setAttribute('class', 'h-3 w-3');
-  const glyph = svgChild('path');
-  glyph.style.fill = ICON_FILL;
-  icon.append(glyph);
-  const textarea = document.createElement('textarea');
-  textarea.value = DRAFT_LABEL;
-  source.append(handle, omitted, hidden, paragraph, icon, textarea);
-  wrapper.append(source);
-
-  return wrapper;
-};
-
-const exportEdge = (id: string, source: string, target: string, bidirectional: boolean): SVGElement => {
-  const group = svgChild('g');
-  group.dataset.exportEdge = id;
-  group.dataset.source = source;
-  group.dataset.target = target;
-  group.dataset.sourceHandle = 'right';
-  group.dataset.targetHandle = 'left';
-  group.dataset.tone = 'valid';
-  if (bidirectional) group.dataset.bidirectional = 'true';
-  const path = svgChild('path');
-  path.setAttribute('class', 'react-flow__edge-path');
-  path.style.stroke = EDGE_STROKE;
-  path.style.strokeWidth = '1.75';
-  group.append(path);
-
-  return group;
-};
-
-export const buildExportCanvas = (targetX = 400): HTMLElement => {
-  const root = document.createElement('div');
-  const edges = svgChild('svg');
-  edges.append(exportEdge('e1', 'source', 'target', false), exportEdge('e2', 'target', 'source', true));
-  root.append(exportNode('source', 40, 80, SOURCE_LABEL), exportNode('target', targetX, 80, TARGET_LABEL), edges);
-  document.body.append(root);
-
-  return root;
-};
-
-export const buildOrphanEdgeCanvas = (): HTMLElement => {
-  const root = buildExportCanvas();
-  root.querySelector<SVGElement>('[data-export-edge="e1"]')?.setAttribute('data-target', 'missing');
-
-  return root;
-};
-
-export const buildUnreadyNodeCanvas = (): HTMLElement => {
-  const root = buildExportCanvas();
-  root.querySelector(EXPORT_NODE_SELECTOR)?.remove();
-
-  return root;
-};
-
-export const buildUnsidedEdgeCanvas = (): HTMLElement => {
-  const root = buildExportCanvas();
-  const edge = root.querySelector<SVGElement>('[data-export-edge="e1"]');
-  delete edge?.dataset.sourceHandle;
-  delete edge?.dataset.targetHandle;
-
-  return root;
-};
-
-export const buildPlaceholderCanvas = (): HTMLElement => {
-  const root = buildExportCanvas();
-  root.querySelectorAll('textarea').forEach((textarea) => {
-    textarea.value = '';
-    textarea.placeholder = PLACEHOLDER_LABEL;
-  });
-
-  return root;
-};
-
-export const buildLabelledCanvas = (label: string): HTMLElement => {
-  const root = buildExportCanvas();
-  const paragraph = root.querySelector('[data-id="source"] p');
-  if (paragraph) paragraph.textContent = label;
-
-  return root;
-};
-
-export const buildMultilineCanvas = (): HTMLElement => buildLabelledCanvas(MULTILINE_LABEL);
-
-const FONT_FAMILY = 'Onest';
-const OTHER_FAMILY = 'JetBrains Mono';
-const FONT_BASE = 'https://app.test/fonts/';
-const LATIN_SOURCE = 'latin.woff2';
-const CYRILLIC_SOURCE = 'cyrillic.woff2';
-const INLINE_SOURCE = 'data:font/woff2;base64,AAAA';
-const FONT_BYTES = 'font';
-
-export const FONT_FIXTURE = {
-  family: FONT_FAMILY,
-  otherFamily: OTHER_FAMILY,
-  latinUrl: `${FONT_BASE}${LATIN_SOURCE}`,
-  cyrillicUrl: `${FONT_BASE}${CYRILLIC_SOURCE}`,
-  cyrillicSource: CYRILLIC_SOURCE,
-  inlineSource: INLINE_SOURCE,
-  dataUrl: 'data:font/woff2;base64,Zm9udA==',
+export const LIST_FIXTURE = {
+  markup: [
+    '<ul><li><p>Alpha</p></li><li><p>Beta</p></li></ul>',
+    '<ol><li><p>One</p></li><li><p>Two</p></li></ol>',
+    '<ol start="3"><li><p>Three</p></li><li><p>Four</p></li></ol>',
+  ].join(''),
+  bullets: ['•', '•'],
+  numbers: ['1.', '2.'],
+  continued: ['3.', '4.'],
+  runs: ['•', 'Alpha', '•', 'Beta', '1.', 'One', '2.', 'Two', '3.', 'Three', '4.', 'Four'],
 } as const;
 
-const fontFace = (family: string, source: string, unicodeRange: string): CSSFontFaceRule => {
-  const declarations: Record<string, string> = {
-    'font-family': `"${family}"`,
-    src: `url("${source}") format("woff2")`,
-    'unicode-range': unicodeRange,
-  };
+const GLYPH_SIZE = { width: 8, height: 20 };
 
-  return Object.create(CSSFontFaceRule.prototype, {
-    cssText: {
-      value: `@font-face { font-family: "${family}"; src: url("${source}") format("woff2"); unicode-range: ${unicodeRange}; }`,
-    },
-    style: { value: { getPropertyValue: (property: string) => declarations[property] ?? '' } },
-  }) as CSSFontFaceRule;
-};
+const SOURCE_NODE = { id: 'source', x: 40, y: 80, label: EXPORT_FIXTURE.sourceLabel };
+const TARGET_NODE = { id: 'target', x: 400, y: 80, label: 'Refuted premise' };
+const FORWARD_EDGE = { id: 'e1', source: 'source', target: 'target', sided: true, bidirectional: false };
+const RETURN_EDGE = { id: 'e2', source: 'target', target: 'source', sided: true, bidirectional: true };
 
-export const fontResponse = (ok: boolean): Response =>
-  ({ ok, blob: async () => new Blob([FONT_BYTES], { type: 'font/woff2' }) }) as unknown as Response;
+const EXPORT_SCENE: IUnitExportScene = { nodes: [SOURCE_NODE, TARGET_NODE], edges: [FORWARD_EDGE, RETURN_EDGE] };
 
-const importRule = (styleSheet: unknown): CSSImportRule =>
-  Object.create(CSSImportRule.prototype, { styleSheet: { value: styleSheet } }) as CSSImportRule;
-
-const CROSS_ORIGIN_SHEET = {
-  href: 'https://cdn.test/theme.css',
-  get cssRules(): CSSRule[] {
-    throw new DOMException('Cannot access rules', 'SecurityError');
-  },
-};
-
-export const installFontFaces = (): void => {
-  const latinSheet = {
-    href: `${FONT_BASE}latin.css`,
-    cssRules: [fontFace(FONT_FAMILY, LATIN_SOURCE, 'U+0000-00FF')],
-  };
-  const sheet = {
-    href: `${FONT_BASE}fonts.css`,
-    cssRules: [
-      importRule(latinSheet),
-      fontFace(FONT_FAMILY, INLINE_SOURCE, 'U+0020'),
-      fontFace(FONT_FAMILY, CYRILLIC_SOURCE, 'U+0400-045F'),
-      fontFace(OTHER_FAMILY, 'mono.woff2', ''),
+export const EXPORT_SCENES = {
+  editing: { ...EXPORT_SCENE, nodes: [SOURCE_NODE, { ...TARGET_NODE, editor: EXPORT_FIXTURE.draftLabel }] },
+  placeholder: {
+    ...EXPORT_SCENE,
+    nodes: [
+      { ...SOURCE_NODE, editor: '' },
+      { ...TARGET_NODE, editor: EXPORT_FIXTURE.draftLabel },
     ],
-  };
-  Object.defineProperty(document, 'styleSheets', { configurable: true, value: [CROSS_ORIGIN_SHEET, sheet] });
-  vi.stubGlobal(
-    'fetch',
-    vi.fn(async () => fontResponse(true)),
+  },
+  multiline: { ...EXPORT_SCENE, nodes: [{ ...SOURCE_NODE, label: EXPORT_FIXTURE.multilineLabel }, TARGET_NODE] },
+  markup: { ...EXPORT_SCENE, nodes: [{ ...SOURCE_NODE, label: EXPORT_FIXTURE.markupLabel }, TARGET_NODE] },
+  control: { ...EXPORT_SCENE, nodes: [{ ...SOURCE_NODE, label: EXPORT_FIXTURE.controlLabel }, TARGET_NODE] },
+  lists: { ...EXPORT_SCENE, nodes: [{ ...SOURCE_NODE, richLabel: LIST_FIXTURE.markup }, TARGET_NODE] },
+  underlined: { ...EXPORT_SCENE, nodes: [{ ...SOURCE_NODE, richLabel: DECORATION_MARKUP.underlined }, TARGET_NODE] },
+  unmounted: { ...EXPORT_SCENE, nodes: [{ ...SOURCE_NODE, card: false }, TARGET_NODE] },
+  wide: { ...EXPORT_SCENE, nodes: [SOURCE_NODE, { ...TARGET_NODE, x: 20_000 }] },
+  unsided: { ...EXPORT_SCENE, edges: [{ ...FORWARD_EDGE, sided: false }, RETURN_EDGE] },
+  orphan: { ...EXPORT_SCENE, edges: [{ ...FORWARD_EDGE, target: 'missing' }, RETURN_EDGE] },
+};
+
+export const SAMPLED_COLOR = 'rgba(250, 250, 245, 1)';
+
+const scratchCanvas = (): CanvasRenderingContext2D =>
+  ({
+    font: '',
+    fillStyle: '',
+    measureText: () => ({ fontBoundingBoxAscent: 12, fontBoundingBoxDescent: 4 }),
+    clearRect: () => {},
+    fillRect: () => {},
+    drawImage: () => {},
+    getImageData: () => ({ data: Uint8ClampedArray.of(250, 250, 245, 255) }),
+  }) as unknown as CanvasRenderingContext2D;
+
+export const exportContext = (overrides: Partial<ICanvasExportContext> = {}): ICanvasExportContext => ({
+  stage: document.body,
+  origin: new DOMRect(),
+  defs: svgElement('defs'),
+  scratch: scratchCanvas(),
+  fonts: new Set(),
+  codePoints: new Set(),
+  colors: new Map(),
+  definitions: new Map(),
+  ...overrides,
+});
+
+const nodeRect = (element: Element): DOMRect => {
+  const style = element instanceof HTMLElement ? element.style : undefined;
+
+  return new DOMRect(Number.parseFloat(style?.left ?? '') || 0, Number.parseFloat(style?.top ?? '') || 0, 200, 60);
+};
+
+const glyphRect = ({ startContainer, startOffset }: Range): DOMRect => {
+  const lines = (startContainer.textContent ?? '').slice(0, startOffset).split('\n');
+  const { width, height } = GLYPH_SIZE;
+
+  return new DOMRect((lines.at(-1)?.length ?? 0) * width, (lines.length - 1) * height, width, height);
+};
+
+export const stubCanvasLayout = () => {
+  stubProperty(
+    globalThis,
+    'DOMMatrix',
+    class {
+      m41: number;
+      m42: number;
+
+      constructor(transform: string) {
+        const [, x = '0', y = '0'] = /translate\((-?[\d.]+)px, (-?[\d.]+)px\)/.exec(transform) ?? [];
+        this.m41 = Number(x);
+        this.m42 = Number(y);
+      }
+    },
   );
+  stubProperty(Element.prototype, 'getBoundingClientRect', function (this: Element) {
+    return nodeRect(this);
+  });
+  stubProperty(SVGElement.prototype, 'getBBox', () => new DOMRect(240, 110, 160, 0));
+};
+
+export const stubTextLayout = () => stubRangeRects(glyphRect);
+
+export const stubCanvasExport = () => {
+  const fonts = stubFontsReady();
+  fonts.load();
+  onTestFinished(() => {
+    fonts.restore();
+  });
+  stubCanvasLayout();
+  stubTextLayout();
+  stubProperty(HTMLCanvasElement.prototype, 'getContext', scratchCanvas);
+};
+
+export const stubImageDecoding = (outcome: 'load' | 'error' = 'load') =>
+  stubProperty(
+    globalThis,
+    'Image',
+    class {
+      onload: (() => void) | null = null;
+      onerror: (() => void) | null = null;
+
+      set src(_url: string) {
+        queueMicrotask(() => (outcome === 'load' ? this.onload : this.onerror)?.());
+      }
+    },
+  );
+
+export const stubObjectUrls = (): Blob[] => {
+  const blobs: Blob[] = [];
+  stubProperty(
+    URL,
+    'createObjectURL',
+    vi.fn((blob: Blob) => {
+      blobs.push(blob);
+
+      return EXPORT_FIXTURE.blobUrl;
+    }),
+  );
+  stubProperty(URL, 'revokeObjectURL', vi.fn());
+
+  return blobs;
+};
+
+export const stubDownloads = (): string[] => {
+  const downloads: string[] = [];
+  stubProperty(HTMLAnchorElement.prototype, 'click', function (this: HTMLAnchorElement) {
+    downloads.push(this.download);
+  });
+
+  return downloads;
+};
+
+export const encodeAsRequested = (callback: BlobCallback, type?: string) => callback(new Blob(['image'], { type }));
+
+export const encodeNothing = (callback: BlobCallback) => callback(null);
+
+export const encodeAsPng = (callback: BlobCallback) => callback(new Blob(['image'], { type: 'image/png' }));
+
+export const parseExportSvg = (svg: string): Document => new DOMParser().parseFromString(svg, 'image/svg+xml');
+
+const htmlElement = (
+  tag: string,
+  attributes: Record<string, string> = {},
+  children: (Node | string)[] = [],
+): HTMLElement => {
+  const element = document.createElement(tag);
+  Object.entries(attributes).forEach(([name, value]) => element.setAttribute(name, value));
+  element.append(...children);
+
+  return element;
+};
+
+const nodeLabel = (label: string, richLabel?: string): HTMLElement => {
+  if (richLabel === undefined) return htmlElement('p', { style: 'text-transform: uppercase' }, [label]);
+
+  const element = htmlElement('div', { 'data-rich-text': '' });
+  element.innerHTML = richLabel;
+
+  return element;
+};
+
+const labelEditor = (draft: string): HTMLElement => {
+  const paragraph = draft
+    ? htmlElement('p', {}, [draft])
+    : htmlElement('p', { class: 'is-editor-empty', 'data-placeholder': EXPORT_FIXTURE.placeholderLabel });
+
+  return htmlElement('div', { class: 'rich-text rich-text-editor', contenteditable: 'true' }, [paragraph]);
+};
+
+const nodeIcon = (): SVGSVGElement => {
+  const icon = svgElement('svg', { class: 'h-3 w-3' });
+  icon.append(svgElement('path', { style: `fill: ${EXPORT_FIXTURE.iconFill}` }));
+
+  return icon;
+};
+
+const nodeCard = (content: Node[]): HTMLElement =>
+  htmlElement(
+    'div',
+    {
+      'data-export-node': '',
+      style: [
+        'background-color: rgb(255, 255, 255)',
+        `background-image: linear-gradient(${EXPORT_FIXTURE.washColor}, ${EXPORT_FIXTURE.washColor})`,
+        'border-top-width: 1px',
+        'border-top-color: rgb(200, 200, 200)',
+        'border-top-left-radius: 12px',
+        'overflow: hidden',
+        'box-shadow: rgba(0, 0, 0, 0.1) 0px 1px 2px 0px !important',
+      ].join('; '),
+    },
+    [
+      htmlElement('div', { class: 'react-flow__handle' }),
+      htmlElement('button', { 'data-export-omit': '' }, [EXPORT_FIXTURE.omittedLabel]),
+      htmlElement('span', { style: 'display: none' }, [EXPORT_FIXTURE.hiddenLabel]),
+      ...content,
+    ],
+  );
+
+const exportNode = ({ id, x, y, label, richLabel, editor, card = true }: IUnitExportSceneNode): HTMLElement => {
+  const editors = editor === undefined ? [] : [labelEditor(editor)];
+  const cards = card ? [nodeCard([nodeLabel(label, richLabel), nodeIcon(), ...editors])] : [];
+
+  return htmlElement(
+    'div',
+    { class: 'react-flow__node', 'data-id': id, style: `transform: translate(${x}px, ${y}px)` },
+    cards,
+  );
+};
+
+const exportEdge = ({ id, source, target, sided, bidirectional }: IUnitExportSceneEdge): SVGGElement => {
+  const sides: Record<string, string> = sided ? { 'data-source-handle': 'right', 'data-target-handle': 'left' } : {};
+  const edge = svgElement('g', {
+    'data-export-edge': id,
+    'data-source': source,
+    'data-target': target,
+    'data-tone': 'valid',
+    'data-bidirectional': String(bidirectional),
+    ...sides,
+  });
+  edge.append(
+    svgElement('path', {
+      class: 'react-flow__edge-path',
+      style: `stroke: ${EXPORT_FIXTURE.edgeStroke}; stroke-width: 1.75`,
+    }),
+  );
+
+  return edge;
+};
+
+export const buildExportCanvas = ({ nodes, edges }: IUnitExportScene = EXPORT_SCENE): HTMLElement => {
+  const edgeLayer = svgElement('svg');
+  edgeLayer.append(...edges.map(exportEdge));
+  const root = htmlElement('div', {}, [...nodes.map(exportNode), edgeLayer]);
+  document.body.append(root);
+  onTestFinished(() => root.remove());
+
+  return root;
 };

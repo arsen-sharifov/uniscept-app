@@ -1,6 +1,7 @@
 export * from './avatarIcon';
 export * from './badge';
 export * from './collections';
+export * from './dom';
 export * from './onboarding';
 export * from './params';
 export * from './preferences';

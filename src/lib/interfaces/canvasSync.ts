@@ -1,4 +1,5 @@
 import type { IReferenceNodeData, THandleId, TNodeStatus } from './canvas';
+import type { IRichTextDocument } from './richText';
 
 export type TSaveStatus = 'idle' | 'saving' | 'retrying' | 'saved' | 'error' | 'offline';
 
@@ -28,6 +29,7 @@ interface IPositioned extends IThreadScoped {
 interface ICreateCanvasNodeOperation extends IPositioned {
   type: 'createCanvasNode';
   label: string;
+  richLabel?: IRichTextDocument;
 }
 
 interface ICreateReferenceNodeOperation extends IPositioned {
@@ -48,6 +50,7 @@ interface IUpdateNodePositionOperation extends IIdScoped {
 interface IUpdateNodeLabelOperation extends IIdScoped {
   type: 'updateNodeLabel';
   label: string;
+  richLabel?: IRichTextDocument;
 }
 
 interface IUpdateNodeStatusOperation extends IIdScoped {
@@ -76,6 +79,7 @@ interface ICreateNodeCommentOperation extends IIdScoped {
   type: 'createComment';
   nodeId: string;
   text: string;
+  richText?: IRichTextDocument;
 }
 
 interface IDeleteNodeCommentOperation extends IIdScoped {

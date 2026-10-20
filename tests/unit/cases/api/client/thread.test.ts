@@ -3,6 +3,7 @@ import { describe, expect, test, vi } from 'vitest';
 import { ECanvasNodeType } from '@interfaces';
 import {
   ANSWERED_THREAD_SELECT,
+  RESOLUTION_NODE_SELECT,
   createThread,
   deleteThread,
   deleteThreads,
@@ -20,7 +21,7 @@ vi.mock('@/lib/supabase', () => import('@mocks/supabase'));
 describe('getThreads', () => {
   describe('GIVEN two threads where only one holds an answer backed by valid claims', () => {
     describe('WHEN the threads are fetched', () => {
-      test('THEN only that thread is resolved and only its canvas is loaded', async () => {
+      test('THEN only that thread is resolved and only its canvas is loaded without formatting', async () => {
         const { queries } = primeSupabase([
           { data: [threadRow(), threadRow({ id: 'th-2', name: 'Second', position: 1 })] },
           { data: [{ thread_id: 'th-2' }, { thread_id: 'th-2' }] },
@@ -39,6 +40,7 @@ describe('getThreads', () => {
           },
         ]);
         const nodesFilter = vi.spyOn(queries[2]!, 'in');
+        const nodesSelect = vi.spyOn(queries[2]!, 'select');
         const edgesFilter = vi.spyOn(queries[3]!, 'in');
 
         await expect(getThreads('ws-1')).resolves.toEqual([
@@ -46,6 +48,7 @@ describe('getThreads', () => {
           expect.objectContaining({ id: 'th-2', name: 'Second', resolved: true }),
         ]);
         expect(nodesFilter).toHaveBeenCalledExactlyOnceWith('thread_id', ['th-2']);
+        expect(nodesSelect).toHaveBeenCalledExactlyOnceWith(RESOLUTION_NODE_SELECT);
         expect(edgesFilter).toHaveBeenCalledExactlyOnceWith('thread_id', ['th-2']);
       });
     });

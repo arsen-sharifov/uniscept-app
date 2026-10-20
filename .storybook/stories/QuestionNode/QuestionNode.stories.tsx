@@ -92,7 +92,7 @@ export const Editing: Story = {
   parameters: {
     docs: {
       description: {
-        story: '`editingNodeId` matches this node, so the question collapses into a focused multi-line textarea.',
+        story: '`editingNodeId` matches this node, so the question opens in the focused rich text editor.',
       },
     },
   },

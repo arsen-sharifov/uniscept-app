@@ -2,11 +2,12 @@
 
 import { Background, ConnectionMode, type Edge, type Node, ReactFlow } from '@xyflow/react';
 import { clsx } from 'clsx';
-import { type MouseEvent as ReactMouseEvent, useCallback, useMemo, useState } from 'react';
+import { type MouseEvent as ReactMouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { ECanvasNodeType, type IAlignmentGuide, type TDefaultZoom } from '@interfaces';
 import { DEFAULT_PREFERENCES } from '@constants';
 import { useEscapeKey } from '@hooks';
+import { preloadRichTextEditor } from '@/components/RichTextEditor';
 import { ECanvasTool } from '@/components/tools';
 import {
   computeEdgeTones,
@@ -15,6 +16,7 @@ import {
   isAffected,
   pickStrongerTone,
 } from '@/lib/canvas';
+import { event } from '@/lib/events';
 import { useCanvasStore, usePermissionsStore } from '@/lib/stores';
 
 import {
@@ -105,6 +107,7 @@ export const Canvas = ({
   const canvasPattern = useCanvasPattern();
 
   const canEditCanvas = usePermissionsStore((state) => state.canEditCanvas);
+  const canComment = usePermissionsStore((state) => state.canComment);
   const hydrated = useCanvasStore((state) => state.threadId === threadId);
   const activeTool = useCanvasStore((state) => state.activeTool);
   const nodes = useCanvasStore((state) => (state.threadId === threadId ? state.nodes : NO_NODES));
@@ -118,6 +121,14 @@ export const Canvas = ({
   const [alignmentGuides, setAlignmentGuides] = useState<readonly IAlignmentGuide[]>(NO_GUIDES);
 
   useEscapeKey(() => useCanvasStore.getState().setPendingConnection(null), pendingConnection !== null);
+
+  useEffect(() => {
+    if (!hydrated || (!canEditCanvas && !canComment)) return;
+
+    preloadRichTextEditor().catch((error: unknown) =>
+      event.error(error, { toast: false, context: 'richText.preload' }),
+    );
+  }, [hydrated, canEditCanvas, canComment]);
 
   const effectiveStatusById = useMemo(() => computeEffectiveStatuses(nodes, edges), [nodes, edges]);
 

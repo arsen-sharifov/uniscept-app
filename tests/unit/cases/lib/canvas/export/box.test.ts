@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { ALARM_WASH_GRADIENT, TWO_TONE_GRADIENT } from '@mocks/canvasExport';
+import { ALARM_WASH_GRADIENT, TWO_TONE_GRADIENT } from '@mocks/canvasExportValues';
 import { parseWashColor } from '@/lib/canvas/export';
 
 describe('parseWashColor', () => {

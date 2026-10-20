@@ -11,4 +11,5 @@ export * from './landing';
 export * from './onboarding';
 export * from './preferences';
 export * from './profile';
+export * from './richText';
 export * from './workspace';

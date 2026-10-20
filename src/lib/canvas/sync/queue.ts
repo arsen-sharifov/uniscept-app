@@ -194,7 +194,7 @@ const targetsParkedNode = (operation: TCanvasOperation): boolean => {
 
 const foldIntoCreate = (create: TCanvasOperation, update: TNodeUpdateOperation): TCanvasOperation | null => {
   if (update.type === 'updateNodeLabel' && create.type === 'createCanvasNode') {
-    return { ...create, label: update.label };
+    return { ...create, label: update.label, richLabel: update.richLabel };
   }
   if (update.type !== 'updateNodePosition') return null;
   if (create.type !== 'createCanvasNode' && create.type !== 'createReferenceNode') return null;
@@ -264,6 +264,7 @@ const runOperation = async (operation: Exclude<TCanvasOperation, { type: 'update
         x: operation.x,
         y: operation.y,
         label: operation.label,
+        richLabel: operation.richLabel,
         sourceNodeId: null,
       });
 
@@ -285,7 +286,7 @@ const runOperation = async (operation: Exclude<TCanvasOperation, { type: 'update
 
       return;
     case 'updateNodeLabel':
-      await updateCanvasNodeLabel(operation.id, operation.label);
+      await updateCanvasNodeLabel(operation.id, operation.label, operation.richLabel);
 
       return;
     case 'updateNodeStatus':
@@ -316,6 +317,7 @@ const runOperation = async (operation: Exclude<TCanvasOperation, { type: 'update
         id: operation.id,
         nodeId: operation.nodeId,
         text: operation.text,
+        richText: operation.richText,
       });
 
       return;

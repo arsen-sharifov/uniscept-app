@@ -4,6 +4,8 @@
 @import '@xyflow/react/dist/style.css';
 @import '../components/Canvas/canvas.css';
 @import '../components/Mascot/mascot.css';
+@import '../components/RichText/richText.css';
+@import '../components/RichTextEditor/richTextEditor.css';
 @import '../components/Skeleton/skeleton.css';
 @import '../components/Tour/tour.css';
 

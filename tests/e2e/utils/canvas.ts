@@ -67,7 +67,7 @@ export const addNodeAt = async (page: Page, x: number, y: number): Promise<void>
 const commitLabel = async (node: Locator, label: string, attempt = 1): Promise<void> => {
   await node.dblclick();
 
-  const editor = node.locator('textarea');
+  const editor = node.getByRole('textbox');
   const opened = await editor
     .waitFor({ state: 'visible', timeout: LABEL_EDITOR_TIMEOUT_MS })
     .then(() => true)
@@ -127,6 +127,28 @@ export const openPaneMenu = (page: Page, position: { x: number; y: number }): Pr
 export const addNodeComment = async (node: Locator, text: string): Promise<void> => {
   await node.hover();
   await node.getByRole('button', { name: COPY.platform.canvas.node.addComment }).click();
-  await node.getByPlaceholder(COPY.platform.canvas.node.addCommentPlaceholder).fill(text);
+  await node.getByRole('textbox', { name: COPY.platform.canvas.node.addCommentPlaceholder }).fill(text);
   await node.getByRole('button', { name: COPY.platform.canvas.node.sendComment }).click();
+};
+
+export const doubleClickWord = async (page: Page, container: Locator, word: string): Promise<void> => {
+  const rect = await container.evaluate((element, target) => {
+    const node = document.evaluate(
+      `.//text()[contains(., "${target}")]`,
+      element,
+      null,
+      XPathResult.FIRST_ORDERED_NODE_TYPE,
+    ).singleNodeValue;
+    if (!node?.textContent) throw new Error(`"${target}" is not in the text`);
+
+    const range = document.createRange();
+    const start = node.textContent.indexOf(target);
+    range.setStart(node, start);
+    range.setEnd(node, start + target.length);
+    const { x, y, width, height } = range.getBoundingClientRect();
+
+    return { x, y, width, height };
+  }, word);
+
+  await page.mouse.dblclick(rect.x + rect.width / 2, rect.y + rect.height / 2);
 };

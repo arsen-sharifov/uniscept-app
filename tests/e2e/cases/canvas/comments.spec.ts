@@ -62,7 +62,9 @@ test.describe('node comments', () => {
         const node = getNode(page, 'Risky bet');
         await node.hover();
         await node.getByRole('button', { name: COPY.platform.canvas.node.addComment }).click();
-        await expect(node.getByPlaceholder(COPY.platform.canvas.node.addCommentPlaceholder)).toBeVisible();
+        await expect(
+          node.getByRole('textbox', { name: COPY.platform.canvas.node.addCommentPlaceholder }),
+        ).toBeVisible();
       });
 
       test('THEN the panel sits on top of the newer node', async ({ page }) => {

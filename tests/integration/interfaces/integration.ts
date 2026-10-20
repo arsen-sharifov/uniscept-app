@@ -48,6 +48,16 @@ export interface IIntegrationThreadRow {
   name: string;
 }
 
+export interface IIntegrationRichLabelRow {
+  label: string;
+  rich_label: unknown;
+}
+
+export interface IIntegrationRichCommentRow {
+  text: string;
+  rich_text: unknown;
+}
+
 export interface IIntegrationNodeRow {
   thread_id: string;
   type: string;

@@ -1,4 +1,10 @@
-import type { ICanvasNodeRow, ICreateCanvasNodeInput, INodePositionUpdate, TNodeStatus } from '@interfaces';
+import type {
+  ICanvasNodeRow,
+  ICreateCanvasNodeInput,
+  INodePositionUpdate,
+  IRichTextDocument,
+  TNodeStatus,
+} from '@interfaces';
 
 import { createClient } from '@/lib/supabase';
 
@@ -15,6 +21,7 @@ export const createCanvasNode = async (input: ICreateCanvasNodeInput): Promise<v
     position_x: input.x,
     position_y: input.y,
     label: input.label,
+    rich_label: input.richLabel ?? null,
     source_node_id: input.sourceNodeId,
   });
 
@@ -43,10 +50,19 @@ export const updateCanvasNodePositions = async (updates: INodePositionUpdate[]):
   }
 };
 
-export const updateCanvasNodeLabel = async (id: string, label: string): Promise<void> => {
+export const updateCanvasNodeLabel = async (
+  id: string,
+  label: string,
+  richLabel?: IRichTextDocument,
+): Promise<void> => {
   const supabase = createClient();
 
-  const { error } = await supabase.from('canvas_nodes').update({ label }).eq('id', id).select('id').single();
+  const { error } = await supabase
+    .from('canvas_nodes')
+    .update({ label, rich_label: richLabel ?? null })
+    .eq('id', id)
+    .select('id')
+    .single();
 
   if (error) throw error;
 };
@@ -75,13 +91,13 @@ export const deleteCanvasNode = async (id: string): Promise<void> => {
   if (error) throw error;
 };
 
-export const getCanvasNodes = async (threadIds: string[]): Promise<ICanvasNodeRow[]> => {
+export const getCanvasNodes = async (threadIds: string[], select = CANVAS_NODE_SELECT): Promise<ICanvasNodeRow[]> => {
   const supabase = createClient();
 
   return readRowsByIds(threadIds, (chunk, from, to) =>
     supabase
       .from('canvas_nodes')
-      .select(CANVAS_NODE_SELECT)
+      .select(select)
       .in('thread_id', chunk)
       .order('created_at')
       .order('id')

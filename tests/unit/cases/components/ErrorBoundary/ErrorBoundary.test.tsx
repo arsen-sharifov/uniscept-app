@@ -1,12 +1,13 @@
 import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { event, RENDER_ERROR } from '@mocks/events';
+import { BOUNDARY_REPORT, event, RENDER_ERROR } from '@mocks/events';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 vi.mock('@/lib/events', () => import('@mocks/events'));
 
 const onCaughtError = vi.fn();
+const onError = vi.fn();
 
 const Broken = () => {
   throw RENDER_ERROR;
@@ -48,6 +49,25 @@ describe('ErrorBoundary', () => {
 
       test('THEN the error is reported without a toast', () => {
         expect(event.error).toHaveBeenCalledExactlyOnceWith(RENDER_ERROR, { toast: false, context: 'boundary.render' });
+      });
+    });
+  });
+
+  describe('GIVEN a child that throws under a boundary with its own report and error handler', () => {
+    describe('WHEN the boundary renders', () => {
+      beforeEach(() => {
+        render(
+          <ErrorBoundary fallback={<p>Fallback</p>} report={BOUNDARY_REPORT} onError={onError}>
+            <Broken />
+          </ErrorBoundary>,
+          { onCaughtError },
+        );
+      });
+
+      test('THEN the error is reported as asked and the handler runs once', () => {
+        expect(screen.getByText('Fallback')).toBeInTheDocument();
+        expect(event.error).toHaveBeenCalledExactlyOnceWith(RENDER_ERROR, BOUNDARY_REPORT);
+        expect(onError).toHaveBeenCalledOnce();
       });
     });
   });

@@ -1,7 +1,15 @@
 import type { Edge } from '@xyflow/react';
 
-import { ECanvasNodeType, type IComment, type TCanvasNode, type THandleId, type TNodeStatus } from '@interfaces';
+import {
+  ECanvasNodeType,
+  type IComment,
+  type IRichTextDocument,
+  type TCanvasNode,
+  type THandleId,
+  type TNodeStatus,
+} from '@interfaces';
 import type { ICanvasFixture } from '@story-interfaces';
+import { toPlainText } from '@/lib/richText';
 
 import { STORYBOOK_AUTHOR_ID } from '../consts';
 
@@ -50,6 +58,16 @@ export const createComment = (id: string, text: string, authorId: string = STORY
   id,
   text,
   authorId,
+});
+
+export const createFormattedComment = (id: string, richText: IRichTextDocument): IComment => ({
+  ...createComment(id, toPlainText(richText)),
+  richText,
+});
+
+export const withRichLabel = (node: TCanvasNode, richLabel: IRichTextDocument): TCanvasNode => ({
+  ...node,
+  data: { ...node.data, label: toPlainText(richLabel), richLabel },
 });
 
 const denseStatus = (index: number): TNodeStatus => {

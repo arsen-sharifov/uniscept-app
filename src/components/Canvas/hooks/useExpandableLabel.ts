@@ -17,7 +17,7 @@ export const useExpandableLabel = (enabled = true) => {
   );
 
   const labelRefCallback = useCallback(
-    (node: HTMLParagraphElement | null) => {
+    (node: HTMLElement | null) => {
       observerRef.current?.disconnect();
       observerRef.current = null;
       if (!node || !enabled) return;

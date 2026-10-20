@@ -14,7 +14,9 @@ import {
   ZoomOut,
 } from 'lucide-react';
 
-import type { TCanvasToolsTranslations, IToolGroup, IToolItem } from '@interfaces';
+import type { TCanvasToolsTranslations, IToolGroup, IToolItem, TTextFormattingTranslations } from '@interfaces';
+
+import { RICH_TEXT_LINK, RICH_TEXT_LISTS, RICH_TEXT_STYLES } from '@/lib/richText';
 
 export enum ECanvasTool {
   Select = 'select',
@@ -166,3 +168,14 @@ export const buildCanvasToolGroups = (t: TCanvasToolsTranslations): IToolGroup[]
     },
   ];
 };
+
+export const buildTextFormattingGroup = (t: TTextFormattingTranslations): IToolGroup => ({
+  id: 'text',
+  label: t.shortcutsGroup,
+  tools: [...RICH_TEXT_STYLES, RICH_TEXT_LINK, ...RICH_TEXT_LISTS].map(({ id, icon, shortcut }) => ({
+    id,
+    icon,
+    label: t[id],
+    shortcut,
+  })),
+});

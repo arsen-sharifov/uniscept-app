@@ -43,6 +43,18 @@ export const COLOR_GROUPS: readonly IColorGroup[] = [
     ],
   },
   {
+    id: 'ink',
+    title: 'Ink',
+    description: 'Text colors people pick when formatting nodes and comments, tuned per theme to stay readable.',
+    tokens: [
+      { variable: '--ink-red', label: 'Red', role: 'Formatted text color' },
+      { variable: '--ink-amber', label: 'Amber', role: 'Formatted text color' },
+      { variable: '--ink-green', label: 'Green', role: 'Formatted text color' },
+      { variable: '--ink-blue', label: 'Blue', role: 'Formatted text color' },
+      { variable: '--ink-violet', label: 'Violet', role: 'Formatted text color' },
+    ],
+  },
+  {
     id: 'border',
     title: 'Borders & Rings',
     description: 'Edges that breathe — thin contours that scale with theme.',

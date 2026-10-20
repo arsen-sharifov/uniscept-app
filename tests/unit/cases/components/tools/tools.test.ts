@@ -1,7 +1,13 @@
 import { describe, expect, test } from 'vitest';
 
 import { TRANSLATIONS } from '@mocks/i18n';
-import { ECanvasTool, buildCanvasToolGroups, buildCanvasTools, isCanvasTool } from '@/components/tools';
+import {
+  ECanvasTool,
+  buildCanvasToolGroups,
+  buildCanvasTools,
+  buildTextFormattingGroup,
+  isCanvasTool,
+} from '@/components/tools';
 
 describe('isCanvasTool', () => {
   describe('GIVEN a canvas tool id', () => {
@@ -68,6 +74,28 @@ describe('buildCanvasToolGroups', () => {
           { id: 'build', tools: [ECanvasTool.AddNode, ECanvasTool.Connect, ECanvasTool.Delete] },
           { id: 'decide', tools: [ECanvasTool.ValidPath, ECanvasTool.InvalidPath, ECanvasTool.Answer] },
           { id: 'link', tools: [ECanvasTool.CrossReference] },
+        ]);
+      });
+    });
+  });
+});
+
+describe('buildTextFormattingGroup', () => {
+  describe('GIVEN the english formatting translations', () => {
+    describe('WHEN the group is built', () => {
+      test('THEN the styles, the link and the lists are listed with their shortcuts', () => {
+        const group = buildTextFormattingGroup(TRANSLATIONS.platform.canvas.formatting);
+
+        expect(group.id).toBe('text');
+        expect(group.label).toBe(TRANSLATIONS.platform.canvas.formatting.shortcutsGroup);
+        expect(group.tools.map((tool) => [tool.id, tool.label, tool.shortcut])).toEqual([
+          ['bold', TRANSLATIONS.platform.canvas.formatting.bold, '⌘B'],
+          ['italic', TRANSLATIONS.platform.canvas.formatting.italic, '⌘I'],
+          ['underline', TRANSLATIONS.platform.canvas.formatting.underline, '⌘U'],
+          ['strike', TRANSLATIONS.platform.canvas.formatting.strike, '⌘⇧S'],
+          ['link', TRANSLATIONS.platform.canvas.formatting.link, '⌘K'],
+          ['bulletList', TRANSLATIONS.platform.canvas.formatting.bulletList, '⌘⇧8'],
+          ['orderedList', TRANSLATIONS.platform.canvas.formatting.orderedList, '⌘⇧7'],
         ]);
       });
     });

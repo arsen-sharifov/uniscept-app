@@ -4,6 +4,7 @@ import { Trash2 } from 'lucide-react';
 
 import type { IComment } from '@interfaces';
 
+import { RichText } from '@/components/RichText';
 import { useTranslations } from '@/i18n';
 
 interface ICommentItemProps {
@@ -17,7 +18,11 @@ export const CommentItem = ({ comment, canDelete, onDelete }: ICommentItemProps)
 
   return (
     <div className="group/comment flex items-start gap-2 rounded-lg bg-[color:var(--surface-overlay)] px-3 py-2 text-[11.5px] leading-snug text-[color:var(--text)] ring-1 ring-[color:var(--border)] ring-inset">
-      <span className="flex-1 font-grotesk break-words">{comment.text}</span>
+      <RichText
+        text={comment.text}
+        document={comment.richText}
+        className="min-w-0 flex-1 font-grotesk break-words whitespace-pre-wrap"
+      />
 
       {canDelete && (
         <button

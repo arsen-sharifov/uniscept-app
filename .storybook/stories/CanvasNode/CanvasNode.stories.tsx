@@ -6,6 +6,7 @@ import {
   answerNode,
   defaultNode,
   editingNode,
+  formattedNode,
   invalidNode,
   longLabelNode,
   pendingNode,
@@ -145,11 +146,25 @@ export const Answer: Story = {
   render: () => <SingleNodeFlow node={answerNode} />,
 };
 
+export const Formatted: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Label with bold, italic, underline, strikethrough, a link, a palette text color and a bullet list. Text colors resolve through the per-theme `--ink-*` tokens, so the same label stays readable in every theme.',
+      },
+    },
+  },
+  decorators: [withCanvasStore({ nodes: [formattedNode] })],
+  render: () => <SingleNodeFlow node={formattedNode} />,
+};
+
 export const Editing: Story = {
   parameters: {
     docs: {
       description: {
-        story: '`editingNodeId` matches this node, so the label collapses into a focused textarea.',
+        story:
+          '`editingNodeId` matches this node, so the label turns into the focused rich text editor. Selecting text opens the formatting toolbar.',
       },
     },
   },

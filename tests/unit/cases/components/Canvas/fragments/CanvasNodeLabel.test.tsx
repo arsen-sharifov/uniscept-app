@@ -1,11 +1,13 @@
-import { fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { listenOnPage, stubResizeObserver } from '@mocks/browser';
 import { THREAD_ID, canvasNode, overflowLabels, resetLabelOverflow } from '@mocks/canvas';
 import { TRANSLATIONS } from '@mocks/i18n';
+import { FORMATTED_DOCUMENT, FORMATTED_TEXT, editorOf, stubEditorLayout } from '@mocks/richText';
 import { FULL_ACCESS, READONLY_ACCESS } from '@mocks/roles';
 import { CanvasNodeLabel } from '@/components/Canvas/fragments';
+import { preloadRichTextEditor } from '@/components/RichTextEditor';
 import { MAX_NODE_LABEL_LENGTH } from '@/lib/canvas';
 import { useOnboardingStore } from '@/lib/onboarding';
 import { useCanvasStore, usePermissionsStore } from '@/lib/stores';
@@ -15,8 +17,13 @@ vi.mock('@/i18n', () => import('@mocks/i18n'));
 const onPageClick = vi.fn();
 const onPagePress = vi.fn();
 
+beforeAll(async () => {
+  await preloadRichTextEditor();
+});
+
 beforeEach(() => {
   stubResizeObserver();
+  stubEditorLayout();
   listenOnPage({ click: onPageClick, mousedown: onPagePress });
 });
 
@@ -72,31 +79,66 @@ describe('CanvasNodeLabel', () => {
     });
   });
 
-  describe('GIVEN an owner editing the label while a guide is running', () => {
+  describe('GIVEN a formatted label a viewer is reading', () => {
     beforeEach(() => {
+      usePermissionsStore.getState().setAccess('ws-1', 'user-1', READONLY_ACCESS);
+    });
+
+    describe('WHEN the label renders', () => {
+      beforeEach(() => {
+        render(
+          <CanvasNodeLabel
+            id="n1"
+            label={FORMATTED_TEXT}
+            richLabel={FORMATTED_DOCUMENT}
+            isEditing={false}
+            measured
+            commentCount={0}
+          />,
+        );
+      });
+
+      test('THEN the formatting shows inside the clamped label', () => {
+        expect(screen.getByText('now').tagName).toBe('STRONG');
+        expect(screen.getByText('now').closest('[data-rich-text]')).toHaveClass('line-clamp-10');
+      });
+    });
+  });
+
+  describe('GIVEN an owner editing the label while a guide is running', () => {
+    beforeEach(async () => {
       overflowLabels();
       usePermissionsStore.getState().setAccess('ws-1', 'user-1', FULL_ACCESS);
       useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [canvasNode('n1', { label: 'Idea' })], edges: [] });
       useCanvasStore.getState().setEditingNodeId('n1');
       useOnboardingStore.getState().startGuide('canvas');
       render(<CanvasNodeLabel id="n1" label="Idea" isEditing measured commentCount={2} />);
+      await screen.findByRole('textbox', { name: TRANSLATIONS.platform.canvas.node.labelAriaLabel });
     });
 
     describe('WHEN the editor opens', () => {
-      test('THEN a focused, labelled textarea replaces the label without the side buttons', () => {
-        expect(screen.getByRole('textbox', { name: TRANSLATIONS.platform.canvas.node.labelAriaLabel })).toHaveValue(
-          'Idea',
-        );
-        expect(screen.getByRole('textbox')).toHaveFocus();
+      test('THEN a focused, labelled editor replaces the label without the side buttons', async () => {
+        expect(
+          screen.getByRole('textbox', { name: TRANSLATIONS.platform.canvas.node.labelAriaLabel }),
+        ).toHaveTextContent('Idea');
+        await waitFor(() => expect(screen.getByRole('textbox')).toHaveFocus());
         expect(screen.queryByRole('button')).not.toBeInTheDocument();
-      });
-
-      test('THEN the textarea stops at the longest label the canvas stores', () => {
-        expect(screen.getByRole('textbox')).toHaveAttribute('maxlength', String(MAX_NODE_LABEL_LENGTH));
       });
     });
 
-    describe('WHEN the textarea is clicked and pressed', () => {
+    describe('WHEN more text than the canvas stores is inserted', () => {
+      beforeEach(() => {
+        act(() => {
+          editorOf(screen.getByRole('textbox')).commands.insertContent('x'.repeat(MAX_NODE_LABEL_LENGTH));
+        });
+      });
+
+      test('THEN the editor refuses the insertion', () => {
+        expect(screen.getByRole('textbox')).toHaveTextContent(/^Idea$/);
+      });
+    });
+
+    describe('WHEN the editor is clicked and pressed', () => {
       beforeEach(() => {
         fireEvent.mouseDown(screen.getByRole('textbox'));
         fireEvent.click(screen.getByRole('textbox'));
@@ -109,14 +151,17 @@ describe('CanvasNodeLabel', () => {
       });
     });
 
-    describe('WHEN a new label is committed', () => {
+    describe('WHEN a formatted label is written and focus leaves the editor', () => {
       beforeEach(() => {
-        fireEvent.change(screen.getByRole('textbox'), { target: { value: 'Better idea' } });
+        act(() => {
+          editorOf(screen.getByRole('textbox')).commands.setContent(FORMATTED_DOCUMENT);
+        });
         fireEvent.blur(screen.getByRole('textbox'));
       });
 
-      test('THEN the label is saved and the guide learns the node was labelled', () => {
-        expect(useCanvasStore.getState().nodes[0]?.data.label).toBe('Better idea');
+      test('THEN the label and its formatting are saved and the guide learns the node was labelled', () => {
+        expect(useCanvasStore.getState().nodes[0]?.data.label).toBe(FORMATTED_TEXT);
+        expect(useCanvasStore.getState().nodes[0]?.data.richLabel).toEqual(FORMATTED_DOCUMENT);
         expect(useOnboardingStore.getState().signals.has('nodeLabelled')).toBe(true);
       });
     });
@@ -135,15 +180,16 @@ describe('CanvasNodeLabel', () => {
   describe('GIVEN an owner editing the label of a node React Flow has not measured yet', () => {
     let rerender: ReturnType<typeof render>['rerender'];
 
-    beforeEach(() => {
+    beforeEach(async () => {
       usePermissionsStore.getState().setAccess('ws-1', 'user-1', FULL_ACCESS);
       useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [canvasNode('n1', { label: 'Idea' })], edges: [] });
       useCanvasStore.getState().setEditingNodeId('n1');
       rerender = render(<CanvasNodeLabel id="n1" label="Idea" isEditing measured={false} commentCount={0} />).rerender;
+      await screen.findByRole('textbox');
     });
 
     describe('WHEN the editor opens on the hidden node', () => {
-      test('THEN the textarea waits without taking focus', () => {
+      test('THEN the editor waits without taking focus', () => {
         expect(screen.getByRole('textbox')).not.toHaveFocus();
       });
     });
@@ -153,8 +199,8 @@ describe('CanvasNodeLabel', () => {
         rerender(<CanvasNodeLabel id="n1" label="Idea" isEditing measured commentCount={0} />);
       });
 
-      test('THEN the textarea takes focus', () => {
-        expect(screen.getByRole('textbox')).toHaveFocus();
+      test('THEN the editor takes focus', async () => {
+        await waitFor(() => expect(screen.getByRole('textbox')).toHaveFocus());
       });
     });
   });

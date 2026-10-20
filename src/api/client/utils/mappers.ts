@@ -27,6 +27,7 @@ import type {
   IWorkspaceRow,
 } from '@interfaces';
 
+import { parseRichText } from '@/lib/richText';
 import { isAvatarIcon, isGuideId } from '@/lib/utils';
 
 export const toWorkspace = (row: IWorkspaceRow): IWorkspace => ({
@@ -72,6 +73,7 @@ export const toThread = (row: IThreadRow): IThread => ({
 export const toComment = (row: INodeCommentRow): IComment => ({
   id: row.id,
   text: row.text,
+  richText: parseRichText(row.rich_text) ?? undefined,
   authorId: row.author_id,
 });
 

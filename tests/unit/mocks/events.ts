@@ -17,6 +17,8 @@ export const BOOM_ERROR = new Error('boom');
 
 export const RENDER_ERROR = new Error('render failed');
 
+export const BOUNDARY_REPORT = { title: 'Could not show this part', context: 'test.boundary' };
+
 export const LAYOUT_ERROR = new Error('layout failed');
 
 export const DIGEST_ROUTE_ERROR = Object.assign(new Error('route failed'), { digest: 'digest-1' });

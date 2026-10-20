@@ -4,7 +4,14 @@ import type { XYPosition } from '@xyflow/react';
 
 import type { ICanvasExportNode } from '@interfaces';
 
-import { CANVAS_NODE_SELECTOR, EXPORT_NODE_SELECTOR, EXPORT_OMIT_SELECTOR, EXPORT_STAGE_CSS } from './consts';
+import {
+  BULLET_MARKER,
+  CANVAS_NODE_SELECTOR,
+  EDITOR_PLACEHOLDER_SELECTOR,
+  EXPORT_NODE_SELECTOR,
+  EXPORT_OMIT_SELECTOR,
+  EXPORT_STAGE_CSS,
+} from './consts';
 
 export const createExportStage = (root: HTMLElement): HTMLDivElement => {
   const stage = document.createElement('div');
@@ -28,21 +35,31 @@ export const createExportStage = (root: HTMLElement): HTMLDivElement => {
   return stage;
 };
 
-const replaceTextareas = (source: HTMLElement, clone: HTMLElement): void => {
-  const inputs = source.querySelectorAll('textarea');
-  clone.querySelectorAll('textarea').forEach((input, index) => {
-    const label = document.createElement('p');
-    label.className = input.className;
-    label.textContent = inputs[index]?.value || input.placeholder;
-    label.style.whiteSpace = 'pre-wrap';
-    input.replaceWith(label);
+const fillEditorPlaceholders = (clone: HTMLElement): void =>
+  clone.querySelectorAll<HTMLElement>(EDITOR_PLACEHOLDER_SELECTOR).forEach((paragraph) => {
+    paragraph.textContent = paragraph.dataset.placeholder ?? '';
   });
+
+const toListMarker = (item: HTMLLIElement): string => {
+  const list = item.parentElement;
+  if (!(list instanceof HTMLOListElement)) return BULLET_MARKER;
+
+  return `${list.start + Array.from(list.children).indexOf(item)}.`;
 };
+
+const materializeListMarkers = (clone: HTMLElement): void =>
+  clone.querySelectorAll('li').forEach((item) => {
+    const marker = document.createElement('span');
+    marker.dataset.exportMarker = '';
+    marker.textContent = toListMarker(item);
+    item.prepend(marker);
+  });
 
 const pruneExportClone = (source: HTMLElement): HTMLElement => {
   const clone = source.cloneNode(true) as HTMLElement;
   clone.querySelectorAll(EXPORT_OMIT_SELECTOR).forEach((child) => child.remove());
-  replaceTextareas(source, clone);
+  fillEditorPlaceholders(clone);
+  materializeListMarkers(clone);
 
   return clone;
 };

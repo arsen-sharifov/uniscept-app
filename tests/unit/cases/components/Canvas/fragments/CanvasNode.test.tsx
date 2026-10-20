@@ -1,13 +1,21 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { ReactFlowProvider } from '@xyflow/react';
-import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { listenOnPage, stubResizeObserver } from '@mocks/browser';
 import { THREAD_ID, canvasEdge, canvasNode, comment, nodeProps } from '@mocks/canvas';
 import { TRANSLATIONS } from '@mocks/i18n';
+import {
+  FORMATTED_DOCUMENT,
+  FORMATTED_TEXT,
+  TRAILING_SPACE_DOCUMENT,
+  editorOf,
+  stubEditorLayout,
+} from '@mocks/richText';
 import { COMMENT_ACCESS, FULL_ACCESS } from '@mocks/roles';
 import { NODE_ALARM_WASHES } from '@/components/Canvas/consts';
 import { CanvasNode } from '@/components/Canvas/fragments';
+import { preloadRichTextEditor } from '@/components/RichTextEditor';
 import { useCanvasStore, usePermissionsStore } from '@/lib/stores';
 
 vi.mock('@/i18n', () => import('@mocks/i18n'));
@@ -18,8 +26,13 @@ const onPagePress = vi.fn();
 const nodeCard = () => document.querySelector<HTMLElement>('[data-tour="canvasNode"]');
 const commentsPanel = () => document.querySelector<HTMLElement>('[data-tour="canvasCommentsPanel"]');
 
+beforeAll(async () => {
+  await preloadRichTextEditor();
+});
+
 beforeEach(() => {
   stubResizeObserver();
+  stubEditorLayout();
   listenOnPage({ click: onPageClick, mousedown: onPagePress });
 });
 
@@ -59,19 +72,20 @@ describe('CanvasNode', () => {
     });
 
     describe('WHEN the node is being edited', () => {
-      beforeEach(() => {
+      beforeEach(async () => {
         useCanvasStore.getState().setEditingNodeId('n1');
         render(
           <ReactFlowProvider>
             <CanvasNode {...nodeProps(canvasNode('n1', { status: 'invalid' }))} />
           </ReactFlowProvider>,
         );
+        await screen.findByRole('textbox');
       });
 
-      test('THEN the wash lifts and the label turns into a textarea', () => {
+      test('THEN the wash lifts and the label turns into an editor', () => {
         expect(nodeCard()).not.toHaveAttribute('style');
         expect(nodeCard()).toHaveClass('border-[color:var(--border-active)]');
-        expect(screen.getByRole('textbox')).toHaveValue('Node n1');
+        expect(screen.getByRole('textbox')).toHaveTextContent('Node n1');
       });
     });
   });
@@ -101,7 +115,7 @@ describe('CanvasNode', () => {
   });
 
   describe('GIVEN a commenter with the node comments open', () => {
-    beforeEach(() => {
+    beforeEach(async () => {
       usePermissionsStore.getState().setAccess('ws-1', 'user-1', COMMENT_ACCESS);
       useCanvasStore.getState().loadCanvas(THREAD_ID, {
         nodes: [canvasNode('n1', { comments: [comment('c1')] })],
@@ -113,6 +127,7 @@ describe('CanvasNode', () => {
           <CanvasNode {...nodeProps(canvasNode('n1', { comments: [comment('c1')] }))} />
         </ReactFlowProvider>,
       );
+      await screen.findByRole('textbox', { name: TRANSLATIONS.platform.canvas.node.addCommentPlaceholder });
     });
 
     describe('WHEN the panel renders', () => {
@@ -154,19 +169,42 @@ describe('CanvasNode', () => {
       });
     });
 
-    describe('WHEN a draft is typed and the panel is closed and reopened', () => {
-      beforeEach(() => {
-        fireEvent.change(screen.getByPlaceholderText(TRANSLATIONS.platform.canvas.node.addCommentPlaceholder), {
-          target: { value: 'Later' },
+    describe('WHEN a draft ending in a space is typed and the panel is closed and reopened', () => {
+      beforeEach(async () => {
+        act(() => {
+          editorOf(
+            screen.getByRole('textbox', { name: TRANSLATIONS.platform.canvas.node.addCommentPlaceholder }),
+          ).commands.setContent(TRAILING_SPACE_DOCUMENT, { emitUpdate: true });
         });
         fireEvent.click(screen.getByRole('button', { name: TRANSLATIONS.platform.canvas.node.closeComments }));
         fireEvent.click(screen.getByRole('button', { name: TRANSLATIONS.platform.canvas.node.viewComments }));
+        await screen.findByRole('textbox', { name: TRANSLATIONS.platform.canvas.node.addCommentPlaceholder });
       });
 
-      test('THEN the draft is still in the composer', () => {
-        expect(screen.getByPlaceholderText(TRANSLATIONS.platform.canvas.node.addCommentPlaceholder)).toHaveValue(
-          'Later',
-        );
+      test('THEN the trailing space survives so typing can continue the sentence', () => {
+        expect(
+          screen.getByRole('textbox', { name: TRANSLATIONS.platform.canvas.node.addCommentPlaceholder }),
+        ).toHaveTextContent('Check the ', { normalizeWhitespace: false });
+      });
+    });
+
+    describe('WHEN a formatted draft is typed and the panel is closed and reopened', () => {
+      beforeEach(async () => {
+        act(() => {
+          editorOf(
+            screen.getByRole('textbox', { name: TRANSLATIONS.platform.canvas.node.addCommentPlaceholder }),
+          ).commands.setContent(FORMATTED_DOCUMENT, { emitUpdate: true });
+        });
+        fireEvent.click(screen.getByRole('button', { name: TRANSLATIONS.platform.canvas.node.closeComments }));
+        fireEvent.click(screen.getByRole('button', { name: TRANSLATIONS.platform.canvas.node.viewComments }));
+        await screen.findByRole('textbox', { name: TRANSLATIONS.platform.canvas.node.addCommentPlaceholder });
+      });
+
+      test('THEN the draft and its formatting are still in the composer', () => {
+        expect(
+          screen.getByRole('textbox', { name: TRANSLATIONS.platform.canvas.node.addCommentPlaceholder }),
+        ).toHaveTextContent(FORMATTED_TEXT);
+        expect(screen.getByText('now').tagName).toBe('STRONG');
       });
     });
   });

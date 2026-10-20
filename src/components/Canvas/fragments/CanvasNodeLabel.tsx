@@ -2,6 +2,9 @@
 
 import { clsx } from 'clsx';
 
+import type { IRichTextDocument } from '@interfaces';
+
+import { RichText } from '@/components/RichText';
 import { useTranslations } from '@/i18n';
 
 import { useExpandableLabel } from '../hooks';
@@ -12,12 +15,13 @@ import { NodeLabelEditor } from './NodeLabelEditor';
 interface ICanvasNodeLabelProps {
   id: string;
   label: string;
+  richLabel?: IRichTextDocument;
   isEditing: boolean;
   measured: boolean;
   commentCount: number;
 }
 
-export const CanvasNodeLabel = ({ id, label, isEditing, measured, commentCount }: ICanvasNodeLabelProps) => {
+export const CanvasNodeLabel = ({ id, label, richLabel, isEditing, measured, commentCount }: ICanvasNodeLabelProps) => {
   const t = useTranslations();
   const { labelRefCallback, expanded, expandable, toggleExpanded } = useExpandableLabel();
 
@@ -28,21 +32,22 @@ export const CanvasNodeLabel = ({ id, label, isEditing, measured, commentCount }
           <NodeLabelEditor
             id={id}
             label={label}
+            richLabel={richLabel}
             measured={measured}
             ariaLabel={t.platform.canvas.node.labelAriaLabel}
             className="text-[13.5px] leading-[1.55] font-medium"
             signalLabelled
           />
         ) : (
-          <p
+          <RichText
             ref={labelRefCallback}
+            text={label}
+            document={richLabel}
             className={clsx(
               'min-w-0 flex-1 font-grotesk text-[13.5px] leading-[1.55] font-medium tracking-tight break-words whitespace-pre-wrap text-[color:var(--text-strong)] select-none',
               !expanded && 'line-clamp-10',
             )}
-          >
-            {label}
-          </p>
+          />
         )}
 
         {!isEditing && <CommentsButton nodeId={id} count={commentCount} />}

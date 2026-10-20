@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { THREAD_ID, canvasNode } from '@mocks/canvas';
 import { TRANSLATIONS } from '@mocks/i18n';
-import { EDIT_ACCESS, READONLY_ACCESS } from '@mocks/roles';
+import { COMMENT_ACCESS, EDIT_ACCESS, READONLY_ACCESS } from '@mocks/roles';
 import { useToolbar } from '@/components/Toolbar/hooks';
 import { ECanvasTool } from '@/components/tools';
 import { useCanvasStore, usePermissionsStore } from '@/lib/stores';
@@ -220,6 +220,10 @@ describe('useToolbar', () => {
         expect(toolbar.current.groups.map((group) => group.id)).toEqual(['navigate', 'history']);
       });
 
+      test('THEN the shortcuts sheet leaves out text formatting', () => {
+        expect(toolbar.current.shortcutGroups).toBe(toolbar.current.groups);
+      });
+
       test('THEN the navigation tools stay enabled while the history tools disable', () => {
         const disabledByTool = Object.fromEntries(
           toolbar.current.groups.flatMap((group) => group.tools.map((tool) => [tool.id, tool.disabled] as const)),
@@ -233,6 +237,37 @@ describe('useToolbar', () => {
           [ECanvasTool.Undo]: true,
           [ECanvasTool.Redo]: true,
         });
+      });
+    });
+  });
+
+  describe('GIVEN an editor reading the shortcuts sheet', () => {
+    beforeEach(() => {
+      usePermissionsStore.getState().setAccess('ws-1', 'user-1', EDIT_ACCESS);
+      toolbar = renderHook(() => useToolbar()).result;
+    });
+
+    describe('WHEN the shortcuts sheet groups are read', () => {
+      test('THEN text formatting follows the tool groups', () => {
+        expect(toolbar.current.shortcutGroups.map((group) => group.id)).toEqual([
+          ...toolbar.current.groups.map((group) => group.id),
+          'text',
+        ]);
+      });
+    });
+  });
+
+  describe('GIVEN a commenter who cannot edit the canvas', () => {
+    beforeEach(() => {
+      usePermissionsStore.getState().setAccess('ws-1', 'user-1', COMMENT_ACCESS);
+      toolbar = renderHook(() => useToolbar()).result;
+    });
+
+    describe('WHEN the shortcuts sheet groups are read', () => {
+      test('THEN text formatting is still listed for comments', () => {
+        expect(toolbar.current.shortcutGroups.at(-1)?.label).toBe(
+          TRANSLATIONS.platform.canvas.formatting.shortcutsGroup,
+        );
       });
     });
   });

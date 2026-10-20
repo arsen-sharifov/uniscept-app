@@ -4,6 +4,7 @@ export * from './mascot';
 export * from './modal';
 export * from './popover';
 export * from './pricing';
+export * from './richTextEditor';
 export * from './settings';
 export * from './sidebar';
 export * from './toast';

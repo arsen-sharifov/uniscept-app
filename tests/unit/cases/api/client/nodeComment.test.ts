@@ -1,6 +1,7 @@
 import { describe, expect, test, vi } from 'vitest';
 
 import { createNodeComment, deleteNodeComment, getNodeComments, IDS_PER_REQUEST, ROWS_PER_PAGE } from '@api/client';
+import { FORMATTED_DOCUMENT, FORMATTED_TEXT } from '@mocks/richText';
 import { nodeCommentRow } from '@mocks/rows';
 import { primeSupabase } from '@mocks/supabase';
 
@@ -9,7 +10,7 @@ vi.mock('@/lib/supabase', () => import('@mocks/supabase'));
 describe('createNodeComment', () => {
   describe('GIVEN a signed-in user', () => {
     describe('WHEN a comment is created', () => {
-      test('THEN the insert carries the resolved author id', async () => {
+      test('THEN the insert carries the resolved author id and an empty rich text', async () => {
         const { queries } = primeSupabase([{ data: null }]);
 
         await createNodeComment({ id: 'c1', nodeId: 'n1', text: 'Nice catch' });
@@ -19,6 +20,25 @@ describe('createNodeComment', () => {
           node_id: 'n1',
           author_id: 'user-1',
           text: 'Nice catch',
+          rich_text: null,
+        });
+      });
+    });
+  });
+
+  describe('GIVEN a signed-in user writing a formatted comment', () => {
+    describe('WHEN a comment is created', () => {
+      test('THEN the formatting is stored in the rich text column', async () => {
+        const { queries } = primeSupabase([{ data: null }]);
+
+        await createNodeComment({ id: 'c1', nodeId: 'n1', text: FORMATTED_TEXT, richText: FORMATTED_DOCUMENT });
+
+        expect(queries[0]!.insert).toHaveBeenCalledExactlyOnceWith({
+          id: 'c1',
+          node_id: 'n1',
+          author_id: 'user-1',
+          text: FORMATTED_TEXT,
+          rich_text: FORMATTED_DOCUMENT,
         });
       });
     });

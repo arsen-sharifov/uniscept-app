@@ -19,6 +19,7 @@ export interface IToolbarProps {
   threadName?: string;
   groups?: IToolGroup[];
   pendingGroups?: IToolGroup[];
+  shortcutGroups?: IToolGroup[];
   activeTool?: string;
   onToolClick?: (id: string) => void;
 }
@@ -26,6 +27,7 @@ export interface IToolbarProps {
 export const Toolbar = ({
   groups = [],
   pendingGroups = [],
+  shortcutGroups = groups,
   activeTool,
   onToolClick,
   threadId,
@@ -142,7 +144,7 @@ export const Toolbar = ({
 
       <ShortcutsHelp
         open={shortcutsOpen}
-        groups={groups}
+        groups={shortcutGroups}
         activeTool={activeTool}
         onClose={() => setShortcutsOpen(false)}
       />

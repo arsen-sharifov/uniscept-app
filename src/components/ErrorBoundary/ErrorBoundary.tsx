@@ -2,13 +2,15 @@
 
 import { Component, type ReactNode } from 'react';
 
-import type { IErrorBoundaryState } from '@interfaces';
+import type { IErrorBoundaryState, IHandleErrorOptions } from '@interfaces';
 
 import { event } from '@/lib/events';
 
 interface IErrorBoundaryProps {
   children: ReactNode;
   fallback: ReactNode;
+  report?: IHandleErrorOptions;
+  onError?: () => void;
 }
 
 export class ErrorBoundary extends Component<IErrorBoundaryProps, IErrorBoundaryState> {
@@ -19,7 +21,9 @@ export class ErrorBoundary extends Component<IErrorBoundaryProps, IErrorBoundary
   }
 
   componentDidCatch(error: Error) {
-    event.error(error, { toast: false, context: 'boundary.render' });
+    const { report = { toast: false, context: 'boundary.render' }, onError } = this.props;
+    event.error(error, report);
+    onError?.();
   }
 
   render() {

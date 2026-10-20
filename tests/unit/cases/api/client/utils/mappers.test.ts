@@ -16,6 +16,13 @@ import {
   toWorkspaceRole,
 } from '@api/client';
 import {
+  EMPTY_DOCUMENT_JSON,
+  FORMATTED_DOCUMENT,
+  FORMATTED_TEXT,
+  PARSED_UNTRUSTED_DOCUMENT,
+  UNTRUSTED_DOCUMENT,
+} from '@mocks/richText';
+import {
   canvasNodeWithThreadRow,
   folderRow,
   myInvitationRow,
@@ -119,6 +126,50 @@ describe('toComment', () => {
     describe('WHEN it is mapped', () => {
       test('THEN the author id maps to camel case', () => {
         expect(toComment(nodeCommentRow())).toEqual({ id: 'c-1', text: 'Comment', authorId: 'user-1' });
+      });
+
+      test('THEN the comment carries no formatting', () => {
+        expect(toComment(nodeCommentRow())).toMatchObject({ richText: undefined });
+      });
+    });
+  });
+
+  describe('GIVEN a comment row with stored formatting', () => {
+    describe('WHEN it is mapped', () => {
+      test('THEN the formatting is carried over', () => {
+        expect(toComment(nodeCommentRow({ text: FORMATTED_TEXT, rich_text: FORMATTED_DOCUMENT }))).toEqual({
+          id: 'c-1',
+          text: FORMATTED_TEXT,
+          richText: FORMATTED_DOCUMENT,
+          authorId: 'user-1',
+        });
+      });
+    });
+  });
+
+  describe('GIVEN a comment row with untrusted formatting', () => {
+    describe('WHEN it is mapped', () => {
+      test('THEN only the sanitized formatting is kept', () => {
+        expect(toComment(nodeCommentRow({ rich_text: UNTRUSTED_DOCUMENT }))).toHaveProperty(
+          'richText',
+          PARSED_UNTRUSTED_DOCUMENT,
+        );
+      });
+    });
+  });
+
+  describe('GIVEN a comment row whose stored formatting holds no usable content', () => {
+    describe('WHEN it is mapped', () => {
+      test('THEN the comment carries no formatting', () => {
+        expect(toComment(nodeCommentRow({ rich_text: EMPTY_DOCUMENT_JSON }))).toMatchObject({ richText: undefined });
+      });
+    });
+  });
+
+  describe('GIVEN a comment row whose stored formatting is not a document', () => {
+    describe('WHEN it is mapped', () => {
+      test('THEN the comment carries no formatting', () => {
+        expect(toComment(nodeCommentRow({ rich_text: FORMATTED_TEXT }))).toMatchObject({ richText: undefined });
       });
     });
   });

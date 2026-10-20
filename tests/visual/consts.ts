@@ -98,6 +98,11 @@ export const VISUAL_CONFIG: IVisualConfig = {
       capture: 'canvasNode',
     },
     {
+      name: 'canvas-node-formatted',
+      storyId: 'components-canvas-canvasnode--formatted',
+      capture: 'canvasNode',
+    },
+    {
       name: 'toolbar-default',
       storyId: 'components-toolbar--default',
       capture: 'aside',
@@ -257,6 +262,21 @@ export const VISUAL_CONFIG: IVisualConfig = {
     {
       name: 'toolbar-export-menu',
       storyId: 'components-toolbar--export-menu',
+      capture: 'target',
+    },
+    {
+      name: 'rich-text-toolbar-formats',
+      storyId: 'components-richtexteditor--formats',
+      capture: 'target',
+    },
+    {
+      name: 'rich-text-toolbar-link',
+      storyId: 'components-richtexteditor--link-form',
+      capture: 'target',
+    },
+    {
+      name: 'rich-text-toolbar-color',
+      storyId: 'components-richtexteditor--color-palette',
       capture: 'target',
     },
     {

@@ -8,6 +8,8 @@ export * from './List';
 export * from './Mascot';
 export * from './Modal';
 export * from './Popover';
+export * from './RichText';
+export * from './RichTextEditor';
 export * from './SelectionStrip';
 export * from './Sidebar';
 export * from './Skeleton';

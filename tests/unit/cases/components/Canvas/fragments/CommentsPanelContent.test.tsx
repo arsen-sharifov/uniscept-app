@@ -1,26 +1,41 @@
-import { fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
+import { act, fireEvent, render, screen } from '@testing-library/react';
+import { afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import type { IComment } from '@interfaces';
 
-import { THREAD_ID, canvasNode, comment } from '@mocks/canvas';
+import { MIXED_COMMENT_THREAD, THREAD_ID, canvasNode } from '@mocks/canvas';
 import { TRANSLATIONS } from '@mocks/i18n';
+import {
+  BLANK_DRAFT_DOCUMENT,
+  FORMATTED_DOCUMENT,
+  FORMATTED_TEXT,
+  PADDED_DRAFT_DOCUMENT,
+  TYPED_DRAFT_DOCUMENT,
+  editorOf,
+  stubEditorLayout,
+} from '@mocks/richText';
 import { COMMENT_ACCESS, READONLY_ACCESS } from '@mocks/roles';
 import { CommentsPanelContent } from '@/components/Canvas/fragments';
+import { preloadRichTextEditor } from '@/components/RichTextEditor';
 import { MAX_COMMENT_LENGTH } from '@/lib/canvas';
 import { useCanvasStore, usePermissionsStore } from '@/lib/stores';
 
 vi.mock('@/i18n', () => import('@mocks/i18n'));
 
-const onCommentTextChange = vi.fn();
-
-const thread = [
-  comment('c1', { authorId: 'user-1', text: 'Mine' }),
-  comment('c2', { authorId: 'user-2', text: 'Theirs' }),
-];
+const onDraftChange = vi.fn();
 
 const storedComments = () =>
   useCanvasStore.getState().nodes.find((node) => node.id === 'n1')?.data.comments as IComment[] | undefined;
+
+const composer = () => screen.getByRole('textbox', { name: TRANSLATIONS.platform.canvas.node.addCommentPlaceholder });
+
+beforeAll(async () => {
+  await preloadRichTextEditor();
+});
+
+beforeEach(() => {
+  stubEditorLayout();
+});
 
 afterEach(() => {
   useCanvasStore.getState().clearCanvas();
@@ -28,14 +43,17 @@ afterEach(() => {
 });
 
 describe('CommentsPanelContent', () => {
-  describe('GIVEN a commenter reading a thread with their own and a foreign comment', () => {
-    beforeEach(() => {
+  describe('GIVEN a commenter reading a thread with their own and a formatted foreign comment', () => {
+    beforeEach(async () => {
       usePermissionsStore.getState().setAccess('ws-1', 'user-1', COMMENT_ACCESS);
-      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [canvasNode('n1', { comments: thread })], edges: [] });
+      useCanvasStore
+        .getState()
+        .loadCanvas(THREAD_ID, { nodes: [canvasNode('n1', { comments: MIXED_COMMENT_THREAD })], edges: [] });
       useCanvasStore.getState().setOpenCommentsNodeId('n1');
       render(
-        <CommentsPanelContent nodeId="n1" comments={thread} commentText="" onCommentTextChange={onCommentTextChange} />,
+        <CommentsPanelContent nodeId="n1" comments={MIXED_COMMENT_THREAD} draft={null} onDraftChange={onDraftChange} />,
       );
+      await screen.findByRole('textbox', { name: TRANSLATIONS.platform.canvas.node.addCommentPlaceholder });
     });
 
     describe('WHEN the panel renders', () => {
@@ -44,41 +62,50 @@ describe('CommentsPanelContent', () => {
           `${TRANSLATIONS.platform.canvas.node.commentsHeader}2`,
         );
         expect(screen.getByText('Mine')).toBeInTheDocument();
-        expect(screen.getByText('Theirs')).toBeInTheDocument();
+        expect(screen.getByText('now').tagName).toBe('STRONG');
         expect(
           screen.getAllByRole('button', { name: TRANSLATIONS.platform.canvas.comments.deleteAriaLabel }),
         ).toHaveLength(1);
       });
 
-      test('THEN the composer is empty and cannot send yet', () => {
-        expect(screen.getByPlaceholderText(TRANSLATIONS.platform.canvas.node.addCommentPlaceholder)).toHaveValue('');
-        expect(screen.getByRole('button', { name: TRANSLATIONS.platform.canvas.node.sendComment })).toBeDisabled();
-      });
-
-      test('THEN the composer stops at the longest comment the canvas stores', () => {
-        expect(screen.getByPlaceholderText(TRANSLATIONS.platform.canvas.node.addCommentPlaceholder)).toHaveAttribute(
-          'maxlength',
-          String(MAX_COMMENT_LENGTH),
+      test('THEN the composer is empty, prompts for a comment and cannot send yet', () => {
+        expect(composer()).toHaveTextContent(/^$/);
+        expect(composer().querySelector('p')).toHaveAttribute(
+          'data-placeholder',
+          TRANSLATIONS.platform.canvas.node.addCommentPlaceholder,
         );
+        expect(screen.getByRole('button', { name: TRANSLATIONS.platform.canvas.node.sendComment })).toBeDisabled();
       });
 
       test('THEN the list and the composer keep wheel and drag gestures away from the canvas', () => {
         expect(screen.getByText('Mine').closest('.nowheel')).toHaveClass('nopan');
-        expect(
-          screen.getByPlaceholderText(TRANSLATIONS.platform.canvas.node.addCommentPlaceholder).closest('form'),
-        ).toHaveClass('nopan');
+        expect(composer().closest('.nowheel')).toHaveClass('nopan');
+        expect(composer().closest('.nodrag')).toBeInTheDocument();
+      });
+    });
+
+    describe('WHEN more text than the canvas stores is inserted', () => {
+      beforeEach(() => {
+        act(() => {
+          editorOf(composer()).commands.insertContent('x'.repeat(MAX_COMMENT_LENGTH + 1));
+        });
+      });
+
+      test('THEN the composer refuses the insertion', () => {
+        expect(composer()).toHaveTextContent(/^$/);
       });
     });
 
     describe('WHEN they type into the composer', () => {
       beforeEach(() => {
-        fireEvent.change(screen.getByPlaceholderText(TRANSLATIONS.platform.canvas.node.addCommentPlaceholder), {
-          target: { value: 'Draft' },
+        act(() => {
+          editorOf(composer()).commands.insertContent('Draft');
         });
       });
 
-      test('THEN the draft is handed to the owner', () => {
-        expect(onCommentTextChange).toHaveBeenCalledExactlyOnceWith('Draft');
+      test('THEN the draft is handed to the owner and sending becomes possible', () => {
+        expect(onDraftChange).toHaveBeenLastCalledWith(TYPED_DRAFT_DOCUMENT);
+        expect(screen.getByRole('button', { name: TRANSLATIONS.platform.canvas.node.sendComment })).toBeEnabled();
       });
     });
 
@@ -104,48 +131,69 @@ describe('CommentsPanelContent', () => {
   });
 
   describe('GIVEN a commenter with a padded draft', () => {
-    beforeEach(() => {
+    beforeEach(async () => {
       usePermissionsStore.getState().setAccess('ws-1', 'user-1', COMMENT_ACCESS);
       useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [canvasNode('n1')], edges: [] });
       render(
-        <CommentsPanelContent
-          nodeId="n1"
-          comments={[]}
-          commentText="  Ship it  "
-          onCommentTextChange={onCommentTextChange}
-        />,
+        <CommentsPanelContent nodeId="n1" comments={[]} draft={PADDED_DRAFT_DOCUMENT} onDraftChange={onDraftChange} />,
       );
+      await screen.findByRole('textbox', { name: TRANSLATIONS.platform.canvas.node.addCommentPlaceholder });
     });
 
-    describe('WHEN the draft is sent', () => {
+    describe('WHEN the draft is sent with the button', () => {
       beforeEach(() => {
         fireEvent.click(screen.getByRole('button', { name: TRANSLATIONS.platform.canvas.node.sendComment }));
       });
 
-      test('THEN the trimmed comment is added and the draft is cleared', () => {
+      test('THEN the trimmed comment is added and the composer is cleared', () => {
         expect(storedComments()).toEqual([expect.objectContaining({ text: 'Ship it', authorId: 'user-1' })]);
-        expect(onCommentTextChange).toHaveBeenCalledExactlyOnceWith('');
+        expect(onDraftChange).toHaveBeenLastCalledWith(null);
+        expect(composer()).toHaveTextContent(/^$/);
+      });
+    });
+  });
+
+  describe('GIVEN a commenter with a formatted draft', () => {
+    beforeEach(async () => {
+      usePermissionsStore.getState().setAccess('ws-1', 'user-1', COMMENT_ACCESS);
+      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [canvasNode('n1')], edges: [] });
+      render(
+        <CommentsPanelContent nodeId="n1" comments={[]} draft={FORMATTED_DOCUMENT} onDraftChange={onDraftChange} />,
+      );
+      await screen.findByRole('textbox', { name: TRANSLATIONS.platform.canvas.node.addCommentPlaceholder });
+    });
+
+    describe('WHEN the draft is sent with Enter', () => {
+      beforeEach(() => {
+        fireEvent.keyDown(composer(), { key: 'Enter' });
+      });
+
+      test('THEN the comment keeps its formatting', () => {
+        expect(storedComments()).toEqual([
+          expect.objectContaining({ text: FORMATTED_TEXT, richText: FORMATTED_DOCUMENT, authorId: 'user-1' }),
+        ]);
       });
     });
   });
 
   describe('GIVEN a commenter with a blank draft', () => {
-    beforeEach(() => {
+    beforeEach(async () => {
       usePermissionsStore.getState().setAccess('ws-1', 'user-1', COMMENT_ACCESS);
       useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [canvasNode('n1')], edges: [] });
       render(
-        <CommentsPanelContent nodeId="n1" comments={[]} commentText="   " onCommentTextChange={onCommentTextChange} />,
+        <CommentsPanelContent nodeId="n1" comments={[]} draft={BLANK_DRAFT_DOCUMENT} onDraftChange={onDraftChange} />,
       );
+      await screen.findByRole('textbox', { name: TRANSLATIONS.platform.canvas.node.addCommentPlaceholder });
     });
 
-    describe('WHEN the composer form is submitted anyway', () => {
+    describe('WHEN Enter is pressed anyway', () => {
       beforeEach(() => {
-        fireEvent.submit(screen.getByPlaceholderText(TRANSLATIONS.platform.canvas.node.addCommentPlaceholder));
+        fireEvent.keyDown(composer(), { key: 'Enter' });
       });
 
       test('THEN nothing is added and the draft is left alone', () => {
         expect(storedComments()).toEqual([]);
-        expect(onCommentTextChange).not.toHaveBeenCalled();
+        expect(onDraftChange).not.toHaveBeenCalled();
       });
     });
   });
@@ -157,9 +205,7 @@ describe('CommentsPanelContent', () => {
 
     describe('WHEN the panel renders', () => {
       beforeEach(() => {
-        render(
-          <CommentsPanelContent nodeId="n1" comments={[]} commentText="" onCommentTextChange={onCommentTextChange} />,
-        );
+        render(<CommentsPanelContent nodeId="n1" comments={[]} draft={null} onDraftChange={onDraftChange} />);
       });
 
       test('THEN the empty note shows and the header carries no count', () => {
@@ -181,18 +227,16 @@ describe('CommentsPanelContent', () => {
         render(
           <CommentsPanelContent
             nodeId="n1"
-            comments={thread}
-            commentText=""
-            onCommentTextChange={onCommentTextChange}
+            comments={MIXED_COMMENT_THREAD}
+            draft={null}
+            onDraftChange={onDraftChange}
           />,
         );
       });
 
       test('THEN the comments are readable without a composer or delete actions', () => {
         expect(screen.getByText('Mine')).toBeInTheDocument();
-        expect(
-          screen.queryByPlaceholderText(TRANSLATIONS.platform.canvas.node.addCommentPlaceholder),
-        ).not.toBeInTheDocument();
+        expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
         expect(
           screen.queryByRole('button', { name: TRANSLATIONS.platform.canvas.comments.deleteAriaLabel }),
         ).not.toBeInTheDocument();

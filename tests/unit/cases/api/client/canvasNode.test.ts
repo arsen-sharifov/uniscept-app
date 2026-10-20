@@ -2,6 +2,7 @@ import { describe, expect, test, vi } from 'vitest';
 
 import { ECanvasNodeType } from '@interfaces';
 import {
+  CANVAS_NODE_SELECT,
   createCanvasNode,
   deleteCanvasNode,
   getCanvasNodes,
@@ -11,6 +12,7 @@ import {
   updateCanvasNodePositions,
   updateCanvasNodeStatus,
 } from '@api/client';
+import { FORMATTED_DOCUMENT, FORMATTED_TEXT } from '@mocks/richText';
 import { canvasNodeRow } from '@mocks/rows';
 import { NO_ROW_ERROR, primeSupabase } from '@mocks/supabase';
 
@@ -19,7 +21,7 @@ vi.mock('@/lib/supabase', () => import('@mocks/supabase'));
 describe('createCanvasNode', () => {
   describe('GIVEN a new node input', () => {
     describe('WHEN the node is created', () => {
-      test('THEN the payload maps to snake case columns', async () => {
+      test('THEN the payload maps to snake case columns with an empty rich label', async () => {
         const { queries } = primeSupabase([{ data: null }]);
 
         await createCanvasNode({
@@ -39,6 +41,37 @@ describe('createCanvasNode', () => {
           position_x: 10,
           position_y: 20,
           label: 'Node',
+          rich_label: null,
+          source_node_id: null,
+        });
+      });
+    });
+  });
+
+  describe('GIVEN a new node input with a formatted label', () => {
+    describe('WHEN the node is created', () => {
+      test('THEN the formatting is stored in the rich label column', async () => {
+        const { queries } = primeSupabase([{ data: null }]);
+
+        await createCanvasNode({
+          id: 'n1',
+          threadId: 'th-1',
+          type: ECanvasNodeType.Canvas,
+          x: 10,
+          y: 20,
+          label: FORMATTED_TEXT,
+          richLabel: FORMATTED_DOCUMENT,
+          sourceNodeId: null,
+        });
+
+        expect(queries[0]!.insert).toHaveBeenCalledExactlyOnceWith({
+          id: 'n1',
+          thread_id: 'th-1',
+          type: ECanvasNodeType.Canvas,
+          position_x: 10,
+          position_y: 20,
+          label: FORMATTED_TEXT,
+          rich_label: FORMATTED_DOCUMENT,
           source_node_id: null,
         });
       });
@@ -131,14 +164,29 @@ describe('updateCanvasNodePositions', () => {
 describe('updateCanvasNodeLabel', () => {
   describe('GIVEN an existing node', () => {
     describe('WHEN the label is updated', () => {
-      test('THEN the update targets the node id with the new label', async () => {
+      test('THEN the update targets the node id with the new label and clears the rich label', async () => {
         const { queries } = primeSupabase([{ data: null }]);
         const eq = vi.spyOn(queries[0]!, 'eq');
 
         await updateCanvasNodeLabel('n1', 'Renamed');
 
-        expect(queries[0]!.update).toHaveBeenCalledExactlyOnceWith({ label: 'Renamed' });
+        expect(queries[0]!.update).toHaveBeenCalledExactlyOnceWith({ label: 'Renamed', rich_label: null });
         expect(eq).toHaveBeenCalledExactlyOnceWith('id', 'n1');
+      });
+    });
+  });
+
+  describe('GIVEN an existing node relabelled with formatting', () => {
+    describe('WHEN the label is updated', () => {
+      test('THEN the formatting is written next to the label', async () => {
+        const { queries } = primeSupabase([{ data: null }]);
+
+        await updateCanvasNodeLabel('n1', FORMATTED_TEXT, FORMATTED_DOCUMENT);
+
+        expect(queries[0]!.update).toHaveBeenCalledExactlyOnceWith({
+          label: FORMATTED_TEXT,
+          rich_label: FORMATTED_DOCUMENT,
+        });
       });
     });
   });
@@ -255,8 +303,10 @@ describe('getCanvasNodes', () => {
         const { client, queries } = primeSupabase([{ data: rows }]);
         const threadFilter = vi.spyOn(queries[0]!, 'in');
         const order = vi.spyOn(queries[0]!, 'order');
+        const select = vi.spyOn(queries[0]!, 'select');
 
         await expect(getCanvasNodes(['th-1', 'th-2'])).resolves.toEqual(rows);
+        expect(select).toHaveBeenCalledExactlyOnceWith(CANVAS_NODE_SELECT);
         expect(client.from).toHaveBeenCalledExactlyOnceWith('canvas_nodes');
         expect(threadFilter).toHaveBeenCalledExactlyOnceWith('thread_id', ['th-1', 'th-2']);
         expect(order.mock.calls).toEqual([['created_at'], ['id']]);

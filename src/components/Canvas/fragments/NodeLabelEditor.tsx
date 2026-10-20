@@ -2,6 +2,10 @@
 
 import { clsx } from 'clsx';
 
+import type { IRichTextDocument } from '@interfaces';
+
+import { RichText } from '@/components/RichText';
+import { RichTextEditor } from '@/components/RichTextEditor';
 import { MAX_NODE_LABEL_LENGTH } from '@/lib/canvas';
 
 import { useLabelEditing } from '../hooks';
@@ -9,6 +13,7 @@ import { useLabelEditing } from '../hooks';
 interface INodeLabelEditorProps {
   id: string;
   label: string;
+  richLabel?: IRichTextDocument;
   measured: boolean;
   ariaLabel: string;
   className: string;
@@ -19,30 +24,39 @@ interface INodeLabelEditorProps {
 export const NodeLabelEditor = ({
   id,
   label,
+  richLabel,
   measured,
   ariaLabel,
   className,
   placeholder,
   signalLabelled,
 }: INodeLabelEditorProps) => {
-  const { inputRef, handleLabelBlur, handleLabelKeyDown } = useLabelEditing({ id, label, measured, signalLabelled });
+  const { commitLabel, cancelEditing } = useLabelEditing({ id, label, richLabel, signalLabelled });
+
+  const textClassName = clsx(
+    'font-grotesk tracking-tight break-words text-[color:var(--text-strong)] caret-[color:var(--accent)]',
+    className,
+  );
 
   return (
-    <textarea
-      ref={inputRef}
-      defaultValue={label}
-      maxLength={MAX_NODE_LABEL_LENGTH}
-      onBlur={handleLabelBlur}
-      onKeyDown={handleLabelKeyDown}
-      onClick={(event) => event.stopPropagation()}
-      onMouseDown={(event) => event.stopPropagation()}
-      rows={1}
+    <RichTextEditor
+      text={label}
+      document={richLabel}
+      ariaLabel={ariaLabel}
       placeholder={placeholder}
-      aria-label={ariaLabel}
-      className={clsx(
-        'nodrag field-sizing-content w-full resize-none overflow-hidden bg-transparent font-grotesk tracking-tight break-words text-[color:var(--text-strong)] caret-[color:var(--accent)] outline-none placeholder:text-[color:var(--text-muted)]',
-        className,
-      )}
+      maxLength={MAX_NODE_LABEL_LENGTH}
+      autoFocus={measured}
+      className={textClassName}
+      onSubmit={commitLabel}
+      onLeave={commitLabel}
+      onCancel={cancelEditing}
+      fallback={
+        <RichText
+          text={label}
+          document={richLabel}
+          className={clsx('w-full min-w-0 whitespace-pre-wrap', textClassName)}
+        />
+      }
     />
   );
 };

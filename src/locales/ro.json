@@ -111,7 +111,8 @@
       "loadFailed": "Nu s-a putut încărca",
       "saveFailed": "Nu s-a putut salva",
       "searchFailed": "Căutarea a eșuat",
-      "exportFailed": "Nu s-a putut exporta"
+      "exportFailed": "Nu s-a putut exporta",
+      "editFailed": "Nu s-a putut edita"
     },
     "errorPages": {
       "notFoundTitle": "Pagina nu a fost găsită",
@@ -316,6 +317,32 @@
       "comments": {
         "deleteAriaLabel": "Ștergeți comentariu",
         "deleteTitle": "Ștergeți comentariu"
+      },
+      "formatting": {
+        "toolbar": "Formatare text",
+        "bold": "Aldin",
+        "italic": "Cursiv",
+        "underline": "Subliniat",
+        "strike": "Tăiat",
+        "link": "Link",
+        "color": "Culoarea textului",
+        "bulletList": "Listă cu marcatori",
+        "orderedList": "Listă numerotată",
+        "back": "Înapoi",
+        "linkAddress": "Adresa linkului",
+        "linkPlaceholder": "Lipiți sau introduceți un link",
+        "applyLink": "Aplicați linkul",
+        "removeLink": "Eliminați linkul",
+        "invalidLink": "Introduceți o adresă web sau o adresă de e-mail.",
+        "colors": {
+          "default": "Implicit",
+          "red": "Roșu",
+          "amber": "Chihlimbar",
+          "green": "Verde",
+          "blue": "Albastru",
+          "violet": "Violet"
+        },
+        "shortcutsGroup": "Text"
       },
       "save": {
         "retrying": "Se reîncearcă…",

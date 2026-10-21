@@ -5,25 +5,43 @@ import {
   type ICanvasHistoryState,
   type ICanvasNodeData,
   type IComment,
+  type IRichTextDocument,
   type TCanvasOperation,
 } from '@interfaces';
 
+import { isSameRichText } from '@/lib/richText';
+
 import { isHandleId } from './handles';
 import { isCanvasNodeData, isReferenceNodeData } from './status';
+
+export const toCreateCommentOperation = ({ id, text, richText }: IComment, nodeId: string): TCanvasOperation => ({
+  type: 'createComment',
+  id,
+  nodeId,
+  text,
+  ...(richText && { richText }),
+});
+
+export const toUpdateLabelOperation = (id: string, label: string, richLabel?: IRichTextDocument): TCanvasOperation => ({
+  type: 'updateNodeLabel',
+  id,
+  label,
+  ...(richLabel && { richLabel }),
+});
 
 export const toCreateOperations = (
   id: string,
   threadId: string,
   { x, y }: XYPosition,
-  { label, status, isAnswer, comments }: ICanvasNodeData,
+  { label, richLabel, status, isAnswer, comments }: ICanvasNodeData,
 ): TCanvasOperation[] => {
-  const operations: TCanvasOperation[] = [{ type: 'createCanvasNode', id, threadId, x, y, label }];
+  const operations: TCanvasOperation[] = [
+    { type: 'createCanvasNode', id, threadId, x, y, label, ...(richLabel && { richLabel }) },
+  ];
 
   if (status !== null) operations.push({ type: 'updateNodeStatus', id, status });
   if (isAnswer) operations.push({ type: 'updateNodeAnswer', id, isAnswer });
-  comments.forEach((comment) =>
-    operations.push({ type: 'createComment', id: comment.id, nodeId: id, text: comment.text }),
-  );
+  comments.forEach((comment) => operations.push(toCreateCommentOperation(comment, id)));
 
   return operations;
 };
@@ -81,8 +99,9 @@ const diffNodeUpdates = (
       return;
     }
 
-    if (previousNode.data.label !== nextNode.data.label) {
-      operations.push({ type: 'updateNodeLabel', id, label: nextNode.data.label });
+    const { label, richLabel } = nextNode.data;
+    if (previousNode.data.label !== label || !isSameRichText(previousNode.data.richLabel, richLabel)) {
+      operations.push(toUpdateLabelOperation(id, label, richLabel));
     }
 
     if (previousNode.data.status !== nextNode.data.status) {
@@ -107,12 +126,7 @@ const diffNodeUpdates = (
 
     nextNode.data.comments.forEach((comment) => {
       if (previousCommentIds.has(comment.id)) return;
-      operations.push({
-        type: 'createComment',
-        id: comment.id,
-        nodeId: id,
-        text: comment.text,
-      });
+      operations.push(toCreateCommentOperation(comment, id));
     });
   });
 };
@@ -175,7 +189,7 @@ const sameComments = (previous: IComment[], next: IComment[]): boolean =>
   previous.every((comment, index) => {
     const other = next[index];
 
-    return comment.id === other?.id && comment.text === other.text;
+    return comment.id === other?.id && comment.text === other.text && isSameRichText(comment.richText, other.richText);
   });
 
 const sameNodeContent = (previous: Node, next: Node): boolean => {
@@ -184,6 +198,7 @@ const sameNodeContent = (previous: Node, next: Node): boolean => {
   if (isCanvasNodeData(previous.data) && isCanvasNodeData(next.data)) {
     return (
       previous.data.label === next.data.label &&
+      isSameRichText(previous.data.richLabel, next.data.richLabel) &&
       previous.data.status === next.data.status &&
       previous.data.isAnswer === next.data.isAnswer &&
       sameComments(previous.data.comments, next.data.comments)

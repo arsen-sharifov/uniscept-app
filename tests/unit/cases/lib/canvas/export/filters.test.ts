@@ -2,8 +2,8 @@ import { beforeEach, describe, expect, test } from 'vitest';
 
 import type { ICanvasExportContext } from '@interfaces';
 
-import { LAYERED_BOX_SHADOW } from '@mocks/canvasExport';
-import { definitionContext } from '@mocks/canvasExportDom';
+import { exportContext } from '@mocks/canvasExportDom';
+import { LAYERED_BOX_SHADOW } from '@mocks/canvasExportValues';
 import { parseBoxShadowLayers, renderShadow } from '@/lib/canvas/export';
 
 let context: ICanvasExportContext;
@@ -32,7 +32,7 @@ describe('parseBoxShadowLayers', () => {
 
 describe('renderShadow', () => {
   beforeEach(() => {
-    context = definitionContext();
+    context = exportContext();
   });
 
   describe('GIVEN the same layered shadow used by two boxes', () => {

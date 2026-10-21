@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { domRect } from '@mocks/browser';
 import { TRANSLATIONS } from '@mocks/i18n';
-import { TOOL_GROUPS } from '@mocks/toolbar';
+import { TEXT_SHORTCUT_GROUP, TOOL_GROUPS } from '@mocks/toolbar';
 import { Toolbar } from '@/components/Toolbar';
 import { TOOLTIP_DELAY_MS } from '@/components/Toolbar/consts';
 import { useOnboardingStore } from '@/lib/onboarding';
@@ -44,6 +44,21 @@ describe('Toolbar', () => {
     describe('WHEN it renders', () => {
       test('THEN the help section is divided from the tools', () => {
         expect(helpButton().closest('div.mx-2')).toHaveClass('border-t');
+      });
+    });
+  });
+
+  describe('GIVEN tool groups and separate shortcut groups', () => {
+    beforeEach(() => {
+      render(<Toolbar groups={TOOL_GROUPS} shortcutGroups={[...TOOL_GROUPS, TEXT_SHORTCUT_GROUP]} />);
+      fireEvent.click(helpButton(), { detail: 1 });
+      fireEvent.click(screen.getByRole('menuitem', { name: TRANSLATIONS.platform.onboarding.menuShortcuts }));
+    });
+
+    describe('WHEN the shortcuts sheet opens', () => {
+      test('THEN it lists the shortcut groups including text formatting', () => {
+        expect(screen.getByRole('dialog')).toHaveTextContent(TEXT_SHORTCUT_GROUP.label ?? '');
+        expect(screen.getByRole('dialog')).toHaveTextContent('Bold');
       });
     });
   });

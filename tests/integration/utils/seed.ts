@@ -17,6 +17,8 @@ import type {
   IIntegrationNodeRow,
   IIntegrationOnboardingRow,
   IIntegrationPreferencesRow,
+  IIntegrationRichCommentRow,
+  IIntegrationRichLabelRow,
   IIntegrationRoleFlags,
   IIntegrationThread,
   IIntegrationThreadRow,
@@ -451,6 +453,18 @@ export const readNode = async (nodeId: string): Promise<IIntegrationNodeRow | nu
   return data;
 };
 
+export const readNodeRichLabel = async (nodeId: string): Promise<IIntegrationRichLabelRow | null> => {
+  const { data, error } = await getAdminClient()
+    .from('canvas_nodes')
+    .select('label, rich_label')
+    .eq('id', nodeId)
+    .maybeSingle<IIntegrationRichLabelRow>();
+
+  if (error) throw new Error(`Could not read the formatting of the node ${nodeId}: ${error.message}`);
+
+  return data;
+};
+
 export const readEdge = async (edgeId: string): Promise<IIntegrationEdgeRow | null> => {
   const { data, error } = await getAdminClient()
     .from('canvas_edges')
@@ -531,6 +545,18 @@ export const readNodeComment = async (commentId: string): Promise<IIntegrationNo
     .maybeSingle<IIntegrationNodeCommentRow>();
 
   if (error) throw new Error(`Could not read the comment ${commentId}: ${error.message}`);
+
+  return data;
+};
+
+export const readNodeCommentRichText = async (commentId: string): Promise<IIntegrationRichCommentRow | null> => {
+  const { data, error } = await getAdminClient()
+    .from('node_comments')
+    .select('text, rich_text')
+    .eq('id', commentId)
+    .maybeSingle<IIntegrationRichCommentRow>();
+
+  if (error) throw new Error(`Could not read the formatting of the comment ${commentId}: ${error.message}`);
 
   return data;
 };

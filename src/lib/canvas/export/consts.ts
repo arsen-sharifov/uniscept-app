@@ -1,4 +1,4 @@
-import type { IExportCodePointRange, TCanvasExportFormat } from '@interfaces';
+import type { IExportCodePointRange, TCanvasExportFormat, TExportDecorationLine } from '@interfaces';
 
 export const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 export const EXPORT_PADDING = 48;
@@ -18,9 +18,12 @@ export const EXPORT_URL_LIFETIME_MS = 60_000;
 
 export const CANVAS_NODE_SELECTOR = '.react-flow__node';
 export const EXPORT_NODE_SELECTOR = '[data-export-node]';
+export const EXPORT_STAGE_SELECTOR = '[data-canvas-export-stage]';
+export const EXPORT_TEXT_ROOT_SELECTOR = `${EXPORT_NODE_SELECTOR}, ${EXPORT_STAGE_SELECTOR}`;
 export const EXPORT_OMIT_SELECTOR = '[data-export-omit], .react-flow__handle';
 export const EXPORT_EDGE_SELECTOR = '[data-export-edge]';
 export const EDGE_PATH_SELECTOR = '.react-flow__edge-path';
+export const EDITOR_PLACEHOLDER_SELECTOR = '.is-editor-empty[data-placeholder]';
 export const EXPORT_NODE_ID_ATTRIBUTE = 'data-node-id';
 export const EXPORT_EDGE_ID_ATTRIBUTE = 'data-edge-id';
 
@@ -41,6 +44,14 @@ export const QUOTES_PATTERN = /["']/g;
 export const RGB_COLOR_PATTERN = /^rgba?\(/;
 export const SRGB_COLOR_PATTERN = /^color\(srgb ([\d.]+) ([\d.]+) ([\d.]+)(?: \/ ([\d.]+))?\)$/;
 
+export const EXPORT_DECORATION_OFFSETS_EM: Record<TExportDecorationLine, number> = {
+  underline: 0.14,
+  'line-through': -0.3,
+};
+export const EXPORT_DECORATION_LINES = Object.keys(EXPORT_DECORATION_OFFSETS_EM) as TExportDecorationLine[];
+export const DECORATION_THICKNESS_EM = 0.07;
+export const BULLET_MARKER = '•';
+
 export const SHADOW_FILTER_REGION = { x: '-50%', y: '-50%', width: '200%', height: '200%' } as const;
 
 export const EXPORT_MIME_TYPES: Record<TCanvasExportFormat, string> = {
@@ -50,17 +61,17 @@ export const EXPORT_MIME_TYPES: Record<TCanvasExportFormat, string> = {
 };
 
 export const EXPORT_STAGE_CSS = `
-  [data-canvas-export-stage] *, [data-canvas-export-stage] *::before, [data-canvas-export-stage] *::after {
+  ${EXPORT_STAGE_SELECTOR} *, ${EXPORT_STAGE_SELECTOR} *::before, ${EXPORT_STAGE_SELECTOR} *::after {
     animation: none !important;
     transition: none !important;
     transform: none !important;
     translate: none !important;
   }
-  [data-canvas-export-stage] [data-export-node] {
+  ${EXPORT_STAGE_SELECTOR} ${EXPORT_NODE_SELECTOR} {
     border-color: var(--border-strong) !important;
     box-shadow: var(--shadow-pip) !important;
   }
-  [data-canvas-export-stage] p, [data-canvas-export-stage] .truncate {
+  ${EXPORT_STAGE_SELECTOR} p, ${EXPORT_STAGE_SELECTOR} .truncate, ${EXPORT_STAGE_SELECTOR} [data-rich-text] {
     -webkit-line-clamp: unset !important;
     overflow: visible !important;
     white-space: pre-wrap !important;
@@ -68,6 +79,18 @@ export const EXPORT_STAGE_CSS = `
     text-overflow: clip !important;
     flex-shrink: 1;
     min-width: 0;
+  }
+  ${EXPORT_STAGE_SELECTOR} li {
+    position: relative;
+    list-style: none;
+  }
+  ${EXPORT_STAGE_SELECTOR} [data-export-marker] {
+    position: absolute;
+    right: 100%;
+    padding-right: 0.4em;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
   }
 `;
 

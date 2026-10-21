@@ -5,7 +5,7 @@ import { useStore } from 'zustand';
 
 import type { IToolbarModel } from '@interfaces';
 
-import { ECanvasTool, buildCanvasToolGroups, isCanvasTool } from '@/components/tools';
+import { ECanvasTool, buildCanvasToolGroups, buildTextFormattingGroup, isCanvasTool } from '@/components/tools';
 import { useTranslations } from '@/i18n';
 import { useCanvasStore, usePermissionsStore } from '@/lib/stores';
 
@@ -17,6 +17,7 @@ export const useToolbar = (workspaceLoading = false): IToolbarModel => {
   const storedActiveTool = useCanvasStore((state) => state.activeTool);
   const middlePan = useCanvasStore((state) => state.middlePan);
   const canEditCanvas = usePermissionsStore((state) => state.canEditCanvas);
+  const canComment = usePermissionsStore((state) => state.canComment);
   const grantsPending = usePermissionsStore((state) => state.workspaceId !== null && !state.resolved);
 
   const activeTool = middlePan ? ECanvasTool.Pan : storedActiveTool;
@@ -38,6 +39,11 @@ export const useToolbar = (workspaceLoading = false): IToolbarModel => {
           })),
         })),
     [baseGroups, canUndo, canRedo, canEditCanvas],
+  );
+
+  const shortcutGroups = useMemo(
+    () => (canEditCanvas || canComment ? [...groups, buildTextFormattingGroup(t.platform.canvas.formatting)] : groups),
+    [groups, t.platform.canvas.formatting, canEditCanvas, canComment],
   );
 
   const pendingGroups = useMemo(
@@ -63,5 +69,5 @@ export const useToolbar = (workspaceLoading = false): IToolbarModel => {
     store.setActiveTool(id);
   }, []);
 
-  return { groups, pendingGroups, activeTool, handleToolClick };
+  return { groups, pendingGroups, shortcutGroups, activeTool, handleToolClick };
 };

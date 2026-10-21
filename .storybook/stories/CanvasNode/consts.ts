@@ -1,6 +1,6 @@
-import type { TCanvasNode } from '@interfaces';
+import type { IRichTextDocument, TCanvasNode } from '@interfaces';
 
-import { createCanvasNode, createComment } from '../../utils';
+import { createCanvasNode, createComment, createFormattedComment, withRichLabel } from '../../utils';
 
 export const SB_NODE_ID = 'sb-node-1';
 
@@ -37,6 +37,20 @@ export const invalidNode: TCanvasNode = createCanvasNode(
   'invalid',
 );
 
+export const FORMATTED_COMMENT_DOCUMENT: IRichTextDocument = {
+  type: 'doc',
+  content: [
+    {
+      type: 'paragraph',
+      content: [
+        { type: 'text', text: 'Could a ' },
+        { type: 'text', text: 'qualified majority', marks: [{ type: 'bold' }] },
+        { type: 'text', text: ' be a sensible middle ground here?' },
+      ],
+    },
+  ],
+};
+
 export const withCommentsNode: TCanvasNode = createCanvasNode(
   SB_NODE_ID,
   0,
@@ -45,9 +59,58 @@ export const withCommentsNode: TCanvasNode = createCanvasNode(
   null,
   [
     createComment('c1', 'Voting distributes responsibility across all canvas members.'),
-    createComment('c2', 'Could a qualified majority be a sensible middle ground here?'),
+    createFormattedComment('c2', FORMATTED_COMMENT_DOCUMENT),
     createComment('c3', 'Concerned about speed — fast canvases stall under voting overhead.', 'sb-other'),
   ],
+);
+
+export const FORMATTED_LABEL_DOCUMENT: IRichTextDocument = {
+  type: 'doc',
+  content: [
+    {
+      type: 'paragraph',
+      content: [
+        { type: 'text', text: 'Voting ', marks: [{ type: 'bold' }] },
+        { type: 'text', text: 'slows fast canvases, see the ' },
+        { type: 'text', text: 'pilot notes', marks: [{ type: 'link', attrs: { href: 'https://example.com/pilot' } }] },
+      ],
+    },
+    {
+      type: 'bulletList',
+      content: [
+        {
+          type: 'listItem',
+          content: [
+            {
+              type: 'paragraph',
+              content: [
+                { type: 'text', text: 'Risk: ', marks: [{ type: 'textColor', attrs: { color: 'red' } }] },
+                { type: 'text', text: 'stalled decisions', marks: [{ type: 'italic' }] },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'listItem',
+          content: [
+            {
+              type: 'paragraph',
+              content: [
+                { type: 'text', text: 'Unanimity', marks: [{ type: 'strike' }] },
+                { type: 'text', text: ' ' },
+                { type: 'text', text: 'qualified majority', marks: [{ type: 'underline' }] },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  ],
+};
+
+export const formattedNode: TCanvasNode = withRichLabel(
+  createCanvasNode(SB_NODE_ID, 0, 0, ''),
+  FORMATTED_LABEL_DOCUMENT,
 );
 
 export const longLabelNode: TCanvasNode = createCanvasNode(

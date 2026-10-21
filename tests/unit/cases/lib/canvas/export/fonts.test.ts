@@ -1,7 +1,12 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { LATIN_UNICODE_RANGE } from '@mocks/canvasExport';
-import { FONT_FIXTURE, fontResponse, glyphContext, installFontFaces } from '@mocks/canvasExportDom';
+import {
+  FONT_FIXTURE,
+  LATIN_UNICODE_RANGE,
+  fontResponse,
+  glyphContext,
+  stubFontSheets,
+} from '@mocks/canvasExportFonts';
 import { embedExportFonts, parseUnicodeRanges } from '@/lib/canvas/export';
 
 let style: SVGStyleElement;
@@ -40,12 +45,12 @@ describe('parseUnicodeRanges', () => {
 describe('embedExportFonts', () => {
   describe('GIVEN Latin and Cyrillic faces of the used family plus an unrelated family', () => {
     beforeEach(() => {
-      installFontFaces();
+      stubFontSheets();
     });
 
     describe('WHEN an English graph embeds its fonts', () => {
       beforeEach(async () => {
-        style = await embedExportFonts(glyphContext('Origin claim', `"${FONT_FIXTURE.family}", sans-serif`));
+        style = await embedExportFonts(glyphContext(FONT_FIXTURE.latinText, FONT_FIXTURE.familyStack));
       });
 
       test('THEN only the Latin face is inlined as a data URL', () => {
@@ -66,7 +71,7 @@ describe('embedExportFonts', () => {
 
     describe('WHEN a Ukrainian graph embeds its fonts', () => {
       beforeEach(async () => {
-        style = await embedExportFonts(glyphContext('Рішення', FONT_FIXTURE.family));
+        style = await embedExportFonts(glyphContext(FONT_FIXTURE.cyrillicText, FONT_FIXTURE.family));
       });
 
       test('THEN the Cyrillic face is fetched instead', () => {
@@ -81,7 +86,7 @@ describe('embedExportFonts', () => {
       });
 
       test('THEN the export fails instead of shipping a broken face', async () => {
-        await expect(embedExportFonts(glyphContext('Origin', FONT_FIXTURE.family))).rejects.toThrow(
+        await expect(embedExportFonts(glyphContext(FONT_FIXTURE.latinText, FONT_FIXTURE.family))).rejects.toThrow(
           'Could not load an export font',
         );
       });

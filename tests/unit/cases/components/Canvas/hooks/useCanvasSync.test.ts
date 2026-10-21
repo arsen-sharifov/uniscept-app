@@ -124,7 +124,7 @@ describe('useCanvasSync', () => {
           label: 'Idea',
           sourceNodeId: null,
         });
-        expect(updateCanvasNodeLabel).toHaveBeenCalledExactlyOnceWith(createdId, 'Refined');
+        expect(updateCanvasNodeLabel).toHaveBeenCalledExactlyOnceWith(createdId, 'Refined', undefined);
         expect(vi.mocked(updateCanvasNodeLabel).mock.invocationCallOrder[0]).toBeGreaterThan(
           vi.mocked(createCanvasNode).mock.invocationCallOrder[0]!,
         );
@@ -374,7 +374,7 @@ describe('useCanvasSync', () => {
 
       test('THEN the rename stays and only the rename itself reaches the api', () => {
         expect(useCanvasStore.getState().nodes.find((node) => node.id === 'foreign')?.data.label).toBe('Renamed');
-        expect(updateCanvasNodeLabel).toHaveBeenCalledExactlyOnceWith('foreign', 'Renamed');
+        expect(updateCanvasNodeLabel).toHaveBeenCalledExactlyOnceWith('foreign', 'Renamed', undefined);
       });
     });
   });

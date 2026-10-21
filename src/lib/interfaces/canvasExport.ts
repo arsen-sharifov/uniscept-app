@@ -36,6 +36,13 @@ export interface IExportTextLine extends IRect {
   text: string;
 }
 
+export type TExportDecorationLine = 'underline' | 'line-through';
+
+export interface IExportTextDecoration {
+  line: TExportDecorationLine;
+  color: string;
+}
+
 export interface IExportShadowLayer {
   color: string;
   dx: number;

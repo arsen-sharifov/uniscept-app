@@ -23,3 +23,9 @@ export const TOOL_GROUPS = [
   { id: 'navigate', label: 'Navigate', tools: [PAN_TOOL, ZOOM_IN_TOOL] },
   { id: 'history', label: 'History', tools: [UNDO_TOOL] },
 ];
+
+export const TEXT_SHORTCUT_GROUP: IToolGroup = {
+  id: 'text',
+  label: 'Text',
+  tools: [{ id: 'bold', icon: Hand, label: 'Bold', shortcut: '⌘B' }],
+};

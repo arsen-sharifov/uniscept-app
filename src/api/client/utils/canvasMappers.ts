@@ -12,6 +12,8 @@ import {
   type TReferenceNode,
 } from '@interfaces';
 
+import { parseRichText } from '@/lib/richText';
+
 import { toComment } from './mappers';
 
 export const rowToNode = (
@@ -51,6 +53,7 @@ export const rowToNode = (
       deletable: false,
       data: {
         label: row.label,
+        richLabel: parseRichText(row.rich_label) ?? undefined,
         status: null,
         isAnswer: false,
         comments: mappedComments,
@@ -65,6 +68,7 @@ export const rowToNode = (
     position,
     data: {
       label: row.label,
+      richLabel: parseRichText(row.rich_label) ?? undefined,
       status: row.status ?? null,
       isAnswer: row.is_answer,
       comments: mappedComments,

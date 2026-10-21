@@ -37,6 +37,7 @@ export interface IToolGroup {
 export interface IToolbarModel {
   groups: IToolGroup[];
   pendingGroups: IToolGroup[];
+  shortcutGroups: IToolGroup[];
   activeTool: string;
   handleToolClick: (id: string) => void;
 }
@@ -48,6 +49,8 @@ export interface IToolAvailability {
 }
 
 export type TCanvasToolsTranslations = TTranslations['platform']['canvas']['tools'];
+
+export type TTextFormattingTranslations = TTranslations['platform']['canvas']['formatting'];
 
 export type TMenuOpener = 'pointer' | 'keyboard';
 

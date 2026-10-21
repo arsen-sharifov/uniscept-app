@@ -1,0 +1,71 @@
+.rich-text p {
+  margin: 0;
+}
+
+.rich-text :is(ul, ol) {
+  margin: 0.25em 0;
+  padding-left: 1.35em;
+}
+
+.rich-text :is(ul, ol):first-child {
+  margin-top: 0;
+}
+
+.rich-text :is(ul, ol):last-child {
+  margin-bottom: 0;
+}
+
+.rich-text ul {
+  list-style: disc;
+}
+
+.rich-text ol {
+  list-style: decimal;
+}
+
+.rich-text li {
+  padding-left: 0.1em;
+}
+
+.rich-text li::marker {
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.rich-text a {
+  color: var(--accent-text);
+  text-decoration-line: underline;
+  text-decoration-color: color-mix(in oklab, currentColor 40%, transparent);
+  text-underline-offset: 0.18em;
+  transition: text-decoration-color 150ms ease;
+}
+
+.rich-text a:hover {
+  text-decoration-color: currentColor;
+}
+
+.rich-text [data-text-color='red'] {
+  color: var(--ink-red);
+}
+
+.rich-text [data-text-color='amber'] {
+  color: var(--ink-amber);
+}
+
+.rich-text [data-text-color='green'] {
+  color: var(--ink-green);
+}
+
+.rich-text [data-text-color='blue'] {
+  color: var(--ink-blue);
+}
+
+.rich-text [data-text-color='violet'] {
+  color: var(--ink-violet);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rich-text a {
+    transition: none;
+  }
+}

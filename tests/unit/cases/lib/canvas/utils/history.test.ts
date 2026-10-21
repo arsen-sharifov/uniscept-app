@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, test } from 'vitest';
 import { ECanvasNodeType, type ICanvasHistoryState, type TCanvasOperation } from '@interfaces';
 
 import { THREAD_ID, canvasEdge, canvasNode, comment, questionNode, referenceNode } from '@mocks/canvas';
+import { FORMATTED_DOCUMENT, FORMATTED_TEXT, RESTYLED_DOCUMENT, SHOWCASE_DOCUMENT } from '@mocks/richText';
 import { diffHistoryStates, isSameHistoryState, toCreateOperations } from '@/lib/canvas';
 
 const malformedNode = (id: string, type: ECanvasNodeType): Node => ({
@@ -33,6 +34,58 @@ describe('history', () => {
           { type: 'createCanvasNode', id: 'n1', threadId: THREAD_ID, x: 10, y: 20, label: 'Node n1' },
           { type: 'updateNodeStatus', id: 'n1', status: 'valid' },
           { type: 'updateNodeAnswer', id: 'n1', isAnswer: true },
+          { type: 'createComment', id: 'c1', nodeId: 'n1', text: 'Comment c1' },
+        ]);
+      });
+    });
+  });
+
+  describe('GIVEN a node with a formatted label and a formatted comment', () => {
+    describe('WHEN its create operations are built', () => {
+      beforeEach(() => {
+        operations = toCreateOperations(
+          'n1',
+          THREAD_ID,
+          { x: 10, y: 20 },
+          canvasNode('n1', {
+            label: FORMATTED_TEXT,
+            richLabel: FORMATTED_DOCUMENT,
+            comments: [comment('c1', { richText: SHOWCASE_DOCUMENT })],
+          }).data,
+        );
+      });
+
+      test('THEN the create and the comment carry their formatting', () => {
+        expect(operations).toStrictEqual([
+          {
+            type: 'createCanvasNode',
+            id: 'n1',
+            threadId: THREAD_ID,
+            x: 10,
+            y: 20,
+            label: FORMATTED_TEXT,
+            richLabel: FORMATTED_DOCUMENT,
+          },
+          { type: 'createComment', id: 'c1', nodeId: 'n1', text: 'Comment c1', richText: SHOWCASE_DOCUMENT },
+        ]);
+      });
+    });
+  });
+
+  describe('GIVEN a node with a plain label and a plain comment', () => {
+    describe('WHEN its create operations are built', () => {
+      beforeEach(() => {
+        operations = toCreateOperations(
+          'n1',
+          THREAD_ID,
+          { x: 0, y: 0 },
+          canvasNode('n1', { comments: [comment('c1')] }).data,
+        );
+      });
+
+      test('THEN neither operation carries a formatting key', () => {
+        expect(operations).toStrictEqual([
+          { type: 'createCanvasNode', id: 'n1', threadId: THREAD_ID, x: 0, y: 0, label: 'Node n1' },
           { type: 'createComment', id: 'c1', nodeId: 'n1', text: 'Comment c1' },
         ]);
       });
@@ -151,6 +204,73 @@ describe('history', () => {
     });
   });
 
+  describe('GIVEN a node whose label carries formatting', () => {
+    describe('WHEN a step that only restyles the label is diffed', () => {
+      beforeEach(() => {
+        operations = diffHistoryStates(
+          { nodes: [canvasNode('n1', { label: FORMATTED_TEXT, richLabel: FORMATTED_DOCUMENT })], edges: [] },
+          { nodes: [canvasNode('n1', { label: FORMATTED_TEXT, richLabel: RESTYLED_DOCUMENT })], edges: [] },
+          THREAD_ID,
+        );
+      });
+
+      test('THEN a label update with the new formatting is produced', () => {
+        expect(operations).toStrictEqual([
+          { type: 'updateNodeLabel', id: 'n1', label: FORMATTED_TEXT, richLabel: RESTYLED_DOCUMENT },
+        ]);
+      });
+    });
+
+    describe('WHEN a step that strips the formatting from the same text is diffed', () => {
+      beforeEach(() => {
+        operations = diffHistoryStates(
+          { nodes: [canvasNode('n1', { label: FORMATTED_TEXT, richLabel: FORMATTED_DOCUMENT })], edges: [] },
+          { nodes: [canvasNode('n1', { label: FORMATTED_TEXT })], edges: [] },
+          THREAD_ID,
+        );
+      });
+
+      test('THEN a label update without a formatting key is produced', () => {
+        expect(operations).toStrictEqual([{ type: 'updateNodeLabel', id: 'n1', label: FORMATTED_TEXT }]);
+      });
+    });
+
+    describe('WHEN a step that holds the same formatting built separately is diffed', () => {
+      beforeEach(() => {
+        operations = diffHistoryStates(
+          { nodes: [canvasNode('n1', { label: FORMATTED_TEXT, richLabel: FORMATTED_DOCUMENT })], edges: [] },
+          {
+            nodes: [canvasNode('n1', { label: FORMATTED_TEXT, richLabel: structuredClone(FORMATTED_DOCUMENT) })],
+            edges: [],
+          },
+          THREAD_ID,
+        );
+      });
+
+      test('THEN no operation is produced', () => {
+        expect(operations).toEqual([]);
+      });
+    });
+  });
+
+  describe('GIVEN a node whose formatted comment was deleted', () => {
+    describe('WHEN the step that brings the comment back is diffed', () => {
+      beforeEach(() => {
+        operations = diffHistoryStates(
+          { nodes: [canvasNode('n1')], edges: [] },
+          { nodes: [canvasNode('n1', { comments: [comment('c1', { richText: FORMATTED_DOCUMENT })] })], edges: [] },
+          THREAD_ID,
+        );
+      });
+
+      test('THEN the comment is created again with its formatting', () => {
+        expect(operations).toStrictEqual([
+          { type: 'createComment', id: 'c1', nodeId: 'n1', text: 'Comment c1', richText: FORMATTED_DOCUMENT },
+        ]);
+      });
+    });
+  });
+
   describe('GIVEN nodes with malformed data and an edge with unknown handles', () => {
     const before: ICanvasHistoryState = { nodes: [malformedNode('kept', ECanvasNodeType.Canvas)], edges: [] };
     const after: ICanvasHistoryState = {
@@ -214,6 +334,67 @@ describe('history', () => {
         isSame = isSameHistoryState(
           { nodes: [canvasNode('n1', { comments: [comment('c1')] })], edges: [] },
           { nodes: [canvasNode('n1', { comments: [comment('c1', { text: 'Edited' })] })], edges: [] },
+        );
+      });
+
+      test('THEN they are different entries', () => {
+        expect(isSame).toBe(false);
+      });
+    });
+  });
+
+  describe('GIVEN two states holding the same label and comment formatting built separately', () => {
+    describe('WHEN they are compared', () => {
+      beforeEach(() => {
+        isSame = isSameHistoryState(
+          {
+            nodes: [
+              canvasNode('n1', {
+                richLabel: FORMATTED_DOCUMENT,
+                comments: [comment('c1', { richText: SHOWCASE_DOCUMENT })],
+              }),
+            ],
+            edges: [],
+          },
+          {
+            nodes: [
+              canvasNode('n1', {
+                richLabel: structuredClone(FORMATTED_DOCUMENT),
+                comments: [comment('c1', { richText: structuredClone(SHOWCASE_DOCUMENT) })],
+              }),
+            ],
+            edges: [],
+          },
+        );
+      });
+
+      test('THEN they count as the same history entry', () => {
+        expect(isSame).toBe(true);
+      });
+    });
+  });
+
+  describe('GIVEN two states whose only difference is the label formatting', () => {
+    describe('WHEN they are compared', () => {
+      beforeEach(() => {
+        isSame = isSameHistoryState(
+          { nodes: [canvasNode('n1', { richLabel: FORMATTED_DOCUMENT })], edges: [] },
+          { nodes: [canvasNode('n1', { richLabel: RESTYLED_DOCUMENT })], edges: [] },
+        );
+      });
+
+      test('THEN they are different entries', () => {
+        expect(isSame).toBe(false);
+      });
+    });
+  });
+
+  describe('GIVEN two states whose only difference is a comment formatting', () => {
+    describe('WHEN they are compared', () => {
+      beforeEach(() => {
+        isSame = isSameHistoryState(
+          { nodes: [canvasNode('n1', { comments: [comment('c1', { richText: FORMATTED_DOCUMENT })] })], edges: [] },
+          { nodes: [canvasNode('n1', { comments: [comment('c1', { richText: RESTYLED_DOCUMENT })] })], edges: [] },
         );
       });
 

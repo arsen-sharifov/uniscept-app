@@ -4,7 +4,7 @@ import type { NodeProps } from '@xyflow/react';
 import { clsx } from 'clsx';
 import { useState } from 'react';
 
-import type { INodeStateBand, TCanvasNode } from '@interfaces';
+import type { INodeStateBand, IRichTextDocument, TCanvasNode } from '@interfaces';
 
 import { useTranslations } from '@/i18n';
 import { findLinkedNodeIds, isAffected } from '@/lib/canvas';
@@ -19,7 +19,7 @@ import { NodeHandles } from './NodeHandles';
 
 export const CanvasNode = ({ id, data, selected, width }: NodeProps<TCanvasNode>) => {
   const t = useTranslations();
-  const { label, status, comments, isNew, isAnswer, eligibleHint, effectiveStatus } = data;
+  const { label, richLabel, status, comments, isNew, isAnswer, eligibleHint, effectiveStatus } = data;
 
   const canEdit = usePermissionsStore((state) => canEditNode(data.createdBy, state));
   const isPending = useCanvasStore((state) => state.pendingConnection === id);
@@ -28,7 +28,7 @@ export const CanvasNode = ({ id, data, selected, width }: NodeProps<TCanvasNode>
   const isLinked = useCanvasStore((state) => findLinkedNodeIds(state.edges).has(id));
   const clearNewFlag = useCanvasStore((state) => state.clearNewFlag);
 
-  const [commentText, setCommentText] = useState('');
+  const [commentDraft, setCommentDraft] = useState<IRichTextDocument | null>(null);
 
   const isInvalid = status === 'invalid';
 
@@ -72,6 +72,7 @@ export const CanvasNode = ({ id, data, selected, width }: NodeProps<TCanvasNode>
         <CanvasNodeLabel
           id={id}
           label={label}
+          richLabel={richLabel}
           isEditing={isEditing}
           measured={Boolean(width)}
           commentCount={comments.length}
@@ -86,12 +87,7 @@ export const CanvasNode = ({ id, data, selected, width }: NodeProps<TCanvasNode>
           data-tour="canvasCommentsPanel"
           className="nodrag absolute top-0 left-full z-50 ml-3 flex w-72 flex-col overflow-hidden rounded-xl border border-[color:var(--border)] bg-[color:var(--surface)] font-grotesk text-[color:var(--text)] shadow-[var(--shadow-modal)]"
         >
-          <CommentsPanelContent
-            nodeId={id}
-            comments={comments}
-            commentText={commentText}
-            onCommentTextChange={setCommentText}
-          />
+          <CommentsPanelContent nodeId={id} comments={comments} draft={commentDraft} onDraftChange={setCommentDraft} />
         </div>
       )}
     </div>

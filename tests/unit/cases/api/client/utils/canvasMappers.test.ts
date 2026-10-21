@@ -2,6 +2,12 @@ import { describe, expect, test } from 'vitest';
 
 import { ECanvasNodeType } from '@interfaces';
 import { rowToEdge, rowToNode } from '@api/client';
+import {
+  EMPTY_DOCUMENT_JSON,
+  FORMATTED_DOCUMENT,
+  PARSED_UNTRUSTED_DOCUMENT,
+  UNTRUSTED_DOCUMENT,
+} from '@mocks/richText';
 import { canvasEdgeRow, canvasNodeRow, nodeCommentRow } from '@mocks/rows';
 
 describe('rowToNode', () => {
@@ -22,6 +28,72 @@ describe('rowToNode', () => {
             createdBy: 'user-1',
           },
         });
+      });
+
+      test('THEN the node carries no formatting', () => {
+        expect(rowToNode(canvasNodeRow(), [nodeCommentRow()])).toMatchObject({ data: { richLabel: undefined } });
+      });
+    });
+  });
+
+  describe('GIVEN a canvas node row with a stored formatted label', () => {
+    describe('WHEN it is mapped', () => {
+      test('THEN the node carries the formatting', () => {
+        expect(rowToNode(canvasNodeRow({ rich_label: FORMATTED_DOCUMENT }))).toHaveProperty(
+          'data.richLabel',
+          FORMATTED_DOCUMENT,
+        );
+      });
+    });
+  });
+
+  describe('GIVEN a canvas node row with untrusted label formatting', () => {
+    describe('WHEN it is mapped', () => {
+      test('THEN only the sanitized formatting is kept', () => {
+        expect(rowToNode(canvasNodeRow({ rich_label: UNTRUSTED_DOCUMENT }))).toHaveProperty(
+          'data.richLabel',
+          PARSED_UNTRUSTED_DOCUMENT,
+        );
+      });
+    });
+  });
+
+  describe('GIVEN a canvas node row whose stored formatting holds no usable content', () => {
+    describe('WHEN it is mapped', () => {
+      test('THEN the node carries no formatting', () => {
+        expect(rowToNode(canvasNodeRow({ rich_label: EMPTY_DOCUMENT_JSON }))).toMatchObject({
+          data: { richLabel: undefined },
+        });
+      });
+    });
+  });
+
+  describe('GIVEN a question node row with a stored formatted label', () => {
+    describe('WHEN it is mapped', () => {
+      test('THEN the question carries the formatting', () => {
+        expect(
+          rowToNode(canvasNodeRow({ type: ECanvasNodeType.Question, rich_label: FORMATTED_DOCUMENT })),
+        ).toHaveProperty('data.richLabel', FORMATTED_DOCUMENT);
+      });
+    });
+  });
+
+  describe('GIVEN a question node row whose stored formatting holds no usable content', () => {
+    describe('WHEN it is mapped', () => {
+      test('THEN the question carries no formatting', () => {
+        expect(
+          rowToNode(canvasNodeRow({ type: ECanvasNodeType.Question, rich_label: EMPTY_DOCUMENT_JSON })),
+        ).toMatchObject({ data: { richLabel: undefined } });
+      });
+    });
+  });
+
+  describe('GIVEN a reference node row with stored formatting', () => {
+    describe('WHEN it is mapped', () => {
+      test('THEN the reference never carries a formatting key', () => {
+        expect(
+          rowToNode(canvasNodeRow({ type: ECanvasNodeType.Reference, rich_label: FORMATTED_DOCUMENT })),
+        ).not.toHaveProperty('data.richLabel');
       });
     });
   });

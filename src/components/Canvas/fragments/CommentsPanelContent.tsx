@@ -1,45 +1,29 @@
 'use client';
 
-import { MessageSquare, Send, X } from 'lucide-react';
-import type { SubmitEvent } from 'react';
+import { MessageSquare, X } from 'lucide-react';
 
-import type { IComment } from '@interfaces';
+import type { IComment, IRichTextDocument } from '@interfaces';
 
 import { useTranslations } from '@/i18n';
-import { MAX_COMMENT_LENGTH } from '@/lib/canvas';
 import { useCanvasStore, usePermissionsStore } from '@/lib/stores';
 
+import { CommentComposer } from './CommentComposer';
 import { CommentItem } from './CommentItem';
 
 interface ICommentsPanelContentProps {
   nodeId: string;
   comments: IComment[];
-  commentText: string;
-  onCommentTextChange: (commentText: string) => void;
+  draft: IRichTextDocument | null;
+  onDraftChange: (draft: IRichTextDocument | null) => void;
 }
 
-export const CommentsPanelContent = ({
-  nodeId,
-  comments,
-  commentText,
-  onCommentTextChange,
-}: ICommentsPanelContentProps) => {
+export const CommentsPanelContent = ({ nodeId, comments, draft, onDraftChange }: ICommentsPanelContentProps) => {
   const t = useTranslations();
 
   const setOpenCommentsNodeId = useCanvasStore((state) => state.setOpenCommentsNodeId);
-  const addComment = useCanvasStore((state) => state.addComment);
   const deleteComment = useCanvasStore((state) => state.deleteComment);
   const userId = usePermissionsStore((state) => state.userId);
   const canComment = usePermissionsStore((state) => state.canComment);
-
-  const handleCommentSubmit = (event: SubmitEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const trimmed = commentText.trim();
-    if (!trimmed) return;
-
-    addComment(nodeId, trimmed);
-    onCommentTextChange('');
-  };
 
   return (
     <>
@@ -80,28 +64,7 @@ export const CommentsPanelContent = ({
         )}
       </div>
 
-      {canComment && (
-        <form
-          onSubmit={handleCommentSubmit}
-          className="nopan flex items-center gap-2 border-t border-[color:var(--border)] px-2.5 py-2"
-        >
-          <input
-            value={commentText}
-            maxLength={MAX_COMMENT_LENGTH}
-            onChange={(event) => onCommentTextChange(event.target.value)}
-            placeholder={t.platform.canvas.node.addCommentPlaceholder}
-            className="min-w-0 flex-1 bg-transparent px-1 text-[12px] text-[color:var(--text-strong)] caret-[color:var(--accent)] outline-none placeholder:text-[color:var(--text-muted)]"
-          />
-          <button
-            type="submit"
-            disabled={!commentText.trim()}
-            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-[color:var(--accent)] text-[color:var(--on-accent)] transition-[background-color,opacity] duration-150 hover:bg-[color:var(--accent-strong)] focus-visible:ring-2 focus-visible:ring-[color:var(--ring-focus)] focus-visible:outline-none disabled:cursor-not-allowed disabled:bg-[color:var(--surface-overlay)] disabled:text-[color:var(--text-subtle)] disabled:hover:bg-[color:var(--surface-overlay)] motion-reduce:transition-none"
-            aria-label={t.platform.canvas.node.sendComment}
-          >
-            <Send className="h-3 w-3" strokeWidth={2.25} />
-          </button>
-        </form>
-      )}
+      {canComment && <CommentComposer nodeId={nodeId} draft={draft} onDraftChange={onDraftChange} />}
     </>
   );
 };

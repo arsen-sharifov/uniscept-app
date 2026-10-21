@@ -11,10 +11,11 @@ import type {
   Viewport,
 } from '@xyflow/react';
 import type { LucideIcon } from 'lucide-react';
-import type { FocusEvent, KeyboardEvent, MouseEvent, RefObject } from 'react';
+import type { MouseEvent } from 'react';
 
 import type { ISaveState } from './canvasSync';
 import type { TDefaultZoom } from './preferences';
+import type { IRichTextDocument, IRichTextValue } from './richText';
 
 export enum ECanvasNodeType {
   Canvas = 'canvas-node',
@@ -33,6 +34,7 @@ export type TFitPadding = NonNullable<FitViewOptions['padding']>;
 export interface IComment {
   id: string;
   text: string;
+  richText?: IRichTextDocument;
   authorId: string;
 }
 
@@ -55,6 +57,7 @@ export interface IReferenceTargetMeta {
 
 export interface ICanvasNodeData {
   label: string;
+  richLabel?: IRichTextDocument;
   status: TNodeStatus;
   isAnswer: boolean;
   comments: IComment[];
@@ -149,6 +152,7 @@ export interface ICreateCanvasNodeInput {
   x: number;
   y: number;
   label: string;
+  richLabel?: IRichTextDocument;
   sourceNodeId: string | null;
 }
 
@@ -171,6 +175,7 @@ export interface ICreateNodeCommentInput {
   id: string;
   nodeId: string;
   text: string;
+  richText?: IRichTextDocument;
 }
 
 export interface ICanvasNodeRow {
@@ -180,6 +185,7 @@ export interface ICanvasNodeRow {
   position_x: number;
   position_y: number;
   label: string;
+  rich_label: unknown;
   status: TNodeStatus;
   is_answer: boolean;
   source_node_id: string | null;
@@ -215,6 +221,7 @@ export interface INodeCommentRow {
   node_id: string;
   author_id: string;
   text: string;
+  rich_text: unknown;
   created_at: string;
 }
 
@@ -294,12 +301,11 @@ export interface IUseCanvasContextMenuResult {
 export interface IUseLabelEditingOptions {
   id: string;
   label: string;
-  measured: boolean;
+  richLabel?: IRichTextDocument;
   signalLabelled?: boolean;
 }
 
 export interface IUseLabelEditingResult {
-  inputRef: RefObject<HTMLTextAreaElement | null>;
-  handleLabelBlur: (event: FocusEvent<HTMLTextAreaElement>) => void;
-  handleLabelKeyDown: (event: KeyboardEvent<HTMLTextAreaElement>) => void;
+  commitLabel: (value: IRichTextValue) => void;
+  cancelEditing: () => void;
 }

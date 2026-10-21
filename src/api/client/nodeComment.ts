@@ -14,6 +14,7 @@ export const createNodeComment = async (input: ICreateNodeCommentInput): Promise
     node_id: input.nodeId,
     author_id: authorId,
     text: input.text,
+    rich_text: input.richText ?? null,
   });
 
   if (error) throw error;

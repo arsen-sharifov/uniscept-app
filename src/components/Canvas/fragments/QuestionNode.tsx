@@ -5,6 +5,7 @@ import { clsx } from 'clsx';
 
 import type { TCanvasNode } from '@interfaces';
 
+import { RichText } from '@/components/RichText';
 import { useTranslations } from '@/i18n';
 import { useCanvasStore, usePermissionsStore } from '@/lib/stores';
 import { canEditNode } from '@/lib/utils';
@@ -17,7 +18,7 @@ import { NodeLabelEditor } from './NodeLabelEditor';
 
 export const QuestionNode = ({ id, data, selected, width }: NodeProps<TCanvasNode>) => {
   const t = useTranslations();
-  const { label } = data;
+  const { label, richLabel } = data;
 
   const canEdit = usePermissionsStore((state) => canEditNode(data.createdBy, state));
   const isPending = useCanvasStore((state) => state.pendingConnection === id);
@@ -46,22 +47,23 @@ export const QuestionNode = ({ id, data, selected, width }: NodeProps<TCanvasNod
           <NodeLabelEditor
             id={id}
             label={label}
+            richLabel={richLabel}
             measured={Boolean(width)}
             ariaLabel={t.platform.canvas.question.ariaLabel}
             className="text-[17px] leading-[1.45] font-semibold"
             placeholder={t.platform.canvas.question.placeholder}
           />
         ) : (
-          <p
+          <RichText
             ref={labelRefCallback}
+            text={hasLabel ? label : t.platform.canvas.question.placeholder}
+            document={hasLabel ? richLabel : undefined}
             className={clsx(
               'font-grotesk text-[17px] leading-[1.45] font-semibold tracking-tight break-words whitespace-pre-wrap select-none',
               hasLabel ? 'text-[color:var(--text-strong)]' : 'text-[color:var(--text-subtle)]',
               hasLabel && !expanded && 'line-clamp-8',
             )}
-          >
-            {hasLabel ? label : t.platform.canvas.question.placeholder}
-          </p>
+          />
         )}
 
         {!isEditing && expandable && <ExpandToggle expanded={expanded} onToggle={toggleExpanded} />}

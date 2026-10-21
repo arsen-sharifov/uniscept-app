@@ -111,7 +111,8 @@
       "loadFailed": "Couldn't load",
       "saveFailed": "Couldn't save",
       "searchFailed": "Search failed",
-      "exportFailed": "Couldn't export"
+      "exportFailed": "Couldn't export",
+      "editFailed": "Couldn't edit"
     },
     "errorPages": {
       "notFoundTitle": "Page not found",
@@ -316,6 +317,32 @@
       "comments": {
         "deleteAriaLabel": "Delete comment",
         "deleteTitle": "Delete comment"
+      },
+      "formatting": {
+        "toolbar": "Text formatting",
+        "bold": "Bold",
+        "italic": "Italic",
+        "underline": "Underline",
+        "strike": "Strikethrough",
+        "link": "Link",
+        "color": "Text color",
+        "bulletList": "Bulleted list",
+        "orderedList": "Numbered list",
+        "back": "Back",
+        "linkAddress": "Link address",
+        "linkPlaceholder": "Paste or type a link",
+        "applyLink": "Apply link",
+        "removeLink": "Remove link",
+        "invalidLink": "Enter a web address or an email address.",
+        "colors": {
+          "default": "Default",
+          "red": "Red",
+          "amber": "Amber",
+          "green": "Green",
+          "blue": "Blue",
+          "violet": "Violet"
+        },
+        "shortcutsGroup": "Text"
       },
       "save": {
         "retrying": "Retrying…",

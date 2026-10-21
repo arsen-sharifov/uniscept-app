@@ -2,8 +2,8 @@ import { beforeEach, describe, expect, test, vi, type Mock } from 'vitest';
 
 import type { ICanvasExportContext } from '@interfaces';
 
-import { NESTED_CSS_LIST, OKLCH_COLOR, SRGB_WASH_COLOR, SAMPLED_COLOR } from '@mocks/canvasExport';
-import { colorContext, definitionContext, scratchContext } from '@mocks/canvasExportDom';
+import { SAMPLED_COLOR, exportContext } from '@mocks/canvasExportDom';
+import { NESTED_CSS_LIST, OKLCH_COLOR, SRGB_WASH_COLOR } from '@mocks/canvasExportValues';
 import {
   defineOnce,
   getCanvasContext,
@@ -111,15 +111,15 @@ describe('parseCssColor', () => {
 
 describe('resolveExportColor', () => {
   beforeEach(() => {
-    context = colorContext();
-    vi.spyOn(scratchContext, 'getImageData');
+    context = exportContext();
+    vi.spyOn(context.scratch, 'getImageData');
   });
 
   describe('GIVEN a colour the browser computes in the rgb family', () => {
     describe('WHEN it is resolved', () => {
       test('THEN the computed value is used without touching the scratch canvas', () => {
         expect(resolveExportColor(context, 'rgb(1, 2, 3)')).toBe('rgb(1, 2, 3)');
-        expect(scratchContext.getImageData).not.toHaveBeenCalled();
+        expect(context.scratch.getImageData).not.toHaveBeenCalled();
       });
     });
   });
@@ -137,7 +137,7 @@ describe('resolveExportColor', () => {
       test('THEN it is sampled through the scratch canvas once and served from the cache afterwards', () => {
         expect(first).toBe(SAMPLED_COLOR);
         expect(second).toBe(SAMPLED_COLOR);
-        expect(scratchContext.getImageData).toHaveBeenCalledTimes(1);
+        expect(context.scratch.getImageData).toHaveBeenCalledTimes(1);
         expect(context.colors.get(OKLCH_COLOR)).toBe(SAMPLED_COLOR);
       });
     });
@@ -149,7 +149,7 @@ describe('defineOnce', () => {
   let references: string[];
 
   beforeEach(() => {
-    context = definitionContext();
+    context = exportContext();
     build = vi.fn((id: string) => svgElement('marker', { id }));
     references = [
       defineOnce(context, 'arrow', 'red', build),

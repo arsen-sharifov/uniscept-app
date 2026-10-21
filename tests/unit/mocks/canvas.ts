@@ -17,6 +17,7 @@ import {
   type ICanvasNodeData,
   type INodeReference,
   type IReferenceNodeData,
+  type IRichTextDocument,
   type ISaveState,
   type TCanvasEdge,
   type TCanvasNode,
@@ -25,20 +26,28 @@ import {
   type TReferenceNode,
 } from '@interfaces';
 
+import { FORMATTED_DOCUMENT, FORMATTED_TEXT } from './richText';
+
 export const THREAD_ID = 'thread-1';
 
 export const Canvas = vi.fn(() => null);
 
-export const createNodeOp = (id: string): TCanvasOperation => ({
+export const createNodeOp = (id: string, richLabel?: IRichTextDocument): TCanvasOperation => ({
   type: 'createCanvasNode',
   id,
   threadId: THREAD_ID,
   x: 0,
   y: 0,
   label: `Node ${id}`,
+  ...(richLabel && { richLabel }),
 });
 
-export const updateLabelOp = (id: string, label: string): TCanvasOperation => ({ type: 'updateNodeLabel', id, label });
+export const updateLabelOp = (id: string, label: string, richLabel?: IRichTextDocument): TCanvasOperation => ({
+  type: 'updateNodeLabel',
+  id,
+  label,
+  ...(richLabel && { richLabel }),
+});
 
 export const updateStatusOp = (id: string, status: TNodeStatus): TCanvasOperation => ({
   type: 'updateNodeStatus',
@@ -69,11 +78,12 @@ export const createEdgeOp = (id: string): TCanvasOperation => ({
   targetHandle: 'left',
 });
 
-export const createCommentOp = (id: string): TCanvasOperation => ({
+export const createCommentOp = (id: string, richText?: IRichTextDocument): TCanvasOperation => ({
   type: 'createComment',
   id,
   nodeId: 'node-a',
   text: `Comment ${id}`,
+  ...(richText && { richText }),
 });
 
 export const deleteNodeOp = (id: string): TCanvasOperation => ({ type: 'deleteNode', id });
@@ -166,13 +176,13 @@ export const edgeProps = (edge: TCanvasEdge): EdgeProps<TCanvasEdge> =>
   }) as EdgeProps<TCanvasEdge>;
 
 export const overflowLabels = () => {
-  Object.defineProperty(HTMLParagraphElement.prototype, 'scrollHeight', { configurable: true, value: 200 });
-  Object.defineProperty(HTMLParagraphElement.prototype, 'clientHeight', { configurable: true, value: 100 });
+  Object.defineProperty(HTMLDivElement.prototype, 'scrollHeight', { configurable: true, value: 200 });
+  Object.defineProperty(HTMLDivElement.prototype, 'clientHeight', { configurable: true, value: 100 });
 };
 
 export const resetLabelOverflow = () => {
-  Reflect.deleteProperty(HTMLParagraphElement.prototype, 'scrollHeight');
-  Reflect.deleteProperty(HTMLParagraphElement.prototype, 'clientHeight');
+  Reflect.deleteProperty(HTMLDivElement.prototype, 'scrollHeight');
+  Reflect.deleteProperty(HTMLDivElement.prototype, 'clientHeight');
 };
 
 const PANNED_TRANSFORM: Transform = [20, 40, 2];
@@ -231,4 +241,15 @@ export const REFERENCE_TARGET_URL = '/platform/ws-2/th-2?focus=ref&node=origin';
 export const CANVAS_CONTENT = {
   nodes: [questionNode('q'), canvasNode('n1')],
   edges: [canvasEdge('e1', 'q', 'n1')],
+};
+
+export const MIXED_COMMENT_THREAD: IComment[] = [
+  comment('c1', { authorId: 'user-1', text: 'Mine' }),
+  comment('c2', { authorId: 'user-2', text: FORMATTED_TEXT, richText: FORMATTED_DOCUMENT }),
+];
+
+export const formattedQuestionNode = (id: string): TCanvasNode => {
+  const node = questionNode(id, FORMATTED_TEXT);
+
+  return { ...node, data: { ...node.data, richLabel: FORMATTED_DOCUMENT } };
 };

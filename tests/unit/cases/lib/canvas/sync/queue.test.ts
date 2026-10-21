@@ -28,6 +28,7 @@ import {
   updateStatusOp,
 } from '@mocks/canvas';
 import { TOTAL_RETRY_BACKOFF_MS } from '@mocks/canvasSync';
+import { FORMATTED_DOCUMENT, FORMATTED_TEXT, RESTYLED_DOCUMENT, SHOWCASE_DOCUMENT } from '@mocks/richText';
 import {
   FLUSH_DEBOUNCE_MS,
   MAX_RETRIES,
@@ -216,7 +217,7 @@ describe('queue', () => {
 
       test('THEN the draft is never sent and only the final label is written once', () => {
         expect(createCanvasNode).not.toHaveBeenCalled();
-        expect(updateCanvasNodeLabel).toHaveBeenCalledExactlyOnceWith('n1', 'final');
+        expect(updateCanvasNodeLabel).toHaveBeenCalledExactlyOnceWith('n1', 'final', undefined);
       });
     });
 
@@ -229,7 +230,7 @@ describe('queue', () => {
       });
 
       test('THEN only the final values are sent', () => {
-        expect(updateCanvasNodeLabel).toHaveBeenCalledExactlyOnceWith('n1', 'final');
+        expect(updateCanvasNodeLabel).toHaveBeenCalledExactlyOnceWith('n1', 'final', undefined);
         expect(updateCanvasNodeStatus).toHaveBeenCalledExactlyOnceWith('n1', 'valid');
       });
     });
@@ -295,6 +296,46 @@ describe('queue', () => {
         expect(vi.mocked(updateCanvasNodePositions).mock.invocationCallOrder[0]).toBeGreaterThan(
           vi.mocked(createCanvasNode).mock.invocationCallOrder[0]!,
         );
+      });
+    });
+  });
+
+  describe('GIVEN a formatted node, a formatted comment and a formatted relabel of a persisted node in the pending batch', () => {
+    beforeEach(() => {
+      enqueueOperation(createNodeOp('n1', FORMATTED_DOCUMENT));
+      enqueueOperation(createCommentOp('c1', SHOWCASE_DOCUMENT));
+      enqueueOperation(updateLabelOp('n2', FORMATTED_TEXT, RESTYLED_DOCUMENT));
+    });
+
+    describe('WHEN the debounce window closes', () => {
+      beforeEach(async () => {
+        await vi.advanceTimersByTimeAsync(FLUSH_DEBOUNCE_MS);
+      });
+
+      test('THEN the node is created with its formatted label', () => {
+        expect(createCanvasNode).toHaveBeenCalledExactlyOnceWith({
+          id: 'n1',
+          threadId: THREAD_ID,
+          type: ECanvasNodeType.Canvas,
+          x: 0,
+          y: 0,
+          label: 'Node n1',
+          richLabel: FORMATTED_DOCUMENT,
+          sourceNodeId: null,
+        });
+      });
+
+      test('THEN the comment is created with its formatting', () => {
+        expect(createNodeComment).toHaveBeenCalledExactlyOnceWith({
+          id: 'c1',
+          nodeId: 'node-a',
+          text: 'Comment c1',
+          richText: SHOWCASE_DOCUMENT,
+        });
+      });
+
+      test('THEN the relabel writes the text together with its formatting', () => {
+        expect(updateCanvasNodeLabel).toHaveBeenCalledExactlyOnceWith('n2', FORMATTED_TEXT, RESTYLED_DOCUMENT);
       });
     });
   });
@@ -840,6 +881,43 @@ describe('queue', () => {
       });
     });
 
+    describe('WHEN the node is formatted and the failed operations are retried', () => {
+      beforeEach(async () => {
+        enqueueOperation(updateLabelOp('node-a', FORMATTED_TEXT, FORMATTED_DOCUMENT));
+        retryFailed();
+        await vi.advanceTimersByTimeAsync(FLUSH_DEBOUNCE_MS);
+      });
+
+      test('THEN the node is created with the formatted label in one call', () => {
+        expect(createCanvasNode).toHaveBeenCalledExactlyOnceWith(
+          expect.objectContaining({ id: 'node-a', label: FORMATTED_TEXT, richLabel: FORMATTED_DOCUMENT }),
+        );
+        expect(updateCanvasNodeLabel).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('WHEN the node is formatted, rewritten as plain text and the failed operations are retried', () => {
+      beforeEach(async () => {
+        enqueueOperation(updateLabelOp('node-a', FORMATTED_TEXT, FORMATTED_DOCUMENT));
+        enqueueOperation(updateLabelOp('node-a', 'Plain'));
+        retryFailed();
+        await vi.advanceTimersByTimeAsync(FLUSH_DEBOUNCE_MS);
+      });
+
+      test('THEN the node is created with the plain label and without the dropped formatting', () => {
+        expect(createCanvasNode).toHaveBeenCalledExactlyOnceWith({
+          id: 'node-a',
+          threadId: THREAD_ID,
+          type: ECanvasNodeType.Canvas,
+          x: 0,
+          y: 0,
+          label: 'Plain',
+          sourceNodeId: null,
+        });
+        expect(updateCanvasNodeLabel).not.toHaveBeenCalled();
+      });
+    });
+
     describe('WHEN the node is marked valid', () => {
       beforeEach(async () => {
         enqueueOperation(updateStatusOp('node-a', 'valid'));
@@ -1057,7 +1135,7 @@ describe('queue', () => {
       });
 
       test('THEN the newer label supersedes the parked one and is the only one written', () => {
-        expect(vi.mocked(updateCanvasNodeLabel).mock.calls).toEqual([['n1', 'Newest']]);
+        expect(vi.mocked(updateCanvasNodeLabel).mock.calls).toEqual([['n1', 'Newest', undefined]]);
         expect(getSaveState()).toMatchObject({ status: 'saved', failedCount: 0, pendingCount: 0 });
       });
     });

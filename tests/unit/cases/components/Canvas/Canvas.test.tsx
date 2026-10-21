@@ -6,10 +6,13 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { getCanvasContent } from '@api/client';
 import { stubAnimationFrame, stubMediaQueries, stubResizeObserver } from '@mocks/browser';
 import { THREAD_ID, canvasEdge, canvasNode } from '@mocks/canvas';
+import { event } from '@mocks/events';
 import { TRANSLATIONS } from '@mocks/i18n';
-import { EDIT_ACCESS } from '@mocks/roles';
+import { PRELOAD_ERROR } from '@mocks/richTextEditor';
+import { EDIT_ACCESS, READONLY_ACCESS } from '@mocks/roles';
 import { Canvas } from '@/components/Canvas';
 import { OPEN_COMMENTS_Z_INDEX } from '@/components/Canvas/consts';
+import { preloadRichTextEditor } from '@/components/RichTextEditor';
 import { resetQueue } from '@/lib/canvas';
 import { useCanvasStore, usePermissionsStore } from '@/lib/stores';
 
@@ -17,6 +20,7 @@ vi.mock('@api/client', () => import('@mocks/canvasApi'));
 vi.mock('@/i18n', () => import('@mocks/i18n'));
 vi.mock('@/lib/events', () => import('@mocks/events'));
 vi.mock('next/navigation', () => import('@mocks/navigation'));
+vi.mock('@/components/RichTextEditor', () => import('@mocks/richTextEditor'));
 
 const flowPane = () => document.querySelector('.react-flow__pane') as HTMLElement;
 
@@ -102,6 +106,12 @@ describe('Canvas', () => {
       });
     });
 
+    describe('WHEN the canvas has loaded', () => {
+      test('THEN the text editor is fetched ahead of the first edit', () => {
+        expect(preloadRichTextEditor).toHaveBeenCalled();
+      });
+    });
+
     describe('WHEN Escape is pressed while a connection waits for its target', () => {
       beforeEach(() => {
         act(() => useCanvasStore.getState().setPendingConnection('a'));
@@ -152,6 +162,49 @@ describe('Canvas', () => {
       test('THEN the menu and the comments close', () => {
         expect(screen.queryByRole('menu')).not.toBeInTheDocument();
         expect(useCanvasStore.getState().openCommentsNodeId).toBeNull();
+      });
+    });
+  });
+
+  describe('GIVEN an editor whose editor preload fails', () => {
+    beforeEach(async () => {
+      vi.mocked(preloadRichTextEditor).mockRejectedValue(PRELOAD_ERROR);
+      vi.mocked(getCanvasContent).mockResolvedValue({ nodes: [canvasNode('a')], edges: [] });
+      render(
+        <ReactFlowProvider>
+          <Canvas workspaceId="ws-1" threadId={THREAD_ID} />
+        </ReactFlowProvider>,
+      );
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(0);
+      });
+    });
+
+    describe('WHEN the canvas has loaded', () => {
+      test('THEN the failure is logged quietly and the canvas stays usable', () => {
+        expect(event.error).toHaveBeenCalledWith(PRELOAD_ERROR, { toast: false, context: 'richText.preload' });
+        expect(screen.getByText('Node a')).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('GIVEN a viewer who can neither edit nor comment', () => {
+    beforeEach(async () => {
+      usePermissionsStore.getState().setAccess('ws-1', 'user-1', READONLY_ACCESS);
+      vi.mocked(getCanvasContent).mockResolvedValue({ nodes: [canvasNode('a')], edges: [] });
+      render(
+        <ReactFlowProvider>
+          <Canvas workspaceId="ws-1" threadId={THREAD_ID} />
+        </ReactFlowProvider>,
+      );
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(0);
+      });
+    });
+
+    describe('WHEN the canvas has loaded', () => {
+      test('THEN the text editor is never fetched', () => {
+        expect(preloadRichTextEditor).not.toHaveBeenCalled();
       });
     });
   });

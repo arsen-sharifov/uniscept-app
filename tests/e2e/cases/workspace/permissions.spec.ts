@@ -98,7 +98,7 @@ test.describe('viewer access', () => {
       });
 
       test('THEN no label editor opens', async ({ page }) => {
-        await expect(getNode(page, 'Owner idea').locator('textarea')).toHaveCount(0);
+        await expect(getNode(page, 'Owner idea').getByRole('textbox')).toHaveCount(0);
         await expect(getQuestionNode(page)).toBeVisible();
       });
     });
@@ -121,7 +121,7 @@ test.describe('comment-only access', () => {
       });
 
       test('THEN no label editor opens', async ({ page }) => {
-        await expect(getNode(page, 'Host proposal').locator('textarea')).toHaveCount(0);
+        await expect(getNode(page, 'Host proposal').getByRole('textbox')).toHaveCount(0);
         await expect(getQuestionNode(page)).toBeVisible();
       });
     });
@@ -171,7 +171,7 @@ test.describe('editor access', () => {
       });
 
       test('THEN the authorship rule keeps the label editor closed', async ({ page }) => {
-        await expect(getNode(page, 'Host claim').locator('textarea')).toHaveCount(0);
+        await expect(getNode(page, 'Host claim').getByRole('textbox')).toHaveCount(0);
         await expect(getQuestionNode(page)).toBeVisible();
       });
     });

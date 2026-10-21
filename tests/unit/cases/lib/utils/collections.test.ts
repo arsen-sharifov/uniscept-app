@@ -1,9 +1,10 @@
 import { beforeEach, describe, expect, test } from 'vitest';
 
 import { GROUPABLE_ITEMS } from '@mocks/collections';
-import { groupBy } from '@/lib/utils';
+import { groupBy, uniqueBy } from '@/lib/utils';
 
 let groups: Map<string, typeof GROUPABLE_ITEMS>;
+let unique: typeof GROUPABLE_ITEMS;
 
 describe('groupBy', () => {
   describe('GIVEN items sharing some keys', () => {
@@ -24,6 +25,20 @@ describe('groupBy', () => {
     describe('WHEN they are grouped', () => {
       test('THEN the result is empty', () => {
         expect(groupBy([], (item: { key: string }) => item.key).size).toBe(0);
+      });
+    });
+  });
+});
+
+describe('uniqueBy', () => {
+  describe('GIVEN items sharing some keys', () => {
+    describe('WHEN they are deduplicated by that key', () => {
+      beforeEach(() => {
+        unique = uniqueBy(GROUPABLE_ITEMS, (item) => item.node);
+      });
+
+      test('THEN the first item of each key stays in its original order', () => {
+        expect(unique.map((item) => item.id)).toEqual(['a', 'b']);
       });
     });
   });

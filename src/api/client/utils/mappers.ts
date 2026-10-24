@@ -74,7 +74,9 @@ export const toComment = (row: INodeCommentRow): IComment => ({
   id: row.id,
   text: row.text,
   richText: parseRichText(row.rich_text) ?? undefined,
-  authorId: row.author_id,
+  authorId: row.author_id ?? undefined,
+  createdAt: row.created_at,
+  editedAt: row.edited_at ?? undefined,
 });
 
 const toNodeThreadMeta = (row: ICanvasNodeWithThreadRow): Omit<INodeReference, 'id' | 'label'> => ({

@@ -1,8 +1,11 @@
 import type { IRichTextDocument, TCanvasNode } from '@interfaces';
 
-import { createCanvasNode, createComment, createFormattedComment, withRichLabel } from '../../utils';
+import { STORYBOOK_AUTHOR_ID, STORYBOOK_EDITED_AT, STORYBOOK_OTHER_AUTHOR_ID } from '../../consts';
+import { createCanvasNode, createComment, createFormattedComment, withAuthorship, withRichLabel } from '../../utils';
 
 export const SB_NODE_ID = 'sb-node-1';
+
+const SB_FORMER_AUTHOR_ID = 'sb-former';
 
 export const defaultNode: TCanvasNode = createCanvasNode(
   SB_NODE_ID,
@@ -58,9 +61,15 @@ export const withCommentsNode: TCanvasNode = createCanvasNode(
   'Should canvas evaluation be voting-based?',
   null,
   [
-    createComment('c1', 'Voting distributes responsibility across all canvas members.'),
+    createComment('c0', 'Earlier rounds used open ballots and nobody objected.', SB_FORMER_AUTHOR_ID),
+    createComment(
+      'c3',
+      'Concerned about speed — fast canvases stall under voting overhead.',
+      STORYBOOK_OTHER_AUTHOR_ID,
+      STORYBOOK_EDITED_AT,
+    ),
     createFormattedComment('c2', FORMATTED_COMMENT_DOCUMENT),
-    createComment('c3', 'Concerned about speed — fast canvases stall under voting overhead.', 'sb-other'),
+    createComment('c1', 'Voting distributes responsibility across all canvas members.'),
   ],
 );
 
@@ -138,4 +147,21 @@ export const answerNode: TCanvasNode = createCanvasNode(
   [],
   false,
   true,
+);
+
+export const emptyNode: TCanvasNode = createCanvasNode(SB_NODE_ID, 0, 0, '');
+
+export const editedNode: TCanvasNode = withAuthorship(
+  createCanvasNode(SB_NODE_ID, 0, 0, 'Quorum stays at half of the active members.'),
+  { editedAt: STORYBOOK_EDITED_AT, editedBy: STORYBOOK_AUTHOR_ID },
+);
+
+export const formerAuthorNode: TCanvasNode = withAuthorship(
+  createCanvasNode(SB_NODE_ID, 0, 0, 'Anonymous ballots keep juniors candid.'),
+  { createdBy: SB_FORMER_AUTHOR_ID },
+);
+
+export const deletedAuthorNode: TCanvasNode = withAuthorship(
+  createCanvasNode(SB_NODE_ID, 0, 0, 'Votes expire after one sprint.'),
+  { createdBy: undefined },
 );

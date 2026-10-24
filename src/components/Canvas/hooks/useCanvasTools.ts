@@ -7,9 +7,9 @@ import { type MouseEvent, useCallback } from 'react';
 import { ECanvasNodeType, type IUseCanvasToolsResult } from '@interfaces';
 
 import { ECanvasTool } from '@/components/tools';
-import { useTranslations } from '@/i18n';
 import { findNearestHandlePair } from '@/lib/canvas';
 import { useCanvasStore, usePermissionsStore } from '@/lib/stores';
+import { canEditNode } from '@/lib/utils';
 
 import { ZOOM_DURATION_MS, ZOOM_MAX, ZOOM_MIN, ZOOM_STEP_FACTOR } from '../consts';
 import { buildReferenceTargetUrl } from '../utils';
@@ -19,7 +19,6 @@ const isValidConnection: IsValidConnection = (connection) => connection.source !
 const clampZoom = (zoom: number): number => Math.min(Math.max(zoom, ZOOM_MIN), ZOOM_MAX);
 
 export const useCanvasTools = (): IUseCanvasToolsResult => {
-  const t = useTranslations();
   const router = useRouter();
   const { screenToFlowPosition, getViewport, setViewport } = useReactFlow();
 
@@ -79,12 +78,12 @@ export const useCanvasTools = (): IUseCanvasToolsResult => {
       const store = useCanvasStore.getState();
 
       if (activeTool === ECanvasTool.AddNode) {
-        store.addNode(position, t.platform.canvas.node.defaultLabel);
+        store.addNode(position);
       } else if (activeTool === ECanvasTool.CrossReference) {
         store.setReferenceSearchPosition(position);
       }
     },
-    [activeTool, handleZoomTool, screenToFlowPosition, t.platform.canvas.node.defaultLabel],
+    [activeTool, handleZoomTool, screenToFlowPosition],
   );
 
   const onNodeClick: NodeMouseHandler = useCallback(
@@ -144,7 +143,7 @@ export const useCanvasTools = (): IUseCanvasToolsResult => {
         return;
       }
       if (activeTool !== ECanvasTool.Select) return;
-      if (!usePermissionsStore.getState().canEditCanvas) return;
+      if (!canEditNode(node.data.createdBy, usePermissionsStore.getState())) return;
       if (node.type === ECanvasNodeType.Canvas || node.type === ECanvasNodeType.Question) {
         useCanvasStore.getState().setEditingNodeId(node.id);
       }

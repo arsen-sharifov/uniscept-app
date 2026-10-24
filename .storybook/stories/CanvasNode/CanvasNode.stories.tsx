@@ -5,7 +5,11 @@ import { CanvasNode } from '@/components';
 import {
   answerNode,
   defaultNode,
+  deletedAuthorNode,
+  editedNode,
   editingNode,
+  emptyNode,
+  formerAuthorNode,
   formattedNode,
   invalidNode,
   longLabelNode,
@@ -26,7 +30,7 @@ const meta: Meta<typeof CanvasNode> = {
     docs: {
       description: {
         component:
-          'Primary reasoning card rendered inside React Flow. Holds the label, evaluation status, inline editing, and the per-node comments popover (an opaque `--surface` panel). Every state is carried by the shared node band: a 3px tone strip across the top of the card plus a `font-mono-ui` uppercase status word in the same tone. The store is mocked directly so each visual state (selected, valid/invalid, pending connection, editing, with comments) is previewable in isolation.',
+          'Primary reasoning card rendered inside React Flow. Holds the label, evaluation status, inline editing, the authorship row and the per-node comments popover (an opaque `--surface` panel). Every state is carried by the shared node band: a 3px tone strip across the top of the card plus a `font-mono-ui` uppercase status word in the same tone. The authorship row is a full-width footer on an `--accent-soft` tint: the avatar and the short name of the author on the left, the time on the right. The store is mocked directly so each visual state (selected, valid/invalid, pending connection, editing, empty, edited, with comments, former member, deleted account) is previewable in isolation.',
       },
     },
   },
@@ -38,7 +42,7 @@ const meta: Meta<typeof CanvasNode> = {
     },
     data: {
       control: false,
-      description: 'ICanvasNodeData — label, status, comments.',
+      description: 'ICanvasNodeData — label, status, comments, author and times.',
       table: { category: ARG_CATEGORIES.CONTENT },
     },
     selected: {
@@ -67,6 +71,19 @@ export const Default: Story = {
   render: () => <SingleNodeFlow node={defaultNode} />,
 };
 
+export const Empty: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A node with no text: the label shows the muted `New node` placeholder, and the editor opens empty with the same words as its prompt.',
+      },
+    },
+  },
+  decorators: [withCanvasStore({ nodes: [emptyNode] })],
+  render: () => <SingleNodeFlow node={emptyNode} />,
+};
+
 export const Selected: Story = {
   parameters: {
     docs: {
@@ -84,7 +101,7 @@ export const WithComments: Story = {
     docs: {
       description: {
         story:
-          'Three comments mocked with the side popover open. Mix of own and other-author entries to show the delete affordance.',
+          'Comments popover open. Each comment is a `--surface-elevated` card on a `--surface-soft` well, headed by the author row: avatar and short name on the left, time on the right, `· edited` after a change. Comments by the viewer reveal edit and delete over the top corner of the card on hover or keyboard focus; a comment by a former member shows the dashed placeholder.',
       },
     },
   },
@@ -98,7 +115,7 @@ export const ReadOnlyComments: Story = {
       story: { inline: false, height: '480px' },
       description: {
         story:
-          'Viewer permissions — the comments popover stays readable, but the composer and delete affordances are hidden because `canComment` is off. Rendered in an iframe on the docs page so the permissions override cannot leak into sibling stories that share the store.',
+          'Viewer permissions — the comments popover stays readable, but the composer, edit and delete are hidden because `canComment` is off. Rendered in an iframe on the docs page so the permissions override cannot leak into sibling stories that share the store.',
       },
     },
   },
@@ -195,4 +212,42 @@ export const PendingConnection: Story = {
   },
   decorators: [withCanvasStore({ nodes: [pendingNode], pendingConnection: SB_NODE_ID })],
   render: () => <SingleNodeFlow node={pendingNode} />,
+};
+
+export const Edited: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The text was changed after it was first written: the authorship row shows the time of the edit followed by `· edited`, and the tooltip on the time lists when the node was created and who edited it when.',
+      },
+    },
+  },
+  decorators: [withCanvasStore({ nodes: [editedNode] })],
+  render: () => <SingleNodeFlow node={editedNode} />,
+};
+
+export const FormerMember: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The author has left the workspace. The text stays readable and the row shows the `Former member` placeholder with a dashed avatar instead of a name.',
+      },
+    },
+  },
+  decorators: [withCanvasStore({ nodes: [formerAuthorNode] })],
+  render: () => <SingleNodeFlow node={formerAuthorNode} />,
+};
+
+export const DeletedAccount: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story: 'The author deleted their account. The node keeps its text under the `Deleted account` placeholder.',
+      },
+    },
+  },
+  decorators: [withCanvasStore({ nodes: [deletedAuthorNode] })],
+  render: () => <SingleNodeFlow node={deletedAuthorNode} />,
 };

@@ -3,7 +3,7 @@
 import type { IRichTextValue, IUseLabelEditingOptions, IUseLabelEditingResult } from '@interfaces';
 
 import { useOnboardingStore } from '@/lib/onboarding';
-import { isSameRichText } from '@/lib/richText';
+import { isSameRichTextValue } from '@/lib/richText';
 import { useCanvasStore } from '@/lib/stores';
 
 export const useLabelEditing = ({
@@ -15,11 +15,11 @@ export const useLabelEditing = ({
   const setEditingNodeId = useCanvasStore((state) => state.setEditingNodeId);
   const updateNodeLabel = useCanvasStore((state) => state.updateNodeLabel);
 
-  const commitLabel = ({ text, document }: IRichTextValue) => {
+  const commitLabel = (value: IRichTextValue) => {
     setEditingNodeId(null);
-    if (!text || (text === label && isSameRichText(document, richLabel))) return;
+    if (!value.text || isSameRichTextValue(value, label, richLabel)) return;
 
-    updateNodeLabel(id, text, document);
+    updateNodeLabel(id, value.text, value.document);
     if (signalLabelled) useOnboardingStore.getState().markSignal('nodeLabelled');
   };
 

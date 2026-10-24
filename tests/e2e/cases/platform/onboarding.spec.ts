@@ -303,7 +303,7 @@ test.describe('the base pass', () => {
 
       test('THEN the tour closes and everything created along the way stays', async ({ page }) => {
         await expect(getStepCard(page, COPY.platform.onboarding.steps.baseNodeText.title)).toBeHidden();
-        await expect(getNode(page, COPY.platform.canvas.node.defaultLabel)).toBeVisible();
+        await expect(getNode(page, COPY.platform.canvas.node.placeholder)).toBeVisible();
         await expect(page.getByText(ONBOARDING_QUESTION)).toBeVisible();
       });
     });

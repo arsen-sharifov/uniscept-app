@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 
 import { canvasNode, questionNode } from '@mocks/canvas';
-import { EDITOR, OWNER, VIEWER } from '@mocks/roles';
+import { EDITOR, OWNER, READONLY_OWNER, VIEWER } from '@mocks/roles';
 import { canDeleteNode, canEditNode, roleLabel } from '@/lib/utils';
 import en from '@/locales/en.json';
 
@@ -19,7 +19,7 @@ describe('canEditNode', () => {
       });
     });
 
-    describe('WHEN they edit a legacy node without an author', () => {
+    describe('WHEN they edit a node whose author deleted the account', () => {
       test('THEN the edit is denied', () => {
         expect(canEditNode(undefined, EDITOR)).toBe(false);
       });
@@ -27,15 +27,21 @@ describe('canEditNode', () => {
   });
 
   describe('GIVEN the workspace owner', () => {
-    describe("WHEN they edit someone else's node", () => {
+    describe('WHEN they edit their own node', () => {
       test('THEN the edit is allowed', () => {
-        expect(canEditNode('user-2', OWNER)).toBe(true);
+        expect(canEditNode('user-1', OWNER)).toBe(true);
       });
     });
 
-    describe('WHEN they edit a legacy node without an author', () => {
-      test('THEN the edit is allowed', () => {
-        expect(canEditNode(undefined, OWNER)).toBe(true);
+    describe("WHEN they edit someone else's node", () => {
+      test('THEN the edit is denied', () => {
+        expect(canEditNode('user-2', OWNER)).toBe(false);
+      });
+    });
+
+    describe('WHEN they edit a node whose author deleted the account', () => {
+      test('THEN the edit is denied', () => {
+        expect(canEditNode(undefined, OWNER)).toBe(false);
       });
     });
   });
@@ -51,7 +57,7 @@ describe('canEditNode', () => {
   describe('GIVEN an owner whose role lacks canvas edit access', () => {
     describe('WHEN they edit any node', () => {
       test('THEN the edit is denied', () => {
-        expect(canEditNode('user-2', { ...OWNER, canEditCanvas: false })).toBe(false);
+        expect(canEditNode('user-2', READONLY_OWNER)).toBe(false);
       });
     });
   });
@@ -91,9 +97,37 @@ describe('canDeleteNode', () => {
   });
 
   describe('GIVEN the workspace owner', () => {
+    describe("WHEN they delete someone else's node", () => {
+      test('THEN the deletion is allowed', () => {
+        expect(canDeleteNode(canvasNode('n1', { createdBy: 'user-2' }), OWNER)).toBe(true);
+      });
+    });
+
+    describe('WHEN they delete a node whose author deleted the account', () => {
+      test('THEN the deletion is allowed', () => {
+        expect(canDeleteNode(canvasNode('n1', { createdBy: undefined }), OWNER)).toBe(true);
+      });
+    });
+
     describe('WHEN they delete the question', () => {
       test('THEN the deletion is denied', () => {
         expect(canDeleteNode(questionNode('q1'), OWNER)).toBe(false);
+      });
+    });
+  });
+
+  describe('GIVEN a viewer without canvas edit access', () => {
+    describe('WHEN they delete their own node', () => {
+      test('THEN the deletion is denied', () => {
+        expect(canDeleteNode(canvasNode('n1', { createdBy: 'user-1' }), VIEWER)).toBe(false);
+      });
+    });
+  });
+
+  describe('GIVEN an owner whose role lacks canvas edit access', () => {
+    describe("WHEN they delete someone else's node", () => {
+      test('THEN the deletion is denied', () => {
+        expect(canDeleteNode(canvasNode('n1', { createdBy: 'user-2' }), READONLY_OWNER)).toBe(false);
       });
     });
   });

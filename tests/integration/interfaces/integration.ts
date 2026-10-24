@@ -58,6 +58,24 @@ export interface IIntegrationRichCommentRow {
   rich_text: unknown;
 }
 
+export interface IIntegrationNodeAuthorshipRow {
+  thread_id: string;
+  label: string;
+  rich_label: unknown;
+  created_by: string | null;
+  created_at: string;
+  edited_at: string | null;
+  edited_by: string | null;
+}
+
+export interface IIntegrationCommentAuthorshipRow {
+  node_id: string;
+  text: string;
+  author_id: string | null;
+  created_at: string;
+  edited_at: string | null;
+}
+
 export interface IIntegrationNodeRow {
   thread_id: string;
   type: string;
@@ -104,3 +122,5 @@ export interface IIntegrationRoleFlags {
 }
 
 export type TIntegrationRoleKey = 'owner' | 'member' | 'viewer';
+
+export type TIntegrationKeptTable = 'deleted_canvas_nodes' | 'deleted_node_comments';

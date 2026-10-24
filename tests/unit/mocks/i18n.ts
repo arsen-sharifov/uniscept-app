@@ -1,4 +1,4 @@
-import { createTranslator } from 'next-intl';
+import { createFormatter, createTranslator } from 'next-intl';
 import { vi } from 'vitest';
 
 import en from '@/locales/en.json';
@@ -18,6 +18,10 @@ export const useTranslations = () => translate;
 
 export const useLocale = () => DEFAULT_LOCALE;
 
+const formatter = createFormatter({ locale: DEFAULT_LOCALE, timeZone: 'UTC' });
+
+export const useFormatter = () => formatter;
+
 export const setLocale = vi.fn();
 
 export const clearLocale = vi.fn();
@@ -31,3 +35,15 @@ export const collectMessages = (dictionary: object, prefix = ''): Array<[string,
   });
 
 export const EN_MESSAGES = new Map(collectMessages(en));
+
+export const UTC_RESOLVED_OPTIONS: Intl.ResolvedDateTimeFormatOptions = {
+  ...new Intl.DateTimeFormat().resolvedOptions(),
+  timeZone: 'UTC',
+};
+
+export const AUCKLAND_RESOLVED_OPTIONS: Intl.ResolvedDateTimeFormatOptions = {
+  ...new Intl.DateTimeFormat().resolvedOptions(),
+  timeZone: 'Pacific/Auckland',
+};
+
+export const UTC_EVENING = '2026-03-01T20:00:00.000Z';

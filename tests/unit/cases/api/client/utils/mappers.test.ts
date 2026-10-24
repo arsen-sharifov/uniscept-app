@@ -124,8 +124,13 @@ describe('toThread', () => {
 describe('toComment', () => {
   describe('GIVEN a comment row', () => {
     describe('WHEN it is mapped', () => {
-      test('THEN the author id maps to camel case', () => {
-        expect(toComment(nodeCommentRow())).toEqual({ id: 'c-1', text: 'Comment', authorId: 'user-1' });
+      test('THEN the author and the creation time map to camel case', () => {
+        expect(toComment(nodeCommentRow())).toEqual({
+          id: 'c-1',
+          text: 'Comment',
+          authorId: 'user-1',
+          createdAt: '2026-01-01T00:00:00Z',
+        });
       });
 
       test('THEN the comment carries no formatting', () => {
@@ -142,7 +147,27 @@ describe('toComment', () => {
           text: FORMATTED_TEXT,
           richText: FORMATTED_DOCUMENT,
           authorId: 'user-1',
+          createdAt: '2026-01-01T00:00:00Z',
         });
+      });
+    });
+  });
+
+  describe('GIVEN an edited comment row', () => {
+    describe('WHEN it is mapped', () => {
+      test('THEN the edit time is carried over', () => {
+        expect(toComment(nodeCommentRow({ edited_at: '2026-01-02T00:00:00Z' }))).toHaveProperty(
+          'editedAt',
+          '2026-01-02T00:00:00Z',
+        );
+      });
+    });
+  });
+
+  describe('GIVEN a comment row whose author deleted the account', () => {
+    describe('WHEN it is mapped', () => {
+      test('THEN the comment has no author', () => {
+        expect(toComment(nodeCommentRow({ author_id: null }))).toHaveProperty('authorId', undefined);
       });
     });
   });

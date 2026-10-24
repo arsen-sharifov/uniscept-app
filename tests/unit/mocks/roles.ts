@@ -9,6 +9,7 @@ import type {
 export const OWNER = { userId: 'user-1', isOwner: true, canEditCanvas: true };
 export const EDITOR = { userId: 'user-1', isOwner: false, canEditCanvas: true };
 export const VIEWER = { userId: 'user-1', isOwner: false, canEditCanvas: false };
+export const READONLY_OWNER = { ...OWNER, canEditCanvas: false };
 
 export const FULL_ACCESS: IWorkspaceAccess = {
   isOwner: true,

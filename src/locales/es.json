@@ -288,7 +288,7 @@
         "validBadge": "Válido",
         "invalidBadge": "Inválido",
         "affectedBadge": "Afectada",
-        "defaultLabel": "Nuevo nodo",
+        "placeholder": "Nuevo nodo",
         "showMore": "Mostrar más",
         "showLess": "Mostrar menos",
         "viewComments": "Ver comentarios",
@@ -316,7 +316,18 @@
       },
       "comments": {
         "deleteAriaLabel": "Eliminar comentario",
-        "deleteTitle": "Eliminar comentario"
+        "editAriaLabel": "Editar comentario",
+        "editorAriaLabel": "Texto del comentario",
+        "saveEdit": "Guardar cambios",
+        "cancelEdit": "Cancelar edición"
+      },
+      "authorship": {
+        "justNow": "ahora mismo",
+        "edited": "editado",
+        "createdDetail": "Creado: {time}",
+        "editedDetail": "Editado por {name} · {time}",
+        "formerMember": "Antiguo miembro",
+        "deletedAccount": "Cuenta eliminada"
       },
       "formatting": {
         "toolbar": "Formato de texto",
@@ -488,7 +499,7 @@
         },
         "baseNodeText": {
           "title": "Escriba la afirmación",
-          "body": "Cambie a la herramienta Seleccionar (tecla V), haga doble clic en su nodo nuevo, sustituya el texto provisional por su afirmación y pulse Intro."
+          "body": "Cambie a la herramienta Seleccionar (tecla V), haga doble clic en su nodo nuevo, escriba su afirmación y pulse Intro."
         },
         "baseConnect": {
           "title": "Enlácelo con la pregunta",
@@ -740,7 +751,7 @@
         },
         "toolsAdd": {
           "title": "Añadir nodo",
-          "body": "Un clic en un lugar vacío añade un nodo con una etiqueta provisional. Tecla N."
+          "body": "Un clic en un lugar vacío añade un nodo vacío. Tecla N."
         },
         "toolsConnect": {
           "title": "Conectar",

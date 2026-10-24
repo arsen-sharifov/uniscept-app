@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
-import type { IExampleCopy, TExampleNodeKey, TExampleTarget } from '@interfaces';
+import type { TExampleNodeKey, TExampleTarget } from '@interfaces';
 import {
   EXAMPLE_CANVAS_TIMEOUT_MS,
   EXAMPLE_COMMENT_FIT_PADDING,
@@ -14,11 +14,6 @@ import { FULL_ACCESS } from '@mocks/roles';
 import { ECanvasTool } from '@/components/tools';
 import { createExampleIds, playExampleAct, waitForExampleCanvas, writeExampleQuestion } from '@/lib/onboarding';
 import { useCanvasStore, usePermissionsStore } from '@/lib/stores';
-
-const copy: IExampleCopy = {
-  ...TRANSLATIONS.platform.onboarding.example,
-  placeholder: TRANSLATIONS.platform.canvas.node.defaultLabel,
-};
 
 let ids: Record<TExampleTarget, string>;
 let live: boolean;
@@ -67,7 +62,7 @@ describe('waitForExampleCanvas', () => {
     describe('WHEN its canvas arrives', () => {
       beforeEach(() => {
         questionId = waitForExampleCanvas(THREAD_ID);
-        canvas().loadCanvas(THREAD_ID, { nodes: [questionNode('q')], edges: [] });
+        canvas().loadCanvas(THREAD_ID, { nodes: [questionNode('q')], edges: [], authors: {} });
       });
 
       test('THEN it resolves with the question node of that thread and stops listening', async () => {
@@ -79,8 +74,8 @@ describe('waitForExampleCanvas', () => {
     describe('WHEN the canvas of another thread arrives first', () => {
       beforeEach(() => {
         questionId = waitForExampleCanvas(THREAD_ID);
-        canvas().loadCanvas('another-thread', { nodes: [questionNode('elsewhere')], edges: [] });
-        canvas().loadCanvas(THREAD_ID, { nodes: [questionNode('q')], edges: [] });
+        canvas().loadCanvas('another-thread', { nodes: [questionNode('elsewhere')], edges: [], authors: {} });
+        canvas().loadCanvas(THREAD_ID, { nodes: [questionNode('q')], edges: [], authors: {} });
       });
 
       test('THEN it keeps waiting and resolves with the question of the example thread', async () => {
@@ -106,7 +101,7 @@ describe('waitForExampleCanvas', () => {
   describe('GIVEN the example canvas is already open', () => {
     describe('WHEN it is awaited', () => {
       beforeEach(() => {
-        canvas().loadCanvas(THREAD_ID, { nodes: [questionNode('q')], edges: [] });
+        canvas().loadCanvas(THREAD_ID, { nodes: [questionNode('q')], edges: [], authors: {} });
       });
 
       test('THEN it resolves straight away', async () => {
@@ -137,21 +132,21 @@ describe('createExampleIds', () => {
 describe('writeExampleQuestion', () => {
   describe('GIVEN the fresh question of the example thread is open for editing', () => {
     beforeEach(() => {
-      canvas().loadCanvas(THREAD_ID, { nodes: [questionNode('q')], edges: [] });
+      canvas().loadCanvas(THREAD_ID, { nodes: [questionNode('q')], edges: [], authors: {} });
       ids = createExampleIds('q');
       canvas().setEditingNodeId('q');
     });
 
     describe('WHEN the opener writes it', () => {
       beforeEach(async () => {
-        const written = writeExampleQuestion(copy, ids, isLive);
+        const written = writeExampleQuestion(TRANSLATIONS.platform.onboarding.example, ids, isLive);
         await vi.runAllTimersAsync();
         await written;
       });
 
       test('THEN the editor closes and the full question lands on the node', () => {
         expect(canvas().editingNodeId).toBeNull();
-        expect(nodeAt('question')?.data.label).toBe(copy.question);
+        expect(nodeAt('question')?.data.label).toBe(TRANSLATIONS.platform.onboarding.example.question);
       });
     });
   });
@@ -159,37 +154,42 @@ describe('writeExampleQuestion', () => {
 
 describe('playExampleAct', () => {
   beforeEach(() => {
-    canvas().loadCanvas(THREAD_ID, { nodes: [questionNode('q')], edges: [] });
+    canvas().loadCanvas(THREAD_ID, { nodes: [questionNode('q')], edges: [], authors: {} });
     ids = createExampleIds('q');
   });
 
   describe('GIVEN a speaker about to put forward an option', () => {
     describe('WHEN the move starts', () => {
       beforeEach(async () => {
-        playExampleAct({ type: 'argue', keys: ['capsule'] }, copy, ids, isLive);
+        playExampleAct({ type: 'argue', keys: ['capsule'] }, TRANSLATIONS.platform.onboarding.example, ids, isLive);
         await vi.advanceTimersByTimeAsync(EXAMPLE_STEP_DELAY_MS);
       });
 
-      test('THEN they pick Add node and drop a node that still reads as new', () => {
+      test('THEN they pick Add node and drop a node that is still empty', () => {
         expect(canvas().activeTool).toBe(ECanvasTool.AddNode);
         expect(nodeAt('capsule')).toMatchObject({
           position: { x: EXAMPLE_NODES.capsule.x, y: EXAMPLE_NODES.capsule.y },
-          data: { label: copy.placeholder },
+          data: { label: '' },
         });
       });
     });
 
     describe('WHEN the option and the reason for it are argued in one move', () => {
       beforeEach(async () => {
-        const played = playExampleAct({ type: 'argue', keys: ['capsule', 'oneButton'] }, copy, ids, isLive);
+        const played = playExampleAct(
+          { type: 'argue', keys: ['capsule', 'oneButton'] },
+          TRANSLATIONS.platform.onboarding.example,
+          ids,
+          isLive,
+        );
         await vi.runAllTimersAsync();
         await played;
       });
 
       test('THEN both are written and each hangs from its planned parent', () => {
         expect([nodeAt('capsule')?.data.label, nodeAt('oneButton')?.data.label]).toEqual([
-          copy.nodes.capsule,
-          copy.nodes.oneButton,
+          TRANSLATIONS.platform.onboarding.example.nodes.capsule,
+          TRANSLATIONS.platform.onboarding.example.nodes.oneButton,
         ]);
         expect(linksOf()).toEqual([
           ['q', ids.capsule],
@@ -204,7 +204,12 @@ describe('playExampleAct', () => {
 
     describe('WHEN the user deletes the new option before it is linked', () => {
       beforeEach(async () => {
-        const played = playExampleAct({ type: 'argue', keys: ['capsule'] }, copy, ids, isLive);
+        const played = playExampleAct(
+          { type: 'argue', keys: ['capsule'] },
+          TRANSLATIONS.platform.onboarding.example,
+          ids,
+          isLive,
+        );
         await vi.advanceTimersByTimeAsync(EXAMPLE_STEP_DELAY_MS * 3);
         canvas().deleteNode(ids.capsule);
         await vi.runAllTimersAsync();
@@ -219,7 +224,12 @@ describe('playExampleAct', () => {
 
     describe('WHEN the tour is left in the middle of the move', () => {
       beforeEach(async () => {
-        const played = playExampleAct({ type: 'argue', keys: ['capsule', 'oneButton'] }, copy, ids, isLive);
+        const played = playExampleAct(
+          { type: 'argue', keys: ['capsule', 'oneButton'] },
+          TRANSLATIONS.platform.onboarding.example,
+          ids,
+          isLive,
+        );
         await vi.advanceTimersByTimeAsync(EXAMPLE_STEP_DELAY_MS);
         live = false;
         await vi.runAllTimersAsync();
@@ -227,7 +237,7 @@ describe('playExampleAct', () => {
       });
 
       test('THEN the move stops unlinked and leaves the tool for the tour to hand back', () => {
-        expect(nodeAt('capsule')?.data.label).toBe(copy.placeholder);
+        expect(nodeAt('capsule')?.data.label).toBe('');
         expect(nodeAt('oneButton')).toBeUndefined();
         expect(canvas().edges).toEqual([]);
         expect(canvas().activeTool).toBe(ECanvasTool.AddNode);
@@ -237,30 +247,52 @@ describe('playExampleAct', () => {
 
   describe('GIVEN two competing options on the canvas', () => {
     beforeEach(async () => {
-      const firstOption = playExampleAct({ type: 'argue', keys: ['capsule', 'oneButton'] }, copy, ids, isLive);
+      const firstOption = playExampleAct(
+        { type: 'argue', keys: ['capsule', 'oneButton'] },
+        TRANSLATIONS.platform.onboarding.example,
+        ids,
+        isLive,
+      );
       await vi.runAllTimersAsync();
       await firstOption;
-      const secondOption = playExampleAct({ type: 'argue', keys: ['bean', 'perCup'] }, copy, ids, isLive);
+      const secondOption = playExampleAct(
+        { type: 'argue', keys: ['bean', 'perCup'] },
+        TRANSLATIONS.platform.onboarding.example,
+        ids,
+        isLive,
+      );
       await vi.runAllTimersAsync();
       await secondOption;
     });
 
     describe('WHEN one speaker doubts the other option', () => {
       beforeEach(async () => {
-        const commented = playExampleAct({ type: 'comment', key: 'bean' }, copy, ids, isLive);
+        const commented = playExampleAct(
+          { type: 'comment', key: 'bean' },
+          TRANSLATIONS.platform.onboarding.example,
+          ids,
+          isLive,
+        );
         await vi.runAllTimersAsync();
         await commented;
       });
 
       test('THEN the doubt is left as a comment on that option with its panel still open', () => {
-        expect(nodeAt('bean')?.data.comments).toEqual([expect.objectContaining({ text: copy.comments.bean })]);
+        expect(nodeAt('bean')?.data.comments).toEqual([
+          expect.objectContaining({ text: TRANSLATIONS.platform.onboarding.example.comments.bean }),
+        ]);
         expect(canvas()).toMatchObject({ openCommentsNodeId: ids.bean, fitPadding: EXAMPLE_COMMENT_FIT_PADDING });
       });
     });
 
     describe('WHEN the doubt is answered with a second reason', () => {
       beforeEach(async () => {
-        const answered = playExampleAct({ type: 'argue', keys: ['payback'] }, copy, ids, isLive);
+        const answered = playExampleAct(
+          { type: 'argue', keys: ['payback'] },
+          TRANSLATIONS.platform.onboarding.example,
+          ids,
+          isLive,
+        );
         await vi.runAllTimersAsync();
         await answered;
       });
@@ -272,16 +304,36 @@ describe('playExampleAct', () => {
 
     describe('WHEN one option is ruled out and the other is chosen', () => {
       beforeEach(async () => {
-        const commented = playExampleAct({ type: 'comment', key: 'capsule' }, copy, ids, isLive);
+        const commented = playExampleAct(
+          { type: 'comment', key: 'capsule' },
+          TRANSLATIONS.platform.onboarding.example,
+          ids,
+          isLive,
+        );
         await vi.runAllTimersAsync();
         await commented;
-        const ruledOut = playExampleAct({ type: 'status', status: 'invalid', keys: ['capsule'] }, copy, ids, isLive);
+        const ruledOut = playExampleAct(
+          { type: 'status', status: 'invalid', keys: ['capsule'] },
+          TRANSLATIONS.platform.onboarding.example,
+          ids,
+          isLive,
+        );
         await vi.runAllTimersAsync();
         await ruledOut;
-        const chosen = playExampleAct({ type: 'status', status: 'valid', keys: ['bean', 'perCup'] }, copy, ids, isLive);
+        const chosen = playExampleAct(
+          { type: 'status', status: 'valid', keys: ['bean', 'perCup'] },
+          TRANSLATIONS.platform.onboarding.example,
+          ids,
+          isLive,
+        );
         await vi.runAllTimersAsync();
         await chosen;
-        const answerSet = playExampleAct({ type: 'answer', key: 'bean' }, copy, ids, isLive);
+        const answerSet = playExampleAct(
+          { type: 'answer', key: 'bean' },
+          TRANSLATIONS.platform.onboarding.example,
+          ids,
+          isLive,
+        );
         await vi.runAllTimersAsync();
         await answerSet;
       });

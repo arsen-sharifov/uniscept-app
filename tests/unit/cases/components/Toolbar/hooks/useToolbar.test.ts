@@ -24,6 +24,7 @@ describe('useToolbar', () => {
       useCanvasStore.getState().loadCanvas(THREAD_ID, {
         nodes: [canvasNode('n1', { createdBy: 'user-1' })],
         edges: [],
+        authors: {},
       });
       toolbar = renderHook(() => useToolbar()).result;
     });
@@ -107,6 +108,7 @@ describe('useToolbar', () => {
       useCanvasStore.getState().loadCanvas(THREAD_ID, {
         nodes: [canvasNode('n1', { createdBy: 'user-1' })],
         edges: [],
+        authors: {},
       });
       toolbar = renderHook(() => useToolbar()).result;
       act(() => useCanvasStore.getState().updateNodeLabel('n1', 'Renamed'));
@@ -211,6 +213,7 @@ describe('useToolbar', () => {
       useCanvasStore.getState().loadCanvas(THREAD_ID, {
         nodes: [canvasNode('n1', { createdBy: 'user-2' })],
         edges: [],
+        authors: {},
       });
       toolbar = renderHook(() => useToolbar()).result;
     });

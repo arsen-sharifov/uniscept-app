@@ -82,6 +82,13 @@ interface ICreateNodeCommentOperation extends IIdScoped {
   richText?: IRichTextDocument;
 }
 
+export interface IUpdateNodeCommentOperation extends IIdScoped {
+  type: 'updateComment';
+  nodeId: string;
+  text: string;
+  richText?: IRichTextDocument;
+}
+
 interface IDeleteNodeCommentOperation extends IIdScoped {
   type: 'deleteComment';
 }
@@ -97,6 +104,7 @@ export type TCanvasOperation =
   | ICreateEdgeOperation
   | IDeleteEdgeOperation
   | ICreateNodeCommentOperation
+  | IUpdateNodeCommentOperation
   | IDeleteNodeCommentOperation;
 
 export type TCanvasOperationListener = (operation: TCanvasOperation) => void;

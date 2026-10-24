@@ -20,6 +20,7 @@ import {
   isBlankRichText,
   isPlainDocument,
   isSameRichText,
+  isSameRichTextValue,
   toPlainText,
   toRichTextValue,
   trimRichText,
@@ -124,6 +125,44 @@ describe('isSameRichText', () => {
         expect(isSameRichText(FORMATTED_DOCUMENT, RESTYLED_DOCUMENT)).toBe(false);
         expect(isSameRichText(FORMATTED_DOCUMENT, undefined)).toBe(false);
         expect(isSameRichText(undefined, FORMATTED_DOCUMENT)).toBe(false);
+      });
+    });
+  });
+});
+
+describe('isSameRichTextValue', () => {
+  describe('GIVEN an editor value with the stored text and formatting', () => {
+    describe('WHEN it is compared with what is stored', () => {
+      test('THEN it is the same', () => {
+        expect(
+          isSameRichTextValue(
+            { text: FORMATTED_TEXT, document: FORMATTED_DOCUMENT },
+            FORMATTED_TEXT,
+            FORMATTED_DOCUMENT,
+          ),
+        ).toBe(true);
+      });
+    });
+  });
+
+  describe('GIVEN an editor value with other text', () => {
+    describe('WHEN it is compared with what is stored', () => {
+      test('THEN it differs', () => {
+        expect(isSameRichTextValue({ text: 'Other' }, FORMATTED_TEXT)).toBe(false);
+      });
+    });
+  });
+
+  describe('GIVEN an editor value with the stored text in other formatting', () => {
+    describe('WHEN it is compared with what is stored', () => {
+      test('THEN it differs', () => {
+        expect(
+          isSameRichTextValue(
+            { text: FORMATTED_TEXT, document: RESTYLED_DOCUMENT },
+            FORMATTED_TEXT,
+            FORMATTED_DOCUMENT,
+          ),
+        ).toBe(false);
       });
     });
   });

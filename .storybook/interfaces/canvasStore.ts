@@ -1,5 +1,7 @@
 import type { Edge, Node } from '@xyflow/react';
 
+import type { TCanvasAuthors } from '@interfaces';
+
 import type { ECanvasTool } from '@/components';
 
 export interface IMockCanvasState {
@@ -13,4 +15,5 @@ export interface IMockCanvasState {
   editingNodeId?: string | null;
   openCommentsNodeId?: string | null;
   middlePan?: boolean;
+  authors?: TCanvasAuthors;
 }

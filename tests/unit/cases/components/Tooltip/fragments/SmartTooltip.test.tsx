@@ -50,6 +50,17 @@ describe('SmartTooltip', () => {
         expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
       });
     });
+
+    describe('WHEN the pointer is pressed before the delay elapses', () => {
+      beforeEach(() => {
+        fireEvent.pointerDown(trigger());
+        act(() => vi.advanceTimersByTime(SMART_TOOLTIP_DELAY_MS));
+      });
+
+      test('THEN it never shows', () => {
+        expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
+      });
+    });
   });
 
   describe('GIVEN a shown tooltip', () => {
@@ -77,6 +88,16 @@ describe('SmartTooltip', () => {
       });
 
       test('THEN it hides instead of drifting away from the trigger', () => {
+        expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
+      });
+    });
+
+    describe('WHEN the pointer is pressed on the trigger', () => {
+      beforeEach(() => {
+        fireEvent.pointerDown(trigger());
+      });
+
+      test('THEN it hides instead of riding along with a drag', () => {
         expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
       });
     });

@@ -1,5 +1,7 @@
 import { ECanvasNodeType, type INodeReference, type TReferenceNode } from '@interfaces';
 
+import { STORYBOOK_AUTHOR_ID, STORYBOOK_CREATED_AT } from '../consts';
+
 export const createReferenceNode = (
   id: string,
   label: string,
@@ -19,6 +21,8 @@ export const createReferenceNode = (
     sourceThreadName: threadName,
     sourceWorkspaceId: 'src-workspace-1',
     sourceWorkspaceName: workspaceName,
+    createdBy: STORYBOOK_AUTHOR_ID,
+    createdAt: STORYBOOK_CREATED_AT,
   },
 });
 

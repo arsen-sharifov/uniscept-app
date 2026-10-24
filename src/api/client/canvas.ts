@@ -13,7 +13,8 @@ import { getCanvasEdges } from './canvasEdge';
 import { getCanvasNodes } from './canvasNode';
 import { REFERENCE_SEARCH_LIMIT, REFERENCE_TARGET_COUNT_SELECT, REFERENCE_TARGET_SELECT } from './consts';
 import { getNodeComments } from './nodeComment';
-import { readRowsByIds, rowToEdge, rowToNode, toNodeReference, toReferenceTargetMeta } from './utils';
+import { readRowsByIds, rowToEdge, rowToNode, toCanvasAuthors, toNodeReference, toReferenceTargetMeta } from './utils';
+import { getWorkspaceMembers } from './workspaceMember';
 
 const getReferenceTargetsByIds = async (nodeIds: string[]): Promise<Record<string, IReferenceTargetMeta>> => {
   const supabase = createClient();
@@ -45,10 +46,11 @@ const assertWorkspaceThread = async (workspaceId: string, threadId: string): Pro
 };
 
 export const getCanvasContent = async (workspaceId: string, threadId: string): Promise<ICanvasSnapshot> => {
-  const [, nodeRows, edgeRows] = await Promise.all([
+  const [, nodeRows, edgeRows, members] = await Promise.all([
     assertWorkspaceThread(workspaceId, threadId),
     getCanvasNodes([threadId]),
     getCanvasEdges([threadId]),
+    getWorkspaceMembers(workspaceId),
   ]);
 
   const nodeIds = nodeRows.map((node) => node.id);
@@ -72,6 +74,7 @@ export const getCanvasContent = async (workspaceId: string, threadId: string): P
       ),
     ),
     edges: edgeRows.map(rowToEdge),
+    authors: toCanvasAuthors(members),
   };
 };
 

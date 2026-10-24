@@ -3,11 +3,14 @@ import type { Edge } from '@xyflow/react';
 import {
   ECanvasNodeType,
   type ICanvasEdgeRow,
+  type ICanvasNodeData,
   type ICanvasNodeRow,
   type IComment,
   type INodeCommentRow,
   type IReferenceNodeData,
   type IReferenceTargetMeta,
+  type IWorkspaceMember,
+  type TCanvasAuthors,
   type TCanvasNode,
   type TReferenceNode,
 } from '@interfaces';
@@ -15,6 +18,15 @@ import {
 import { parseRichText } from '@/lib/richText';
 
 import { toComment } from './mappers';
+
+const toAuthorship = (
+  row: ICanvasNodeRow,
+): Pick<ICanvasNodeData, 'createdBy' | 'createdAt' | 'editedAt' | 'editedBy'> => ({
+  createdBy: row.created_by ?? undefined,
+  createdAt: row.created_at,
+  editedAt: row.edited_at ?? undefined,
+  editedBy: row.edited_by ?? undefined,
+});
 
 export const rowToNode = (
   row: ICanvasNodeRow,
@@ -33,6 +45,7 @@ export const rowToNode = (
       sourceWorkspaceId: referenceTarget?.workspaceId ?? '',
       sourceWorkspaceName: referenceTarget?.workspaceName ?? '',
       createdBy: row.created_by ?? undefined,
+      createdAt: row.created_at,
     };
 
     return {
@@ -57,7 +70,7 @@ export const rowToNode = (
         status: null,
         isAnswer: false,
         comments: mappedComments,
-        createdBy: row.created_by ?? undefined,
+        ...toAuthorship(row),
       },
     } satisfies TCanvasNode;
   }
@@ -72,10 +85,15 @@ export const rowToNode = (
       status: row.status ?? null,
       isAnswer: row.is_answer,
       comments: mappedComments,
-      createdBy: row.created_by ?? undefined,
+      ...toAuthorship(row),
     },
   } satisfies TCanvasNode;
 };
+
+export const toCanvasAuthors = (members: IWorkspaceMember[]): TCanvasAuthors =>
+  Object.fromEntries(
+    members.map((member) => [member.userId, { name: member.name || member.email, avatarIcon: member.avatarIcon }]),
+  );
 
 export const rowToEdge = (row: ICanvasEdgeRow): Edge => ({
   id: row.id,

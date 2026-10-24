@@ -158,8 +158,8 @@ describe('canvas_nodes', () => {
         await ownerClient.from('canvas_nodes').update({ label: 'revised by owner' }).eq('id', nodeId);
       });
 
-      test('THEN the new label is persisted', async () => {
-        await expect(readNode(nodeId)).resolves.toMatchObject({ label: 'revised by owner' });
+      test('THEN the row stays unchanged because only the author edits the text', async () => {
+        await expect(readNode(nodeId)).resolves.toMatchObject({ label: 'original' });
       });
     });
 

@@ -16,7 +16,9 @@ beforeEach(() => {
     domRect({ left: 100, top: 50, width: 200, height: 80 }),
   );
   usePermissionsStore.getState().setAccess('ws-1', 'user-1', EDIT_ACCESS);
-  useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [canvasNode('n1'), canvasNode('n2')], edges: [] });
+  useCanvasStore
+    .getState()
+    .loadCanvas(THREAD_ID, { nodes: [canvasNode('n1'), canvasNode('n2')], edges: [], authors: {} });
   useCanvasStore.getState().setActiveTool(ECanvasTool.Connect);
 });
 

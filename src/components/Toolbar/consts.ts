@@ -1,7 +1,7 @@
 import { Compass, Keyboard } from 'lucide-react';
 
 import type { IHelpMenuItem, IToolToneColors, TCanvasExportFormat, TToolTone, TTourAnchor } from '@interfaces';
-
+import { APP_OVERLAY_SELECTOR } from '@constants';
 import { ECanvasTool } from '@/components/tools';
 
 export const EDIT_GROUP_IDS: ReadonlySet<string> = new Set(['build', 'decide', 'link']);
@@ -55,6 +55,8 @@ export const TOOL_KEY_MAP: Record<string, ECanvasTool> = {
 };
 
 export const SELECT_DELETE_KEYS: readonly string[] = ['Backspace', 'Delete'];
+
+export const SHORTCUT_MUTED_SELECTOR = `${APP_OVERLAY_SELECTOR}, .nokey`;
 
 export const LETTER_PATTERN = /^\p{L}$/u;
 

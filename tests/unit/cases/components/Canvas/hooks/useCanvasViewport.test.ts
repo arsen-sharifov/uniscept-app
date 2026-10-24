@@ -70,7 +70,9 @@ describe('useCanvasViewport', () => {
     describe('WHEN its canvas loads with a node far outside the view', () => {
       beforeEach(() => {
         act(() =>
-          useCanvasStore.getState().loadCanvas('thread-remembered', { nodes: [nodeAt('far', 5000, 5000)], edges: [] }),
+          useCanvasStore
+            .getState()
+            .loadCanvas('thread-remembered', { nodes: [nodeAt('far', 5000, 5000)], edges: [], authors: {} }),
         );
         act(() => frames.flush());
       });
@@ -90,7 +92,9 @@ describe('useCanvasViewport', () => {
       ).result;
       harness.current.flow.setState({ ...VIEW, panZoom: { setViewport: onSetViewport } as never });
       act(() =>
-        useCanvasStore.getState().loadCanvas('thread-previous', { nodes: [nodeAt('old', 5000, 5000)], edges: [] }),
+        useCanvasStore
+          .getState()
+          .loadCanvas('thread-previous', { nodes: [nodeAt('old', 5000, 5000)], edges: [], authors: {} }),
       );
     });
 
@@ -108,7 +112,9 @@ describe('useCanvasViewport', () => {
     describe('WHEN its own canvas loads with every node inside the view', () => {
       beforeEach(() => {
         act(() =>
-          useCanvasStore.getState().loadCanvas('thread-first', { nodes: [nodeAt('inside', 100, 100)], edges: [] }),
+          useCanvasStore
+            .getState()
+            .loadCanvas('thread-first', { nodes: [nodeAt('inside', 100, 100)], edges: [], authors: {} }),
         );
         act(() => frames.flush());
       });
@@ -132,9 +138,11 @@ describe('useCanvasViewport', () => {
     describe('WHEN its canvas loads and the first frame runs', () => {
       beforeEach(() => {
         act(() =>
-          useCanvasStore
-            .getState()
-            .loadCanvas('thread-wide', { nodes: [nodeAt('inside', 100, 100), nodeAt('far', 2000, 100)], edges: [] }),
+          useCanvasStore.getState().loadCanvas('thread-wide', {
+            nodes: [nodeAt('inside', 100, 100), nodeAt('far', 2000, 100)],
+            edges: [],
+            authors: {},
+          }),
         );
         act(() => frames.flush());
       });
@@ -189,7 +197,9 @@ describe('useCanvasViewport', () => {
     describe('WHEN its canvas loads and the first frame runs', () => {
       beforeEach(() => {
         act(() =>
-          useCanvasStore.getState().loadCanvas('thread-arrival', { nodes: [nodeAt('target', 3000, 3000)], edges: [] }),
+          useCanvasStore
+            .getState()
+            .loadCanvas('thread-arrival', { nodes: [nodeAt('target', 3000, 3000)], edges: [], authors: {} }),
         );
         act(() => frames.flush());
       });
@@ -214,6 +224,7 @@ describe('useCanvasViewport', () => {
           useCanvasStore.getState().loadCanvas('thread-arrival', {
             nodes: [questionNode('q', '')],
             edges: [],
+            authors: {},
           }),
         );
         act(() => frames.flush());
@@ -226,7 +237,7 @@ describe('useCanvasViewport', () => {
 
     describe('WHEN its canvas loads and the arrival settles', () => {
       beforeEach(() => {
-        act(() => useCanvasStore.getState().loadCanvas('thread-arrival', { nodes: [], edges: [] }));
+        act(() => useCanvasStore.getState().loadCanvas('thread-arrival', { nodes: [], edges: [], authors: {} }));
         act(() => vi.advanceTimersByTime(ARRIVAL_CLEANUP_MS));
       });
 
@@ -247,7 +258,11 @@ describe('useCanvasViewport', () => {
 
     describe('WHEN its canvas loads and the first frame runs', () => {
       beforeEach(() => {
-        act(() => useCanvasStore.getState().loadCanvas('thread-arrival', { nodes: [nodeAt('n1', 0, 0)], edges: [] }));
+        act(() =>
+          useCanvasStore
+            .getState()
+            .loadCanvas('thread-arrival', { nodes: [nodeAt('n1', 0, 0)], edges: [], authors: {} }),
+        );
         act(() => frames.flush());
       });
 
@@ -275,6 +290,7 @@ describe('useCanvasViewport', () => {
           useCanvasStore.getState().loadCanvas('thread-fresh', {
             nodes: [questionNode('q', '  ')],
             edges: [],
+            authors: {},
           }),
         );
         act(() => frames.flush());
@@ -296,7 +312,9 @@ describe('useCanvasViewport', () => {
         () => ({ viewport: useCanvasViewport({ threadId: 'thread-fit', defaultZoom: 100 }), flow: useStoreApi() }),
         { wrapper: ReactFlowProvider },
       ).result;
-      act(() => useCanvasStore.getState().loadCanvas('thread-fit', { nodes: [nodeAt('n1', 0, 0)], edges: [] }));
+      act(() =>
+        useCanvasStore.getState().loadCanvas('thread-fit', { nodes: [nodeAt('n1', 0, 0)], edges: [], authors: {} }),
+      );
       act(() => frames.flush());
       harness.current.flow.setState({ fitViewQueued: false, fitViewOptions: undefined });
     });

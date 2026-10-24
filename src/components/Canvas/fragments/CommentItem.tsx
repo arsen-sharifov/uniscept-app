@@ -1,40 +1,88 @@
 'use client';
 
-import { Trash2 } from 'lucide-react';
+import { clsx } from 'clsx';
+import { Pencil, Trash2 } from 'lucide-react';
 
-import type { IComment } from '@interfaces';
-
+import type { IComment, IRichTextDocument, IRichTextValue } from '@interfaces';
+import { useReturnFocus } from '@hooks';
 import { RichText } from '@/components/RichText';
 import { useTranslations } from '@/i18n';
 
+import { AuthorStamp } from './AuthorStamp';
+import { CommentAction } from './CommentAction';
+import { CommentEditor } from './CommentEditor';
+
 interface ICommentItemProps {
   comment: IComment;
-  canDelete: boolean;
-  onDelete: (commentId: string) => void;
+  canManage: boolean;
+  isEditing: boolean;
+  draft?: IRichTextDocument;
+  onEdit: () => void;
+  onDraftChange: (document: IRichTextDocument) => void;
+  onCancelEdit: () => void;
+  onSave: (value: IRichTextValue) => void;
+  onDelete: () => void;
 }
 
-export const CommentItem = ({ comment, canDelete, onDelete }: ICommentItemProps) => {
+export const CommentItem = ({
+  comment,
+  canManage,
+  isEditing,
+  draft,
+  onEdit,
+  onDraftChange,
+  onCancelEdit,
+  onSave,
+  onDelete,
+}: ICommentItemProps) => {
   const t = useTranslations();
 
+  useReturnFocus(isEditing);
+
   return (
-    <div className="group/comment flex items-start gap-2 rounded-lg bg-[color:var(--surface-overlay)] px-3 py-2 text-[11.5px] leading-snug text-[color:var(--text)] ring-1 ring-[color:var(--border)] ring-inset">
-      <RichText
-        text={comment.text}
-        document={comment.richText}
-        className="min-w-0 flex-1 font-grotesk break-words whitespace-pre-wrap"
+    <article
+      className={clsx(
+        'group/comment relative flex flex-col gap-1.5 rounded-lg bg-[color:var(--surface-elevated)] px-3 py-2.5 text-[12.5px] leading-[18px] text-[color:var(--text)] ring-1 transition-shadow duration-150 ring-inset motion-reduce:transition-none',
+        isEditing ? 'ring-[color:var(--border-active)]' : 'ring-[color:var(--border)]',
+        canManage &&
+          !isEditing &&
+          'hover:ring-[color:var(--border-strong)] has-focus-visible:ring-[color:var(--border-strong)]',
+      )}
+    >
+      <AuthorStamp
+        placement="comment"
+        authorId={comment.authorId}
+        createdAt={comment.createdAt}
+        editedAt={comment.editedAt}
       />
 
-      {canDelete && (
-        <button
-          type="button"
-          onClick={() => onDelete(comment.id)}
-          className="-mt-0.5 -mr-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-md text-[color:var(--text-subtle)] opacity-0 transition-[opacity,background-color,color] duration-150 group-hover/comment:opacity-100 hover:bg-[color:var(--status-error-bg)] hover:text-[color:var(--status-error)] focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-[color:var(--ring-focus)] focus-visible:outline-none motion-reduce:transition-none"
-          aria-label={t.platform.canvas.comments.deleteAriaLabel}
-          title={t.platform.canvas.comments.deleteTitle}
+      {canManage && (
+        <div
+          className={clsx(
+            'absolute -top-2.5 right-2 z-10 flex items-center rounded-md bg-[color:var(--surface-elevated)] shadow-[var(--shadow-pip)] ring-1 ring-[color:var(--border)] transition-opacity duration-150 motion-reduce:transition-none',
+            isEditing ? 'invisible' : 'opacity-0 group-hover/comment:opacity-100 has-focus-visible:opacity-100',
+          )}
         >
-          <Trash2 className="h-3 w-3" strokeWidth={2} />
-        </button>
+          <CommentAction icon={Pencil} label={t.platform.canvas.comments.editAriaLabel} onClick={onEdit} />
+          <CommentAction icon={Trash2} label={t.platform.canvas.comments.deleteAriaLabel} onClick={onDelete} danger />
+        </div>
       )}
-    </div>
+
+      {isEditing ? (
+        <CommentEditor
+          comment={comment}
+          draft={draft}
+          onDraftChange={onDraftChange}
+          onSave={onSave}
+          onCancel={onCancelEdit}
+        />
+      ) : (
+        <RichText
+          text={comment.text}
+          document={comment.richText}
+          className="min-w-0 font-grotesk break-words whitespace-pre-wrap"
+        />
+      )}
+    </article>
   );
 };

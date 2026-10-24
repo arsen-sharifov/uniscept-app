@@ -1,5 +1,6 @@
 import { BackgroundVariant, type DefaultEdgeOptions, Position } from '@xyflow/react';
 import { AlertTriangle, CheckCircle2, CircleDashed, Flag, HelpCircle, Link2, XCircle } from 'lucide-react';
+import type { DateTimeFormatOptions } from 'next-intl';
 
 import type {
   ICanvasSkeletonNode,
@@ -128,3 +129,11 @@ export const CANVAS_SKELETON_NODES: readonly ICanvasSkeletonNode[] = [
 ];
 
 export const REFERENCE_SKELETON_ROWS: readonly string[] = ['w-40', 'w-28', 'w-36', 'w-24'];
+
+export const CLOCK_TICK_MS = 60 * 1000;
+export const JUST_NOW_MS = 60 * 1000;
+export const RELATIVE_TIME_LIMIT_MS = 7 * 24 * 60 * 60 * 1000;
+
+export const SHORT_DATE_FORMAT: DateTimeFormatOptions = { day: 'numeric', month: 'short' };
+export const SHORT_DATE_WITH_YEAR_FORMAT: DateTimeFormatOptions = { day: 'numeric', month: 'short', year: 'numeric' };
+export const EXACT_TIMESTAMP_FORMAT: DateTimeFormatOptions = { dateStyle: 'medium', timeStyle: 'short' };

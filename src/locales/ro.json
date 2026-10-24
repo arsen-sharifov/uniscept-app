@@ -288,7 +288,7 @@
         "validBadge": "Valid",
         "invalidBadge": "Invalid",
         "affectedBadge": "Afectat",
-        "defaultLabel": "Nod nou",
+        "placeholder": "Nod nou",
         "showMore": "Afișați mai mult",
         "showLess": "Afișați mai puțin",
         "viewComments": "Vedeți comentariile",
@@ -315,8 +315,19 @@
         "workspaceFallback": "spațiu de lucru"
       },
       "comments": {
-        "deleteAriaLabel": "Ștergeți comentariu",
-        "deleteTitle": "Ștergeți comentariu"
+        "deleteAriaLabel": "Ștergeți comentariul",
+        "editAriaLabel": "Editați comentariul",
+        "editorAriaLabel": "Textul comentariului",
+        "saveEdit": "Salvați modificările",
+        "cancelEdit": "Anulați editarea"
+      },
+      "authorship": {
+        "justNow": "chiar acum",
+        "edited": "editat",
+        "createdDetail": "Creat: {time}",
+        "editedDetail": "Editat de {name} · {time}",
+        "formerMember": "Fost membru",
+        "deletedAccount": "Cont șters"
       },
       "formatting": {
         "toolbar": "Formatare text",
@@ -488,7 +499,7 @@
         },
         "baseNodeText": {
           "title": "Scrieți afirmația",
-          "body": "Treceți la instrumentul Selectați (tasta V), dați dublu clic pe nodul nou, înlocuiți textul provizoriu cu propria afirmație și apăsați Enter."
+          "body": "Treceți la instrumentul Selectați (tasta V), dați dublu clic pe nodul nou, scrieți propria afirmație și apăsați Enter."
         },
         "baseConnect": {
           "title": "Legați-l de întrebare",
@@ -740,7 +751,7 @@
         },
         "toolsAdd": {
           "title": "Adăugați nod",
-          "body": "Un clic pe un loc liber adaugă un nod cu o etichetă provizorie. Tasta N."
+          "body": "Un clic pe un loc liber adaugă un nod gol. Tasta N."
         },
         "toolsConnect": {
           "title": "Conectați",

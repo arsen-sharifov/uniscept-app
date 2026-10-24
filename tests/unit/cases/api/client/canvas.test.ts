@@ -2,7 +2,14 @@ import { describe, expect, test, vi } from 'vitest';
 
 import { ECanvasNodeType } from '@interfaces';
 import { countReferenceTargets, getCanvasContent, IDS_PER_REQUEST, searchReferenceTargets } from '@api/client';
-import { canvasEdgeRow, canvasNodeRow, canvasNodeWithThreadRow, nodeCommentRow, THREAD_ROW } from '@mocks/rows';
+import {
+  canvasEdgeRow,
+  canvasNodeRow,
+  canvasNodeWithThreadRow,
+  nodeCommentRow,
+  THREAD_ROW,
+  workspaceMemberRow,
+} from '@mocks/rows';
 import { primeSupabase } from '@mocks/supabase';
 
 vi.mock('@/lib/supabase', () => import('@mocks/supabase'));
@@ -10,32 +17,35 @@ vi.mock('@/lib/supabase', () => import('@mocks/supabase'));
 describe('getCanvasContent', () => {
   describe('GIVEN a thread with a canvas node, a reference node and a comment', () => {
     describe('WHEN the canvas content is assembled', () => {
-      test('THEN nodes carry their grouped comments and resolved reference meta', async () => {
-        primeSupabase([
-          THREAD_ROW,
-          {
-            data: [
-              canvasNodeRow(),
-              canvasNodeRow({ id: 'ref1', type: ECanvasNodeType.Reference, source_node_id: 'origin', label: 'Ref' }),
-            ],
-          },
-          { data: [canvasEdgeRow()] },
-          { data: [nodeCommentRow()] },
-          {
-            data: [
-              canvasNodeWithThreadRow({
-                id: 'origin',
-                label: 'Origin node',
-                threads: {
-                  id: 'th-2',
-                  name: 'Other thread',
-                  workspace_id: 'ws-2',
-                  workspaces: { name: 'Other workspace' },
-                },
-              }),
-            ],
-          },
-        ]);
+      test('THEN nodes carry their grouped comments and reference meta, and the authors come from the workspace members', async () => {
+        const { client } = primeSupabase(
+          [
+            THREAD_ROW,
+            {
+              data: [
+                canvasNodeRow(),
+                canvasNodeRow({ id: 'ref1', type: ECanvasNodeType.Reference, source_node_id: 'origin', label: 'Ref' }),
+              ],
+            },
+            { data: [canvasEdgeRow()] },
+            { data: [nodeCommentRow()] },
+            {
+              data: [
+                canvasNodeWithThreadRow({
+                  id: 'origin',
+                  label: 'Origin node',
+                  threads: {
+                    id: 'th-2',
+                    name: 'Other thread',
+                    workspace_id: 'ws-2',
+                    workspaces: { name: 'Other workspace' },
+                  },
+                }),
+              ],
+            },
+          ],
+          { rpc: { get_workspace_members: { data: [workspaceMemberRow()] } } },
+        );
 
         await expect(getCanvasContent('ws-1', 'th-1')).resolves.toEqual({
           nodes: [
@@ -47,8 +57,11 @@ describe('getCanvasContent', () => {
                 label: 'Node',
                 status: null,
                 isAnswer: false,
-                comments: [{ id: 'c-1', text: 'Comment', authorId: 'user-1' }],
+                comments: [{ id: 'c-1', text: 'Comment', authorId: 'user-1', createdAt: '2026-01-01T00:00:00Z' }],
                 createdBy: 'user-1',
+                createdAt: '2026-01-01T00:00:00Z',
+                editedAt: undefined,
+                editedBy: undefined,
               },
             },
             {
@@ -64,13 +77,16 @@ describe('getCanvasContent', () => {
                 sourceWorkspaceId: 'ws-2',
                 sourceWorkspaceName: 'Other workspace',
                 createdBy: 'user-1',
+                createdAt: '2026-01-01T00:00:00Z',
               },
             },
           ],
           edges: [
             { id: 'e1', source: 'n1', target: 'n2', sourceHandle: 'right', targetHandle: 'left', type: 'default' },
           ],
+          authors: { 'user-1': { name: 'Arsen', avatarIcon: 'cat' } },
         });
+        expect(client.rpc).toHaveBeenCalledExactlyOnceWith('get_workspace_members', { p_workspace_id: 'ws-1' });
       });
     });
   });
@@ -132,15 +148,15 @@ describe('getCanvasContent', () => {
               id: 'n1',
               data: expect.objectContaining({
                 comments: [
-                  { id: 'c-1', text: 'First comment', authorId: 'user-1' },
-                  { id: 'c-3', text: 'Another for n1', authorId: 'user-1' },
+                  expect.objectContaining({ id: 'c-1', text: 'First comment', authorId: 'user-1' }),
+                  expect.objectContaining({ id: 'c-3', text: 'Another for n1', authorId: 'user-1' }),
                 ],
               }),
             }),
             expect.objectContaining({
               id: 'n2',
               data: expect.objectContaining({
-                comments: [{ id: 'c-2', text: 'Second comment', authorId: 'user-1' }],
+                comments: [expect.objectContaining({ id: 'c-2', text: 'Second comment', authorId: 'user-1' })],
               }),
             }),
           ],

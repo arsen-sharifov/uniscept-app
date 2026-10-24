@@ -18,6 +18,7 @@ beforeEach(() => {
   useCanvasStore.getState().loadCanvas(THREAD_ID, {
     nodes: [canvasNode('n1'), canvasNode('n2'), referenceNode('r1')],
     edges: [canvasEdge('e1', 'n1', 'n2')],
+    authors: {},
   });
   useCanvasStore.getState().setOpenCommentsNodeId('n2');
 });

@@ -1,6 +1,7 @@
 'use client';
 
 import { clsx } from 'clsx';
+import { Send } from 'lucide-react';
 
 import type { IRichTextDocument } from '@interfaces';
 
@@ -11,7 +12,7 @@ import { MAX_COMMENT_LENGTH } from '@/lib/canvas';
 import { isBlankRichText } from '@/lib/richText';
 import { useCanvasStore } from '@/lib/stores';
 
-import { SendCommentButton } from './SendCommentButton';
+import { CommentSubmitButton } from './CommentSubmitButton';
 
 interface ICommentComposerProps {
   nodeId: string;
@@ -35,7 +36,14 @@ export const CommentComposer = ({ nodeId, draft, onDraftChange }: ICommentCompos
         clearOnSubmit
         onChange={(document) => onDraftChange(isBlankRichText(document) ? null : document)}
         onSubmit={({ text, document }) => addComment(nodeId, text, document)}
-        renderSubmit={({ disabled, submit }) => <SendCommentButton disabled={disabled} onClick={submit} />}
+        renderSubmit={({ disabled, submit }) => (
+          <CommentSubmitButton
+            icon={Send}
+            label={t.platform.canvas.node.sendComment}
+            disabled={disabled}
+            onClick={submit}
+          />
+        )}
         fallback={
           <>
             <RichText
@@ -46,7 +54,7 @@ export const CommentComposer = ({ nodeId, draft, onDraftChange }: ICommentCompos
                 draft ? 'text-[color:var(--text-strong)]' : 'text-[color:var(--text-muted)]',
               )}
             />
-            <SendCommentButton disabled />
+            <CommentSubmitButton icon={Send} label={t.platform.canvas.node.sendComment} disabled />
           </>
         }
       />

@@ -288,7 +288,7 @@
         "validBadge": "Valide",
         "invalidBadge": "Invalide",
         "affectedBadge": "Affectée",
-        "defaultLabel": "Nouveau nœud",
+        "placeholder": "Nouveau nœud",
         "showMore": "Afficher plus",
         "showLess": "Afficher moins",
         "viewComments": "Voir les commentaires",
@@ -316,7 +316,18 @@
       },
       "comments": {
         "deleteAriaLabel": "Supprimer le commentaire",
-        "deleteTitle": "Supprimer le commentaire"
+        "editAriaLabel": "Modifier le commentaire",
+        "editorAriaLabel": "Texte du commentaire",
+        "saveEdit": "Enregistrer les modifications",
+        "cancelEdit": "Annuler la modification"
+      },
+      "authorship": {
+        "justNow": "à l'instant",
+        "edited": "modifié",
+        "createdDetail": "Créé : {time}",
+        "editedDetail": "Modifié par {name} · {time}",
+        "formerMember": "Ancien membre",
+        "deletedAccount": "Compte supprimé"
       },
       "formatting": {
         "toolbar": "Mise en forme du texte",
@@ -488,7 +499,7 @@
         },
         "baseNodeText": {
           "title": "Écrivez l'affirmation",
-          "body": "Passez à l'outil Sélectionner (touche V), double-cliquez sur votre nouveau nœud, remplacez le texte provisoire par votre affirmation et appuyez sur Entrée."
+          "body": "Passez à l'outil Sélectionner (touche V), double-cliquez sur votre nouveau nœud, écrivez votre affirmation et appuyez sur Entrée."
         },
         "baseConnect": {
           "title": "Reliez-le à la question",
@@ -740,7 +751,7 @@
         },
         "toolsAdd": {
           "title": "Ajouter un nœud",
-          "body": "Un clic sur un endroit vide ajoute un nœud au libellé provisoire. Touche N."
+          "body": "Un clic sur un endroit vide ajoute un nœud vide. Touche N."
         },
         "toolsConnect": {
           "title": "Connecter",

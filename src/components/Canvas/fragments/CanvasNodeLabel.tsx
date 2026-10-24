@@ -23,7 +23,8 @@ interface ICanvasNodeLabelProps {
 
 export const CanvasNodeLabel = ({ id, label, richLabel, isEditing, measured, commentCount }: ICanvasNodeLabelProps) => {
   const t = useTranslations();
-  const { labelRefCallback, expanded, expandable, toggleExpanded } = useExpandableLabel();
+  const hasLabel = label.trim().length > 0;
+  const { labelRefCallback, expanded, expandable, toggleExpanded } = useExpandableLabel(hasLabel);
 
   return (
     <>
@@ -36,16 +37,18 @@ export const CanvasNodeLabel = ({ id, label, richLabel, isEditing, measured, com
             measured={measured}
             ariaLabel={t.platform.canvas.node.labelAriaLabel}
             className="text-[13.5px] leading-[1.55] font-medium"
+            placeholder={t.platform.canvas.node.placeholder}
             signalLabelled
           />
         ) : (
           <RichText
             ref={labelRefCallback}
-            text={label}
-            document={richLabel}
+            text={hasLabel ? label : t.platform.canvas.node.placeholder}
+            document={hasLabel ? richLabel : undefined}
             className={clsx(
-              'min-w-0 flex-1 font-grotesk text-[13.5px] leading-[1.55] font-medium tracking-tight break-words whitespace-pre-wrap text-[color:var(--text-strong)] select-none',
-              !expanded && 'line-clamp-10',
+              'min-w-0 flex-1 font-grotesk text-[13.5px] leading-[1.55] font-medium tracking-tight break-words whitespace-pre-wrap select-none',
+              hasLabel ? 'text-[color:var(--text-strong)]' : 'text-[color:var(--text-subtle)]',
+              hasLabel && !expanded && 'line-clamp-10',
             )}
           />
         )}

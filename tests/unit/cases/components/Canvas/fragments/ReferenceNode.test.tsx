@@ -5,12 +5,19 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import type { TReferenceNode } from '@interfaces';
 
 import { listenOnPage } from '@mocks/browser';
-import { nodeProps, referenceNode, REFERENCE_TARGET_URL } from '@mocks/canvas';
+import {
+  AUTHORSHIP_TIMES,
+  CANVAS_AUTHORS,
+  THREAD_ID,
+  nodeProps,
+  referenceNode,
+  REFERENCE_TARGET_URL,
+} from '@mocks/canvas';
 import { TRANSLATIONS, translate } from '@mocks/i18n';
 import { router } from '@mocks/navigation';
 import { FULL_ACCESS } from '@mocks/roles';
 import { ReferenceNode } from '@/components/Canvas/fragments';
-import { usePermissionsStore } from '@/lib/stores';
+import { useCanvasStore, usePermissionsStore } from '@/lib/stores';
 
 vi.mock('@/i18n', () => import('@mocks/i18n'));
 vi.mock('next/navigation', () => import('@mocks/navigation'));
@@ -34,10 +41,26 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  useCanvasStore.getState().clearCanvas();
   usePermissionsStore.getState().clearAccess();
 });
 
 describe('ReferenceNode', () => {
+  describe('GIVEN a reference a member added last year', () => {
+    beforeEach(() => {
+      usePermissionsStore.getState().setAccess('ws-1', 'user-1', FULL_ACCESS);
+      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [], edges: [], authors: CANVAS_AUTHORS });
+      renderReference(referenceNode('ref', { createdBy: 'user-2', createdAt: AUTHORSHIP_TIMES.lastYear }));
+    });
+
+    describe('WHEN it renders', () => {
+      test('THEN the member who added it and the date show', () => {
+        expect(screen.getByText(CANVAS_AUTHORS['user-2'].name)).toBeInTheDocument();
+        expect(screen.getByText('Mar 1, 2025')).toBeInTheDocument();
+      });
+    });
+  });
+
   describe('GIVEN a reference to a node in another thread', () => {
     beforeEach(() => {
       usePermissionsStore.getState().setAccess('ws-1', 'user-1', FULL_ACCESS);
@@ -86,6 +109,27 @@ describe('ReferenceNode', () => {
       test('THEN no open button is offered and the workspace falls back to the generic name', () => {
         expect(openButton()).not.toBeInTheDocument();
         expect(screen.getByText(TRANSLATIONS.platform.canvas.reference.workspaceFallback)).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('GIVEN a reference to a node that has no text yet', () => {
+    beforeEach(() => {
+      renderReference(referenceNode('ref', { sourceNodeLabel: '' }));
+    });
+
+    describe('WHEN it renders', () => {
+      test('THEN a muted placeholder names the node, also for the open button', () => {
+        expect(screen.getByText(TRANSLATIONS.platform.canvas.node.placeholder)).toHaveClass(
+          'text-[color:var(--text-subtle)]',
+        );
+        expect(
+          screen.getByRole('button', {
+            name: translate('platform.canvas.reference.openLabel', {
+              name: TRANSLATIONS.platform.canvas.node.placeholder,
+            }),
+          }),
+        ).toBeInTheDocument();
       });
     });
   });

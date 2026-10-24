@@ -1,4 +1,4 @@
-import type { ICreateNodeCommentInput, INodeCommentRow } from '@interfaces';
+import type { ICreateNodeCommentInput, INodeCommentRow, IRichTextDocument } from '@interfaces';
 
 import { createClient } from '@/lib/supabase';
 
@@ -16,6 +16,19 @@ export const createNodeComment = async (input: ICreateNodeCommentInput): Promise
     text: input.text,
     rich_text: input.richText ?? null,
   });
+
+  if (error) throw error;
+};
+
+export const updateNodeComment = async (id: string, text: string, richText?: IRichTextDocument): Promise<void> => {
+  const supabase = createClient();
+
+  const { error } = await supabase
+    .from('node_comments')
+    .update({ text, rich_text: richText ?? null })
+    .eq('id', id)
+    .select('id')
+    .single();
 
   if (error) throw error;
 };

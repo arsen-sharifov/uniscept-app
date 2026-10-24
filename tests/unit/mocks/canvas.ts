@@ -14,11 +14,14 @@ import { vi } from 'vitest';
 import {
   ECanvasNodeType,
   type IComment,
+  type ICommentEditDraft,
   type ICanvasNodeData,
+  type ICanvasSnapshot,
   type INodeReference,
   type IReferenceNodeData,
   type IRichTextDocument,
   type ISaveState,
+  type TCanvasAuthors,
   type TCanvasEdge,
   type TCanvasNode,
   type TCanvasOperation,
@@ -26,7 +29,7 @@ import {
   type TReferenceNode,
 } from '@interfaces';
 
-import { FORMATTED_DOCUMENT, FORMATTED_TEXT } from './richText';
+import { FORMATTED_DOCUMENT, FORMATTED_TEXT, TYPED_DRAFT_DOCUMENT } from './richText';
 
 export const THREAD_ID = 'thread-1';
 
@@ -90,6 +93,14 @@ export const deleteNodeOp = (id: string): TCanvasOperation => ({ type: 'deleteNo
 
 export const deleteEdgeOp = (id: string): TCanvasOperation => ({ type: 'deleteEdge', id });
 
+export const updateCommentOp = (id: string, text: string, richText?: IRichTextDocument): TCanvasOperation => ({
+  type: 'updateComment',
+  id,
+  nodeId: 'node-a',
+  text,
+  ...(richText && { richText }),
+});
+
 export const deleteCommentOp = (id: string): TCanvasOperation => ({ type: 'deleteComment', id });
 
 export const canvasNode = (id: string, data?: Partial<ICanvasNodeData>): TCanvasNode => ({
@@ -103,7 +114,7 @@ export const questionNode = (id: string, label = 'Main question'): TCanvasNode =
   id,
   type: ECanvasNodeType.Question,
   position: { x: 0, y: 0 },
-  data: { label, status: null, isAnswer: false, comments: [] },
+  data: { label, status: null, isAnswer: false, comments: [], createdBy: 'user-1' },
 });
 
 export const referenceNode = (id: string, data?: Partial<IReferenceNodeData>): TReferenceNode => ({
@@ -210,10 +221,13 @@ export const bareNode = (id: string, x: number, y: number): Node => ({
   data: {},
 });
 
+const AUTHORED_AT = '2026-01-01T00:00:00.000Z';
+
 export const comment = (id: string, overrides?: Partial<IComment>): IComment => ({
   id,
   text: `Comment ${id}`,
   authorId: 'user-1',
+  createdAt: AUTHORED_AT,
   ...overrides,
 });
 
@@ -225,6 +239,8 @@ export const nodeReference = (id: string): INodeReference => ({
   workspaceId: 'ws-1',
   workspaceName: 'Workspace one',
 });
+
+export const EMPTY_NODE_REFERENCE: INodeReference = { ...nodeReference('r3'), label: '' };
 
 export const saveState = (overrides: Partial<ISaveState>): ISaveState => ({
   status: 'idle',
@@ -238,9 +254,15 @@ export const saveState = (overrides: Partial<ISaveState>): ISaveState => ({
 export const WORKSPACE_ID = 'ws-1';
 export const REFERENCE_TARGET_URL = '/platform/ws-2/th-2?focus=ref&node=origin';
 
-export const CANVAS_CONTENT = {
+export const CANVAS_AUTHORS = {
+  'user-1': { name: 'Dana Park', avatarIcon: null },
+  'user-2': { name: 'Ilya Moroz', avatarIcon: 'panda' },
+} satisfies TCanvasAuthors;
+
+export const CANVAS_CONTENT: ICanvasSnapshot = {
   nodes: [questionNode('q'), canvasNode('n1')],
   edges: [canvasEdge('e1', 'q', 'n1')],
+  authors: CANVAS_AUTHORS,
 };
 
 export const MIXED_COMMENT_THREAD: IComment[] = [
@@ -248,8 +270,61 @@ export const MIXED_COMMENT_THREAD: IComment[] = [
   comment('c2', { authorId: 'user-2', text: FORMATTED_TEXT, richText: FORMATTED_DOCUMENT }),
 ];
 
+export const OWN_COMMENT_PAIR: IComment[] = [
+  comment('c1', { authorId: 'user-1', text: 'Mine' }),
+  comment('c3', { authorId: 'user-1', text: 'Mine too' }),
+];
+
+export const FIRST_COMMENT_EDIT: ICommentEditDraft = { commentId: 'c1' };
+
+export const UNFINISHED_COMMENT_EDIT: ICommentEditDraft = { commentId: 'c1', document: TYPED_DRAFT_DOCUMENT };
+
+export const VANISHED_COMMENT_EDIT: ICommentEditDraft = { commentId: 'c-gone' };
+
 export const formattedQuestionNode = (id: string): TCanvasNode => {
   const node = questionNode(id, FORMATTED_TEXT);
 
   return { ...node, data: { ...node.data, richLabel: FORMATTED_DOCUMENT } };
+};
+
+export const AUTHORSHIP_NOW = '2026-03-10T12:00:00.000Z';
+
+export const AUTHORSHIP_TIMES = {
+  twentySecondsAgo: '2026-03-10T11:59:40.000Z',
+  oneMinuteAgo: '2026-03-10T11:59:00.000Z',
+  fiveMinutesAgo: '2026-03-10T11:55:00.000Z',
+  ninetyMinutesAgo: '2026-03-10T10:30:00.000Z',
+  threeDaysAgo: '2026-03-07T12:00:00.000Z',
+  sevenDaysAgo: '2026-03-03T12:00:00.000Z',
+  lastYear: '2025-03-01T12:00:00.000Z',
+  inTwoMinutes: '2026-03-10T12:02:00.000Z',
+} as const;
+
+export const IDLE_CLOCK_TICKS = 5;
+
+export const editedForeignNode = (id: string): TCanvasNode =>
+  canvasNode(id, {
+    createdBy: 'user-2',
+    createdAt: AUTHORSHIP_TIMES.lastYear,
+    editedAt: AUTHORSHIP_TIMES.lastYear,
+    editedBy: 'user-2',
+  });
+
+export const commentedForeignNode = (id: string): TCanvasNode =>
+  canvasNode(id, {
+    createdBy: 'user-2',
+    createdAt: AUTHORSHIP_TIMES.lastYear,
+    comments: [comment('c-member', { authorId: 'user-2', createdAt: AUTHORSHIP_TIMES.threeDaysAgo })],
+  });
+
+export const writtenQuestionNode = (id: string): TCanvasNode => {
+  const node = questionNode(id);
+
+  return { ...node, data: { ...node.data, createdAt: AUTHORSHIP_TIMES.lastYear } };
+};
+
+export const foreignQuestionNode = (id: string): TCanvasNode => {
+  const node = questionNode(id);
+
+  return { ...node, data: { ...node.data, createdBy: 'user-2' } };
 };

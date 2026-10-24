@@ -26,6 +26,7 @@ beforeEach(() => {
       canvasNode('n2', { label: FORMATTED_TEXT, richLabel: FORMATTED_DOCUMENT, createdBy: 'user-1' }),
     ],
     edges: [],
+    authors: {},
   });
   useCanvasStore.getState().setEditingNodeId('n1');
   useOnboardingStore.getState().startGuide('canvas');

@@ -26,6 +26,7 @@ vi.mock('@/lib/events', () => import('@mocks/events'));
 const canvasContent = (): ICanvasSnapshot => ({
   nodes: [canvasNode('own', { createdBy: 'user-1' }), canvasNode('foreign', { createdBy: 'user-2' })],
   edges: [canvasEdge('e1', 'own', 'foreign')],
+  authors: {},
 });
 
 let sync: { current: ReturnType<typeof useCanvasSync> };
@@ -80,7 +81,7 @@ describe('useCanvasSync', () => {
 
     describe('WHEN a change is waiting for the debounce window', () => {
       beforeEach(() => {
-        act(() => useCanvasStore.getState().addNode({ x: 10, y: 20 }, 'Idea'));
+        act(() => useCanvasStore.getState().addNode({ x: 10, y: 20 }));
       });
 
       test('THEN the hook reports the pending save', () => {
@@ -90,7 +91,7 @@ describe('useCanvasSync', () => {
 
     describe('WHEN the debounce window closes after a change', () => {
       beforeEach(async () => {
-        act(() => useCanvasStore.getState().addNode({ x: 10, y: 20 }, 'Idea'));
+        act(() => useCanvasStore.getState().addNode({ x: 10, y: 20 }));
         await act(async () => {
           await vi.advanceTimersByTimeAsync(FLUSH_DEBOUNCE_MS);
         });
@@ -102,29 +103,26 @@ describe('useCanvasSync', () => {
       });
     });
 
-    describe('WHEN they add a node and rename it within one debounce window', () => {
-      let createdId: string;
-
+    describe('WHEN they add a node and write its text within one debounce window', () => {
       beforeEach(async () => {
-        act(() => useCanvasStore.getState().addNode({ x: 10, y: 20 }, 'Idea'));
-        createdId = useCanvasStore.getState().nodes.find((node) => node.data.label === 'Idea')!.id;
-        act(() => useCanvasStore.getState().updateNodeLabel(createdId, 'Refined'));
+        act(() => useCanvasStore.getState().addNode({ x: 10, y: 20 }, 'idea'));
+        act(() => useCanvasStore.getState().updateNodeLabel('idea', 'Refined'));
         await act(async () => {
           await vi.advanceTimersByTimeAsync(FLUSH_DEBOUNCE_MS);
         });
       });
 
-      test('THEN the create and the rename reach the api in order', () => {
+      test('THEN the empty create and the text reach the api in order', () => {
         expect(createCanvasNode).toHaveBeenCalledExactlyOnceWith({
-          id: createdId,
+          id: 'idea',
           threadId: THREAD_ID,
           type: ECanvasNodeType.Canvas,
           x: 10,
           y: 20,
-          label: 'Idea',
+          label: '',
           sourceNodeId: null,
         });
-        expect(updateCanvasNodeLabel).toHaveBeenCalledExactlyOnceWith(createdId, 'Refined', undefined);
+        expect(updateCanvasNodeLabel).toHaveBeenCalledExactlyOnceWith('idea', 'Refined', undefined);
         expect(vi.mocked(updateCanvasNodeLabel).mock.invocationCallOrder[0]).toBeGreaterThan(
           vi.mocked(createCanvasNode).mock.invocationCallOrder[0]!,
         );
@@ -133,9 +131,8 @@ describe('useCanvasSync', () => {
 
     describe('WHEN they add a node and delete it before the flush', () => {
       beforeEach(async () => {
-        act(() => useCanvasStore.getState().addNode({ x: 0, y: 0 }, 'Ephemeral'));
-        const createdId = useCanvasStore.getState().nodes.find((node) => node.data.label === 'Ephemeral')!.id;
-        act(() => useCanvasStore.getState().deleteNode(createdId));
+        act(() => useCanvasStore.getState().addNode({ x: 0, y: 0 }, 'ephemeral'));
+        act(() => useCanvasStore.getState().deleteNode('ephemeral'));
         await act(async () => {
           await vi.advanceTimersByTimeAsync(FLUSH_DEBOUNCE_MS);
         });
@@ -216,11 +213,8 @@ describe('useCanvasSync', () => {
     });
 
     describe('WHEN they undo an addition that already flushed', () => {
-      let createdId: string;
-
       beforeEach(async () => {
-        act(() => useCanvasStore.getState().addNode({ x: 0, y: 0 }, 'Draft'));
-        createdId = useCanvasStore.getState().nodes.find((node) => node.data.label === 'Draft')!.id;
+        act(() => useCanvasStore.getState().addNode({ x: 0, y: 0 }, 'draft'));
         await act(async () => {
           await vi.advanceTimersByTimeAsync(FLUSH_DEBOUNCE_MS);
         });
@@ -232,13 +226,13 @@ describe('useCanvasSync', () => {
 
       test('THEN the replayed delete reaches the api', () => {
         expect(createCanvasNode).toHaveBeenCalledTimes(1);
-        expect(deleteCanvasNode).toHaveBeenCalledExactlyOnceWith(createdId);
+        expect(deleteCanvasNode).toHaveBeenCalledExactlyOnceWith('draft');
       });
     });
 
     describe('WHEN they undo an addition after losing their canvas edit access', () => {
       beforeEach(async () => {
-        act(() => useCanvasStore.getState().addNode({ x: 0, y: 0 }, 'Draft'));
+        act(() => useCanvasStore.getState().addNode({ x: 0, y: 0 }, 'draft'));
         await act(async () => {
           await vi.advanceTimersByTimeAsync(FLUSH_DEBOUNCE_MS);
         });
@@ -250,14 +244,14 @@ describe('useCanvasSync', () => {
       });
 
       test('THEN the addition stays and no delete reaches the api', () => {
-        expect(useCanvasStore.getState().nodes.map((node) => node.data.label)).toContain('Draft');
+        expect(useCanvasStore.getState().nodes.map((node) => node.id)).toContain('draft');
         expect(deleteCanvasNode).not.toHaveBeenCalled();
       });
     });
 
     describe('WHEN they undo an addition after a permission unrelated to the canvas changed', () => {
       beforeEach(() => {
-        act(() => useCanvasStore.getState().addNode({ x: 0, y: 0 }, 'Draft'));
+        act(() => useCanvasStore.getState().addNode({ x: 0, y: 0 }, 'draft'));
         act(() =>
           usePermissionsStore.getState().setAccess('ws-1', 'user-1', { ...EDIT_ACCESS, canManageStructure: true }),
         );
@@ -265,7 +259,7 @@ describe('useCanvasSync', () => {
       });
 
       test('THEN the history survived and the addition is undone', () => {
-        expect(useCanvasStore.getState().nodes.map((node) => node.data.label)).not.toContain('Draft');
+        expect(useCanvasStore.getState().nodes.map((node) => node.id)).not.toContain('draft');
       });
     });
 
@@ -304,7 +298,7 @@ describe('useCanvasSync', () => {
 
     describe('WHEN the hook unmounts with a pending operation', () => {
       beforeEach(async () => {
-        act(() => useCanvasStore.getState().addNode({ x: 0, y: 0 }, 'Draft'));
+        act(() => useCanvasStore.getState().addNode({ x: 0, y: 0 }, 'draft'));
         unmountSync();
         await act(async () => {
           await vi.advanceTimersByTimeAsync(0);
@@ -312,7 +306,7 @@ describe('useCanvasSync', () => {
       });
 
       test('THEN the pending create flushes without waiting for the debounce', () => {
-        expect(createCanvasNode).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ label: 'Draft' }));
+        expect(createCanvasNode).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ id: 'draft' }));
       });
 
       test('THEN the store and the queue reset', () => {
@@ -325,7 +319,7 @@ describe('useCanvasSync', () => {
       let unloadEvent: Event;
 
       beforeEach(() => {
-        act(() => useCanvasStore.getState().addNode({ x: 0, y: 0 }, 'Draft'));
+        act(() => useCanvasStore.getState().addNode({ x: 0, y: 0 }));
         unloadEvent = new Event('beforeunload', { cancelable: true });
         window.dispatchEvent(unloadEvent);
       });
@@ -349,7 +343,7 @@ describe('useCanvasSync', () => {
     });
   });
 
-  describe('GIVEN the workspace owner who renamed a node someone else created', () => {
+  describe('GIVEN the workspace owner who deleted a node someone else created', () => {
     beforeEach(async () => {
       usePermissionsStore.getState().setAccess('ws-1', 'user-1', FULL_ACCESS);
       vi.mocked(getCanvasContent).mockResolvedValue(canvasContent());
@@ -357,13 +351,13 @@ describe('useCanvasSync', () => {
       await act(async () => {
         await vi.advanceTimersByTimeAsync(0);
       });
-      act(() => useCanvasStore.getState().updateNodeLabel('foreign', 'Renamed'));
+      act(() => useCanvasStore.getState().deleteNode('foreign'));
       await act(async () => {
         await vi.advanceTimersByTimeAsync(FLUSH_DEBOUNCE_MS);
       });
     });
 
-    describe('WHEN they undo the rename after handing the ownership over', () => {
+    describe('WHEN they undo the deletion after handing the ownership over', () => {
       beforeEach(async () => {
         act(() => usePermissionsStore.getState().setAccess('ws-1', 'user-1', EDIT_ACCESS));
         act(() => useCanvasStore.getState().undo());
@@ -372,9 +366,10 @@ describe('useCanvasSync', () => {
         });
       });
 
-      test('THEN the rename stays and only the rename itself reaches the api', () => {
-        expect(useCanvasStore.getState().nodes.find((node) => node.id === 'foreign')?.data.label).toBe('Renamed');
-        expect(updateCanvasNodeLabel).toHaveBeenCalledExactlyOnceWith('foreign', 'Renamed', undefined);
+      test('THEN the node stays deleted and only the deletion reaches the api', () => {
+        expect(useCanvasStore.getState().nodes.some((node) => node.id === 'foreign')).toBe(false);
+        expect(deleteCanvasNode).toHaveBeenCalledExactlyOnceWith('foreign');
+        expect(createCanvasNode).not.toHaveBeenCalled();
       });
     });
   });
@@ -394,7 +389,7 @@ describe('useCanvasSync', () => {
 
     describe('WHEN they try to edit the canvas', () => {
       beforeEach(async () => {
-        act(() => useCanvasStore.getState().addNode({ x: 0, y: 0 }, 'Sneaky'));
+        act(() => useCanvasStore.getState().addNode({ x: 0, y: 0 }));
         act(() => useCanvasStore.getState().deleteNode('own'));
         act(() => useCanvasStore.getState().updateNodeLabel('own', 'Hijacked'));
         await act(async () => {
@@ -458,7 +453,7 @@ describe('useCanvasSync', () => {
         await vi.advanceTimersByTimeAsync(0);
       });
 
-      act(() => useCanvasStore.getState().addNode({ x: 0, y: 0 }, 'Stale'));
+      act(() => useCanvasStore.getState().addNode({ x: 0, y: 0 }, 'stale'));
     });
 
     describe('WHEN the route switches while the old save is in flight and the new thread is still loading', () => {
@@ -478,7 +473,7 @@ describe('useCanvasSync', () => {
       beforeEach(async () => {
         vi.mocked(getCanvasContent).mockReturnValueOnce(new Promise(() => {}));
         view.rerender({ threadId: 'thread-2' });
-        act(() => useCanvasStore.getState().addNode({ x: 0, y: 0 }, 'Lost'));
+        act(() => useCanvasStore.getState().addNode({ x: 0, y: 0 }, 'lost'));
         await act(async () => {
           await vi.advanceTimersByTimeAsync(FLUSH_DEBOUNCE_MS);
         });
@@ -486,7 +481,7 @@ describe('useCanvasSync', () => {
 
       test('THEN only the old operation reaches the api, under the old thread', () => {
         expect(createCanvasNode).toHaveBeenCalledExactlyOnceWith(
-          expect.objectContaining({ threadId: THREAD_ID, label: 'Stale' }),
+          expect.objectContaining({ id: 'stale', threadId: THREAD_ID }),
         );
       });
     });
@@ -494,7 +489,7 @@ describe('useCanvasSync', () => {
     describe('WHEN the new thread finishes loading before the old save settles', () => {
       beforeEach(async () => {
         vi.mocked(createCanvasNode).mockReturnValueOnce(new Promise(() => {}));
-        vi.mocked(getCanvasContent).mockResolvedValueOnce({ nodes: [canvasNode('b1')], edges: [] });
+        vi.mocked(getCanvasContent).mockResolvedValueOnce({ nodes: [canvasNode('b1')], edges: [], authors: {} });
         view.rerender({ threadId: 'thread-2' });
         await act(async () => {
           await vi.advanceTimersByTimeAsync(0);
@@ -505,7 +500,7 @@ describe('useCanvasSync', () => {
         expect(useCanvasStore.getState()).toMatchObject({ threadId: 'thread-2', hydrated: true });
         expect(useCanvasStore.getState().nodes.map((node) => node.id)).toEqual(['b1']);
         expect(createCanvasNode).toHaveBeenCalledExactlyOnceWith(
-          expect.objectContaining({ threadId: THREAD_ID, label: 'Stale' }),
+          expect.objectContaining({ id: 'stale', threadId: THREAD_ID }),
         );
       });
     });
@@ -515,7 +510,7 @@ describe('useCanvasSync', () => {
         const staleCreate = Promise.withResolvers<void>();
 
         vi.mocked(createCanvasNode).mockReturnValueOnce(staleCreate.promise);
-        vi.mocked(getCanvasContent).mockResolvedValueOnce({ nodes: [canvasNode('b1')], edges: [] });
+        vi.mocked(getCanvasContent).mockResolvedValueOnce({ nodes: [canvasNode('b1')], edges: [], authors: {} });
         view.rerender({ threadId: 'thread-2' });
         await act(async () => {
           await vi.advanceTimersByTimeAsync(0);
@@ -585,7 +580,7 @@ describe('useCanvasSync', () => {
       });
 
       vi.mocked(createCanvasNode).mockRejectedValue(new Error('down'));
-      act(() => useCanvasStore.getState().addNode({ x: 0, y: 0 }, 'Parked', 'parked'));
+      act(() => useCanvasStore.getState().addNode({ x: 0, y: 0 }, 'parked'));
       await act(async () => {
         await vi.advanceTimersByTimeAsync(FLUSH_DEBOUNCE_MS + RETRY_BASE_MS * (2 ** MAX_RETRIES - 1));
       });
@@ -594,7 +589,7 @@ describe('useCanvasSync', () => {
       settleInflight = inflightCreate.resolve;
       vi.mocked(createCanvasNode).mockReset();
       vi.mocked(createCanvasNode).mockReturnValueOnce(inflightCreate.promise);
-      act(() => useCanvasStore.getState().addNode({ x: 40, y: 40 }, 'In flight'));
+      act(() => useCanvasStore.getState().addNode({ x: 40, y: 40 }));
       await act(async () => {
         await vi.advanceTimersByTimeAsync(FLUSH_DEBOUNCE_MS);
       });
@@ -630,7 +625,7 @@ describe('useCanvasSync', () => {
         await vi.advanceTimersByTimeAsync(0);
       });
 
-      act(() => useCanvasStore.getState().addNode({ x: 0, y: 0 }, 'Offline draft'));
+      act(() => useCanvasStore.getState().addNode({ x: 0, y: 0 }, 'offline-draft'));
       Object.defineProperty(window.navigator, 'onLine', { configurable: true, value: false });
       window.dispatchEvent(new Event('offline'));
     });
@@ -664,7 +659,7 @@ describe('useCanvasSync', () => {
       });
 
       test('THEN the queued change still reaches the api', () => {
-        expect(createCanvasNode).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ label: 'Offline draft' }));
+        expect(createCanvasNode).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ id: 'offline-draft' }));
       });
     });
   });

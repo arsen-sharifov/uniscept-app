@@ -4,15 +4,18 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 
 import {
   ACCOUNT_PAGE_SIZE,
+  BACKDATED_TIMESTAMP,
   CUSTOM_ROLE_POSITION,
   INTEGRATION_ACCOUNT_DOMAIN,
   INTEGRATION_ACCOUNT_PASSWORD,
 } from '../consts';
 import type {
   IIntegrationAccount,
+  IIntegrationCommentAuthorshipRow,
   IIntegrationEdgeRow,
   IIntegrationFolderRow,
   IIntegrationInvitationRow,
+  IIntegrationNodeAuthorshipRow,
   IIntegrationNodeCommentRow,
   IIntegrationNodeRow,
   IIntegrationOnboardingRow,
@@ -24,6 +27,7 @@ import type {
   IIntegrationThreadRow,
   IIntegrationWorkspace,
   IIntegrationWorkspaceRow,
+  TIntegrationKeptTable,
   TIntegrationRoleKey,
 } from '../interfaces';
 import { createUserClient, getAdminClient } from './clients';
@@ -393,7 +397,7 @@ export const seedThread = async (workspaceId: string, createdBy: string): Promis
 export const seedNode = async (
   threadId: string,
   createdBy: string,
-  options: { type?: string; label?: string } = {},
+  options: { type?: string; label?: string; sourceNodeId?: string } = {},
 ): Promise<string> => {
   const { data, error } = await getAdminClient()
     .from('canvas_nodes')
@@ -403,6 +407,7 @@ export const seedNode = async (
       position_x: 0,
       position_y: 0,
       label: options.label ?? '',
+      source_node_id: options.sourceNodeId ?? null,
       created_by: createdBy,
     })
     .select('id')
@@ -449,6 +454,18 @@ export const readNode = async (nodeId: string): Promise<IIntegrationNodeRow | nu
     .maybeSingle<IIntegrationNodeRow>();
 
   if (error) throw new Error(`Could not read the node ${nodeId}: ${error.message}`);
+
+  return data;
+};
+
+export const readNodeAuthorship = async (nodeId: string): Promise<IIntegrationNodeAuthorshipRow | null> => {
+  const { data, error } = await getAdminClient()
+    .from('canvas_nodes')
+    .select('thread_id, label, rich_label, created_by, created_at, edited_at, edited_by')
+    .eq('id', nodeId)
+    .maybeSingle<IIntegrationNodeAuthorshipRow>();
+
+  if (error) throw new Error(`Could not read the authorship of the node ${nodeId}: ${error.message}`);
 
   return data;
 };
@@ -549,6 +566,18 @@ export const readNodeComment = async (commentId: string): Promise<IIntegrationNo
   return data;
 };
 
+export const readCommentAuthorship = async (commentId: string): Promise<IIntegrationCommentAuthorshipRow | null> => {
+  const { data, error } = await getAdminClient()
+    .from('node_comments')
+    .select('node_id, text, author_id, created_at, edited_at')
+    .eq('id', commentId)
+    .maybeSingle<IIntegrationCommentAuthorshipRow>();
+
+  if (error) throw new Error(`Could not read the authorship of the comment ${commentId}: ${error.message}`);
+
+  return data;
+};
+
 export const readNodeCommentRichText = async (commentId: string): Promise<IIntegrationRichCommentRow | null> => {
   const { data, error } = await getAdminClient()
     .from('node_comments')
@@ -559,6 +588,20 @@ export const readNodeCommentRichText = async (commentId: string): Promise<IInteg
   if (error) throw new Error(`Could not read the formatting of the comment ${commentId}: ${error.message}`);
 
   return data;
+};
+
+export const isKept = async (table: TIntegrationKeptTable, id: string): Promise<boolean> => {
+  const { data, error } = await getAdminClient().from(table).select('id').eq('id', id).maybeSingle<{ id: string }>();
+
+  if (error) throw new Error(`Could not read the kept copy ${id} in ${table}: ${error.message}`);
+
+  return data !== null;
+};
+
+export const backdateKept = async (table: TIntegrationKeptTable, id: string): Promise<void> => {
+  const { error } = await getAdminClient().from(table).update({ deleted_at: BACKDATED_TIMESTAMP }).eq('id', id);
+
+  if (error) throw new Error(`Could not backdate the kept copy ${id} in ${table}: ${error.message}`);
 };
 
 export const seedSignupAllowance = async (email: string, expiresAt: Date): Promise<void> => {

@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import type { TCanvasContextMenu } from '@interfaces';
 
 import { stubResizeObserver } from '@mocks/browser';
-import { THREAD_ID, canvasEdge, canvasNode, questionNode, referenceNode } from '@mocks/canvas';
+import { THREAD_ID, canvasEdge, canvasNode, foreignQuestionNode, questionNode, referenceNode } from '@mocks/canvas';
 import { MENU_WIDTH, MENU_HEIGHT } from '@mocks/geometry';
 import { TRANSLATIONS } from '@mocks/i18n';
 import { router } from '@mocks/navigation';
@@ -45,7 +45,7 @@ describe('ContextMenu', () => {
   describe('GIVEN an editor opening the menu on the empty pane', () => {
     beforeEach(() => {
       usePermissionsStore.getState().setAccess('ws-1', 'user-1', FULL_ACCESS);
-      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [], edges: [] });
+      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [], edges: [], authors: {} });
       render(<ContextMenu menu={{ type: 'pane', x: 40, y: 60, flowX: 120, flowY: 80 }} onClose={onClose} />);
     });
 
@@ -66,12 +66,9 @@ describe('ContextMenu', () => {
         fireEvent.click(menuItem(TRANSLATIONS.platform.canvas.context.addNode));
       });
 
-      test('THEN a default node lands at the flow position and the menu closes', () => {
+      test('THEN an empty node lands at the flow position and the menu closes', () => {
         expect(useCanvasStore.getState().nodes).toHaveLength(1);
-        expect(useCanvasStore.getState().nodes[0]).toMatchObject({
-          position: { x: 120, y: 80 },
-          data: { label: TRANSLATIONS.platform.canvas.node.defaultLabel },
-        });
+        expect(useCanvasStore.getState().nodes[0]).toMatchObject({ position: { x: 120, y: 80 }, data: { label: '' } });
         expect(onClose).toHaveBeenCalledOnce();
       });
     });
@@ -122,7 +119,7 @@ describe('ContextMenu', () => {
     beforeEach(() => {
       measureMenus();
       usePermissionsStore.getState().setAccess('ws-1', 'user-1', FULL_ACCESS);
-      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [], edges: [] });
+      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [], edges: [], authors: {} });
     });
 
     describe('WHEN the menu appears', () => {
@@ -147,13 +144,15 @@ describe('ContextMenu', () => {
   describe('GIVEN a menu opened on a node before the canvas holds it', () => {
     beforeEach(() => {
       usePermissionsStore.getState().setAccess('ws-1', 'user-1', FULL_ACCESS);
-      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [], edges: [] });
+      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [], edges: [], authors: {} });
       render(<ContextMenu menu={{ type: 'node', x: 40, y: 60, nodeId: 'n1' }} onClose={onClose} />);
     });
 
     describe('WHEN the node arrives and the menu gets its items', () => {
       beforeEach(() => {
-        act(() => useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [canvasNode('n1')], edges: [] }));
+        act(() =>
+          useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [canvasNode('n1')], edges: [], authors: {} }),
+        );
       });
 
       test('THEN the menu is placed at the cursor', () => {
@@ -168,6 +167,7 @@ describe('ContextMenu', () => {
       useCanvasStore.getState().loadCanvas(THREAD_ID, {
         nodes: [canvasNode('a'), canvasNode('b')],
         edges: [canvasEdge('e1', 'a', 'b')],
+        authors: {},
       });
     });
 
@@ -197,7 +197,7 @@ describe('ContextMenu', () => {
   describe('GIVEN an owner opening the menu on a node without a validated parent', () => {
     beforeEach(() => {
       usePermissionsStore.getState().setAccess('ws-1', 'user-1', FULL_ACCESS);
-      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [canvasNode('n1')], edges: [] });
+      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [canvasNode('n1')], edges: [], authors: {} });
       render(<ContextMenu menu={nodeMenu('n1')} onClose={onClose} />);
     });
 
@@ -297,6 +297,7 @@ describe('ContextMenu', () => {
       useCanvasStore.getState().loadCanvas(THREAD_ID, {
         nodes: [questionNode('q'), canvasNode('n1', { status: 'valid', isAnswer: true })],
         edges: [canvasEdge('e1', 'q', 'n1')],
+        authors: {},
       });
       render(<ContextMenu menu={nodeMenu('n1')} onClose={onClose} />);
     });
@@ -336,6 +337,7 @@ describe('ContextMenu', () => {
       useCanvasStore.getState().loadCanvas(THREAD_ID, {
         nodes: [questionNode('q'), canvasNode('n1', { status: 'invalid' })],
         edges: [canvasEdge('e1', 'q', 'n1')],
+        authors: {},
       });
       render(<ContextMenu menu={nodeMenu('n1')} onClose={onClose} />);
     });
@@ -353,6 +355,7 @@ describe('ContextMenu', () => {
       useCanvasStore.getState().loadCanvas(THREAD_ID, {
         nodes: [canvasNode('n1', { createdBy: 'user-2' })],
         edges: [],
+        authors: {},
       });
     });
 
@@ -367,6 +370,17 @@ describe('ContextMenu', () => {
         expect(menuItem(TRANSLATIONS.platform.canvas.context.delete)).toHaveTextContent(
           TRANSLATIONS.platform.canvas.context.deleteNotAllowed,
         );
+      });
+    });
+
+    describe('WHEN the workspace owner opens its menu', () => {
+      beforeEach(() => {
+        usePermissionsStore.getState().setAccess('ws-1', 'user-1', FULL_ACCESS);
+        render(<ContextMenu menu={nodeMenu('n1')} onClose={onClose} />);
+      });
+
+      test('THEN delete stays available', () => {
+        expect(menuItem(TRANSLATIONS.platform.canvas.context.delete)).toHaveAttribute('aria-disabled', 'false');
       });
     });
 
@@ -421,7 +435,7 @@ describe('ContextMenu', () => {
   describe('GIVEN an owner opening the menu on a reference', () => {
     beforeEach(() => {
       usePermissionsStore.getState().setAccess('ws-1', 'user-1', FULL_ACCESS);
-      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [referenceNode('r1')], edges: [] });
+      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [referenceNode('r1')], edges: [], authors: {} });
       render(<ContextMenu menu={nodeMenu('r1')} onClose={onClose} />);
     });
 
@@ -457,7 +471,7 @@ describe('ContextMenu', () => {
 
   describe('GIVEN a reference somebody else added', () => {
     beforeEach(() => {
-      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [referenceNode('r1')], edges: [] });
+      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [referenceNode('r1')], edges: [], authors: {} });
     });
 
     describe('WHEN an editor opens its menu', () => {
@@ -493,6 +507,7 @@ describe('ContextMenu', () => {
       useCanvasStore.getState().loadCanvas(THREAD_ID, {
         nodes: [{ ...referenceNode('r1'), data: { ...referenceNode('r1').data, sourceNodeId: '' } }],
         edges: [],
+        authors: {},
       });
     });
 
@@ -510,10 +525,10 @@ describe('ContextMenu', () => {
 
   describe('GIVEN the question on the canvas', () => {
     beforeEach(() => {
-      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [questionNode('q')], edges: [] });
+      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [questionNode('q')], edges: [], authors: {} });
     });
 
-    describe('WHEN an owner edits it from its menu', () => {
+    describe('WHEN its author edits it from its menu', () => {
       beforeEach(() => {
         usePermissionsStore.getState().setAccess('ws-1', 'user-1', FULL_ACCESS);
         render(<ContextMenu menu={nodeMenu('q')} onClose={onClose} />);
@@ -539,12 +554,31 @@ describe('ContextMenu', () => {
     });
   });
 
+  describe('GIVEN a question somebody else wrote', () => {
+    beforeEach(() => {
+      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [foreignQuestionNode('q')], edges: [], authors: {} });
+    });
+
+    describe('WHEN the workspace owner opens its menu', () => {
+      beforeEach(() => {
+        usePermissionsStore.getState().setAccess('ws-1', 'user-1', FULL_ACCESS);
+        render(<ContextMenu menu={nodeMenu('q')} onClose={onClose} />);
+      });
+
+      test('THEN editing the question is not offered', () => {
+        expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+        expect(onClose).toHaveBeenCalledOnce();
+      });
+    });
+  });
+
   describe('GIVEN a canvas node whose data is malformed', () => {
     beforeEach(() => {
       usePermissionsStore.getState().setAccess('ws-1', 'user-1', FULL_ACCESS);
       useCanvasStore.getState().loadCanvas(THREAD_ID, {
         nodes: [{ ...canvasNode('n1'), data: { ...canvasNode('n1').data, comments: undefined as never } }],
         edges: [],
+        authors: {},
       });
     });
 

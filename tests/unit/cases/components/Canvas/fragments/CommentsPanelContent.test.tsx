@@ -3,7 +3,16 @@ import { afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vi
 
 import type { IComment } from '@interfaces';
 
-import { MIXED_COMMENT_THREAD, THREAD_ID, canvasNode } from '@mocks/canvas';
+import {
+  CANVAS_AUTHORS,
+  FIRST_COMMENT_EDIT,
+  MIXED_COMMENT_THREAD,
+  OWN_COMMENT_PAIR,
+  THREAD_ID,
+  UNFINISHED_COMMENT_EDIT,
+  VANISHED_COMMENT_EDIT,
+  canvasNode,
+} from '@mocks/canvas';
 import { TRANSLATIONS } from '@mocks/i18n';
 import {
   BLANK_DRAFT_DOCUMENT,
@@ -24,10 +33,21 @@ vi.mock('@/i18n', () => import('@mocks/i18n'));
 
 const onDraftChange = vi.fn();
 
+const onEditChange = vi.fn();
+
 const storedComments = () =>
   useCanvasStore.getState().nodes.find((node) => node.id === 'n1')?.data.comments as IComment[] | undefined;
 
 const composer = () => screen.getByRole('textbox', { name: TRANSLATIONS.platform.canvas.node.addCommentPlaceholder });
+
+const commentEditor = () =>
+  screen.getByRole('textbox', { name: TRANSLATIONS.platform.canvas.comments.editorAriaLabel });
+
+const editButtons = () =>
+  screen.queryAllByRole('button', { name: TRANSLATIONS.platform.canvas.comments.editAriaLabel });
+
+const deleteButtons = () =>
+  screen.queryAllByRole('button', { name: TRANSLATIONS.platform.canvas.comments.deleteAriaLabel });
 
 beforeAll(async () => {
   await preloadRichTextEditor();
@@ -46,12 +66,21 @@ describe('CommentsPanelContent', () => {
   describe('GIVEN a commenter reading a thread with their own and a formatted foreign comment', () => {
     beforeEach(async () => {
       usePermissionsStore.getState().setAccess('ws-1', 'user-1', COMMENT_ACCESS);
-      useCanvasStore
-        .getState()
-        .loadCanvas(THREAD_ID, { nodes: [canvasNode('n1', { comments: MIXED_COMMENT_THREAD })], edges: [] });
+      useCanvasStore.getState().loadCanvas(THREAD_ID, {
+        nodes: [canvasNode('n1', { comments: MIXED_COMMENT_THREAD })],
+        edges: [],
+        authors: CANVAS_AUTHORS,
+      });
       useCanvasStore.getState().setOpenCommentsNodeId('n1');
       render(
-        <CommentsPanelContent nodeId="n1" comments={MIXED_COMMENT_THREAD} draft={null} onDraftChange={onDraftChange} />,
+        <CommentsPanelContent
+          nodeId="n1"
+          comments={MIXED_COMMENT_THREAD}
+          draft={null}
+          onDraftChange={onDraftChange}
+          edit={null}
+          onEditChange={onEditChange}
+        />,
       );
       await screen.findByRole('textbox', { name: TRANSLATIONS.platform.canvas.node.addCommentPlaceholder });
     });
@@ -63,9 +92,13 @@ describe('CommentsPanelContent', () => {
         );
         expect(screen.getByText('Mine')).toBeInTheDocument();
         expect(screen.getByText('now').tagName).toBe('STRONG');
-        expect(
-          screen.getAllByRole('button', { name: TRANSLATIONS.platform.canvas.comments.deleteAriaLabel }),
-        ).toHaveLength(1);
+        expect(deleteButtons()).toHaveLength(1);
+      });
+
+      test('THEN each comment names its author and editing is offered only on their own', () => {
+        expect(screen.getByText(CANVAS_AUTHORS['user-1'].name)).toBeInTheDocument();
+        expect(screen.getByText(CANVAS_AUTHORS['user-2'].name)).toBeInTheDocument();
+        expect(editButtons()).toHaveLength(1);
       });
 
       test('THEN the composer is empty, prompts for a comment and cannot send yet', () => {
@@ -109,9 +142,19 @@ describe('CommentsPanelContent', () => {
       });
     });
 
+    describe('WHEN they open their own comment for editing', () => {
+      beforeEach(() => {
+        fireEvent.click(editButtons()[0]!);
+      });
+
+      test('THEN the edit is handed to the owner', () => {
+        expect(onEditChange).toHaveBeenCalledExactlyOnceWith(FIRST_COMMENT_EDIT);
+      });
+    });
+
     describe('WHEN they delete their own comment', () => {
       beforeEach(() => {
-        fireEvent.click(screen.getByRole('button', { name: TRANSLATIONS.platform.canvas.comments.deleteAriaLabel }));
+        fireEvent.click(deleteButtons()[0]!);
       });
 
       test('THEN only the foreign comment remains on the node', () => {
@@ -130,12 +173,200 @@ describe('CommentsPanelContent', () => {
     });
   });
 
+  describe('GIVEN a commenter editing their own comment', () => {
+    beforeEach(async () => {
+      usePermissionsStore.getState().setAccess('ws-1', 'user-1', COMMENT_ACCESS);
+      useCanvasStore.getState().loadCanvas(THREAD_ID, {
+        nodes: [canvasNode('n1', { comments: MIXED_COMMENT_THREAD })],
+        edges: [],
+        authors: CANVAS_AUTHORS,
+      });
+      render(
+        <CommentsPanelContent
+          nodeId="n1"
+          comments={MIXED_COMMENT_THREAD}
+          draft={null}
+          onDraftChange={onDraftChange}
+          edit={FIRST_COMMENT_EDIT}
+          onEditChange={onEditChange}
+        />,
+      );
+      await screen.findByRole('textbox', { name: TRANSLATIONS.platform.canvas.comments.editorAriaLabel });
+    });
+
+    describe('WHEN the editor opens', () => {
+      test('THEN it holds the comment text while the actions step aside but stay in place for focus to return', () => {
+        expect(commentEditor()).toHaveTextContent('Mine');
+        expect(editButtons()[0]?.parentElement).toHaveClass('invisible');
+      });
+    });
+
+    describe('WHEN the text is retyped', () => {
+      beforeEach(() => {
+        act(() => {
+          editorOf(commentEditor()).chain().selectAll().insertContent('Draft').run();
+        });
+      });
+
+      test('THEN the unfinished text is handed to the owner', () => {
+        expect(onEditChange).toHaveBeenLastCalledWith(UNFINISHED_COMMENT_EDIT);
+      });
+    });
+
+    describe('WHEN the rewritten text is saved with Enter', () => {
+      beforeEach(() => {
+        act(() => {
+          editorOf(commentEditor()).chain().selectAll().insertContent('Mine, reworded').run();
+        });
+        fireEvent.keyDown(commentEditor(), { key: 'Enter' });
+      });
+
+      test('THEN the comment takes the new text, is marked edited and the edit ends', () => {
+        expect(storedComments()?.[0]).toMatchObject({ text: 'Mine, reworded', editedAt: expect.any(String) });
+        expect(onEditChange).toHaveBeenLastCalledWith(null);
+      });
+    });
+
+    describe('WHEN the rewritten text is saved with the save button', () => {
+      beforeEach(() => {
+        act(() => {
+          editorOf(commentEditor()).chain().selectAll().insertContent('Saved by button').run();
+        });
+        fireEvent.click(screen.getByRole('button', { name: TRANSLATIONS.platform.canvas.comments.saveEdit }));
+      });
+
+      test('THEN the comment takes the new text', () => {
+        expect(storedComments()?.[0]).toMatchObject({ text: 'Saved by button' });
+      });
+    });
+
+    describe('WHEN the text is saved unchanged', () => {
+      beforeEach(() => {
+        fireEvent.keyDown(commentEditor(), { key: 'Enter' });
+      });
+
+      test('THEN the edit ends and the comment is not marked edited', () => {
+        expect(storedComments()?.[0]?.editedAt).toBeUndefined();
+        expect(onEditChange).toHaveBeenLastCalledWith(null);
+      });
+    });
+
+    describe('WHEN the edit is cancelled with the cancel button after typing', () => {
+      beforeEach(() => {
+        act(() => {
+          editorOf(commentEditor()).chain().selectAll().insertContent('Discarded').run();
+        });
+        fireEvent.click(screen.getByRole('button', { name: TRANSLATIONS.platform.canvas.comments.cancelEdit }));
+      });
+
+      test('THEN the comment keeps its text and the edit ends', () => {
+        expect(storedComments()?.[0]).toMatchObject({ text: 'Mine' });
+        expect(onEditChange).toHaveBeenLastCalledWith(null);
+      });
+    });
+
+    describe('WHEN the edit is cancelled with Escape after typing', () => {
+      beforeEach(() => {
+        act(() => {
+          editorOf(commentEditor()).chain().selectAll().insertContent('Discarded').run();
+        });
+        fireEvent.keyDown(commentEditor(), { key: 'Escape' });
+      });
+
+      test('THEN the comment keeps its text and the edit ends', () => {
+        expect(storedComments()?.[0]).toMatchObject({ text: 'Mine' });
+        expect(onEditChange).toHaveBeenLastCalledWith(null);
+      });
+    });
+  });
+
+  describe('GIVEN a commenter editing one of their two comments', () => {
+    beforeEach(async () => {
+      usePermissionsStore.getState().setAccess('ws-1', 'user-1', COMMENT_ACCESS);
+      render(
+        <CommentsPanelContent
+          nodeId="n1"
+          comments={OWN_COMMENT_PAIR}
+          draft={null}
+          onDraftChange={onDraftChange}
+          edit={FIRST_COMMENT_EDIT}
+          onEditChange={onEditChange}
+        />,
+      );
+      await screen.findByRole('textbox', { name: TRANSLATIONS.platform.canvas.comments.editorAriaLabel });
+    });
+
+    describe('WHEN the panel renders', () => {
+      test('THEN the other comment offers no actions until the edit ends', () => {
+        expect(editButtons()).toHaveLength(1);
+        expect(deleteButtons()).toHaveLength(1);
+        expect(screen.getByText('Mine too').closest('article')?.querySelector('button')).toBeNull();
+      });
+    });
+  });
+
+  describe('GIVEN a commenter coming back to an unfinished edit', () => {
+    beforeEach(async () => {
+      usePermissionsStore.getState().setAccess('ws-1', 'user-1', COMMENT_ACCESS);
+      render(
+        <CommentsPanelContent
+          nodeId="n1"
+          comments={MIXED_COMMENT_THREAD}
+          draft={null}
+          onDraftChange={onDraftChange}
+          edit={UNFINISHED_COMMENT_EDIT}
+          onEditChange={onEditChange}
+        />,
+      );
+      await screen.findByRole('textbox', { name: TRANSLATIONS.platform.canvas.comments.editorAriaLabel });
+    });
+
+    describe('WHEN the editor opens', () => {
+      test('THEN it holds the unfinished text instead of the saved one', () => {
+        expect(commentEditor()).toHaveTextContent('Draft');
+      });
+    });
+  });
+
+  describe('GIVEN a commenter whose unfinished edit belongs to a comment that is gone', () => {
+    beforeEach(async () => {
+      usePermissionsStore.getState().setAccess('ws-1', 'user-1', COMMENT_ACCESS);
+      render(
+        <CommentsPanelContent
+          nodeId="n1"
+          comments={OWN_COMMENT_PAIR}
+          draft={null}
+          onDraftChange={onDraftChange}
+          edit={VANISHED_COMMENT_EDIT}
+          onEditChange={onEditChange}
+        />,
+      );
+      await screen.findByRole('textbox', { name: TRANSLATIONS.platform.canvas.node.addCommentPlaceholder });
+    });
+
+    describe('WHEN the panel renders', () => {
+      test('THEN no editor opens and every own comment offers its actions', () => {
+        expect(
+          screen.queryByRole('textbox', { name: TRANSLATIONS.platform.canvas.comments.editorAriaLabel }),
+        ).not.toBeInTheDocument();
+        expect(editButtons()).toHaveLength(2);
+      });
+    });
+  });
+
   describe('GIVEN a commenter with a padded draft', () => {
     beforeEach(async () => {
       usePermissionsStore.getState().setAccess('ws-1', 'user-1', COMMENT_ACCESS);
-      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [canvasNode('n1')], edges: [] });
+      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [canvasNode('n1')], edges: [], authors: {} });
       render(
-        <CommentsPanelContent nodeId="n1" comments={[]} draft={PADDED_DRAFT_DOCUMENT} onDraftChange={onDraftChange} />,
+        <CommentsPanelContent
+          nodeId="n1"
+          comments={[]}
+          draft={PADDED_DRAFT_DOCUMENT}
+          onDraftChange={onDraftChange}
+          edit={null}
+          onEditChange={onEditChange}
+        />,
       );
       await screen.findByRole('textbox', { name: TRANSLATIONS.platform.canvas.node.addCommentPlaceholder });
     });
@@ -156,9 +387,16 @@ describe('CommentsPanelContent', () => {
   describe('GIVEN a commenter with a formatted draft', () => {
     beforeEach(async () => {
       usePermissionsStore.getState().setAccess('ws-1', 'user-1', COMMENT_ACCESS);
-      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [canvasNode('n1')], edges: [] });
+      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [canvasNode('n1')], edges: [], authors: {} });
       render(
-        <CommentsPanelContent nodeId="n1" comments={[]} draft={FORMATTED_DOCUMENT} onDraftChange={onDraftChange} />,
+        <CommentsPanelContent
+          nodeId="n1"
+          comments={[]}
+          draft={FORMATTED_DOCUMENT}
+          onDraftChange={onDraftChange}
+          edit={null}
+          onEditChange={onEditChange}
+        />,
       );
       await screen.findByRole('textbox', { name: TRANSLATIONS.platform.canvas.node.addCommentPlaceholder });
     });
@@ -179,9 +417,16 @@ describe('CommentsPanelContent', () => {
   describe('GIVEN a commenter with a blank draft', () => {
     beforeEach(async () => {
       usePermissionsStore.getState().setAccess('ws-1', 'user-1', COMMENT_ACCESS);
-      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [canvasNode('n1')], edges: [] });
+      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [canvasNode('n1')], edges: [], authors: {} });
       render(
-        <CommentsPanelContent nodeId="n1" comments={[]} draft={BLANK_DRAFT_DOCUMENT} onDraftChange={onDraftChange} />,
+        <CommentsPanelContent
+          nodeId="n1"
+          comments={[]}
+          draft={BLANK_DRAFT_DOCUMENT}
+          onDraftChange={onDraftChange}
+          edit={null}
+          onEditChange={onEditChange}
+        />,
       );
       await screen.findByRole('textbox', { name: TRANSLATIONS.platform.canvas.node.addCommentPlaceholder });
     });
@@ -205,7 +450,16 @@ describe('CommentsPanelContent', () => {
 
     describe('WHEN the panel renders', () => {
       beforeEach(() => {
-        render(<CommentsPanelContent nodeId="n1" comments={[]} draft={null} onDraftChange={onDraftChange} />);
+        render(
+          <CommentsPanelContent
+            nodeId="n1"
+            comments={[]}
+            draft={null}
+            onDraftChange={onDraftChange}
+            edit={null}
+            onEditChange={onEditChange}
+          />,
+        );
       });
 
       test('THEN the empty note shows and the header carries no count', () => {
@@ -230,16 +484,17 @@ describe('CommentsPanelContent', () => {
             comments={MIXED_COMMENT_THREAD}
             draft={null}
             onDraftChange={onDraftChange}
+            edit={null}
+            onEditChange={onEditChange}
           />,
         );
       });
 
-      test('THEN the comments are readable without a composer or delete actions', () => {
+      test('THEN the comments are readable without a composer, edit or delete actions', () => {
         expect(screen.getByText('Mine')).toBeInTheDocument();
         expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
-        expect(
-          screen.queryByRole('button', { name: TRANSLATIONS.platform.canvas.comments.deleteAriaLabel }),
-        ).not.toBeInTheDocument();
+        expect(editButtons()).toHaveLength(0);
+        expect(deleteButtons()).toHaveLength(0);
       });
     });
   });

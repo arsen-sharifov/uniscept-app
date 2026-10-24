@@ -4,7 +4,7 @@ import type { NodeProps } from '@xyflow/react';
 import { clsx } from 'clsx';
 import { useState } from 'react';
 
-import type { INodeStateBand, IRichTextDocument, TCanvasNode } from '@interfaces';
+import type { ICommentEditDraft, INodeStateBand, IRichTextDocument, TCanvasNode } from '@interfaces';
 
 import { useTranslations } from '@/i18n';
 import { findLinkedNodeIds, isAffected } from '@/lib/canvas';
@@ -12,6 +12,7 @@ import { useCanvasStore, usePermissionsStore } from '@/lib/stores';
 import { canEditNode } from '@/lib/utils';
 
 import { resolveNodeWashStyle } from '../utils';
+import { AuthorStamp } from './AuthorStamp';
 import { CanvasNodeLabel } from './CanvasNodeLabel';
 import { CommentsPanelContent } from './CommentsPanelContent';
 import { NodeBand } from './NodeBand';
@@ -29,6 +30,7 @@ export const CanvasNode = ({ id, data, selected, width }: NodeProps<TCanvasNode>
   const clearNewFlag = useCanvasStore((state) => state.clearNewFlag);
 
   const [commentDraft, setCommentDraft] = useState<IRichTextDocument | null>(null);
+  const [commentEdit, setCommentEdit] = useState<ICommentEditDraft | null>(null);
 
   const isInvalid = status === 'invalid';
 
@@ -79,15 +81,31 @@ export const CanvasNode = ({ id, data, selected, width }: NodeProps<TCanvasNode>
         />
       </div>
 
+      <AuthorStamp
+        placement="node"
+        authorId={data.createdBy}
+        createdAt={data.createdAt}
+        editedAt={data.editedAt}
+        editedBy={data.editedBy}
+        className="px-4"
+      />
+
       {showComments && (
         <div
           data-export-omit
           onClick={(event) => event.stopPropagation()}
           onMouseDown={(event) => event.stopPropagation()}
           data-tour="canvasCommentsPanel"
-          className="nodrag absolute top-0 left-full z-50 ml-3 flex w-72 flex-col overflow-hidden rounded-xl border border-[color:var(--border)] bg-[color:var(--surface)] font-grotesk text-[color:var(--text)] shadow-[var(--shadow-modal)]"
+          className="nodrag nokey absolute top-0 left-full z-50 ml-3 flex w-72 flex-col overflow-hidden rounded-xl border border-[color:var(--border)] bg-[color:var(--surface)] font-grotesk text-[color:var(--text)] shadow-[var(--shadow-modal)]"
         >
-          <CommentsPanelContent nodeId={id} comments={comments} draft={commentDraft} onDraftChange={setCommentDraft} />
+          <CommentsPanelContent
+            nodeId={id}
+            comments={comments}
+            draft={commentDraft}
+            onDraftChange={setCommentDraft}
+            edit={commentEdit}
+            onEditChange={setCommentEdit}
+          />
         </div>
       )}
     </div>

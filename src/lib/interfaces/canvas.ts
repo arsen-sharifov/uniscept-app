@@ -15,6 +15,7 @@ import type { MouseEvent } from 'react';
 
 import type { ISaveState } from './canvasSync';
 import type { TDefaultZoom } from './preferences';
+import type { TAvatarIcon } from './profile';
 import type { IRichTextDocument, IRichTextValue } from './richText';
 
 export enum ECanvasNodeType {
@@ -35,7 +36,33 @@ export interface IComment {
   id: string;
   text: string;
   richText?: IRichTextDocument;
-  authorId: string;
+  authorId?: string;
+  createdAt: string;
+  editedAt?: string;
+}
+
+export interface ICommentEditDraft {
+  commentId: string;
+  document?: IRichTextDocument;
+}
+
+export interface ICanvasAuthor {
+  name: string;
+  avatarIcon: TAvatarIcon | null;
+}
+
+export type TCanvasAuthors = Record<string, ICanvasAuthor>;
+
+export type TCanvasAuthorKind = 'member' | 'former' | 'deleted';
+
+export interface IResolvedCanvasAuthor extends ICanvasAuthor {
+  kind: TCanvasAuthorKind;
+}
+
+export interface ITimestampLabel {
+  label: string;
+  exact: string;
+  dateTime: string;
 }
 
 export interface INodeReference {
@@ -62,6 +89,9 @@ export interface ICanvasNodeData {
   isAnswer: boolean;
   comments: IComment[];
   createdBy?: string;
+  createdAt?: string;
+  editedAt?: string;
+  editedBy?: string;
   isNew?: boolean;
   eligibleHint?: boolean;
   effectiveStatus?: TEffectiveStatus;
@@ -79,6 +109,7 @@ export interface IReferenceNodeData {
   sourceWorkspaceId: string;
   sourceWorkspaceName: string;
   createdBy?: string;
+  createdAt?: string;
   [key: string]: unknown;
 }
 
@@ -101,6 +132,7 @@ export type TCanvasContextMenu =
 export interface ICanvasSnapshot {
   nodes: Array<TCanvasNode | TReferenceNode>;
   edges: Edge[];
+  authors: TCanvasAuthors;
 }
 
 export interface ICanvasHistoryState {
@@ -192,6 +224,8 @@ export interface ICanvasNodeRow {
   created_by: string | null;
   created_at: string;
   updated_at: string;
+  edited_at: string | null;
+  edited_by: string | null;
 }
 
 export interface ICanvasNodeWithThreadRow {
@@ -219,10 +253,11 @@ export interface ICanvasEdgeRow {
 export interface INodeCommentRow {
   id: string;
   node_id: string;
-  author_id: string;
+  author_id: string | null;
   text: string;
   rich_text: unknown;
   created_at: string;
+  edited_at: string | null;
 }
 
 export interface IReferenceSearchInput {

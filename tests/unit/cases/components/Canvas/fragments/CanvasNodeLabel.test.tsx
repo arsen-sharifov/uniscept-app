@@ -79,6 +79,59 @@ describe('CanvasNodeLabel', () => {
     });
   });
 
+  describe('GIVEN an empty node a viewer is reading', () => {
+    beforeEach(() => {
+      overflowLabels();
+      usePermissionsStore.getState().setAccess('ws-1', 'user-1', READONLY_ACCESS);
+      render(<CanvasNodeLabel id="n1" label="" isEditing={false} measured commentCount={0} />);
+    });
+
+    describe('WHEN the label renders', () => {
+      test('THEN a muted placeholder stands in for the text, without a clamp or a show more toggle', () => {
+        expect(screen.getByText(TRANSLATIONS.platform.canvas.node.placeholder)).toHaveClass(
+          'text-[color:var(--text-subtle)]',
+        );
+        expect(screen.getByText(TRANSLATIONS.platform.canvas.node.placeholder)).not.toHaveClass('line-clamp-10');
+        expect(screen.queryByRole('button')).not.toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('GIVEN the author opening an empty node for writing', () => {
+    beforeEach(async () => {
+      usePermissionsStore.getState().setAccess('ws-1', 'user-1', FULL_ACCESS);
+      useCanvasStore.getState().loadCanvas(THREAD_ID, {
+        nodes: [canvasNode('n1', { label: '', createdBy: 'user-1' })],
+        edges: [],
+        authors: {},
+      });
+      useCanvasStore.getState().setEditingNodeId('n1');
+      render(<CanvasNodeLabel id="n1" label="" isEditing measured commentCount={0} />);
+      await screen.findByRole('textbox', { name: TRANSLATIONS.platform.canvas.node.labelAriaLabel });
+    });
+
+    describe('WHEN the editor opens', () => {
+      test('THEN it starts empty and prompts with the placeholder', () => {
+        expect(screen.getByRole('textbox')).toHaveTextContent(/^$/);
+        expect(screen.getByRole('textbox').querySelector('p')).toHaveAttribute(
+          'data-placeholder',
+          TRANSLATIONS.platform.canvas.node.placeholder,
+        );
+      });
+    });
+
+    describe('WHEN focus leaves without any text', () => {
+      beforeEach(() => {
+        fireEvent.blur(screen.getByRole('textbox'));
+      });
+
+      test('THEN editing ends and the node stays empty', () => {
+        expect(useCanvasStore.getState().editingNodeId).toBeNull();
+        expect(useCanvasStore.getState().nodes[0]?.data.label).toBe('');
+      });
+    });
+  });
+
   describe('GIVEN a formatted label a viewer is reading', () => {
     beforeEach(() => {
       usePermissionsStore.getState().setAccess('ws-1', 'user-1', READONLY_ACCESS);
@@ -105,11 +158,15 @@ describe('CanvasNodeLabel', () => {
     });
   });
 
-  describe('GIVEN an owner editing the label while a guide is running', () => {
+  describe('GIVEN the author editing the label while a guide is running', () => {
     beforeEach(async () => {
       overflowLabels();
       usePermissionsStore.getState().setAccess('ws-1', 'user-1', FULL_ACCESS);
-      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [canvasNode('n1', { label: 'Idea' })], edges: [] });
+      useCanvasStore.getState().loadCanvas(THREAD_ID, {
+        nodes: [canvasNode('n1', { label: 'Idea', createdBy: 'user-1' })],
+        edges: [],
+        authors: {},
+      });
       useCanvasStore.getState().setEditingNodeId('n1');
       useOnboardingStore.getState().startGuide('canvas');
       render(<CanvasNodeLabel id="n1" label="Idea" isEditing measured commentCount={2} />);
@@ -182,7 +239,9 @@ describe('CanvasNodeLabel', () => {
 
     beforeEach(async () => {
       usePermissionsStore.getState().setAccess('ws-1', 'user-1', FULL_ACCESS);
-      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [canvasNode('n1', { label: 'Idea' })], edges: [] });
+      useCanvasStore
+        .getState()
+        .loadCanvas(THREAD_ID, { nodes: [canvasNode('n1', { label: 'Idea' })], edges: [], authors: {} });
       useCanvasStore.getState().setEditingNodeId('n1');
       rerender = render(<CanvasNodeLabel id="n1" label="Idea" isEditing measured={false} commentCount={0} />).rerender;
       await screen.findByRole('textbox');

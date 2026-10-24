@@ -53,18 +53,17 @@ export const useExampleScene = (
     if (!act || playedRef.current.has(stepIndex)) return;
     playedRef.current.add(stepIndex);
 
-    const copy = { ...t.platform.onboarding.example, placeholder: t.platform.canvas.node.defaultLabel };
     const isLive = () =>
       liveRef.current && (threadRef.current === null || useCanvasStore.getState().threadId === threadRef.current);
 
     const play = async () => {
       if (act.type !== 'thread') {
-        if (idsRef.current) await playExampleAct(act, copy, idsRef.current, isLive);
+        if (idsRef.current) await playExampleAct(act, t.platform.onboarding.example, idsRef.current, isLive);
 
         return;
       }
 
-      const threadId = await onCreateExample(copy.threadName);
+      const threadId = await onCreateExample(t.platform.onboarding.example.threadName);
       if (!threadId) {
         useOnboardingStore.getState().quitRun();
 
@@ -73,7 +72,7 @@ export const useExampleScene = (
 
       threadRef.current = threadId;
       idsRef.current = createExampleIds(await waitForExampleCanvas(threadId));
-      await writeExampleQuestion(copy, idsRef.current, isLive);
+      await writeExampleQuestion(t.platform.onboarding.example, idsRef.current, isLive);
     };
 
     play()

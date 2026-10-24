@@ -46,7 +46,7 @@ describe('Canvas', () => {
   describe('GIVEN the store still holds the graph of the previous thread', () => {
     beforeEach(() => {
       vi.mocked(getCanvasContent).mockReturnValue(new Promise(() => {}));
-      useCanvasStore.getState().loadCanvas('thread-old', { nodes: [canvasNode('old')], edges: [] });
+      useCanvasStore.getState().loadCanvas('thread-old', { nodes: [canvasNode('old')], edges: [], authors: {} });
     });
 
     describe('WHEN the canvas renders the next thread', () => {
@@ -79,7 +79,7 @@ describe('Canvas', () => {
 
     describe('WHEN the user retries after the backend recovers', () => {
       beforeEach(async () => {
-        vi.mocked(getCanvasContent).mockResolvedValueOnce({ nodes: [canvasNode('back')], edges: [] });
+        vi.mocked(getCanvasContent).mockResolvedValueOnce({ nodes: [canvasNode('back')], edges: [], authors: {} });
         fireEvent.click(screen.getByRole('button', { name: TRANSLATIONS.platform.canvas.loadError.retry }));
         await act(async () => {
           await vi.advanceTimersByTimeAsync(0);
@@ -95,7 +95,11 @@ describe('Canvas', () => {
 
   describe('GIVEN an editor on a loaded canvas with two nodes', () => {
     beforeEach(async () => {
-      vi.mocked(getCanvasContent).mockResolvedValue({ nodes: [canvasNode('a'), canvasNode('b')], edges: [] });
+      vi.mocked(getCanvasContent).mockResolvedValue({
+        nodes: [canvasNode('a'), canvasNode('b')],
+        edges: [],
+        authors: {},
+      });
       render(
         <ReactFlowProvider>
           <Canvas workspaceId="ws-1" threadId={THREAD_ID} />
@@ -169,7 +173,7 @@ describe('Canvas', () => {
   describe('GIVEN an editor whose editor preload fails', () => {
     beforeEach(async () => {
       vi.mocked(preloadRichTextEditor).mockRejectedValue(PRELOAD_ERROR);
-      vi.mocked(getCanvasContent).mockResolvedValue({ nodes: [canvasNode('a')], edges: [] });
+      vi.mocked(getCanvasContent).mockResolvedValue({ nodes: [canvasNode('a')], edges: [], authors: {} });
       render(
         <ReactFlowProvider>
           <Canvas workspaceId="ws-1" threadId={THREAD_ID} />
@@ -191,7 +195,7 @@ describe('Canvas', () => {
   describe('GIVEN a viewer who can neither edit nor comment', () => {
     beforeEach(async () => {
       usePermissionsStore.getState().setAccess('ws-1', 'user-1', READONLY_ACCESS);
-      vi.mocked(getCanvasContent).mockResolvedValue({ nodes: [canvasNode('a')], edges: [] });
+      vi.mocked(getCanvasContent).mockResolvedValue({ nodes: [canvasNode('a')], edges: [], authors: {} });
       render(
         <ReactFlowProvider>
           <Canvas workspaceId="ws-1" threadId={THREAD_ID} />
@@ -214,6 +218,7 @@ describe('Canvas', () => {
       vi.mocked(getCanvasContent).mockResolvedValue({
         nodes: [canvasNode('a'), canvasNode('b', { status: 'invalid' }), canvasNode('c')],
         edges: [canvasEdge('ab', 'a', 'b'), canvasEdge('ba', 'b', 'a'), canvasEdge('ac', 'a', 'c')],
+        authors: {},
       });
       flowEdges = renderHook(useEdges, {
         wrapper: ({ children }: { children: ReactNode }) => (

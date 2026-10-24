@@ -35,10 +35,10 @@ const pickTool = (tool: ECanvasTool) => () => useCanvasStore.getState().setActiv
 
 const findNode = (id: string) => useCanvasStore.getState().nodes.find((node) => node.id === id) ?? null;
 
-const placeNode = (key: TExampleNodeKey, copy: IExampleCopy, ids: Record<TExampleTarget, string>) => {
+const placeNode = (key: TExampleNodeKey, ids: Record<TExampleTarget, string>) => {
   const { x, y } = EXAMPLE_NODES[key];
   const store = useCanvasStore.getState();
-  store.addNode({ x, y }, copy.placeholder, ids[key]);
+  store.addNode({ x, y }, ids[key]);
   store.requestFit(EXAMPLE_FIT_PADDING);
 };
 
@@ -59,7 +59,7 @@ const movesOf = (act: TExampleCanvasAct, copy: IExampleCopy, ids: Record<TExampl
     case 'argue':
       return act.keys.flatMap((key) => [
         pickTool(ECanvasTool.AddNode),
-        () => placeNode(key, copy, ids),
+        () => placeNode(key, ids),
         () => store.updateNodeLabel(ids[key], copy.nodes[key]),
         () => {
           store.setActiveTool(ECanvasTool.Connect);

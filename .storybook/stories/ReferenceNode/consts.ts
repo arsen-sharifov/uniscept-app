@@ -19,6 +19,8 @@ export const selectedReference: TReferenceNode = createReferenceNode(
   true,
 );
 
+export const emptySourceReference: TReferenceNode = createReferenceNode(SB_REF_ID, '', 'Governance model', 'Research');
+
 export const longPathReference: TReferenceNode = createReferenceNode(
   SB_REF_ID,
   'Voting thresholds should scale with the size of the canvas membership and respond to historical churn.',

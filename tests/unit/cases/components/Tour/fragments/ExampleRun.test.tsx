@@ -86,7 +86,9 @@ describe('ExampleRun', () => {
         render(exampleRun(threadStep));
         act(() => observer.resize());
         await act(() => vi.advanceTimersByTimeAsync(0));
-        act(() => useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [questionNode('q')], edges: [] }));
+        act(() =>
+          useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [questionNode('q')], edges: [], authors: {} }),
+        );
         await act(() => vi.runAllTimersAsync());
       });
 
@@ -151,7 +153,9 @@ describe('ExampleRun', () => {
       rerender = render(exampleRun(threadStep)).rerender;
       act(() => observer.resize());
       await act(() => vi.advanceTimersByTimeAsync(0));
-      act(() => useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [questionNode('q')], edges: [] }));
+      act(() =>
+        useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [questionNode('q')], edges: [], authors: {} }),
+      );
       await act(() => vi.runAllTimersAsync());
     });
 
@@ -181,7 +185,9 @@ describe('ExampleRun', () => {
         rerender(exampleRun(capsuleStep));
         await act(() => vi.advanceTimersByTimeAsync(0));
         act(() =>
-          useCanvasStore.getState().loadCanvas('other-thread', { nodes: [questionNode('other-q')], edges: [] }),
+          useCanvasStore
+            .getState()
+            .loadCanvas('other-thread', { nodes: [questionNode('other-q')], edges: [], authors: {} }),
         );
         await act(() => vi.runAllTimersAsync());
       });

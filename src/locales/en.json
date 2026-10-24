@@ -288,7 +288,7 @@
         "validBadge": "Valid",
         "invalidBadge": "Invalid",
         "affectedBadge": "Affected",
-        "defaultLabel": "New node",
+        "placeholder": "New node",
         "showMore": "Show more",
         "showLess": "Show less",
         "viewComments": "View comments",
@@ -316,7 +316,18 @@
       },
       "comments": {
         "deleteAriaLabel": "Delete comment",
-        "deleteTitle": "Delete comment"
+        "editAriaLabel": "Edit comment",
+        "editorAriaLabel": "Comment text",
+        "saveEdit": "Save changes",
+        "cancelEdit": "Cancel editing"
+      },
+      "authorship": {
+        "justNow": "just now",
+        "edited": "edited",
+        "createdDetail": "Created {time}",
+        "editedDetail": "Edited by {name} · {time}",
+        "formerMember": "Former member",
+        "deletedAccount": "Deleted account"
       },
       "formatting": {
         "toolbar": "Text formatting",
@@ -488,7 +499,7 @@
         },
         "baseNodeText": {
           "title": "Write the claim",
-          "body": "Switch to the Select tool (key V), double-click your new node, replace the placeholder with your claim, and press Enter."
+          "body": "Switch to the Select tool (key V), double-click your new node, type your claim, and press Enter."
         },
         "baseConnect": {
           "title": "Link it to the question",
@@ -740,7 +751,7 @@
         },
         "toolsAdd": {
           "title": "Add node",
-          "body": "A click on an empty spot adds a node with a placeholder label. Key N."
+          "body": "A click on an empty spot adds an empty node. Key N."
         },
         "toolsConnect": {
           "title": "Connect",

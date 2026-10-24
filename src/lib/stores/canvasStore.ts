@@ -21,7 +21,9 @@ import {
   type IComment,
   type IReferenceNodeData,
   type IRichTextDocument,
+  type TCanvasAuthors,
   type TCanvasNode,
+  type TCanvasOperation,
   type TFitPadding,
   type TNodeStatus,
   type TReferenceNode,
@@ -40,6 +42,7 @@ import {
   isSameHistoryState,
   toCreateCommentOperation,
   toCreateOperations,
+  toUpdateCommentOperation,
   toUpdateLabelOperation,
   withReverseEdgeIds,
 } from '@/lib/canvas';
@@ -50,6 +53,7 @@ import { usePermissionsStore } from './permissionsStore';
 interface ICanvasState extends ICanvasHistoryState {
   threadId: string | null;
   hydrated: boolean;
+  authors: TCanvasAuthors;
   activeTool: ECanvasTool;
   pendingConnection: string | null;
   referenceSearchPosition: XYPosition | null;
@@ -70,7 +74,7 @@ interface ICanvasStore extends ICanvasState {
   requestFit: (padding?: TFitPadding) => void;
   onNodesChange: OnNodesChange;
   onEdgesChange: OnEdgesChange;
-  addNode: (position: XYPosition, label: string, id?: string) => void;
+  addNode: (position: XYPosition, id?: string) => void;
   addReferenceNode: (position: XYPosition, data: IReferenceNodeData) => void;
   setReferenceSearchPosition: (position: XYPosition | null) => void;
   deleteNode: (id: string) => void;
@@ -82,6 +86,7 @@ interface ICanvasStore extends ICanvasState {
   setNodeAnswer: (id: string) => void;
   updateNodeLabel: (id: string, label: string, richLabel?: IRichTextDocument) => void;
   addComment: (nodeId: string, text: string, richText?: IRichTextDocument) => void;
+  updateComment: (nodeId: string, commentId: string, text: string, richText?: IRichTextDocument) => void;
   deleteComment: (nodeId: string, commentId: string) => void;
   duplicateNode: (id: string) => void;
   setEditingNodeId: (id: string | null) => void;
@@ -100,6 +105,7 @@ const CLEARED_OVERLAYS = {
 const EMPTY_CANVAS_STATE: Omit<ICanvasState, 'threadId' | 'hydrated' | 'fitRequest' | 'fitPadding'> = {
   nodes: [],
   edges: [],
+  authors: {},
   activeTool: ECanvasTool.Select,
   ...CLEARED_OVERLAYS,
   middlePan: false,
@@ -112,6 +118,8 @@ const INITIAL_STATE: ICanvasState = {
   fitPadding: null,
   ...EMPTY_CANVAS_STATE,
 };
+
+const isFirstWrite = ({ label, editedAt }: ICanvasNodeData) => label === '' && !editedAt;
 
 const historyStateOf = (state: ICanvasHistoryState): ICanvasHistoryState => ({
   nodes: state.nodes,
@@ -139,6 +147,14 @@ export const useCanvasStore = create<ICanvasStore>()(
           ),
         });
 
+      const findComment = (nodeId: string, commentId: string): IComment | undefined => {
+        const target = get().nodes.find((node) => node.id === nodeId);
+
+        return target && isCanvasNodeData(target.data)
+          ? target.data.comments.find((comment) => comment.id === commentId)
+          : undefined;
+      };
+
       const withoutHistory = (update: () => void) => {
         const temporalApi = useCanvasStore.temporal.getState();
         temporalApi.pause();
@@ -146,10 +162,44 @@ export const useCanvasStore = create<ICanvasStore>()(
         temporalApi.resume();
       };
 
+      const markReplayedEdits = (before: ICanvasHistoryState, operations: TCanvasOperation[]) => {
+        const relabelledIds = new Set(
+          operations.flatMap((operation) => (operation.type === 'updateNodeLabel' ? [operation.id] : [])),
+        );
+        const editedIds = new Set(
+          before.nodes
+            .filter((node) => relabelledIds.has(node.id) && isCanvasNodeData(node.data) && !isFirstWrite(node.data))
+            .map((node) => node.id),
+        );
+        const commentUpdates = operations.flatMap((operation) =>
+          operation.type === 'updateComment' ? [operation] : [],
+        );
+        const updatedCommentIds = new Set(commentUpdates.map((operation) => operation.id));
+        const touchedIds = new Set([...editedIds, ...commentUpdates.map((operation) => operation.nodeId)]);
+        if (touchedIds.size === 0) return;
+
+        const editedAt = new Date().toISOString();
+        const editedBy = usePermissionsStore.getState().userId ?? undefined;
+
+        withoutHistory(() =>
+          patchCanvasNodes(
+            (id) => touchedIds.has(id),
+            (data, id) => ({
+              ...(editedIds.has(id) && { editedAt, editedBy }),
+              comments: data.comments.map((comment) =>
+                updatedCommentIds.has(comment.id) ? { ...comment, editedAt } : comment,
+              ),
+            }),
+          ),
+        );
+      };
+
       const replayHistoryStep = (step: 'undo' | 'redo') => {
         const before = historyStateOf(get());
         useCanvasStore.temporal.getState()[step]();
-        diffHistoryStates(before, historyStateOf(get()), get().threadId).forEach(emitCanvasOperation);
+        const operations = diffHistoryStates(before, historyStateOf(get()), get().threadId);
+        markReplayedEdits(before, operations);
+        operations.forEach(emitCanvasOperation);
       };
 
       const resetState = (overrides: Partial<ICanvasState>) => {
@@ -197,6 +247,7 @@ export const useCanvasStore = create<ICanvasStore>()(
             hydrated: true,
             nodes: snapshot.nodes,
             edges: snapshot.edges,
+            authors: snapshot.authors,
           });
         },
 
@@ -283,7 +334,7 @@ export const useCanvasStore = create<ICanvasStore>()(
             ),
           }),
 
-        addNode: (position, label, id = crypto.randomUUID()) => {
+        addNode: (position, id = crypto.randomUUID()) => {
           const { threadId } = get();
           if (!threadId) return;
 
@@ -295,11 +346,12 @@ export const useCanvasStore = create<ICanvasStore>()(
             type: ECanvasNodeType.Canvas,
             position,
             data: {
-              label,
+              label: '',
               status: null,
               isAnswer: false,
               comments: [],
               createdBy: access.userId ?? undefined,
+              createdAt: new Date().toISOString(),
               isNew: true,
             },
           };
@@ -320,7 +372,7 @@ export const useCanvasStore = create<ICanvasStore>()(
             id,
             type: ECanvasNodeType.Reference,
             position,
-            data: { ...data, createdBy: access.userId ?? undefined },
+            data: { ...data, createdBy: access.userId ?? undefined, createdAt: new Date().toISOString() },
           };
 
           appendNode(newNode, { referenceSearchPosition: null });
@@ -436,11 +488,17 @@ export const useCanvasStore = create<ICanvasStore>()(
         updateNodeLabel: (id, label, richLabel) => {
           const target = get().nodes.find((node) => node.id === id);
           if (!target || !isCanvasNodeData(target.data)) return;
-          if (!canEditNode(target.data.createdBy, usePermissionsStore.getState())) return;
+
+          const access = usePermissionsStore.getState();
+          if (!canEditNode(target.data.createdBy, access)) return;
 
           patchCanvasNodes(
             (nodeId) => nodeId === id,
-            () => ({ label, richLabel }),
+            (data) => ({
+              label,
+              richLabel,
+              ...(!isFirstWrite(data) && { editedAt: new Date().toISOString(), editedBy: access.userId ?? undefined }),
+            }),
           );
           emitCanvasOperation(toUpdateLabelOperation(id, label, richLabel));
         },
@@ -468,6 +526,7 @@ export const useCanvasStore = create<ICanvasStore>()(
             isAnswer: false,
             comments: [],
             createdBy: access.userId ?? undefined,
+            createdAt: new Date().toISOString(),
             isNew: true,
           };
 
@@ -485,7 +544,7 @@ export const useCanvasStore = create<ICanvasStore>()(
           if (!userId || !canComment) return;
 
           const id = crypto.randomUUID();
-          const comment: IComment = { id, text, richText, authorId: userId };
+          const comment: IComment = { id, text, richText, authorId: userId, createdAt: new Date().toISOString() };
 
           patchCanvasNodes(
             (candidateId) => candidateId === nodeId,
@@ -495,16 +554,26 @@ export const useCanvasStore = create<ICanvasStore>()(
           emitCanvasOperation(toCreateCommentOperation(comment, nodeId));
         },
 
+        updateComment: (nodeId, commentId, text, richText) => {
+          const { canComment, userId } = usePermissionsStore.getState();
+          if (!canComment || findComment(nodeId, commentId)?.authorId !== userId) return;
+
+          const editedAt = new Date().toISOString();
+
+          patchCanvasNodes(
+            (id) => id === nodeId,
+            (data) => ({
+              comments: data.comments.map((candidate) =>
+                candidate.id === commentId ? { ...candidate, text, richText, editedAt } : candidate,
+              ),
+            }),
+          );
+          emitCanvasOperation(toUpdateCommentOperation(commentId, nodeId, text, richText));
+        },
+
         deleteComment: (nodeId, commentId) => {
           const { canComment, userId } = usePermissionsStore.getState();
-          if (!canComment) return;
-
-          const target = get().nodes.find((node) => node.id === nodeId);
-          const comment =
-            target && isCanvasNodeData(target.data)
-              ? target.data.comments.find((comment) => comment.id === commentId)
-              : null;
-          if (comment?.authorId !== userId) return;
+          if (!canComment || findComment(nodeId, commentId)?.authorId !== userId) return;
 
           patchCanvasNodes(
             (id) => id === nodeId,

@@ -47,11 +47,11 @@ export const ReferenceSearchPanelContent = ({
 
     return nodes.filter(
       (node) =>
-        node.label.toLowerCase().includes(term) ||
+        (node.label || t.platform.canvas.node.placeholder).toLowerCase().includes(term) ||
         node.threadName.toLowerCase().includes(term) ||
         node.workspaceName.toLowerCase().includes(term),
     );
-  }, [nodes, query, loading]);
+  }, [nodes, query, loading, t.platform.canvas.node.placeholder]);
 
   const cursorIndex = Math.min(rawCursorIndex, Math.max(filtered.length - 1, 0));
 

@@ -20,7 +20,7 @@ import { useClickOutside, useEscapeKey, useMenuKeyboardNavigation } from '@hooks
 import { useTranslations } from '@/i18n';
 import { hasValidatedParent, isCanvasNodeData } from '@/lib/canvas';
 import { useCanvasStore, usePermissionsStore } from '@/lib/stores';
-import { canEditNode } from '@/lib/utils';
+import { canDeleteNode, canEditNode } from '@/lib/utils';
 
 import { useViewportClamp } from '../hooks';
 import { buildReferenceTargetUrl } from '../utils';
@@ -81,7 +81,7 @@ export const ContextMenu = ({ menu, onClose }: IContextMenuProps) => {
       icon={Plus}
       label={t.platform.canvas.context.addNode}
       shortcut="N"
-      onClick={close(() => addNode({ x: flowX, y: flowY }, t.platform.canvas.node.defaultLabel))}
+      onClick={close(() => addNode({ x: flowX, y: flowY }))}
       accent="emerald"
     />,
     <MenuItem
@@ -104,7 +104,7 @@ export const ContextMenu = ({ menu, onClose }: IContextMenuProps) => {
     />,
   ];
 
-  const renderReferenceItems = (nodeId: string, targetUrl: string | null, canEdit: boolean): ReactNode[] => {
+  const renderReferenceItems = (nodeId: string, targetUrl: string | null, canDelete: boolean): ReactNode[] => {
     const { canEditCanvas } = usePermissionsStore.getState();
 
     return joinSections({
@@ -127,7 +127,7 @@ export const ContextMenu = ({ menu, onClose }: IContextMenuProps) => {
               label={t.platform.canvas.context.deleteReference}
               onClick={close(() => deleteNode(nodeId))}
               accent="red"
-              disabled={!canEdit}
+              disabled={!canDelete}
               hint={t.platform.canvas.context.deleteNotAllowed}
             />,
           ]
@@ -181,7 +181,7 @@ export const ContextMenu = ({ menu, onClose }: IContextMenuProps) => {
     />,
   ];
 
-  const renderCanvasNodeItems = (nodeId: string, data: ICanvasNodeData, canEdit: boolean): ReactNode[] => {
+  const renderCanvasNodeItems = (nodeId: string, data: ICanvasNodeData, canDelete: boolean): ReactNode[] => {
     const { nodes, edges } = useCanvasStore.getState();
     const { canEditCanvas, canComment } = usePermissionsStore.getState();
 
@@ -218,7 +218,7 @@ export const ContextMenu = ({ menu, onClose }: IContextMenuProps) => {
               shortcut="⌫"
               onClick={close(() => deleteNode(nodeId))}
               accent="red"
-              disabled={!canEdit}
+              disabled={!canDelete}
               hint={t.platform.canvas.context.deleteNotAllowed}
             />,
           ]
@@ -230,16 +230,20 @@ export const ContextMenu = ({ menu, onClose }: IContextMenuProps) => {
     const node = useCanvasStore.getState().nodes.find((node) => node.id === nodeId);
     if (!node) return [];
 
-    const canEdit = canEditNode(node.data.createdBy, usePermissionsStore.getState());
+    const access = usePermissionsStore.getState();
+    const canDelete = canDeleteNode(node, access);
 
     if (node.type === ECanvasNodeType.Reference) {
-      return renderReferenceItems(nodeId, buildReferenceTargetUrl(node.data), canEdit);
+      return renderReferenceItems(nodeId, buildReferenceTargetUrl(node.data), canDelete);
     }
 
-    if (node.type === ECanvasNodeType.Question) return renderQuestionItems(nodeId, canEdit);
+    if (node.type === ECanvasNodeType.Question) {
+      return renderQuestionItems(nodeId, canEditNode(node.data.createdBy, access));
+    }
+
     if (!isCanvasNodeData(node.data)) return [];
 
-    return renderCanvasNodeItems(nodeId, node.data, canEdit);
+    return renderCanvasNodeItems(nodeId, node.data, canDelete);
   };
 
   const renderItems = (): ReactNode[] => {

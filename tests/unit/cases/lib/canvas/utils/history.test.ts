@@ -3,7 +3,15 @@ import { beforeEach, describe, expect, test } from 'vitest';
 
 import { ECanvasNodeType, type ICanvasHistoryState, type TCanvasOperation } from '@interfaces';
 
-import { THREAD_ID, canvasEdge, canvasNode, comment, questionNode, referenceNode } from '@mocks/canvas';
+import {
+  AUTHORSHIP_TIMES,
+  THREAD_ID,
+  canvasEdge,
+  canvasNode,
+  comment,
+  questionNode,
+  referenceNode,
+} from '@mocks/canvas';
 import { FORMATTED_DOCUMENT, FORMATTED_TEXT, RESTYLED_DOCUMENT, SHOWCASE_DOCUMENT } from '@mocks/richText';
 import { diffHistoryStates, isSameHistoryState, toCreateOperations } from '@/lib/canvas';
 
@@ -267,6 +275,60 @@ describe('history', () => {
         expect(operations).toStrictEqual([
           { type: 'createComment', id: 'c1', nodeId: 'n1', text: 'Comment c1', richText: FORMATTED_DOCUMENT },
         ]);
+      });
+    });
+  });
+
+  describe('GIVEN a node whose comment was rewritten', () => {
+    describe('WHEN the step back to the earlier text is diffed', () => {
+      beforeEach(() => {
+        operations = diffHistoryStates(
+          { nodes: [canvasNode('n1', { comments: [comment('c1', { text: 'Reworded' })] })], edges: [] },
+          { nodes: [canvasNode('n1', { comments: [comment('c1', { text: 'Original' })] })], edges: [] },
+          THREAD_ID,
+        );
+      });
+
+      test('THEN only a rewrite of that comment is emitted', () => {
+        expect(operations).toStrictEqual([{ type: 'updateComment', id: 'c1', nodeId: 'n1', text: 'Original' }]);
+      });
+    });
+
+    describe('WHEN a step that only restyles the comment is diffed', () => {
+      beforeEach(() => {
+        operations = diffHistoryStates(
+          { nodes: [canvasNode('n1', { comments: [comment('c1', { text: FORMATTED_TEXT })] })], edges: [] },
+          {
+            nodes: [
+              canvasNode('n1', { comments: [comment('c1', { text: FORMATTED_TEXT, richText: FORMATTED_DOCUMENT })] }),
+            ],
+            edges: [],
+          },
+          THREAD_ID,
+        );
+      });
+
+      test('THEN the rewrite carries the formatting', () => {
+        expect(operations).toStrictEqual([
+          { type: 'updateComment', id: 'c1', nodeId: 'n1', text: FORMATTED_TEXT, richText: FORMATTED_DOCUMENT },
+        ]);
+      });
+    });
+
+    describe('WHEN a step that only marks the comment edited is diffed', () => {
+      beforeEach(() => {
+        operations = diffHistoryStates(
+          { nodes: [canvasNode('n1', { comments: [comment('c1')] })], edges: [] },
+          {
+            nodes: [canvasNode('n1', { comments: [comment('c1', { editedAt: AUTHORSHIP_TIMES.fiveMinutesAgo })] })],
+            edges: [],
+          },
+          THREAD_ID,
+        );
+      });
+
+      test('THEN nothing is emitted for the comment', () => {
+        expect(operations).toStrictEqual([]);
       });
     });
   });

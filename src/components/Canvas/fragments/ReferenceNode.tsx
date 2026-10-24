@@ -11,6 +11,7 @@ import type { TReferenceNode } from '@interfaces';
 import { useTranslations } from '@/i18n';
 
 import { buildReferenceTargetUrl } from '../utils';
+import { AuthorStamp } from './AuthorStamp';
 import { NodeBand } from './NodeBand';
 import { NodeHandles } from './NodeHandles';
 
@@ -47,7 +48,9 @@ export const ReferenceNode = ({ data, selected }: NodeProps<TReferenceNode>) => 
                 type="button"
                 onClick={openTarget}
                 onMouseDown={(event) => event.stopPropagation()}
-                aria-label={t('platform.canvas.reference.openLabel', { name: sourceNodeLabel })}
+                aria-label={t('platform.canvas.reference.openLabel', {
+                  name: sourceNodeLabel || t.platform.canvas.node.placeholder,
+                })}
                 className="nodrag flex h-4 w-4 items-center justify-center rounded-md transition-transform duration-150 group-hover/ref:translate-x-px group-hover/ref:-translate-y-px focus-visible:ring-2 focus-visible:ring-[color:var(--ring-focus)] focus-visible:outline-none motion-reduce:transition-none motion-reduce:group-hover/ref:translate-x-0 motion-reduce:group-hover/ref:translate-y-0"
               >
                 <ArrowUpRight className="h-3 w-3" strokeWidth={2.25} />
@@ -56,8 +59,13 @@ export const ReferenceNode = ({ data, selected }: NodeProps<TReferenceNode>) => 
           }
         />
 
-        <p className="truncate font-grotesk text-[13px] font-medium tracking-tight text-[color:var(--text-strong)] select-none">
-          {sourceNodeLabel}
+        <p
+          className={clsx(
+            'truncate font-grotesk text-[13px] font-medium tracking-tight select-none',
+            sourceNodeLabel ? 'text-[color:var(--text-strong)]' : 'text-[color:var(--text-subtle)]',
+          )}
+        >
+          {sourceNodeLabel || t.platform.canvas.node.placeholder}
         </p>
 
         <p className="flex items-center gap-1 truncate font-mono-ui text-[10.5px] tracking-[0.04em] text-[color:var(--text-label)]">
@@ -68,6 +76,8 @@ export const ReferenceNode = ({ data, selected }: NodeProps<TReferenceNode>) => 
           <span className="truncate text-[color:var(--text-subtle)]">{sourceThreadName}</span>
         </p>
       </div>
+
+      <AuthorStamp placement="node" authorId={data.createdBy} createdAt={data.createdAt} className="px-4" />
     </div>
   );
 };

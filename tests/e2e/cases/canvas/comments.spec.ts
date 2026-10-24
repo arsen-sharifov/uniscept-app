@@ -27,6 +27,31 @@ test.describe('node comments', () => {
       });
     });
 
+    test.describe('WHEN an own comment is posted, rewritten and the page is reloaded', () => {
+      test.beforeEach(async ({ page }) => {
+        const node = getNode(page, 'Risky bet');
+        await addNodeComment(node, 'Needs an estimate.');
+        await node.getByText('Needs an estimate.').hover();
+        await node.getByRole('button', { name: COPY.platform.canvas.comments.editAriaLabel }).click();
+        const editor = node.getByRole('textbox', { name: COPY.platform.canvas.comments.editorAriaLabel });
+        await editor.fill('Needs a cost estimate by Friday.');
+        await editor.press('Enter');
+        await expect(editor).toHaveCount(0);
+        await expectSaved(page);
+        await page.reload();
+        await waitForCanvas(page);
+        await getNode(page, 'Risky bet').getByRole('button', { name: COPY.platform.canvas.node.viewComments }).click();
+      });
+
+      test('THEN the rewritten comment shows under its author marked edited', async ({ page, account }) => {
+        const node = getNode(page, 'Risky bet');
+
+        await expect(node).toContainText('Needs a cost estimate by Friday.');
+        await expect(node.getByRole('article')).toContainText(account.name);
+        await expect(node.getByRole('article')).toContainText(COPY.platform.canvas.authorship.edited);
+      });
+    });
+
     test.describe('WHEN an own comment is posted, deleted again and the page is reloaded', () => {
       test.beforeEach(async ({ page }) => {
         const node = getNode(page, 'Risky bet');

@@ -12,6 +12,7 @@ import {
   updateCanvasNodeLabel,
   updateCanvasNodePositions,
   updateCanvasNodeStatus,
+  updateNodeComment,
 } from '@api/client';
 import {
   THREAD_ID,
@@ -23,6 +24,7 @@ import {
   deleteEdgeOp,
   deleteNodeOp,
   updateAnswerOp,
+  updateCommentOp,
   updateLabelOp,
   updatePositionOp,
   updateStatusOp,
@@ -1061,6 +1063,113 @@ describe('queue', () => {
     });
   });
 
+  describe('GIVEN a comment saved earlier', () => {
+    describe('WHEN its text is rewritten', () => {
+      beforeEach(async () => {
+        enqueueOperation(updateCommentOp('c1', 'Reworded', FORMATTED_DOCUMENT));
+        await vi.advanceTimersByTimeAsync(FLUSH_DEBOUNCE_MS);
+      });
+
+      test('THEN the new text and formatting reach the api', () => {
+        expect(updateNodeComment).toHaveBeenCalledExactlyOnceWith('c1', 'Reworded', FORMATTED_DOCUMENT);
+      });
+    });
+
+    describe('WHEN it is rewritten twice before the flush', () => {
+      beforeEach(async () => {
+        enqueueOperation(updateCommentOp('c1', 'First rewrite'));
+        enqueueOperation(updateCommentOp('c1', 'Second rewrite'));
+        await vi.advanceTimersByTimeAsync(FLUSH_DEBOUNCE_MS);
+      });
+
+      test('THEN only the latest text is written', () => {
+        expect(updateNodeComment).toHaveBeenCalledExactlyOnceWith('c1', 'Second rewrite', undefined);
+      });
+    });
+
+    describe('WHEN it is rewritten and then deleted before the flush', () => {
+      beforeEach(async () => {
+        enqueueOperation(updateCommentOp('c1', 'Reworded'));
+        enqueueOperation(deleteCommentOp('c1'));
+        await vi.advanceTimersByTimeAsync(FLUSH_DEBOUNCE_MS);
+      });
+
+      test('THEN only the deletion is sent', () => {
+        expect(updateNodeComment).not.toHaveBeenCalled();
+        expect(deleteNodeComment).toHaveBeenCalledExactlyOnceWith('c1');
+      });
+    });
+
+    describe('WHEN it is rewritten and its node is deleted before the flush', () => {
+      beforeEach(async () => {
+        enqueueOperation(updateCommentOp('c1', 'Reworded'));
+        enqueueOperation(deleteNodeOp('node-a'));
+        await vi.advanceTimersByTimeAsync(FLUSH_DEBOUNCE_MS);
+      });
+
+      test('THEN the rewrite is dropped and only the node deletion is sent', () => {
+        expect(updateNodeComment).not.toHaveBeenCalled();
+        expect(deleteCanvasNode).toHaveBeenCalledExactlyOnceWith('node-a');
+      });
+    });
+  });
+
+  describe('GIVEN a comment created in the pending batch', () => {
+    beforeEach(() => {
+      enqueueOperation(createCommentOp('c1'));
+    });
+
+    describe('WHEN it is rewritten before the flush', () => {
+      beforeEach(async () => {
+        enqueueOperation(updateCommentOp('c1', 'Reworded', FORMATTED_DOCUMENT));
+        await vi.advanceTimersByTimeAsync(FLUSH_DEBOUNCE_MS);
+      });
+
+      test('THEN the comment is created first and then rewritten so the database records the edit', () => {
+        expect(createNodeComment).toHaveBeenCalledExactlyOnceWith({ id: 'c1', nodeId: 'node-a', text: 'Comment c1' });
+        expect(updateNodeComment).toHaveBeenCalledExactlyOnceWith('c1', 'Reworded', FORMATTED_DOCUMENT);
+        expect(vi.mocked(updateNodeComment).mock.invocationCallOrder[0]).toBeGreaterThan(
+          vi.mocked(createNodeComment).mock.invocationCallOrder[0]!,
+        );
+      });
+    });
+  });
+
+  describe('GIVEN a comment rewrite parked in failed operations', () => {
+    beforeEach(async () => {
+      vi.mocked(updateNodeComment).mockRejectedValue(new Error('save failed'));
+      enqueueOperation(updateCommentOp('c1', 'Parked rewrite'));
+      await vi.advanceTimersByTimeAsync(FLUSH_DEBOUNCE_MS);
+      await vi.advanceTimersByTimeAsync(TOTAL_RETRY_BACKOFF_MS);
+      vi.mocked(updateNodeComment).mockReset();
+    });
+
+    describe('WHEN the comment is rewritten again and the failed operations are retried', () => {
+      beforeEach(async () => {
+        enqueueOperation(updateCommentOp('c1', 'Newer rewrite'));
+        retryFailed();
+        await vi.advanceTimersByTimeAsync(FLUSH_DEBOUNCE_MS);
+      });
+
+      test('THEN the newer text supersedes the parked one and is the only one written', () => {
+        expect(updateNodeComment).toHaveBeenCalledExactlyOnceWith('c1', 'Newer rewrite', undefined);
+      });
+    });
+
+    describe('WHEN the comment is deleted and the failed operations are retried', () => {
+      beforeEach(async () => {
+        enqueueOperation(deleteCommentOp('c1'));
+        retryFailed();
+        await vi.advanceTimersByTimeAsync(FLUSH_DEBOUNCE_MS);
+      });
+
+      test('THEN only the deletion is sent', () => {
+        expect(updateNodeComment).not.toHaveBeenCalled();
+        expect(deleteNodeComment).toHaveBeenCalledExactlyOnceWith('c1');
+      });
+    });
+  });
+
   describe('GIVEN a comment create parked in failed operations', () => {
     beforeEach(async () => {
       vi.mocked(createNodeComment).mockRejectedValue(new Error('save failed'));
@@ -1078,6 +1187,72 @@ describe('queue', () => {
 
       test('THEN the parked create is cancelled and nothing is sent for the comment', () => {
         expect(deleteNodeComment).not.toHaveBeenCalled();
+        expect(getSaveState()).toMatchObject({ status: 'saved', failedCount: 0, pendingCount: 0 });
+      });
+    });
+
+    describe('WHEN the comment is rewritten', () => {
+      beforeEach(async () => {
+        enqueueOperation(updateCommentOp('c1', 'Reworded'));
+        await vi.advanceTimersByTimeAsync(FLUSH_DEBOUNCE_MS);
+      });
+
+      test('THEN the rewrite waits with the parked create instead of failing on the missing comment', () => {
+        expect(updateNodeComment).not.toHaveBeenCalled();
+        expect(getSaveState()).toMatchObject({ status: 'error', failedCount: 2, pendingCount: 0 });
+      });
+    });
+
+    describe('WHEN the comment is rewritten and the failed operations are retried', () => {
+      beforeEach(async () => {
+        enqueueOperation(updateCommentOp('c1', 'Reworded'));
+        retryFailed();
+        await vi.advanceTimersByTimeAsync(FLUSH_DEBOUNCE_MS);
+      });
+
+      test('THEN the original text is created first and the rewrite follows, so the edit is recorded', () => {
+        expect(createNodeComment).toHaveBeenCalledExactlyOnceWith(
+          expect.objectContaining({ id: 'c1', text: 'Comment c1' }),
+        );
+        expect(updateNodeComment).toHaveBeenCalledExactlyOnceWith('c1', 'Reworded', undefined);
+        expect(vi.mocked(updateNodeComment).mock.invocationCallOrder[0]).toBeGreaterThan(
+          vi.mocked(createNodeComment).mock.invocationCallOrder[0]!,
+        );
+      });
+    });
+  });
+
+  describe('GIVEN a node create parked in failed operations with a comment on it', () => {
+    beforeEach(async () => {
+      vi.mocked(createCanvasNode).mockRejectedValue(new Error('save failed'));
+      enqueueOperation(createNodeOp('node-a'));
+      await vi.advanceTimersByTimeAsync(FLUSH_DEBOUNCE_MS);
+      await vi.advanceTimersByTimeAsync(TOTAL_RETRY_BACKOFF_MS);
+      vi.mocked(createCanvasNode).mockReset();
+    });
+
+    describe('WHEN a comment of that node is rewritten', () => {
+      beforeEach(async () => {
+        enqueueOperation(updateCommentOp('c1', 'Reworded'));
+        await vi.advanceTimersByTimeAsync(FLUSH_DEBOUNCE_MS);
+      });
+
+      test('THEN the rewrite waits with the parked create instead of failing on the missing node', () => {
+        expect(updateNodeComment).not.toHaveBeenCalled();
+        expect(getSaveState()).toMatchObject({ status: 'error', failedCount: 2, pendingCount: 0 });
+      });
+    });
+
+    describe('WHEN the node is deleted after a comment rewrite', () => {
+      beforeEach(async () => {
+        enqueueOperation(updateCommentOp('c1', 'Reworded'));
+        enqueueOperation(deleteNodeOp('node-a'));
+        await vi.advanceTimersByTimeAsync(FLUSH_DEBOUNCE_MS);
+      });
+
+      test('THEN the parked create and the rewrite are dropped together', () => {
+        expect(updateNodeComment).not.toHaveBeenCalled();
+        expect(deleteCanvasNode).not.toHaveBeenCalled();
         expect(getSaveState()).toMatchObject({ status: 'saved', failedCount: 0, pendingCount: 0 });
       });
     });

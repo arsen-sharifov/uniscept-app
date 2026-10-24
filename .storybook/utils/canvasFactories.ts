@@ -2,6 +2,7 @@ import type { Edge } from '@xyflow/react';
 
 import {
   ECanvasNodeType,
+  type ICanvasNodeData,
   type IComment,
   type IRichTextDocument,
   type TCanvasNode,
@@ -11,7 +12,7 @@ import {
 import type { ICanvasFixture } from '@story-interfaces';
 import { toPlainText } from '@/lib/richText';
 
-import { STORYBOOK_AUTHOR_ID } from '../consts';
+import { STORYBOOK_AUTHOR_ID, STORYBOOK_CREATED_AT } from '../consts';
 
 export const createCanvasNode = (
   id: string,
@@ -27,7 +28,7 @@ export const createCanvasNode = (
   type: ECanvasNodeType.Canvas,
   position: { x, y },
   selected,
-  data: { label, status, isAnswer, comments },
+  data: { label, status, isAnswer, comments, createdBy: STORYBOOK_AUTHOR_ID, createdAt: STORYBOOK_CREATED_AT },
 });
 
 export const createQuestionNode = (id: string, label: string, selected: boolean = false): TCanvasNode => ({
@@ -36,7 +37,14 @@ export const createQuestionNode = (id: string, label: string, selected: boolean 
   position: { x: 0, y: 0 },
   selected,
   deletable: false,
-  data: { label, status: null, isAnswer: false, comments: [] },
+  data: {
+    label,
+    status: null,
+    isAnswer: false,
+    comments: [],
+    createdBy: STORYBOOK_AUTHOR_ID,
+    createdAt: STORYBOOK_CREATED_AT,
+  },
 });
 
 export const createCanvasEdge = (
@@ -54,15 +62,30 @@ export const createCanvasEdge = (
   type: 'default',
 });
 
-export const createComment = (id: string, text: string, authorId: string = STORYBOOK_AUTHOR_ID): IComment => ({
+export const createComment = (
+  id: string,
+  text: string,
+  authorId: string = STORYBOOK_AUTHOR_ID,
+  editedAt?: string,
+): IComment => ({
   id,
   text,
   authorId,
+  createdAt: STORYBOOK_CREATED_AT,
+  ...(editedAt && { editedAt }),
 });
 
 export const createFormattedComment = (id: string, richText: IRichTextDocument): IComment => ({
   ...createComment(id, toPlainText(richText)),
   richText,
+});
+
+export const withAuthorship = (
+  node: TCanvasNode,
+  authorship: Pick<ICanvasNodeData, 'createdBy' | 'createdAt' | 'editedAt' | 'editedBy'>,
+): TCanvasNode => ({
+  ...node,
+  data: { ...node.data, ...authorship },
 });
 
 export const withRichLabel = (node: TCanvasNode, richLabel: IRichTextDocument): TCanvasNode => ({

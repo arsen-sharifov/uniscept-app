@@ -120,6 +120,7 @@ export const PRODUCT_ICON_NAMES = [
   'Unlink',
   'User',
   'UserPlus',
+  'UserRound',
   'Users',
   'UsersRound',
   'WavesHorizontal',

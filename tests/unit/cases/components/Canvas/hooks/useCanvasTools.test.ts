@@ -6,7 +6,6 @@ import type { TCanvasNode } from '@interfaces';
 
 import { pointerEvent } from '@mocks/browser';
 import { THREAD_ID, canvasEdge, canvasNode, questionNode, referenceNode } from '@mocks/canvas';
-import { TRANSLATIONS } from '@mocks/i18n';
 import { router } from '@mocks/navigation';
 import { EDIT_ACCESS, READONLY_ACCESS } from '@mocks/roles';
 import { ZOOM_DURATION_MS, ZOOM_MAX, ZOOM_MIN, ZOOM_STEP_FACTOR } from '@/components/Canvas/consts';
@@ -37,6 +36,7 @@ describe('useCanvasTools', () => {
       useCanvasStore.getState().loadCanvas(THREAD_ID, {
         nodes: [canvasNode('idea', { createdBy: 'user-1' }), questionNode('q'), referenceNode('ref')],
         edges: [canvasEdge('e1', 'q', 'idea')],
+        authors: {},
       });
 
       harness = renderHook(() => ({ tools: useCanvasTools(), flow: useStoreApi() }), {
@@ -57,11 +57,23 @@ describe('useCanvasTools', () => {
 
     describe('WHEN they double-click the canvas node', () => {
       beforeEach(() => {
-        act(() => harness.current.tools.onNodeDoubleClick(pointerEvent(), canvasNode('idea')));
+        act(() => harness.current.tools.onNodeDoubleClick(pointerEvent(), canvasNode('idea', { createdBy: 'user-1' })));
       });
 
       test('THEN the node enters label editing', () => {
         expect(useCanvasStore.getState().editingNodeId).toBe('idea');
+      });
+    });
+
+    describe('WHEN they double-click a node somebody else wrote while its comments are open', () => {
+      beforeEach(() => {
+        useCanvasStore.getState().setOpenCommentsNodeId('idea');
+        act(() => harness.current.tools.onNodeDoubleClick(pointerEvent(), canvasNode('idea', { createdBy: 'user-2' })));
+      });
+
+      test('THEN label editing stays off and the comments stay open', () => {
+        expect(useCanvasStore.getState().editingNodeId).toBeNull();
+        expect(useCanvasStore.getState().openCommentsNodeId).toBe('idea');
       });
     });
 
@@ -144,7 +156,7 @@ describe('useCanvasTools', () => {
   describe('GIVEN a viewer without edit access using the select tool', () => {
     beforeEach(() => {
       usePermissionsStore.getState().setAccess('ws-1', 'user-1', READONLY_ACCESS);
-      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [canvasNode('idea')], edges: [] });
+      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [canvasNode('idea')], edges: [], authors: {} });
 
       harness = renderHook(() => ({ tools: useCanvasTools(), flow: useStoreApi() }), {
         wrapper: ReactFlowProvider,
@@ -192,7 +204,7 @@ describe('useCanvasTools', () => {
   describe('GIVEN an editor with the add-node tool', () => {
     beforeEach(() => {
       usePermissionsStore.getState().setAccess('ws-1', 'user-1', EDIT_ACCESS);
-      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [], edges: [] });
+      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [], edges: [], authors: {} });
       useCanvasStore.getState().setActiveTool(ECanvasTool.AddNode);
 
       harness = renderHook(() => ({ tools: useCanvasTools(), flow: useStoreApi() }), {
@@ -205,11 +217,11 @@ describe('useCanvasTools', () => {
         act(() => harness.current.tools.onPaneClick(pointerEvent(120, 80)));
       });
 
-      test('THEN a node appears at the flow position with the default label', () => {
+      test('THEN an empty node appears at the flow position', () => {
         expect(useCanvasStore.getState().nodes).toHaveLength(1);
         expect(useCanvasStore.getState().nodes[0]).toMatchObject({
           position: { x: 120, y: 80 },
-          data: { label: TRANSLATIONS.platform.canvas.node.defaultLabel, createdBy: 'user-1', isNew: true },
+          data: { label: '', createdBy: 'user-1', isNew: true },
         });
       });
     });
@@ -228,7 +240,7 @@ describe('useCanvasTools', () => {
   describe('GIVEN an editor with the cross-reference tool', () => {
     beforeEach(() => {
       usePermissionsStore.getState().setAccess('ws-1', 'user-1', EDIT_ACCESS);
-      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [canvasNode('idea')], edges: [] });
+      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [canvasNode('idea')], edges: [], authors: {} });
       useCanvasStore.getState().setActiveTool(ECanvasTool.CrossReference);
 
       harness = renderHook(() => ({ tools: useCanvasTools(), flow: useStoreApi() }), {
@@ -254,6 +266,7 @@ describe('useCanvasTools', () => {
       useCanvasStore.getState().loadCanvas(THREAD_ID, {
         nodes: [canvasNode('a', { createdBy: 'user-1' }), canvasNode('b', { createdBy: 'user-1' })],
         edges: [canvasEdge('e1', 'a', 'b')],
+        authors: {},
       });
       useCanvasStore.getState().setActiveTool(ECanvasTool.Delete);
 
@@ -291,6 +304,7 @@ describe('useCanvasTools', () => {
       useCanvasStore.getState().loadCanvas(THREAD_ID, {
         nodes: [questionNode('q'), canvasNode('idea')],
         edges: [canvasEdge('e1', 'q', 'idea')],
+        authors: {},
       });
       useCanvasStore.getState().setActiveTool(ECanvasTool.ValidPath);
 
@@ -316,6 +330,7 @@ describe('useCanvasTools', () => {
       useCanvasStore.getState().loadCanvas(THREAD_ID, {
         nodes: [canvasNode('a'), canvasNode('b')],
         edges: [],
+        authors: {},
       });
       useCanvasStore.getState().setActiveTool(ECanvasTool.InvalidPath);
 
@@ -342,6 +357,7 @@ describe('useCanvasTools', () => {
       useCanvasStore.getState().loadCanvas(THREAD_ID, {
         nodes: [questionNode('q'), canvasNode('idea'), referenceNode('ref')],
         edges: [canvasEdge('e1', 'q', 'idea')],
+        authors: {},
       });
       useCanvasStore.getState().setActiveTool(ECanvasTool.Answer);
 
@@ -377,6 +393,7 @@ describe('useCanvasTools', () => {
       useCanvasStore.getState().loadCanvas(THREAD_ID, {
         nodes: [nodeAt('a', 0, 0), nodeAt('b', 0, 300), referenceNode('ref')],
         edges: [],
+        authors: {},
       });
       useCanvasStore.getState().setActiveTool(ECanvasTool.Connect);
 
@@ -446,6 +463,7 @@ describe('useCanvasTools', () => {
       useCanvasStore.getState().loadCanvas(THREAD_ID, {
         nodes: [canvasNode('idea'), referenceNode('ref')],
         edges: [],
+        authors: {},
       });
       useCanvasStore.getState().setActiveTool(ECanvasTool.Connect);
       useCanvasStore.getState().setPendingConnection('ref');
@@ -471,7 +489,7 @@ describe('useCanvasTools', () => {
   describe('GIVEN an editor with the connect tool and a vanished pending source', () => {
     beforeEach(() => {
       usePermissionsStore.getState().setAccess('ws-1', 'user-1', EDIT_ACCESS);
-      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [canvasNode('idea')], edges: [] });
+      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [canvasNode('idea')], edges: [], authors: {} });
       useCanvasStore.getState().setActiveTool(ECanvasTool.Connect);
       useCanvasStore.getState().setPendingConnection('ghost');
 
@@ -498,6 +516,7 @@ describe('useCanvasTools', () => {
       useCanvasStore.getState().loadCanvas(THREAD_ID, {
         nodes: [canvasNode('a'), canvasNode('b')],
         edges: [canvasEdge('e1', 'a', 'b')],
+        authors: {},
       });
       useCanvasStore.getState().setActiveTool(ECanvasTool.ZoomIn);
 
@@ -562,7 +581,7 @@ describe('useCanvasTools', () => {
   describe('GIVEN an editor with the zoom-out tool over an offset viewport', () => {
     beforeEach(() => {
       usePermissionsStore.getState().setAccess('ws-1', 'user-1', EDIT_ACCESS);
-      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [], edges: [] });
+      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [], edges: [], authors: {} });
       useCanvasStore.getState().setActiveTool(ECanvasTool.ZoomOut);
 
       harness = renderHook(() => ({ tools: useCanvasTools(), flow: useStoreApi() }), {
@@ -588,7 +607,7 @@ describe('useCanvasTools', () => {
   describe('GIVEN an editor with the zoom-in tool near the zoom ceiling', () => {
     beforeEach(() => {
       usePermissionsStore.getState().setAccess('ws-1', 'user-1', EDIT_ACCESS);
-      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [], edges: [] });
+      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [], edges: [], authors: {} });
       useCanvasStore.getState().setActiveTool(ECanvasTool.ZoomIn);
 
       harness = renderHook(() => ({ tools: useCanvasTools(), flow: useStoreApi() }), {
@@ -614,7 +633,7 @@ describe('useCanvasTools', () => {
   describe('GIVEN an editor with the zoom-in tool at the zoom ceiling', () => {
     beforeEach(() => {
       usePermissionsStore.getState().setAccess('ws-1', 'user-1', EDIT_ACCESS);
-      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [], edges: [] });
+      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [], edges: [], authors: {} });
       useCanvasStore.getState().setActiveTool(ECanvasTool.ZoomIn);
 
       harness = renderHook(() => ({ tools: useCanvasTools(), flow: useStoreApi() }), {
@@ -637,7 +656,7 @@ describe('useCanvasTools', () => {
   describe('GIVEN an editor with the zoom-out tool at the zoom floor', () => {
     beforeEach(() => {
       usePermissionsStore.getState().setAccess('ws-1', 'user-1', EDIT_ACCESS);
-      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [], edges: [] });
+      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [], edges: [], authors: {} });
       useCanvasStore.getState().setActiveTool(ECanvasTool.ZoomOut);
 
       harness = renderHook(() => ({ tools: useCanvasTools(), flow: useStoreApi() }), {

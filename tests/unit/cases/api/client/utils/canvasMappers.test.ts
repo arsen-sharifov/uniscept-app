@@ -1,13 +1,14 @@
 import { describe, expect, test } from 'vitest';
 
 import { ECanvasNodeType } from '@interfaces';
-import { rowToEdge, rowToNode } from '@api/client';
+import { rowToEdge, rowToNode, toCanvasAuthors } from '@api/client';
 import {
   EMPTY_DOCUMENT_JSON,
   FORMATTED_DOCUMENT,
   PARSED_UNTRUSTED_DOCUMENT,
   UNTRUSTED_DOCUMENT,
 } from '@mocks/richText';
+import { workspaceMember } from '@mocks/roles';
 import { canvasEdgeRow, canvasNodeRow, nodeCommentRow } from '@mocks/rows';
 
 describe('rowToNode', () => {
@@ -24,8 +25,11 @@ describe('rowToNode', () => {
             label: 'Node',
             status: 'valid',
             isAnswer: true,
-            comments: [{ id: 'c-1', text: 'Comment', authorId: 'user-1' }],
+            comments: [{ id: 'c-1', text: 'Comment', authorId: 'user-1', createdAt: '2026-01-01T00:00:00Z' }],
             createdBy: 'user-1',
+            createdAt: '2026-01-01T00:00:00Z',
+            editedAt: undefined,
+            editedBy: undefined,
           },
         });
       });
@@ -98,6 +102,28 @@ describe('rowToNode', () => {
     });
   });
 
+  describe('GIVEN a canvas node row whose text was edited', () => {
+    describe('WHEN it is mapped', () => {
+      test('THEN the edit stamps are carried over', () => {
+        expect(rowToNode(canvasNodeRow({ edited_at: '2026-01-02T00:00:00Z', edited_by: 'user-1' }))).toMatchObject({
+          data: { editedAt: '2026-01-02T00:00:00Z', editedBy: 'user-1' },
+        });
+      });
+    });
+  });
+
+  describe('GIVEN a question node row whose text was edited', () => {
+    describe('WHEN it is mapped', () => {
+      test('THEN the question carries the edit stamps', () => {
+        expect(
+          rowToNode(
+            canvasNodeRow({ type: ECanvasNodeType.Question, edited_at: '2026-01-02T00:00:00Z', edited_by: 'user-1' }),
+          ),
+        ).toMatchObject({ data: { createdAt: '2026-01-01T00:00:00Z', editedAt: '2026-01-02T00:00:00Z' } });
+      });
+    });
+  });
+
   describe('GIVEN a canvas node row without an author', () => {
     describe('WHEN it is mapped', () => {
       test('THEN createdBy falls back to undefined', () => {
@@ -125,7 +151,7 @@ describe('rowToNode', () => {
       test('THEN the mapped comments are carried over', () => {
         expect(rowToNode(canvasNodeRow({ type: ECanvasNodeType.Question }), [nodeCommentRow()])).toMatchObject({
           type: ECanvasNodeType.Question,
-          data: { comments: [{ id: 'c-1', text: 'Comment', authorId: 'user-1' }] },
+          data: { comments: [{ id: 'c-1', text: 'Comment', authorId: 'user-1', createdAt: '2026-01-01T00:00:00Z' }] },
         });
       });
     });
@@ -155,6 +181,7 @@ describe('rowToNode', () => {
             sourceWorkspaceId: 'ws-2',
             sourceWorkspaceName: 'Other workspace',
             createdBy: 'user-1',
+            createdAt: '2026-01-01T00:00:00Z',
           },
         });
       });
@@ -173,6 +200,24 @@ describe('rowToNode', () => {
             sourceWorkspaceId: '',
             sourceWorkspaceName: '',
           },
+        });
+      });
+    });
+  });
+});
+
+describe('toCanvasAuthors', () => {
+  describe('GIVEN workspace members with and without a display name', () => {
+    describe('WHEN the authors are mapped', () => {
+      test('THEN each member is keyed by id and a nameless member falls back to the email', () => {
+        expect(
+          toCanvasAuthors([
+            workspaceMember('user-1', 'role-member', { name: 'Dana Park', avatarIcon: 'panda' }),
+            workspaceMember('user-2', 'role-member', { name: '' }),
+          ]),
+        ).toEqual({
+          'user-1': { name: 'Dana Park', avatarIcon: 'panda' },
+          'user-2': { name: 'user-2@uniscept.dev', avatarIcon: null },
         });
       });
     });

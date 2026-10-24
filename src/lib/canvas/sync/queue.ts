@@ -5,6 +5,7 @@ import {
   type ICanvasQueueState,
   type INodePositionUpdate,
   type ISaveState,
+  type IUpdateNodeCommentOperation,
   type TCanvasOperation,
   type TNodeUpdateOperation,
   type TSaveStatusListener,
@@ -20,6 +21,7 @@ import {
   updateCanvasNodeLabel,
   updateCanvasNodePositions,
   updateCanvasNodeStatus,
+  updateNodeComment,
 } from '@api/client';
 import { event } from '@/lib/events';
 
@@ -96,12 +98,16 @@ const clearTimer = (handle: number | null) => {
 const isNodeUpdate = (operation: TCanvasOperation): operation is TNodeUpdateOperation =>
   NODE_UPDATE_TYPES.includes(operation.type as TNodeUpdateOperation['type']);
 
-const updateKey = (operation: TNodeUpdateOperation) => `${operation.type}:${operation.id}`;
+const isCommentUpdate = (operation: TCanvasOperation): operation is IUpdateNodeCommentOperation =>
+  operation.type === 'updateComment';
+
+const updateKey = (operation: TNodeUpdateOperation | IUpdateNodeCommentOperation) =>
+  `${operation.type}:${operation.id}`;
 
 const isNodeAttachment = (operation: TCanvasOperation, nodeId: string): boolean => {
   if (operation.type === 'createEdge') return operation.source === nodeId || operation.target === nodeId;
 
-  return operation.type === 'createComment' && operation.nodeId === nodeId;
+  return (operation.type === 'createComment' || isCommentUpdate(operation)) && operation.nodeId === nodeId;
 };
 
 const removeWhere = (operations: TCanvasOperation[], predicate: (operation: TCanvasOperation) => boolean) => {
@@ -111,7 +117,7 @@ const removeWhere = (operations: TCanvasOperation[], predicate: (operation: TCan
 const rebuildLastIndex = (operations: TCanvasOperation[], lastIndex: Map<string, number>) => {
   lastIndex.clear();
   operations.forEach((operation, index) => {
-    if (isNodeUpdate(operation)) lastIndex.set(updateKey(operation), index);
+    if (isNodeUpdate(operation) || isCommentUpdate(operation)) lastIndex.set(updateKey(operation), index);
   });
 };
 
@@ -129,7 +135,11 @@ const cancelCreate = (result: TCanvasOperation[], operation: TCanvasOperation): 
   return true;
 };
 
-const upsertUpdate = (result: TCanvasOperation[], lastIndex: Map<string, number>, operation: TNodeUpdateOperation) => {
+const upsertUpdate = (
+  result: TCanvasOperation[],
+  lastIndex: Map<string, number>,
+  operation: TNodeUpdateOperation | IUpdateNodeCommentOperation,
+) => {
   const key = updateKey(operation);
   const existingIndex = lastIndex.get(key);
   if (existingIndex !== undefined) {
@@ -148,7 +158,18 @@ const coalesce = (operations: TCanvasOperation[]): TCanvasOperation[] => {
 
   operations.forEach((operation) => {
     const deletedNodeId = operation.type === 'deleteNode' ? operation.id : null;
-    if (deletedNodeId) removeWhere(result, (existing) => isNodeUpdate(existing) && existing.id === deletedNodeId);
+    const deletedCommentId = operation.type === 'deleteComment' ? operation.id : null;
+    if (deletedNodeId) {
+      removeWhere(
+        result,
+        (existing) =>
+          (isNodeUpdate(existing) && existing.id === deletedNodeId) ||
+          (isCommentUpdate(existing) && existing.nodeId === deletedNodeId),
+      );
+    }
+    if (deletedCommentId) {
+      removeWhere(result, (existing) => isCommentUpdate(existing) && existing.id === deletedCommentId);
+    }
 
     if (cancelCreate(result, operation)) {
       if (deletedNodeId) removeWhere(result, (existing) => isNodeAttachment(existing, deletedNodeId));
@@ -157,9 +178,9 @@ const coalesce = (operations: TCanvasOperation[]): TCanvasOperation[] => {
       return;
     }
 
-    if (deletedNodeId) rebuildLastIndex(result, lastIndex);
+    if (deletedNodeId || deletedCommentId) rebuildLastIndex(result, lastIndex);
 
-    if (isNodeUpdate(operation)) {
+    if (isNodeUpdate(operation) || isCommentUpdate(operation)) {
       upsertUpdate(result, lastIndex, operation);
 
       return;
@@ -176,7 +197,7 @@ const isNodeCreate = (operation: TCanvasOperation, nodeId: string): boolean =>
 
 const referencedNodeIds = (operation: TCanvasOperation): string[] => {
   if (operation.type === 'createEdge') return [operation.source, operation.target];
-  if (operation.type === 'createComment') return [operation.nodeId];
+  if (operation.type === 'createComment' || isCommentUpdate(operation)) return [operation.nodeId];
 
   return isNodeUpdate(operation) ? [operation.id] : [];
 };
@@ -191,6 +212,10 @@ const targetsParkedNode = (operation: TCanvasOperation): boolean => {
 
   return nodeIds.some(isParkedNode) && !nodeIds.some(hasQueuedCreate);
 };
+
+const targetsParkedComment = (operation: TCanvasOperation): boolean =>
+  isCommentUpdate(operation) &&
+  state.failed.some((parked) => parked.type === 'createComment' && parked.id === operation.id);
 
 const foldIntoCreate = (create: TCanvasOperation, update: TNodeUpdateOperation): TCanvasOperation | null => {
   if (update.type === 'updateNodeLabel' && create.type === 'createCanvasNode') {
@@ -228,6 +253,9 @@ const dropParkedFor = (operation: TCanvasOperation): boolean => {
       (parked) => (isNodeUpdate(parked) && parked.id === operation.id) || isNodeAttachment(parked, operation.id),
     );
   }
+  if (operation.type === 'deleteComment') {
+    removeWhere(state.failed, (parked) => isCommentUpdate(parked) && parked.id === operation.id);
+  }
 
   return cancelCreate(state.failed, operation);
 };
@@ -244,10 +272,13 @@ const settleSaveState = (next: Partial<ISaveState> = {}) => {
 
 const absorbIntoFailed = (operation: TCanvasOperation): boolean => {
   if (CREATE_TYPES_BY_DELETE[operation.type]) return dropParkedFor(operation);
-  if (isNodeUpdate(operation)) {
-    removeWhere(state.failed, (parked) => isNodeUpdate(parked) && updateKey(parked) === updateKey(operation));
+  if (isNodeUpdate(operation) || isCommentUpdate(operation)) {
+    removeWhere(
+      state.failed,
+      (parked) => (isNodeUpdate(parked) || isCommentUpdate(parked)) && updateKey(parked) === updateKey(operation),
+    );
   }
-  if (!targetsParkedNode(operation)) return false;
+  if (!targetsParkedNode(operation) && !targetsParkedComment(operation)) return false;
 
   parkWithCreate(operation);
 
@@ -319,6 +350,10 @@ const runOperation = async (operation: Exclude<TCanvasOperation, { type: 'update
         text: operation.text,
         richText: operation.richText,
       });
+
+      return;
+    case 'updateComment':
+      await updateNodeComment(operation.id, operation.text, operation.richText);
 
       return;
     case 'deleteComment':

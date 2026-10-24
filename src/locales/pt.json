@@ -288,7 +288,7 @@
         "validBadge": "Válido",
         "invalidBadge": "Inválido",
         "affectedBadge": "Afetada",
-        "defaultLabel": "Novo nó",
+        "placeholder": "Novo nó",
         "showMore": "Mostrar mais",
         "showLess": "Mostrar menos",
         "viewComments": "Ver comentários",
@@ -316,7 +316,18 @@
       },
       "comments": {
         "deleteAriaLabel": "Eliminar comentário",
-        "deleteTitle": "Eliminar comentário"
+        "editAriaLabel": "Editar comentário",
+        "editorAriaLabel": "Texto do comentário",
+        "saveEdit": "Guardar alterações",
+        "cancelEdit": "Cancelar edição"
+      },
+      "authorship": {
+        "justNow": "agora mesmo",
+        "edited": "editado",
+        "createdDetail": "Criado: {time}",
+        "editedDetail": "Editado por {name} · {time}",
+        "formerMember": "Antigo membro",
+        "deletedAccount": "Conta eliminada"
       },
       "formatting": {
         "toolbar": "Formatação de texto",
@@ -488,7 +499,7 @@
         },
         "baseNodeText": {
           "title": "Escreva a afirmação",
-          "body": "Mude para a ferramenta Selecionar (tecla V), faça duplo clique no novo nó, substitua o texto provisório pela sua afirmação e prima Enter."
+          "body": "Mude para a ferramenta Selecionar (tecla V), faça duplo clique no novo nó, escreva a sua afirmação e prima Enter."
         },
         "baseConnect": {
           "title": "Ligue-o à pergunta",
@@ -740,7 +751,7 @@
         },
         "toolsAdd": {
           "title": "Adicionar nó",
-          "body": "Um clique num espaço vazio adiciona um nó com uma etiqueta provisória. Tecla N."
+          "body": "Um clique num espaço vazio adiciona um nó vazio. Tecla N."
         },
         "toolsConnect": {
           "title": "Ligar",

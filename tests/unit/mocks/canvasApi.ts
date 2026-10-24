@@ -16,3 +16,4 @@ export const updateCanvasNodeAnswer = vi.fn();
 export const updateCanvasNodeLabel = vi.fn();
 export const updateCanvasNodePositions = vi.fn();
 export const updateCanvasNodeStatus = vi.fn();
+export const updateNodeComment = vi.fn();

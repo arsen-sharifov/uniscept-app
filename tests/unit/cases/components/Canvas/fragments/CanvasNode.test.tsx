@@ -3,7 +3,15 @@ import { ReactFlowProvider } from '@xyflow/react';
 import { afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { listenOnPage, stubResizeObserver } from '@mocks/browser';
-import { THREAD_ID, canvasEdge, canvasNode, comment, nodeProps } from '@mocks/canvas';
+import {
+  CANVAS_AUTHORS,
+  THREAD_ID,
+  canvasEdge,
+  canvasNode,
+  comment,
+  editedForeignNode,
+  nodeProps,
+} from '@mocks/canvas';
 import { TRANSLATIONS } from '@mocks/i18n';
 import {
   FORMATTED_DOCUMENT,
@@ -42,12 +50,66 @@ afterEach(() => {
 });
 
 describe('CanvasNode', () => {
+  describe('GIVEN a node a member wrote last year and edited since', () => {
+    beforeEach(() => {
+      usePermissionsStore.getState().setAccess('ws-1', 'user-1', FULL_ACCESS);
+      useCanvasStore
+        .getState()
+        .loadCanvas(THREAD_ID, { nodes: [editedForeignNode('n1')], edges: [], authors: CANVAS_AUTHORS });
+    });
+
+    describe('WHEN the node renders', () => {
+      beforeEach(() => {
+        render(
+          <ReactFlowProvider>
+            <CanvasNode {...nodeProps(editedForeignNode('n1'))} />
+          </ReactFlowProvider>,
+        );
+      });
+
+      test('THEN the author, the date and the edit label show under the text', () => {
+        expect(screen.getByText('Ilya M.')).toBeInTheDocument();
+        expect(screen.getByText('Mar 1, 2025')).toBeInTheDocument();
+        expect(screen.getByText(TRANSLATIONS.platform.canvas.authorship.edited)).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe("GIVEN the workspace owner with someone else's node open for editing", () => {
+    beforeEach(() => {
+      usePermissionsStore.getState().setAccess('ws-1', 'user-1', FULL_ACCESS);
+      useCanvasStore
+        .getState()
+        .loadCanvas(THREAD_ID, { nodes: [editedForeignNode('n1')], edges: [], authors: CANVAS_AUTHORS });
+      useCanvasStore.getState().setEditingNodeId('n1');
+    });
+
+    describe('WHEN the node renders', () => {
+      beforeEach(async () => {
+        render(
+          <ReactFlowProvider>
+            <CanvasNode {...nodeProps(editedForeignNode('n1'))} />
+          </ReactFlowProvider>,
+        );
+        await act(async () => {
+          await preloadRichTextEditor();
+        });
+      });
+
+      test('THEN no textbox renders and the text stays read-only', () => {
+        expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+        expect(screen.getByText('Node n1')).toBeInTheDocument();
+      });
+    });
+  });
+
   describe('GIVEN an invalid node linked into the graph', () => {
     beforeEach(() => {
       usePermissionsStore.getState().setAccess('ws-1', 'user-1', FULL_ACCESS);
       useCanvasStore.getState().loadCanvas(THREAD_ID, {
-        nodes: [canvasNode('n1', { status: 'invalid' }), canvasNode('n2')],
+        nodes: [canvasNode('n1', { status: 'invalid', createdBy: 'user-1' }), canvasNode('n2')],
         edges: [canvasEdge('e1', 'n1', 'n2')],
+        authors: {},
       });
     });
 
@@ -55,7 +117,7 @@ describe('CanvasNode', () => {
       beforeEach(() => {
         render(
           <ReactFlowProvider>
-            <CanvasNode {...nodeProps(canvasNode('n1', { status: 'invalid' }), true)} />
+            <CanvasNode {...nodeProps(canvasNode('n1', { status: 'invalid', createdBy: 'user-1' }), true)} />
           </ReactFlowProvider>,
         );
       });
@@ -76,7 +138,7 @@ describe('CanvasNode', () => {
         useCanvasStore.getState().setEditingNodeId('n1');
         render(
           <ReactFlowProvider>
-            <CanvasNode {...nodeProps(canvasNode('n1', { status: 'invalid' }))} />
+            <CanvasNode {...nodeProps(canvasNode('n1', { status: 'invalid', createdBy: 'user-1' }))} />
           </ReactFlowProvider>,
         );
         await screen.findByRole('textbox');
@@ -96,6 +158,7 @@ describe('CanvasNode', () => {
       useCanvasStore.getState().loadCanvas(THREAD_ID, {
         nodes: [canvasNode('n1', { isNew: true, eligibleHint: true })],
         edges: [],
+        authors: {},
       });
       render(
         <ReactFlowProvider>
@@ -120,6 +183,7 @@ describe('CanvasNode', () => {
       useCanvasStore.getState().loadCanvas(THREAD_ID, {
         nodes: [canvasNode('n1', { comments: [comment('c1')] })],
         edges: [],
+        authors: {},
       });
       useCanvasStore.getState().setOpenCommentsNodeId('n1');
       render(
@@ -131,8 +195,8 @@ describe('CanvasNode', () => {
     });
 
     describe('WHEN the panel renders', () => {
-      test('THEN it sits beside the card and is left out of exports', () => {
-        expect(commentsPanel()).toHaveClass('nodrag', 'left-full');
+      test('THEN it sits beside the card, keeps keys and drags away from the canvas and is left out of exports', () => {
+        expect(commentsPanel()).toHaveClass('nodrag', 'nokey', 'left-full');
         expect(commentsPanel()).toHaveAttribute('data-export-omit');
         expect(screen.getByText('Comment c1')).toBeInTheDocument();
       });
@@ -205,6 +269,46 @@ describe('CanvasNode', () => {
           screen.getByRole('textbox', { name: TRANSLATIONS.platform.canvas.node.addCommentPlaceholder }),
         ).toHaveTextContent(FORMATTED_TEXT);
         expect(screen.getByText('now').tagName).toBe('STRONG');
+      });
+    });
+
+    describe('WHEN their comment is retyped in the editor and the panel is closed and reopened', () => {
+      beforeEach(async () => {
+        fireEvent.click(screen.getByRole('button', { name: TRANSLATIONS.platform.canvas.comments.editAriaLabel }));
+        const editor = await screen.findByRole('textbox', {
+          name: TRANSLATIONS.platform.canvas.comments.editorAriaLabel,
+        });
+        act(() => {
+          editorOf(editor).commands.setContent(TRAILING_SPACE_DOCUMENT, { emitUpdate: true });
+        });
+        fireEvent.click(screen.getByRole('button', { name: TRANSLATIONS.platform.canvas.node.closeComments }));
+        fireEvent.click(screen.getByRole('button', { name: TRANSLATIONS.platform.canvas.node.viewComments }));
+        await screen.findByRole('textbox', { name: TRANSLATIONS.platform.canvas.comments.editorAriaLabel });
+      });
+
+      test('THEN the edit is still open with the unfinished text', () => {
+        expect(
+          screen.getByRole('textbox', { name: TRANSLATIONS.platform.canvas.comments.editorAriaLabel }),
+        ).toHaveTextContent('Check the ', { normalizeWhitespace: false });
+      });
+    });
+
+    describe('WHEN their comment is opened for editing from the keyboard and saved', () => {
+      beforeEach(async () => {
+        const editButton = screen.getByRole('button', { name: TRANSLATIONS.platform.canvas.comments.editAriaLabel });
+        editButton.focus();
+        fireEvent.click(editButton);
+        fireEvent.keyDown(
+          await screen.findByRole('textbox', { name: TRANSLATIONS.platform.canvas.comments.editorAriaLabel }),
+          { key: 'Enter' },
+        );
+      });
+
+      test('THEN the editor closes and focus goes back to the edit button', () => {
+        expect(
+          screen.queryByRole('textbox', { name: TRANSLATIONS.platform.canvas.comments.editorAriaLabel }),
+        ).not.toBeInTheDocument();
+        expect(screen.getByRole('button', { name: TRANSLATIONS.platform.canvas.comments.editAriaLabel })).toHaveFocus();
       });
     });
   });

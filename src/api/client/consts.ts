@@ -15,12 +15,12 @@ export const ANSWERED_THREAD_SELECT = 'thread_id, threads!inner(workspace_id)';
 export const RESOLUTION_NODE_SELECT =
   'id, thread_id, type, position_x, position_y, label, status, is_answer, source_node_id, created_by, created_at, updated_at';
 
-export const CANVAS_NODE_SELECT = `${RESOLUTION_NODE_SELECT}, rich_label`;
+export const CANVAS_NODE_SELECT = `${RESOLUTION_NODE_SELECT}, rich_label, edited_at, edited_by`;
 
 export const CANVAS_EDGE_SELECT =
   'id, thread_id, source_node_id, target_node_id, source_handle, target_handle, created_at';
 
-export const NODE_COMMENT_SELECT = 'id, node_id, author_id, text, rich_text, created_at';
+export const NODE_COMMENT_SELECT = 'id, node_id, author_id, text, rich_text, created_at, edited_at';
 
 export const THREAD_SELECT = 'id, workspace_id, folder_id, name, position';
 

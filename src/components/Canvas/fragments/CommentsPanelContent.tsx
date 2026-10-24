@@ -2,9 +2,10 @@
 
 import { MessageSquare, X } from 'lucide-react';
 
-import type { IComment, IRichTextDocument } from '@interfaces';
+import type { IComment, ICommentEditDraft, IRichTextDocument, IRichTextValue } from '@interfaces';
 
 import { useTranslations } from '@/i18n';
+import { isSameRichTextValue } from '@/lib/richText';
 import { useCanvasStore, usePermissionsStore } from '@/lib/stores';
 
 import { CommentComposer } from './CommentComposer';
@@ -15,15 +16,34 @@ interface ICommentsPanelContentProps {
   comments: IComment[];
   draft: IRichTextDocument | null;
   onDraftChange: (draft: IRichTextDocument | null) => void;
+  edit: ICommentEditDraft | null;
+  onEditChange: (edit: ICommentEditDraft | null) => void;
 }
 
-export const CommentsPanelContent = ({ nodeId, comments, draft, onDraftChange }: ICommentsPanelContentProps) => {
+export const CommentsPanelContent = ({
+  nodeId,
+  comments,
+  draft,
+  onDraftChange,
+  edit,
+  onEditChange,
+}: ICommentsPanelContentProps) => {
   const t = useTranslations();
 
   const setOpenCommentsNodeId = useCanvasStore((state) => state.setOpenCommentsNodeId);
+  const updateComment = useCanvasStore((state) => state.updateComment);
   const deleteComment = useCanvasStore((state) => state.deleteComment);
   const userId = usePermissionsStore((state) => state.userId);
   const canComment = usePermissionsStore((state) => state.canComment);
+
+  const editingId = edit && comments.some((comment) => comment.id === edit.commentId) ? edit.commentId : null;
+
+  const saveComment = (comment: IComment, value: IRichTextValue) => {
+    onEditChange(null);
+    if (!value.text || isSameRichTextValue(value, comment.text, comment.richText)) return;
+
+    updateComment(nodeId, comment.id, value.text, value.document);
+  };
 
   return (
     <>
@@ -47,7 +67,7 @@ export const CommentsPanelContent = ({ nodeId, comments, draft, onDraftChange }:
         </button>
       </div>
 
-      <div className="nowheel nopan flex max-h-56 flex-col gap-1.5 overflow-y-auto px-3 py-2.5">
+      <div className="nowheel nopan flex max-h-56 flex-col gap-1.5 overflow-y-auto bg-[color:var(--surface-soft)] p-2.5">
         {comments.length === 0 ? (
           <p className="mx-auto max-w-[200px] py-4 text-center text-[11px] leading-snug text-[color:var(--text-muted)]">
             {t.platform.canvas.node.noComments}
@@ -57,8 +77,14 @@ export const CommentsPanelContent = ({ nodeId, comments, draft, onDraftChange }:
             <CommentItem
               key={comment.id}
               comment={comment}
-              canDelete={canComment && comment.authorId === userId}
-              onDelete={(commentId) => deleteComment(nodeId, commentId)}
+              canManage={canComment && comment.authorId === userId && (editingId === null || editingId === comment.id)}
+              isEditing={editingId === comment.id}
+              draft={editingId === comment.id ? edit?.document : undefined}
+              onEdit={() => onEditChange({ commentId: comment.id })}
+              onDraftChange={(document) => onEditChange({ commentId: comment.id, document })}
+              onCancelEdit={() => onEditChange(null)}
+              onSave={(value) => saveComment(comment, value)}
+              onDelete={() => deleteComment(nodeId, comment.id)}
             />
           ))
         )}

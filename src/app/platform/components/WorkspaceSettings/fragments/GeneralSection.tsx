@@ -1,11 +1,10 @@
 'use client';
 
 import { CalendarDays, LayoutGrid, Shield, Users } from 'lucide-react';
-import { useFormatter } from 'next-intl';
 import { type KeyboardEvent, useState } from 'react';
 
 import { MAX_NAME_LENGTH } from '@constants';
-import { useTranslations } from '@/i18n';
+import { useFormatter, useTranslations } from '@/i18n';
 
 import { DetailRow } from './DetailRow';
 import { SettingsInput, SettingsPrimaryButton } from '../../Settings';

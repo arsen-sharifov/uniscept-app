@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
 import { ReferenceNode } from '@/components';
 
-import { defaultReference, longPathReference, selectedReference } from './consts';
+import { defaultReference, emptySourceReference, longPathReference, selectedReference } from './consts';
 import { SingleNodeFlow } from '../../components';
 import { ARG_CATEGORIES } from '../../consts';
 import { WithCanvasStage, WithReactFlow, withCanvasStore } from '../../decorators';
@@ -14,7 +14,7 @@ const meta: Meta<typeof ReferenceNode> = {
     docs: {
       description: {
         component:
-          'Cross-thread reference card — a thin pointer to a node living on another canvas. It shares the card shell of a reasoning node and is told apart by its band: a 3px `--ref` strip, the link icon, and the REFERENCE status word, with `--ref` handles to match. Double-click or the arrow button navigate to the source canvas in the real app; here the router push is harmless.',
+          'Cross-thread reference card — a thin pointer to a node living on another canvas. It shares the card shell of a reasoning node and is told apart by its band: a 3px `--ref` strip, the link icon, and the REFERENCE status word, with `--ref` handles to match. The footer names who placed the reference and when. Double-click or the arrow button navigate to the source canvas in the real app; here the router push is harmless.',
       },
     },
   },
@@ -76,4 +76,16 @@ export const LongPath: Story = {
   },
   decorators: [withCanvasStore({ nodes: [longPathReference] })],
   render: () => <SingleNodeFlow node={longPathReference} />,
+};
+
+export const EmptySource: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story: 'The source node has no text yet, so the card shows the muted `New node` placeholder in its place.',
+      },
+    },
+  },
+  decorators: [withCanvasStore({ nodes: [emptySourceReference] })],
+  render: () => <SingleNodeFlow node={emptySourceReference} />,
 };

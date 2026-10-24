@@ -66,6 +66,7 @@ export const nodeCommentRow = (overrides?: Partial<INodeCommentRow>): INodeComme
   text: 'Comment',
   rich_text: null,
   created_at: '2026-01-01T00:00:00Z',
+  edited_at: null,
   ...overrides,
 });
 
@@ -83,6 +84,8 @@ export const canvasNodeRow = (overrides?: Partial<ICanvasNodeRow>): ICanvasNodeR
   created_by: 'user-1',
   created_at: '2026-01-01T00:00:00Z',
   updated_at: '2026-01-01T00:00:00Z',
+  edited_at: null,
+  edited_by: null,
   ...overrides,
 });
 

@@ -1,6 +1,16 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { THREAD_ID, canvasEdge, canvasNode, comment, questionNode, referenceNode } from '@mocks/canvas';
+import {
+  CANVAS_AUTHORS,
+  CANVAS_CONTENT,
+  THREAD_ID,
+  canvasEdge,
+  canvasNode,
+  comment,
+  commentedForeignNode,
+  questionNode,
+  referenceNode,
+} from '@mocks/canvas';
 import { FORMATTED_DOCUMENT, FORMATTED_TEXT, RESTYLED_DOCUMENT } from '@mocks/richText';
 import { COMMENT_ACCESS, EDIT_ACCESS, FULL_ACCESS, READONLY_ACCESS } from '@mocks/roles';
 import { ECanvasTool } from '@/components/tools';
@@ -25,37 +35,44 @@ describe('canvasStore', () => {
       useCanvasStore.getState().loadCanvas(THREAD_ID, {
         nodes: [canvasNode('own', { createdBy: 'user-1' }), canvasNode('foreign', { createdBy: 'user-2' })],
         edges: [canvasEdge('e1', 'own', 'foreign')],
+        authors: {},
       });
       unsubscribers.push(subscribeCanvasOperations(onOperation));
     });
 
     describe('WHEN they add a node', () => {
       beforeEach(() => {
-        useCanvasStore.getState().addNode({ x: 10, y: 20 }, 'Idea');
+        useCanvasStore.getState().addNode({ x: 10, y: 20 });
       });
 
-      test('THEN the node appears with the author and isNew flag', () => {
-        const added = useCanvasStore.getState().nodes.find((node) => node.data.label === 'Idea');
-
-        expect(added).toMatchObject({
-          data: { label: 'Idea', status: null, isAnswer: false, comments: [], createdBy: 'user-1', isNew: true },
+      test('THEN the node appears without text, with the author and isNew flag', () => {
+        expect(useCanvasStore.getState().nodes.at(-1)).toMatchObject({
+          data: {
+            label: '',
+            status: null,
+            isAnswer: false,
+            comments: [],
+            createdBy: 'user-1',
+            createdAt: expect.any(String),
+            isNew: true,
+          },
         });
       });
 
       test('THEN a create operation is emitted', () => {
         expect(onOperation).toHaveBeenCalledExactlyOnceWith(
-          expect.objectContaining({ type: 'createCanvasNode', threadId: THREAD_ID, x: 10, y: 20, label: 'Idea' }),
+          expect.objectContaining({ type: 'createCanvasNode', threadId: THREAD_ID, x: 10, y: 20, label: '' }),
         );
       });
     });
 
     describe('WHEN they add a node under an id chosen up front', () => {
       beforeEach(() => {
-        useCanvasStore.getState().addNode({ x: 0, y: 0 }, 'Scripted', 'preset-id');
+        useCanvasStore.getState().addNode({ x: 0, y: 0 }, 'preset-id');
       });
 
       test('THEN the node keeps that id', () => {
-        expect(useCanvasStore.getState().nodes.find((node) => node.id === 'preset-id')?.data.label).toBe('Scripted');
+        expect(useCanvasStore.getState().nodes.map((node) => node.id)).toContain('preset-id');
       });
     });
 
@@ -82,7 +99,7 @@ describe('canvasStore', () => {
       beforeEach(() => {
         useCanvasStore.getState().requestFit();
         requested = useCanvasStore.getState().fitRequest;
-        useCanvasStore.getState().loadCanvas('another-thread', { nodes: [], edges: [] });
+        useCanvasStore.getState().loadCanvas('another-thread', { nodes: [], edges: [], authors: {} });
       });
 
       test('THEN the request counter is not rewound, so the switch does not fire a fit of its own', () => {
@@ -224,6 +241,43 @@ describe('canvasStore', () => {
       test('THEN a label operation is emitted', () => {
         expect(onOperation).toHaveBeenCalledExactlyOnceWith({ type: 'updateNodeLabel', id: 'own', label: 'Renamed' });
       });
+
+      test('THEN the node is marked edited by them', () => {
+        expect(useCanvasStore.getState().nodes.find((node) => node.id === 'own')?.data).toMatchObject({
+          editedAt: expect.any(String),
+          editedBy: 'user-1',
+        });
+      });
+    });
+
+    describe('WHEN they write the first text into a node they just added', () => {
+      beforeEach(() => {
+        useCanvasStore.getState().addNode({ x: 0, y: 0 }, 'fresh');
+        useCanvasStore.getState().updateNodeLabel('fresh', 'First thought');
+      });
+
+      test('THEN the text counts as written, not as edited', () => {
+        const data = useCanvasStore.getState().nodes.find((node) => node.id === 'fresh')?.data;
+
+        expect(data?.label).toBe('First thought');
+        expect(data?.editedAt).toBeUndefined();
+      });
+    });
+
+    describe('WHEN they rewrite the first text of a node they just added', () => {
+      beforeEach(() => {
+        useCanvasStore.getState().addNode({ x: 0, y: 0 }, 'fresh');
+        useCanvasStore.getState().updateNodeLabel('fresh', 'First thought');
+        useCanvasStore.getState().updateNodeLabel('fresh', 'Second thought');
+      });
+
+      test('THEN the node is marked edited by them', () => {
+        expect(useCanvasStore.getState().nodes.find((node) => node.id === 'fresh')?.data).toMatchObject({
+          label: 'Second thought',
+          editedAt: expect.any(String),
+          editedBy: 'user-1',
+        });
+      });
     });
 
     describe('WHEN they format the label of their own node', () => {
@@ -332,7 +386,10 @@ describe('canvasStore', () => {
       test('THEN the node appears with the author and the search closes', () => {
         const added = useCanvasStore.getState().nodes.find((node) => node.data.label === 'Ref');
 
-        expect(added).toMatchObject({ position: { x: 10, y: 20 }, data: { createdBy: 'user-1' } });
+        expect(added).toMatchObject({
+          position: { x: 10, y: 20 },
+          data: { createdBy: 'user-1', createdAt: expect.any(String) },
+        });
         expect(useCanvasStore.getState().referenceSearchPosition).toBeNull();
       });
 
@@ -391,7 +448,7 @@ describe('canvasStore', () => {
         expect(copies).toHaveLength(2);
         expect(copy).toMatchObject({
           position: { x: 24, y: 24 },
-          data: { isAnswer: false, comments: [], createdBy: 'user-1', isNew: true },
+          data: { isAnswer: false, comments: [], createdBy: 'user-1', createdAt: expect.any(String), isNew: true },
         });
       });
 
@@ -418,6 +475,7 @@ describe('canvasStore', () => {
       useCanvasStore.getState().loadCanvas(THREAD_ID, {
         nodes: [canvasNode('own', { createdBy: 'user-1', label: FORMATTED_TEXT, richLabel: FORMATTED_DOCUMENT })],
         edges: [],
+        authors: {},
       });
       unsubscribers.push(subscribeCanvasOperations(onOperation));
     });
@@ -517,12 +575,13 @@ describe('canvasStore', () => {
     });
   });
 
-  describe('GIVEN the workspace owner in a canvas with a foreign node', () => {
+  describe('GIVEN the workspace owner in a canvas with a foreign node a member wrote and commented on', () => {
     beforeEach(() => {
       usePermissionsStore.getState().setAccess('ws-1', 'user-1', FULL_ACCESS);
       useCanvasStore.getState().loadCanvas(THREAD_ID, {
-        nodes: [canvasNode('foreign', { createdBy: 'user-2' })],
+        nodes: [commentedForeignNode('foreign')],
         edges: [],
+        authors: {},
       });
       unsubscribers.push(subscribeCanvasOperations(onOperation));
     });
@@ -541,23 +600,38 @@ describe('canvasStore', () => {
       });
     });
 
+    describe('WHEN the deletion of the foreign node is undone', () => {
+      beforeEach(() => {
+        useCanvasStore.getState().deleteNode('foreign');
+        onOperation.mockClear();
+        useCanvasStore.getState().undo();
+      });
+
+      test('THEN the node and its comment come back with their authors and creation times', () => {
+        expect(useCanvasStore.getState().nodes).toEqual([commentedForeignNode('foreign')]);
+      });
+
+      test('THEN the node and its comment are created again under their own ids', () => {
+        expect(onOperation.mock.calls.map(([operation]) => operation)).toEqual([
+          expect.objectContaining({ type: 'createCanvasNode', id: 'foreign' }),
+          expect.objectContaining({ type: 'createComment', id: 'c-member', nodeId: 'foreign' }),
+        ]);
+      });
+    });
+
     describe('WHEN they rename the foreign node', () => {
       beforeEach(() => {
         useCanvasStore.getState().updateNodeLabel('foreign', 'Curated');
       });
 
-      test('THEN the label updates', () => {
+      test('THEN the label stays as its author wrote it', () => {
         expect(useCanvasStore.getState().nodes.find((node) => node.id === 'foreign')).toMatchObject({
-          data: { label: 'Curated' },
+          data: { label: 'Node foreign' },
         });
       });
 
-      test('THEN a label operation is emitted', () => {
-        expect(onOperation).toHaveBeenCalledExactlyOnceWith({
-          type: 'updateNodeLabel',
-          id: 'foreign',
-          label: 'Curated',
-        });
+      test('THEN nothing is emitted', () => {
+        expect(onOperation).not.toHaveBeenCalled();
       });
     });
   });
@@ -571,7 +645,7 @@ describe('canvasStore', () => {
 
     describe('WHEN they try to add, connect or duplicate nodes', () => {
       beforeEach(() => {
-        useCanvasStore.getState().addNode({ x: 0, y: 0 }, 'Orphan');
+        useCanvasStore.getState().addNode({ x: 0, y: 0 });
         useCanvasStore.getState().duplicateNode('a');
         useCanvasStore.getState().addReferenceNode({ x: 0, y: 0 }, referenceNode('ref').data);
         useCanvasStore
@@ -593,13 +667,14 @@ describe('canvasStore', () => {
       useCanvasStore.getState().loadCanvas(THREAD_ID, {
         nodes: [canvasNode('n1', { createdBy: 'user-1' }), canvasNode('n2', { createdBy: 'user-2' })],
         edges: [canvasEdge('e1', 'n1', 'n2')],
+        authors: {},
       });
       unsubscribers.push(subscribeCanvasOperations(onOperation));
     });
 
     describe('WHEN they try to add a node or a reference', () => {
       beforeEach(() => {
-        useCanvasStore.getState().addNode({ x: 0, y: 0 }, 'Sneaky');
+        useCanvasStore.getState().addNode({ x: 0, y: 0 });
         useCanvasStore.getState().addReferenceNode({ x: 0, y: 0 }, referenceNode('ref').data);
       });
 
@@ -710,25 +785,35 @@ describe('canvasStore', () => {
     });
   });
 
-  describe('GIVEN a viewer looking at an existing comment', () => {
+  describe('GIVEN a viewer looking at their own earlier comment', () => {
     beforeEach(() => {
       usePermissionsStore.getState().setAccess('ws-1', 'user-1', READONLY_ACCESS);
       useCanvasStore.getState().loadCanvas(THREAD_ID, {
         nodes: [canvasNode('n1', { comments: [comment('c-own')] })],
         edges: [],
+        authors: {},
       });
       unsubscribers.push(subscribeCanvasOperations(onOperation));
     });
 
-    describe('WHEN they try to delete their own comment', () => {
+    describe('WHEN they try to delete it', () => {
       beforeEach(() => {
         useCanvasStore.getState().deleteComment('n1', 'c-own');
       });
 
       test('THEN the comment stays and nothing is emitted', () => {
-        expect(useCanvasStore.getState().nodes.find((node) => node.id === 'n1')).toMatchObject({
-          data: { comments: [comment('c-own')] },
-        });
+        expect(useCanvasStore.getState().nodes[0]?.data.comments).toEqual([comment('c-own')]);
+        expect(onOperation).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('WHEN they try to rewrite it', () => {
+      beforeEach(() => {
+        useCanvasStore.getState().updateComment('n1', 'c-own', 'Reworded');
+      });
+
+      test('THEN the comment stays and nothing is emitted', () => {
+        expect(useCanvasStore.getState().nodes[0]?.data.comments).toEqual([comment('c-own')]);
         expect(onOperation).not.toHaveBeenCalled();
       });
     });
@@ -747,6 +832,7 @@ describe('canvasStore', () => {
           }),
         ],
         edges: [],
+        authors: {},
       });
       unsubscribers.push(subscribeCanvasOperations(onOperation));
     });
@@ -764,7 +850,7 @@ describe('canvasStore', () => {
             comments: [
               comment('c-own', { text: 'mine' }),
               comment('c-foreign', { text: 'theirs', authorId: 'user-2' }),
-              expect.objectContaining({ text: 'Nice catch', authorId: 'user-1' }),
+              expect.objectContaining({ text: 'Nice catch', authorId: 'user-1', createdAt: expect.any(String) }),
             ],
           },
         });
@@ -813,6 +899,64 @@ describe('canvasStore', () => {
       });
     });
 
+    describe('WHEN they rewrite their own comment', () => {
+      beforeEach(() => {
+        useCanvasStore.getState().updateComment('n1', 'c-own', FORMATTED_TEXT, FORMATTED_DOCUMENT);
+      });
+
+      test('THEN the comment takes the new text and is marked edited', () => {
+        expect(useCanvasStore.getState().nodes[0]?.data.comments).toEqual([
+          { ...comment('c-own'), text: FORMATTED_TEXT, richText: FORMATTED_DOCUMENT, editedAt: expect.any(String) },
+          comment('c-foreign', { text: 'theirs', authorId: 'user-2' }),
+        ]);
+      });
+
+      test('THEN a rewrite operation is emitted', () => {
+        expect(onOperation).toHaveBeenCalledExactlyOnceWith({
+          type: 'updateComment',
+          id: 'c-own',
+          nodeId: 'n1',
+          text: FORMATTED_TEXT,
+          richText: FORMATTED_DOCUMENT,
+        });
+      });
+    });
+
+    describe("WHEN they rewrite someone else's comment", () => {
+      beforeEach(() => {
+        useCanvasStore.getState().updateComment('n1', 'c-foreign', 'Overwritten');
+      });
+
+      test('THEN the comment stays and nothing is emitted', () => {
+        expect(useCanvasStore.getState().nodes[0]?.data.comments).toEqual([
+          comment('c-own', { text: 'mine' }),
+          comment('c-foreign', { text: 'theirs', authorId: 'user-2' }),
+        ]);
+        expect(onOperation).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('WHEN a rewrite of their own comment is undone', () => {
+      beforeEach(() => {
+        useCanvasStore.getState().updateComment('n1', 'c-own', 'Reworded');
+        onOperation.mockClear();
+        useCanvasStore.getState().undo();
+      });
+
+      test('THEN the earlier text comes back, still marked edited, and the rewrite is replayed', () => {
+        expect(useCanvasStore.getState().nodes[0]?.data.comments).toEqual([
+          { ...comment('c-own', { text: 'mine' }), editedAt: expect.any(String) },
+          comment('c-foreign', { text: 'theirs', authorId: 'user-2' }),
+        ]);
+        expect(onOperation).toHaveBeenCalledExactlyOnceWith({
+          type: 'updateComment',
+          id: 'c-own',
+          nodeId: 'n1',
+          text: 'mine',
+        });
+      });
+    });
+
     describe('WHEN they delete their own comment', () => {
       beforeEach(() => {
         useCanvasStore.getState().deleteComment('n1', 'c-own');
@@ -826,6 +970,30 @@ describe('canvasStore', () => {
 
       test('THEN a delete comment operation is emitted', () => {
         expect(onOperation).toHaveBeenCalledExactlyOnceWith({ type: 'deleteComment', id: 'c-own' });
+      });
+    });
+
+    describe('WHEN the deletion of their own comment is undone', () => {
+      beforeEach(() => {
+        useCanvasStore.getState().deleteComment('n1', 'c-own');
+        onOperation.mockClear();
+        useCanvasStore.getState().undo();
+      });
+
+      test('THEN the comment comes back with its author and creation time', () => {
+        expect(useCanvasStore.getState().nodes[0]?.data.comments).toEqual([
+          comment('c-own', { text: 'mine' }),
+          comment('c-foreign', { text: 'theirs', authorId: 'user-2' }),
+        ]);
+      });
+
+      test('THEN the comment is created again under its own id', () => {
+        expect(onOperation).toHaveBeenCalledExactlyOnceWith({
+          type: 'createComment',
+          id: 'c-own',
+          nodeId: 'n1',
+          text: 'mine',
+        });
       });
     });
 
@@ -850,12 +1018,103 @@ describe('canvasStore', () => {
     });
   });
 
+  describe('GIVEN an editor whose own node already holds written text next to their reference', () => {
+    beforeEach(() => {
+      usePermissionsStore.getState().setAccess('ws-1', 'user-1', EDIT_ACCESS);
+      useCanvasStore.getState().loadCanvas(THREAD_ID, {
+        nodes: [canvasNode('own', { createdBy: 'user-1' }), referenceNode('ref', { createdBy: 'user-1' })],
+        edges: [],
+        authors: {},
+      });
+      useCanvasStore.getState().updateNodeLabel('own', 'Rewritten');
+      unsubscribers.push(subscribeCanvasOperations(onOperation));
+    });
+
+    describe('WHEN the rewrite is undone', () => {
+      beforeEach(() => {
+        useCanvasStore.getState().undo();
+      });
+
+      test('THEN the earlier text comes back marked edited', () => {
+        expect(useCanvasStore.getState().nodes[0]?.data).toMatchObject({
+          label: 'Node own',
+          editedAt: expect.any(String),
+          editedBy: 'user-1',
+        });
+        expect(onOperation).toHaveBeenCalledExactlyOnceWith({ type: 'updateNodeLabel', id: 'own', label: 'Node own' });
+      });
+
+      test('THEN the reference beside it is not marked edited', () => {
+        expect(useCanvasStore.getState().nodes[1]?.data).not.toHaveProperty('editedAt');
+      });
+    });
+  });
+
+  describe('GIVEN an editor who wrote the first text of a fresh node', () => {
+    beforeEach(() => {
+      usePermissionsStore.getState().setAccess('ws-1', 'user-1', EDIT_ACCESS);
+      useCanvasStore.getState().loadCanvas(THREAD_ID, {
+        nodes: [canvasNode('own', { createdBy: 'user-1', label: '' })],
+        edges: [],
+        authors: {},
+      });
+      useCanvasStore.getState().updateNodeLabel('own', 'First thought');
+    });
+
+    describe('WHEN the first text is undone', () => {
+      beforeEach(() => {
+        useCanvasStore.getState().undo();
+      });
+
+      test('THEN the node is empty again and marked edited, as the database records it', () => {
+        expect(useCanvasStore.getState().nodes[0]?.data).toMatchObject({ label: '', editedAt: expect.any(String) });
+      });
+    });
+
+    describe('WHEN the first text is undone and redone', () => {
+      beforeEach(() => {
+        useCanvasStore.getState().undo();
+        useCanvasStore.getState().redo();
+      });
+
+      test('THEN the text comes back still marked edited', () => {
+        expect(useCanvasStore.getState().nodes[0]?.data).toMatchObject({
+          label: 'First thought',
+          editedAt: expect.any(String),
+        });
+      });
+    });
+  });
+
+  describe('GIVEN a canvas loaded with the workspace authors', () => {
+    beforeEach(() => {
+      useCanvasStore.getState().loadCanvas(THREAD_ID, CANVAS_CONTENT);
+    });
+
+    describe('WHEN the store is read', () => {
+      test('THEN the authors are available by id', () => {
+        expect(useCanvasStore.getState().authors).toEqual(CANVAS_AUTHORS);
+      });
+    });
+
+    describe('WHEN the canvas is cleared', () => {
+      beforeEach(() => {
+        useCanvasStore.getState().clearCanvas();
+      });
+
+      test('THEN no authors are kept', () => {
+        expect(useCanvasStore.getState().authors).toEqual({});
+      });
+    });
+  });
+
   describe('GIVEN a canvas with a question node and a validated chain', () => {
     beforeEach(() => {
       usePermissionsStore.getState().setAccess('ws-1', 'user-1', EDIT_ACCESS);
       useCanvasStore.getState().loadCanvas(THREAD_ID, {
         nodes: [questionNode('q'), canvasNode('n1', { status: 'valid' }), canvasNode('n2'), canvasNode('n3')],
         edges: [canvasEdge('e-q1', 'q', 'n1'), canvasEdge('e-12', 'n1', 'n2')],
+        authors: {},
       });
       unsubscribers.push(subscribeCanvasOperations(onOperation));
     });
@@ -1006,6 +1265,7 @@ describe('canvasStore', () => {
       useCanvasStore.getState().loadCanvas(THREAD_ID, {
         nodes: [questionNode('q'), canvasNode('n1', { status: 'valid' })],
         edges: [canvasEdge('e-q1', 'q', 'n1'), canvasEdge('e-1q', 'n1', 'q')],
+        authors: {},
       });
       unsubscribers.push(subscribeCanvasOperations(onOperation));
     });
@@ -1035,6 +1295,7 @@ describe('canvasStore', () => {
           referenceNode('ref', { createdBy: 'user-1' }),
         ],
         edges: [],
+        authors: {},
       });
       unsubscribers.push(subscribeCanvasOperations(onOperation));
     });
@@ -1092,6 +1353,7 @@ describe('canvasStore', () => {
       useCanvasStore.getState().loadCanvas(THREAD_ID, {
         nodes: [canvasNode('n1', { createdBy: 'user-1' })],
         edges: [],
+        authors: {},
       });
     });
 
@@ -1125,6 +1387,7 @@ describe('canvasStore', () => {
       useCanvasStore.getState().loadCanvas(THREAD_ID, {
         nodes: [canvasNode('n1', { createdBy: 'user-1' })],
         edges: [],
+        authors: {},
       });
       unsubscribers.push(subscribeCanvasOperations(onOperation));
       useCanvasStore
@@ -1177,9 +1440,9 @@ describe('canvasStore', () => {
   describe('GIVEN an editor who just added a node', () => {
     beforeEach(() => {
       usePermissionsStore.getState().setAccess('ws-1', 'user-1', EDIT_ACCESS);
-      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [], edges: [] });
+      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [], edges: [], authors: {} });
       unsubscribers.push(subscribeCanvasOperations(onOperation));
-      useCanvasStore.getState().addNode({ x: 0, y: 0 }, 'Draft');
+      useCanvasStore.getState().addNode({ x: 0, y: 0 }, 'draft');
     });
 
     describe('WHEN the addition is undone', () => {
@@ -1205,13 +1468,12 @@ describe('canvasStore', () => {
       });
 
       test('THEN the node returns', () => {
-        expect(useCanvasStore.getState().nodes).toHaveLength(1);
-        expect(useCanvasStore.getState().nodes[0]).toMatchObject({ data: { label: 'Draft' } });
+        expect(useCanvasStore.getState().nodes.map((node) => node.id)).toEqual(['draft']);
       });
 
       test('THEN a create operation is emitted through the replay', () => {
         expect(onOperation).toHaveBeenCalledExactlyOnceWith(
-          expect.objectContaining({ type: 'createCanvasNode', label: 'Draft' }),
+          expect.objectContaining({ type: 'createCanvasNode', id: 'draft' }),
         );
       });
     });
@@ -1231,7 +1493,7 @@ describe('canvasStore', () => {
   describe('GIVEN a freshly loaded canvas with persisted nodes', () => {
     beforeEach(() => {
       usePermissionsStore.getState().setAccess('ws-1', 'user-1', EDIT_ACCESS);
-      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [canvasNode('n1')], edges: [] });
+      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [canvasNode('n1')], edges: [], authors: {} });
       unsubscribers.push(subscribeCanvasOperations(onOperation));
     });
 
@@ -1273,8 +1535,8 @@ describe('canvasStore', () => {
     describe('WHEN a fresh canvas loads over pending edits', () => {
       beforeEach(() => {
         useCanvasStore.getState().setEditingNodeId('n1');
-        useCanvasStore.getState().addNode({ x: 1, y: 1 }, 'Temp');
-        useCanvasStore.getState().loadCanvas('thread-2', { nodes: [canvasNode('n2')], edges: [] });
+        useCanvasStore.getState().addNode({ x: 1, y: 1 });
+        useCanvasStore.getState().loadCanvas('thread-2', { nodes: [canvasNode('n2')], edges: [], authors: {} });
       });
 
       test('THEN the overlays, history and content reset to the new thread', () => {
@@ -1302,6 +1564,7 @@ describe('canvasStore', () => {
       useCanvasStore.getState().loadCanvas(THREAD_ID, {
         nodes: [{ ...canvasNode('n1'), selected: true }],
         edges: [],
+        authors: {},
       });
       useCanvasStore.getState().setEditingNodeId('n1');
     });
@@ -1369,6 +1632,7 @@ describe('canvasStore', () => {
       useCanvasStore.getState().loadCanvas(THREAD_ID, {
         nodes: [canvasNode('n1'), canvasNode('n2')],
         edges: [{ ...canvasEdge('e1', 'n1', 'n2'), selected: true }],
+        authors: {},
       });
     });
 
@@ -1389,6 +1653,7 @@ describe('canvasStore', () => {
       useCanvasStore.getState().loadCanvas(THREAD_ID, {
         nodes: [canvasNode('n1', { createdBy: 'user-1' }), canvasNode('n2', { createdBy: 'user-1' })],
         edges: [canvasEdge('e1', 'n1', 'n2')],
+        authors: {},
       });
     });
 
@@ -1439,6 +1704,7 @@ describe('canvasStore', () => {
       useCanvasStore.getState().loadCanvas(THREAD_ID, {
         nodes: [canvasNode('n1', { createdBy: 'user-1' })],
         edges: [],
+        authors: {},
       });
       Array.from({ length: 105 }, (_, index) => `Rename ${index + 1}`).forEach((label) =>
         useCanvasStore.getState().updateNodeLabel('n1', label),
@@ -1475,7 +1741,7 @@ describe('canvasStore', () => {
 
   describe('GIVEN a loaded canvas', () => {
     beforeEach(() => {
-      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [canvasNode('n1')], edges: [] });
+      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [canvasNode('n1')], edges: [], authors: {} });
     });
 
     describe('WHEN the middle pan engages', () => {
@@ -1529,6 +1795,7 @@ describe('canvasStore', () => {
       useCanvasStore.getState().loadCanvas(THREAD_ID, {
         nodes: [canvasNode('a'), canvasNode('b', { createdBy: 'user-1' }), canvasNode('c')],
         edges: [canvasEdge('ab', 'a', 'b'), canvasEdge('ba', 'b', 'a'), canvasEdge('bc', 'b', 'c')],
+        authors: {},
       });
       unsubscribers.push(subscribeCanvasOperations(onOperation));
     });

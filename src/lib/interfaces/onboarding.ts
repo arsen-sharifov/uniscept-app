@@ -138,7 +138,6 @@ export type TExampleCanvasAct = Exclude<TExampleAct, IExampleThreadAct>;
 
 export interface IExampleCopy {
   question: string;
-  placeholder: string;
   nodes: Record<TExampleNodeKey, string>;
   comments: Record<TExampleOptionKey, string>;
 }

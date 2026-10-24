@@ -2,6 +2,8 @@ import type { IMockCanvasState } from '@story-interfaces';
 import { ECanvasTool } from '@/components';
 import { useCanvasStore } from '@/lib/stores';
 
+import { STORYBOOK_AUTHORS } from '../consts';
+
 const BASE_STATE: Required<IMockCanvasState> = {
   threadId: 'sb-thread',
   hydrated: true,
@@ -13,12 +15,14 @@ const BASE_STATE: Required<IMockCanvasState> = {
   editingNodeId: null,
   openCommentsNodeId: null,
   middlePan: false,
+  authors: STORYBOOK_AUTHORS,
 };
 
 const RESET_STATE: Required<IMockCanvasState> = {
   ...BASE_STATE,
   threadId: null,
   hydrated: false,
+  authors: {},
 };
 
 export const mockCanvasStore = (overrides: IMockCanvasState = {}): void => {

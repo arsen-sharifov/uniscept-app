@@ -87,8 +87,13 @@ export const ReferenceSearchResults = ({
             )}
           >
             {index === cursorIndex && <SelectionStrip />}
-            <span className="truncate font-grotesk text-[12.5px] font-medium tracking-tight text-[color:var(--text-strong)]">
-              {node.label}
+            <span
+              className={clsx(
+                'truncate font-grotesk text-[12.5px] font-medium tracking-tight',
+                node.label ? 'text-[color:var(--text-strong)]' : 'text-[color:var(--text-subtle)]',
+              )}
+            >
+              {node.label || t.platform.canvas.node.placeholder}
             </span>
             <span className="mt-0.5 flex items-center gap-1 truncate font-mono-ui text-[10.5px] tracking-[0.04em] text-[color:var(--text-muted)]">
               <span className="truncate text-[color:var(--text-subtle)]">{node.workspaceName}</span>

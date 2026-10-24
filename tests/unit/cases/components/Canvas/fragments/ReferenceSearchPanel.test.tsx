@@ -14,7 +14,7 @@ vi.mock('@/i18n', () => import('@mocks/i18n'));
 beforeEach(() => {
   stubResizeObserver();
   usePermissionsStore.getState().setAccess('ws-1', 'user-1', EDIT_ACCESS);
-  useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [], edges: [] });
+  useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [], edges: [], authors: {} });
 });
 
 afterEach(() => {

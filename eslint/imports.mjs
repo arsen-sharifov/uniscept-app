@@ -8,9 +8,9 @@ const restrictedImportPaths = [
   },
   {
     name: 'next-intl',
-    importNames: ['useMessages', 'useTranslations'],
+    importNames: ['useFormatter', 'useMessages', 'useTranslations'],
     message:
-      'Use `useTranslations` from `@/i18n`: it returns the typed `TTranslations` object and a typed translator, so call `t(key, params)` for interpolation and plurals.',
+      'Use `useTranslations` and `useFormatter` from `@/i18n`: the first returns the typed `TTranslations` object and a typed translator, so call `t(key, params)` for interpolation and plurals; the second formats dates in the time zone of the viewer.',
   },
 ];
 

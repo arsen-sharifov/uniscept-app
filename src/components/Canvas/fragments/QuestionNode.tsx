@@ -11,6 +11,7 @@ import { useCanvasStore, usePermissionsStore } from '@/lib/stores';
 import { canEditNode } from '@/lib/utils';
 
 import { useExpandableLabel } from '../hooks';
+import { AuthorStamp } from './AuthorStamp';
 import { ExpandToggle } from './ExpandToggle';
 import { NodeBand } from './NodeBand';
 import { NodeHandles } from './NodeHandles';
@@ -68,6 +69,15 @@ export const QuestionNode = ({ id, data, selected, width }: NodeProps<TCanvasNod
 
         {!isEditing && expandable && <ExpandToggle expanded={expanded} onToggle={toggleExpanded} />}
       </div>
+
+      <AuthorStamp
+        placement="node"
+        authorId={data.createdBy}
+        createdAt={data.createdAt}
+        editedAt={data.editedAt}
+        editedBy={data.editedBy}
+        className="px-5"
+      />
     </div>
   );
 };

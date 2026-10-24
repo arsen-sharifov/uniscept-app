@@ -1,3 +1,4 @@
+export * from './useCanvasAuthor';
 export * from './useCanvasContextMenu';
 export * from './useCanvasPattern';
 export * from './useCanvasSync';
@@ -6,5 +7,7 @@ export * from './useCanvasViewport';
 export * from './useExpandableLabel';
 export * from './useLabelEditing';
 export * from './useMiddlePan';
+export * from './useMinuteClock';
 export * from './useReferenceSearch';
+export * from './useTimestampLabel';
 export * from './useViewportClamp';

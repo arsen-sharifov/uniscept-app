@@ -22,6 +22,19 @@ export const toCreateCommentOperation = ({ id, text, richText }: IComment, nodeI
   ...(richText && { richText }),
 });
 
+export const toUpdateCommentOperation = (
+  id: string,
+  nodeId: string,
+  text: string,
+  richText?: IRichTextDocument,
+): TCanvasOperation => ({
+  type: 'updateComment',
+  id,
+  nodeId,
+  text,
+  ...(richText && { richText }),
+});
+
 export const toUpdateLabelOperation = (id: string, label: string, richLabel?: IRichTextDocument): TCanvasOperation => ({
   type: 'updateNodeLabel',
   id,
@@ -116,7 +129,7 @@ const diffNodeUpdates = (
       operations.push({ type: 'updateNodeAnswer', id, isAnswer: nextNode.data.isAnswer });
     }
 
-    const previousCommentIds = new Set(previousNode.data.comments.map((comment) => comment.id));
+    const previousComments = new Map(previousNode.data.comments.map((comment) => [comment.id, comment]));
     const nextCommentIds = new Set(nextNode.data.comments.map((comment) => comment.id));
 
     previousNode.data.comments.forEach((comment) => {
@@ -125,8 +138,16 @@ const diffNodeUpdates = (
     });
 
     nextNode.data.comments.forEach((comment) => {
-      if (previousCommentIds.has(comment.id)) return;
-      operations.push(toCreateCommentOperation(comment, id));
+      const previousComment = previousComments.get(comment.id);
+      if (!previousComment) {
+        operations.push(toCreateCommentOperation(comment, id));
+
+        return;
+      }
+
+      if (previousComment.text !== comment.text || !isSameRichText(previousComment.richText, comment.richText)) {
+        operations.push(toUpdateCommentOperation(comment.id, id, comment.text, comment.richText));
+      }
     });
   });
 };

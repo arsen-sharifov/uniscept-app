@@ -18,6 +18,7 @@ describe('ResolutionBar', () => {
       useCanvasStore.getState().loadCanvas(THREAD_ID, {
         nodes: [questionNode('q'), canvasNode('n1', { status: 'valid', isAnswer: true })],
         edges: [canvasEdge('e1', 'q', 'n1')],
+        authors: {},
       });
       render(<ResolutionBar />);
     });
@@ -34,6 +35,7 @@ describe('ResolutionBar', () => {
       useCanvasStore.getState().loadCanvas(THREAD_ID, {
         nodes: [questionNode('q'), canvasNode('n1', { isAnswer: true, status: 'invalid' })],
         edges: [canvasEdge('e1', 'q', 'n1')],
+        authors: {},
       });
       render(<ResolutionBar />);
     });

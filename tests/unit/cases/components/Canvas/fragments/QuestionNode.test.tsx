@@ -4,12 +4,15 @@ import { afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vi
 
 import { stubResizeObserver } from '@mocks/browser';
 import {
+  CANVAS_AUTHORS,
   THREAD_ID,
+  foreignQuestionNode,
   formattedQuestionNode,
   nodeProps,
   overflowLabels,
   questionNode,
   resetLabelOverflow,
+  writtenQuestionNode,
 } from '@mocks/canvas';
 import { TRANSLATIONS } from '@mocks/i18n';
 import { editorOf, stubEditorLayout } from '@mocks/richText';
@@ -42,6 +45,56 @@ afterEach(() => {
 });
 
 describe('QuestionNode', () => {
+  describe('GIVEN a question the thread creator wrote last year', () => {
+    beforeEach(() => {
+      usePermissionsStore.getState().setAccess('ws-1', 'user-1', READONLY_ACCESS);
+      useCanvasStore
+        .getState()
+        .loadCanvas(THREAD_ID, { nodes: [writtenQuestionNode('q')], edges: [], authors: CANVAS_AUTHORS });
+    });
+
+    describe('WHEN a viewer reads it', () => {
+      beforeEach(() => {
+        render(
+          <ReactFlowProvider>
+            <QuestionNode {...nodeProps(writtenQuestionNode('q'))} />
+          </ReactFlowProvider>,
+        );
+      });
+
+      test('THEN its author and date show under the question', () => {
+        expect(screen.getByText(CANVAS_AUTHORS['user-1'].name)).toBeInTheDocument();
+        expect(screen.getByText('Mar 1, 2025')).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe("GIVEN the workspace owner with someone else's question open for editing", () => {
+    beforeEach(() => {
+      usePermissionsStore.getState().setAccess('ws-1', 'user-1', FULL_ACCESS);
+      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [foreignQuestionNode('q')], edges: [], authors: {} });
+      useCanvasStore.getState().setEditingNodeId('q');
+    });
+
+    describe('WHEN the question renders', () => {
+      beforeEach(async () => {
+        render(
+          <ReactFlowProvider>
+            <QuestionNode {...nodeProps(foreignQuestionNode('q'))} />
+          </ReactFlowProvider>,
+        );
+        await act(async () => {
+          await preloadRichTextEditor();
+        });
+      });
+
+      test('THEN no textbox renders and the question stays read-only', () => {
+        expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+        expect(screen.getByText('Main question')).toBeInTheDocument();
+      });
+    });
+  });
+
   describe('GIVEN a long question a viewer has selected', () => {
     beforeEach(() => {
       overflowLabels();
@@ -115,10 +168,10 @@ describe('QuestionNode', () => {
     });
   });
 
-  describe('GIVEN an owner editing the question', () => {
+  describe('GIVEN the author editing the question', () => {
     beforeEach(async () => {
       usePermissionsStore.getState().setAccess('ws-1', 'user-1', FULL_ACCESS);
-      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [questionNode('q')], edges: [] });
+      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [questionNode('q')], edges: [], authors: {} });
       useCanvasStore.getState().setEditingNodeId('q');
       render(
         <ReactFlowProvider>
@@ -178,10 +231,10 @@ describe('QuestionNode', () => {
     });
   });
 
-  describe('GIVEN an owner opening an empty question for editing', () => {
+  describe('GIVEN the author opening an empty question for editing', () => {
     beforeEach(async () => {
       usePermissionsStore.getState().setAccess('ws-1', 'user-1', FULL_ACCESS);
-      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [questionNode('q', '')], edges: [] });
+      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [questionNode('q', '')], edges: [], authors: {} });
       useCanvasStore.getState().setEditingNodeId('q');
       render(
         <ReactFlowProvider>
@@ -206,7 +259,7 @@ describe('QuestionNode', () => {
 
     beforeEach(async () => {
       usePermissionsStore.getState().setAccess('ws-1', 'user-1', FULL_ACCESS);
-      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [questionNode('q', '  ')], edges: [] });
+      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [questionNode('q', '  ')], edges: [], authors: {} });
       useCanvasStore.getState().setEditingNodeId('q');
       unsubscribers.push(subscribeCanvasOperations(onOperation));
       rerender = render(

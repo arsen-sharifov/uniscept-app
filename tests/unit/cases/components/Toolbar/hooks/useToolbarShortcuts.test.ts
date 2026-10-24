@@ -19,6 +19,10 @@ const dialog = document.createElement('dialog');
 
 const dialogButton = document.createElement('button');
 
+const keylessPanel = Object.assign(document.createElement('div'), { className: 'nokey' });
+
+const panelButton = document.createElement('button');
+
 const toggleShortcuts = vi.fn();
 
 const onOperation = vi.fn();
@@ -27,13 +31,15 @@ const unsubscribers: Array<() => void> = [];
 
 beforeEach(() => {
   dialog.append(dialogButton);
-  document.body.append(input, dialog);
+  keylessPanel.append(panelButton);
+  document.body.append(input, dialog, keylessPanel);
 });
 
 afterEach(() => {
   unsubscribers.splice(0).forEach((unsubscribe) => unsubscribe());
   input.remove();
   dialog.remove();
+  keylessPanel.remove();
   useCanvasStore.getState().clearCanvas();
   usePermissionsStore.getState().clearAccess();
 });
@@ -42,7 +48,7 @@ describe('useToolbarShortcuts', () => {
   describe('GIVEN an editor on a loaded canvas', () => {
     beforeEach(() => {
       usePermissionsStore.getState().setAccess('ws-1', 'user-1', EDIT_ACCESS);
-      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [], edges: [] });
+      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [], edges: [], authors: {} });
       renderHook(() => useToolbarShortcuts(toggleShortcuts));
     });
 
@@ -180,9 +186,9 @@ describe('useToolbarShortcuts', () => {
   describe('GIVEN an editor who just added a node', () => {
     beforeEach(() => {
       usePermissionsStore.getState().setAccess('ws-1', 'user-1', EDIT_ACCESS);
-      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [], edges: [] });
+      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [], edges: [], authors: {} });
       renderHook(() => useToolbarShortcuts(toggleShortcuts));
-      useCanvasStore.getState().addNode({ x: 0, y: 0 }, 'Draft');
+      useCanvasStore.getState().addNode({ x: 0, y: 0 });
     });
 
     describe('WHEN undo is pressed with the meta modifier', () => {
@@ -277,6 +283,7 @@ describe('useToolbarShortcuts', () => {
           canvasNode('n3', { createdBy: 'user-1' }),
         ],
         edges: [{ ...canvasEdge('e1', 'n2', 'n3'), selected: true }],
+        authors: {},
       });
       renderHook(() => useToolbarShortcuts(toggleShortcuts));
     });
@@ -315,6 +322,16 @@ describe('useToolbarShortcuts', () => {
       });
     });
 
+    describe('WHEN Backspace is pressed on a button inside a panel that keeps keys away from the canvas', () => {
+      beforeEach(() => {
+        panelButton.dispatchEvent(new KeyboardEvent('keydown', { key: 'Backspace', bubbles: true, cancelable: true }));
+      });
+
+      test('THEN the selection stays on the canvas', () => {
+        expect(useCanvasStore.getState().nodes).toHaveLength(3);
+      });
+    });
+
     describe('WHEN Backspace is pressed with the shift modifier held', () => {
       beforeEach(() => {
         window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Backspace', shiftKey: true, cancelable: true }));
@@ -346,6 +363,7 @@ describe('useToolbarShortcuts', () => {
           canvasNode('other', { createdBy: 'user-1' }),
         ],
         edges: [canvasEdge('e1', 'own', 'other')],
+        authors: {},
       });
       unsubscribers.push(subscribeCanvasOperations(onOperation));
       renderHook(() => useToolbarShortcuts(toggleShortcuts));
@@ -370,6 +388,7 @@ describe('useToolbarShortcuts', () => {
       useCanvasStore.getState().loadCanvas(THREAD_ID, {
         nodes: [canvasNode('a', { createdBy: 'user-1' }), canvasNode('b', { createdBy: 'user-1' })],
         edges: [{ ...canvasEdge('e1', 'a', 'b'), selected: true }],
+        authors: {},
       });
       unsubscribers.push(subscribeCanvasOperations(onOperation));
       renderHook(() => useToolbarShortcuts(toggleShortcuts));
@@ -397,6 +416,7 @@ describe('useToolbarShortcuts', () => {
           { ...canvasNode('n2', { createdBy: 'user-2' }), selected: true },
         ],
         edges: [{ ...canvasEdge('e1', 'n1', 'n2'), selected: true }],
+        authors: {},
       });
       renderHook(() => useToolbarShortcuts(toggleShortcuts));
     });
@@ -426,6 +446,7 @@ describe('useToolbarShortcuts', () => {
           { ...canvasNode('n1', { createdBy: 'user-1' }), selected: true },
         ],
         edges: [],
+        authors: {},
       });
       renderHook(() => useToolbarShortcuts(toggleShortcuts));
     });
@@ -448,7 +469,9 @@ describe('useToolbarShortcuts', () => {
   describe('GIVEN a viewer on a loaded canvas with a selected node', () => {
     beforeEach(() => {
       usePermissionsStore.getState().setAccess('ws-1', 'user-1', READONLY_ACCESS);
-      useCanvasStore.getState().loadCanvas(THREAD_ID, { nodes: [{ ...canvasNode('n1'), selected: true }], edges: [] });
+      useCanvasStore
+        .getState()
+        .loadCanvas(THREAD_ID, { nodes: [{ ...canvasNode('n1'), selected: true }], edges: [], authors: {} });
       renderHook(() => useToolbarShortcuts(toggleShortcuts));
     });
 

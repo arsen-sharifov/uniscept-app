@@ -98,8 +98,23 @@ export const VISUAL_CONFIG: IVisualConfig = {
       capture: 'canvasNode',
     },
     {
+      name: 'canvas-node-empty',
+      storyId: 'components-canvas-canvasnode--empty',
+      capture: 'canvasNode',
+    },
+    {
       name: 'canvas-node-formatted',
       storyId: 'components-canvas-canvasnode--formatted',
+      capture: 'canvasNode',
+    },
+    {
+      name: 'canvas-node-edited',
+      storyId: 'components-canvas-canvasnode--edited',
+      capture: 'canvasNode',
+    },
+    {
+      name: 'canvas-node-former-member',
+      storyId: 'components-canvas-canvasnode--former-member',
       capture: 'canvasNode',
     },
     {
@@ -150,6 +165,11 @@ export const VISUAL_CONFIG: IVisualConfig = {
     {
       name: 'reference-node-default',
       storyId: 'components-canvas-referencenode--default',
+      capture: 'canvasNode',
+    },
+    {
+      name: 'reference-node-empty-source',
+      storyId: 'components-canvas-referencenode--empty-source',
       capture: 'canvasNode',
     },
     {

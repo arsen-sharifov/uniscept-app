@@ -280,19 +280,22 @@ describe('node_comments.rich_text', () => {
       commentId = await seedNodeComment(nodeId, author.id, 'Original');
     });
 
-    describe('WHEN its author tries to add formatting afterwards', () => {
+    describe('WHEN its author adds formatting afterwards', () => {
       let response: IIntegrationResponse;
 
       beforeEach(async () => {
         response = await authorClient
           .from('node_comments')
-          .update({ rich_text: RICH_LABEL_DOCUMENT })
+          .update({ text: RICH_LABEL_TEXT, rich_text: RICH_LABEL_DOCUMENT })
           .eq('id', commentId);
       });
 
-      test('THEN the column cannot be updated', async () => {
-        expect(response.error?.code).toBe('42501');
-        await expect(readNodeCommentRichText(commentId)).resolves.toEqual({ text: 'Original', rich_text: null });
+      test('THEN the formatted text is stored', async () => {
+        expect(response.error).toBeNull();
+        await expect(readNodeCommentRichText(commentId)).resolves.toEqual({
+          text: RICH_LABEL_TEXT,
+          rich_text: RICH_LABEL_DOCUMENT,
+        });
       });
     });
   });

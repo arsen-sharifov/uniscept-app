@@ -1,9 +1,16 @@
 import { describe, expect, test, vi } from 'vitest';
 
-import { createNodeComment, deleteNodeComment, getNodeComments, IDS_PER_REQUEST, ROWS_PER_PAGE } from '@api/client';
+import {
+  createNodeComment,
+  deleteNodeComment,
+  getNodeComments,
+  IDS_PER_REQUEST,
+  ROWS_PER_PAGE,
+  updateNodeComment,
+} from '@api/client';
 import { FORMATTED_DOCUMENT, FORMATTED_TEXT } from '@mocks/richText';
 import { nodeCommentRow } from '@mocks/rows';
-import { primeSupabase } from '@mocks/supabase';
+import { NO_ROW_ERROR, primeSupabase } from '@mocks/supabase';
 
 vi.mock('@/lib/supabase', () => import('@mocks/supabase'));
 
@@ -65,6 +72,56 @@ describe('createNodeComment', () => {
         await expect(createNodeComment({ id: 'c1', nodeId: 'n1', text: 'Nice catch' })).rejects.toThrow(
           'insert failed',
         );
+      });
+    });
+  });
+});
+
+describe('updateNodeComment', () => {
+  describe('GIVEN a posted comment', () => {
+    describe('WHEN its text is rewritten', () => {
+      test('THEN the update targets the comment id with the new text and clears the formatting', async () => {
+        const { queries } = primeSupabase([{ data: null }]);
+        const eq = vi.spyOn(queries[0]!, 'eq');
+
+        await updateNodeComment('c1', 'Reworded');
+
+        expect(queries[0]!.update).toHaveBeenCalledExactlyOnceWith({ text: 'Reworded', rich_text: null });
+        expect(eq).toHaveBeenCalledExactlyOnceWith('id', 'c1');
+      });
+    });
+
+    describe('WHEN it is rewritten with formatting', () => {
+      test('THEN the formatting is written next to the text', async () => {
+        const { queries } = primeSupabase([{ data: null }]);
+
+        await updateNodeComment('c1', FORMATTED_TEXT, FORMATTED_DOCUMENT);
+
+        expect(queries[0]!.update).toHaveBeenCalledExactlyOnceWith({
+          text: FORMATTED_TEXT,
+          rich_text: FORMATTED_DOCUMENT,
+        });
+      });
+    });
+  });
+
+  describe('GIVEN a failing update', () => {
+    describe('WHEN the comment is rewritten', () => {
+      test('THEN the error propagates', async () => {
+        primeSupabase([{ error: new Error('db down') }]);
+
+        await expect(updateNodeComment('c1', 'Reworded')).rejects.toThrow('db down');
+      });
+    });
+  });
+
+  describe('GIVEN a rewrite the database applies to no row', () => {
+    describe('WHEN the comment is rewritten', () => {
+      test('THEN the missing row is reported instead of a silent success', async () => {
+        const { queries } = primeSupabase([{ data: [] }]);
+        vi.spyOn(queries[0]!, 'single').mockResolvedValue({ data: null, error: NO_ROW_ERROR, count: null });
+
+        await expect(updateNodeComment('c1', 'Reworded')).rejects.toMatchObject({ code: 'PGRST116' });
       });
     });
   });

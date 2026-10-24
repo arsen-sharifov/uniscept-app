@@ -3,18 +3,18 @@
 import { useEffect } from 'react';
 
 import { ECanvasNodeType, type TTranslations } from '@interfaces';
-import { APP_OVERLAY_SELECTOR } from '@constants';
+
 import { ECanvasTool } from '@/components/tools';
 import { useTranslations } from '@/i18n';
 import { event } from '@/lib/events';
 import { useCanvasStore, usePermissionsStore } from '@/lib/stores';
 import { canDeleteNode, isTypingTarget } from '@/lib/utils';
 
-import { SELECT_DELETE_KEYS, TOOL_KEY_MAP } from '../consts';
+import { SELECT_DELETE_KEYS, SHORTCUT_MUTED_SELECTOR, TOOL_KEY_MAP } from '../consts';
 import { isToolDisabled, toShortcutKey } from '../utils';
 
-const isInsideOverlay = (target: EventTarget | null): boolean =>
-  target instanceof Element && target.closest(APP_OVERLAY_SELECTOR) !== null;
+const isInsideMutedArea = (target: EventTarget | null): boolean =>
+  target instanceof Element && target.closest(SHORTCUT_MUTED_SELECTOR) !== null;
 
 const deleteSelection = (t: TTranslations) => {
   const store = useCanvasStore.getState();
@@ -54,7 +54,7 @@ export const useToolbarShortcuts = (onToggleShortcuts: () => void): void => {
         return;
       }
 
-      if (isInsideOverlay(keyEvent.target)) return;
+      if (isInsideMutedArea(keyEvent.target)) return;
 
       const key = toShortcutKey(keyEvent);
       const isModifier = keyEvent.metaKey || keyEvent.ctrlKey;

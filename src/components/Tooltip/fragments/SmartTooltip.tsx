@@ -100,6 +100,7 @@ export const SmartTooltip = ({
         className={className}
         onMouseEnter={handleEnter}
         onMouseLeave={handleLeave}
+        onPointerDown={handleLeave}
         onFocus={handleEnter}
         onBlur={handleLeave}
       >

@@ -1,5 +1,4 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
-import { NextIntlClientProvider } from 'next-intl';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { TRANSLATIONS } from '@mocks/i18n';
@@ -16,17 +15,15 @@ describe('GeneralSection', () => {
   describe('GIVEN a manager who typed a new workspace name', () => {
     beforeEach(() => {
       render(
-        <NextIntlClientProvider locale="en" timeZone="UTC">
-          <GeneralSection
-            workspaceId="ws-1"
-            initialName="Product Lab"
-            createdAt={null}
-            memberCount={2}
-            currentRoleName={null}
-            canManageWorkspace
-            onRename={onRename}
-          />
-        </NextIntlClientProvider>,
+        <GeneralSection
+          workspaceId="ws-1"
+          initialName="Product Lab"
+          createdAt={null}
+          memberCount={2}
+          currentRoleName={null}
+          canManageWorkspace
+          onRename={onRename}
+        />,
       );
       fireEvent.change(nameField(), { target: { value: '  Research  ' } });
     });
@@ -71,17 +68,15 @@ describe('GeneralSection', () => {
   describe('GIVEN a manager who has not changed the workspace name', () => {
     beforeEach(() => {
       render(
-        <NextIntlClientProvider locale="en" timeZone="UTC">
-          <GeneralSection
-            workspaceId="ws-1"
-            initialName="Product Lab"
-            createdAt={null}
-            memberCount={2}
-            currentRoleName={null}
-            canManageWorkspace
-            onRename={onRename}
-          />
-        </NextIntlClientProvider>,
+        <GeneralSection
+          workspaceId="ws-1"
+          initialName="Product Lab"
+          createdAt={null}
+          memberCount={2}
+          currentRoleName={null}
+          canManageWorkspace
+          onRename={onRename}
+        />,
       );
     });
 
@@ -102,17 +97,15 @@ describe('GeneralSection', () => {
   describe('GIVEN a member who cannot manage the workspace', () => {
     beforeEach(() => {
       render(
-        <NextIntlClientProvider locale="en" timeZone="UTC">
-          <GeneralSection
-            workspaceId="ws-1"
-            initialName="Product Lab"
-            createdAt="2026-03-15T12:00:00Z"
-            memberCount={3}
-            currentRoleName="Reviewer"
-            canManageWorkspace={false}
-            onRename={onRename}
-          />
-        </NextIntlClientProvider>,
+        <GeneralSection
+          workspaceId="ws-1"
+          initialName="Product Lab"
+          createdAt="2026-03-15T12:00:00Z"
+          memberCount={3}
+          currentRoleName="Reviewer"
+          canManageWorkspace={false}
+          onRename={onRename}
+        />,
       );
     });
 

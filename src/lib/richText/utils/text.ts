@@ -49,6 +49,9 @@ export const isSameRichText = (previous?: IRichTextDocument, next?: IRichTextDoc
   previous === next ||
   (previous !== undefined && next !== undefined && JSON.stringify(previous) === JSON.stringify(next));
 
+export const isSameRichTextValue = (value: IRichTextValue, text: string, document?: IRichTextDocument): boolean =>
+  value.text === text && isSameRichText(value.document, document);
+
 const trimEdge = <TItem>(items: TItem[], isBlank: (item: TItem) => boolean, edge: TTrimEdge): TItem[] => {
   const isFilled = (item: TItem) => !isBlank(item);
   if (!items.some(isFilled)) return [];

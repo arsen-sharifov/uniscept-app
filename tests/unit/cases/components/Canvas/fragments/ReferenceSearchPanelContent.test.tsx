@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { stubResizeObserver } from '@mocks/browser';
 import { PANEL_WIDTH, PANEL_HEIGHT, GROWN_PANEL_HEIGHT } from '@mocks/geometry';
 import { TRANSLATIONS, translate } from '@mocks/i18n';
-import { referenceSearchProps } from '@mocks/referenceSearch';
+import { emptyTargetSearchProps, referenceSearchProps } from '@mocks/referenceSearch';
 import { OVERLAY_VIEWPORT_MARGIN } from '@/components/Canvas/consts';
 import { ReferenceSearchPanelContent } from '@/components/Canvas/fragments';
 
@@ -164,6 +164,32 @@ describe('ReferenceSearchPanelContent', () => {
           props.position,
           expect.objectContaining({ sourceNodeId: 'r1' }),
         );
+      });
+    });
+  });
+
+  describe('GIVEN a target whose node has no text yet', () => {
+    beforeEach(() => {
+      render(<ReferenceSearchPanelContent {...emptyTargetSearchProps()} onSelect={onSelect} onClose={onClose} />);
+    });
+
+    describe('WHEN the panel opens', () => {
+      test('THEN the target is listed under a muted placeholder', () => {
+        expect(screen.getByText(TRANSLATIONS.platform.canvas.node.placeholder)).toHaveClass(
+          'text-[color:var(--text-subtle)]',
+        );
+      });
+    });
+
+    describe('WHEN the query names the placeholder', () => {
+      beforeEach(() => {
+        fireEvent.change(screen.getByRole('combobox'), {
+          target: { value: TRANSLATIONS.platform.canvas.node.placeholder.toLowerCase() },
+        });
+      });
+
+      test('THEN only that target stays listed', () => {
+        expect(screen.getByRole('option')).toHaveTextContent(TRANSLATIONS.platform.canvas.node.placeholder);
       });
     });
   });

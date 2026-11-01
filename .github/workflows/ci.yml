@@ -44,29 +44,6 @@ jobs:
       - name: Format check
         run: pnpm format:check
 
-  version:
-    name: Version check
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    if: ${{ github.event_name == 'pull_request' }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-
-      - name: Compare versions
-        env:
-          BASE_REF: ${{ github.base_ref }}
-        run: |
-          git fetch --depth=1 origin "$BASE_REF"
-          base_version=$(git show FETCH_HEAD:package.json | jq -er '.version')
-          head_version=$(jq -er '.version' package.json)
-          highest_version=$({ echo "$base_version"; echo "$head_version"; } | sort -V | tail -n1)
-          if [ "$base_version" = "$head_version" ] || [ "$highest_version" != "$head_version" ]; then
-            echo "::error file=package.json::Version must be bumped above $base_version, found $head_version"
-            exit 1
-          fi
-          echo "Version bumped: $base_version -> $head_version"
-
   audit:
     name: Audit
     runs-on: ubuntu-latest

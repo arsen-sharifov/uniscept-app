@@ -34,7 +34,7 @@ Closes #
 
 <!-- Project conventions live in Notion → Uniscept Tech → Conventions. -->
 
-- [ ] Self-review done, diff focused on a single concern
+- [ ] Self-review done, every change understood, diff focused on a single concern
 - [ ] No `console.log` / debug code left
 - [ ] No `types.ts` files, shared types in `src/lib/interfaces/`
 - [ ] Imports through barrels and aliases (`@interfaces`, `@constants`, `@hooks`, `@api/client`, `@api/server`)

@@ -1,6 +1,6 @@
 {
   "name": "uniscept-app",
-  "version": "0.28.0",
+  "version": "0.29.0",
   "private": true,
   "description": "Uniscept — a tool that structures complex thinking and discussions into a clear logical system.",
   "homepage": "https://github.com/arsen-sharifov/uniscept-app#readme",
@@ -43,6 +43,7 @@
     "db:reset": "supabase db reset",
     "db:migrate": "supabase migration up",
     "db:push": "supabase db push",
+    "verify:account": "supabase status -o json | node scripts/verify/account.mjs",
     "clean": "node -e \"['.next','node_modules','artifacts','.cache'].forEach(p=>require('fs').rmSync(p,{recursive:true,force:true}))\""
   },
   "lint-staged": {

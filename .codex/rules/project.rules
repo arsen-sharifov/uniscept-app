@@ -1,0 +1,344 @@
+prefix_rule(
+    pattern = ["supabase", ["link", "unlink", "login", "logout", "projects", "orgs", "secrets", "functions", "branches", "backups", "domains", "storage", "inspect", "snippets", "sso"]],
+    decision = "forbidden",
+    justification = "Production is reached only through the Release workflow.",
+    match = [["supabase", "link", "--project-ref", "abc"], ["supabase", "login"]],
+    not_match = [["supabase", "start"], ["supabase", "status"]],
+)
+
+prefix_rule(
+    pattern = ["supabase", "db", ["push", "pull", "dump"]],
+    decision = "forbidden",
+    justification = "Production is reached only through the Release workflow.",
+    match = [["supabase", "db", "push", "--linked"]],
+    not_match = [["supabase", "db", "reset"]],
+)
+
+prefix_rule(
+    pattern = ["supabase", ["config", "migration"], ["push", "repair", "fetch"]],
+    decision = "forbidden",
+    justification = "Production is reached only through the Release workflow.",
+    match = [["supabase", "config", "push"], ["supabase", "migration", "repair"]],
+    not_match = [["supabase", "migration", "new", "add_table"]],
+)
+
+prefix_rule(
+    pattern = [["pnpm", "npm", "yarn"], "db:push"],
+    decision = "forbidden",
+    justification = "db:push targets the hosted database. Production is reached only through the Release workflow.",
+    match = [["pnpm", "db:push"]],
+    not_match = [["pnpm", "db:start"]],
+)
+
+prefix_rule(
+    pattern = [["pnpm", "npm", "yarn"], "run", "db:push"],
+    decision = "forbidden",
+    justification = "db:push targets the hosted database. Production is reached only through the Release workflow.",
+    not_match = [["pnpm", "run", "validate"]],
+)
+
+prefix_rule(
+    pattern = ["vercel"],
+    decision = "forbidden",
+    justification = "The Vercel project is changed only by the Release workflow.",
+    match = [["vercel", "deploy"]],
+)
+
+prefix_rule(
+    pattern = ["gh", "workflow", "run", ["release", "Release", "release.yml", "release.yaml"]],
+    decision = "forbidden",
+    justification = "The owner starts the Release workflow and its dry run. Assistants only prepare the release.",
+    match = [["gh", "workflow", "run", "release.yml", "-f", "dry-run=true"]],
+)
+
+prefix_rule(
+    pattern = ["git", ["credential", "credential-manager", "credential-manager-core", "credential-store", "credential-cache"]],
+    decision = "forbidden",
+    justification = "Assistants never read stored credentials.",
+    match = [["git", "credential", "fill"], ["git", "credential-manager", "get"]],
+    not_match = [["git", "config", "--get", "user.name"]],
+)
+
+prefix_rule(
+    pattern = [["git-credential-manager", "git-credential-store"]],
+    decision = "forbidden",
+    justification = "Assistants never read stored credentials.",
+)
+
+prefix_rule(
+    pattern = ["gh", ["secret", "variable"]],
+    decision = "forbidden",
+    justification = "Assistants never read or change repository secrets and variables.",
+)
+
+prefix_rule(
+    pattern = ["gh", "auth", ["token", "login", "logout", "refresh", "switch", "setup-git"]],
+    decision = "forbidden",
+    justification = "Assistants never handle the GitHub token.",
+    not_match = [["gh", "auth", "status"]],
+)
+
+prefix_rule(
+    pattern = [["cmdkey", "vaultcmd", "secret-tool"]],
+    decision = "forbidden",
+    justification = "Assistants never read the system credential store.",
+    match = [["cmdkey", "/list"], ["secret-tool", "lookup", "service", "gh"]],
+)
+
+prefix_rule(
+    pattern = ["security", ["find-generic-password", "find-internet-password"]],
+    decision = "forbidden",
+    justification = "Assistants never read the system credential store.",
+)
+
+prefix_rule(
+    pattern = ["git", "push", ["--force", "-f", "--force-with-lease", "--mirror", "--delete", "--all", "--no-verify"]],
+    decision = "forbidden",
+    justification = "Force pushes, pushes of every branch, remote deletions and skipped hooks are left to a person.",
+    match = [["git", "push", "--force", "origin", "dev-1"], ["git", "push", "--all"]],
+    not_match = [["git", "push", "-u", "origin", "dev-1"]],
+)
+
+prefix_rule(
+    pattern = ["git", "push", "origin", ["main", "HEAD:main"]],
+    decision = "forbidden",
+    justification = "main changes only through squash-merged pull requests.",
+    match = [["git", "push", "origin", "main"]],
+    not_match = [["git", "push", "origin", "dev-1"]],
+)
+
+prefix_rule(
+    pattern = ["git", "push", "-u", "origin", ["main", "HEAD:main"]],
+    decision = "forbidden",
+    justification = "main changes only through squash-merged pull requests.",
+    match = [["git", "push", "-u", "origin", "main"]],
+    not_match = [["git", "push", "-u", "origin", "dev-1"]],
+)
+
+prefix_rule(
+    pattern = ["git", "commit", ["--no-verify", "-n"]],
+    decision = "forbidden",
+    justification = "The git hooks are never skipped.",
+)
+
+prefix_rule(
+    pattern = ["git", ["commit", "push", "merge", "rebase", "reset", "revert", "cherry-pick", "clean", "restore", "rm", "am", "gc", "filter-branch", "filter-repo", "update-ref", "pull", "apply"]],
+    decision = "prompt",
+    justification = "Commits, pushes and history or working tree rewrites need the person's approval.",
+    match = [["git", "commit", "-m", "feat(dev-1): Add x"], ["git", "push", "-u", "origin", "dev-1"]],
+    not_match = [["git", "status"], ["git", "diff"], ["git", "log"]],
+)
+
+prefix_rule(
+    pattern = ["git", "stash", ["push", "pop", "apply", "drop", "clear", "save", "create", "store", "branch"]],
+    decision = "prompt",
+    justification = "Stashing rewrites the working tree. Review the affected work before approving.",
+    match = [["git", "stash", "push", "-u"], ["git", "stash", "pop"]],
+    not_match = [["git", "stash", "list"], ["git", "stash", "show", "-p"]],
+)
+
+prefix_rule(
+    pattern = ["git", "tag", ["-d", "--delete", "-f", "--force", "-a", "--annotate", "-s", "--sign", "-m", "--message", "-F"]],
+    decision = "prompt",
+    justification = "Creating or deleting tags needs the person's approval.",
+    match = [["git", "tag", "-a", "v1.0.0", "-m", "x"], ["git", "tag", "-d", "v1.0.0"]],
+    not_match = [["git", "tag", "--list", "v*"], ["git", "tag", "-l"], ["git", "tag", "--sort=-v:refname"]],
+)
+
+prefix_rule(
+    pattern = ["git", "switch", ["--discard-changes", "--force", "-f", "-C"]],
+    decision = "prompt",
+    justification = "Switching with these flags discards or overwrites local work.",
+    match = [["git", "switch", "--discard-changes", "main"]],
+    not_match = [["git", "switch", "-c", "dev-1"], ["git", "switch", "dev-1"]],
+)
+
+prefix_rule(
+    pattern = ["git", "checkout"],
+    decision = "prompt",
+    justification = "A checkout can restore files over local work. Use git switch for branches.",
+    match = [["git", "checkout", "--", "src/a.ts"], ["git", "checkout", "src/a.ts"], ["git", "checkout", "main", "src/a.ts"]],
+    not_match = [["git", "switch", "dev-1"]],
+)
+
+prefix_rule(
+    pattern = ["git", "branch", ["-d", "-D", "--delete", "-m", "-M", "--move", "-f", "--force"]],
+    decision = "prompt",
+    justification = "Deleting or renaming branches needs the person's approval.",
+)
+
+prefix_rule(
+    pattern = ["git", "worktree", "remove"],
+    decision = "prompt",
+    justification = "Removing a worktree needs the person's approval.",
+)
+
+prefix_rule(
+    pattern = ["gh", ["pr", "issue"], ["create", "merge", "edit", "close", "reopen", "comment", "review", "ready", "checkout", "update-branch", "revert", "develop", "delete", "transfer", "lock", "unlock", "pin", "unpin"]],
+    decision = "prompt",
+    justification = "Writes to GitHub need the person's approval, one write at a time.",
+    match = [["gh", "pr", "create", "--title", "x"], ["gh", "pr", "checkout", "70"]],
+    not_match = [["gh", "pr", "view", "70"]],
+)
+
+prefix_rule(
+    pattern = ["gh", "release", ["create", "edit", "delete", "delete-asset", "upload", "download", "verify", "verify-asset"]],
+    decision = "prompt",
+    justification = "Changing or downloading releases needs the person's approval.",
+    match = [["gh", "release", "create", "v1.0.0"]],
+    not_match = [["gh", "release", "view", "v1.0.0"], ["gh", "release", "list"]],
+)
+
+prefix_rule(
+    pattern = ["gh", "api", ["-X", "--method", "-f", "-F", "--field", "--raw-field", "--input"]],
+    decision = "prompt",
+    justification = "Writes through the GitHub API need the person's approval.",
+    match = [["gh", "api", "-X", "POST", "repos/example/project/issues"]],
+    not_match = [["gh", "api", "repos/example/project/pulls/1/comments"]],
+)
+
+prefix_rule(
+    pattern = ["gh", ["gist", "codespace", "extension", "ssh-key", "gpg-key", "cache", "project", "alias", "config", "org", "ruleset", "browse", "attestation", "completion", "copilot", "agent-task", "preview"]],
+    decision = "prompt",
+    justification = "These GitHub CLI commands change GitHub, the CLI or the machine and need the person's approval.",
+    match = [["gh", "gist", "create", "notes.md"]],
+    not_match = [["gh", "pr", "list"]],
+)
+
+prefix_rule(
+    pattern = ["gh", "workflow", ["run", "enable", "disable"]],
+    decision = "prompt",
+    justification = "Starting or changing workflows needs the person's approval.",
+)
+
+prefix_rule(
+    pattern = ["gh", "run", ["rerun", "cancel", "delete", "download"]],
+    decision = "prompt",
+    justification = "Writes to GitHub need the person's approval.",
+    not_match = [["gh", "run", "view", "1"]],
+)
+
+prefix_rule(
+    pattern = ["gh", "repo", ["create", "edit", "delete", "rename", "archive", "unarchive", "fork", "sync", "clone", "set-default", "deploy-key", "autolink", "gitignore", "license", "list"]],
+    decision = "prompt",
+    justification = "Writes to GitHub need the person's approval.",
+    not_match = [["gh", "repo", "view"]],
+)
+
+prefix_rule(
+    pattern = ["gh", "label", ["create", "edit", "delete", "clone"]],
+    decision = "prompt",
+    justification = "Writes to GitHub need the person's approval.",
+    not_match = [["gh", "label", "list"]],
+)
+
+prefix_rule(
+    pattern = [["npx", "pnpx", "bunx"]],
+    decision = "prompt",
+    justification = "Running a package from the registry needs the person's approval.",
+    match = [["npx", "some-tool"], ["pnpx", "some-tool"]],
+)
+
+prefix_rule(
+    pattern = [["pnpm", "npm", "yarn"], ["add", "remove", "rm", "uninstall", "un", "update", "up", "upgrade", "dlx", "link", "unlink", "patch", "patch-commit"]],
+    decision = "prompt",
+    justification = "Dependency changes and registry packages need the person's approval.",
+    match = [["pnpm", "add", "left-pad"], ["pnpm", "dlx", "some-tool"]],
+    not_match = [["pnpm", "validate"], ["pnpm", "test:unit"], ["pnpm", "exec", "playwright", "test"]],
+)
+
+prefix_rule(
+    pattern = ["npm", ["ci", "exec", "x", "init", "create"]],
+    decision = "prompt",
+    justification = "Clean installs and registry packages need the person's approval.",
+    match = [["npm", "ci"], ["npm", "exec", "some-tool"]],
+    not_match = [["npm", "run", "validate"]],
+)
+
+prefix_rule(
+    pattern = [["pnpm", "yarn"], "create"],
+    decision = "prompt",
+    justification = "Running a package from the registry needs the person's approval.",
+    match = [["pnpm", "create", "vite"]],
+)
+
+prefix_rule(
+    pattern = [["pnpm", "npm", "yarn"], ["db:reset", "clean"]],
+    decision = "prompt",
+    justification = "Wiping the local database or build output needs the person's approval.",
+)
+
+prefix_rule(
+    pattern = [["pnpm", "npm", "yarn"], "run", ["db:reset", "clean"]],
+    decision = "prompt",
+    justification = "Wiping the local database or build output needs the person's approval.",
+)
+
+prefix_rule(
+    pattern = [["pnpm", "npm", "yarn"], "db:stop", "--no-backup"],
+    decision = "prompt",
+    justification = "Stopping without a backup wipes the local database and needs the person's approval.",
+    match = [["pnpm", "db:stop", "--no-backup"]],
+    not_match = [["pnpm", "db:stop"]],
+)
+
+prefix_rule(
+    pattern = [["pnpm", "npm", "yarn"], "run", "db:stop", "--no-backup"],
+    decision = "prompt",
+    justification = "Stopping without a backup wipes the local database and needs the person's approval.",
+    not_match = [["pnpm", "run", "db:stop"]],
+)
+
+prefix_rule(
+    pattern = ["supabase", "db", "reset"],
+    decision = "prompt",
+    justification = "Wiping the local database needs the person's approval.",
+)
+
+prefix_rule(
+    pattern = ["supabase", "stop", "--no-backup"],
+    decision = "prompt",
+    justification = "Stopping without a backup wipes the local database and needs the person's approval.",
+    not_match = [["supabase", "stop"]],
+)
+
+prefix_rule(
+    pattern = ["rm", ["-r", "-R", "-rf", "-fr", "-Rf", "-rF", "--recursive"]],
+    decision = "prompt",
+    justification = "Recursive deletes need the person's approval.",
+    match = [["rm", "-rf", "artifacts"]],
+    not_match = [["rm", "file.txt"]],
+)
+
+prefix_rule(
+    pattern = ["patch"],
+    decision = "prompt",
+    justification = "A patch can change any file, the assistant setup included, and needs the person's approval.",
+    match = [["patch", "-p1", "-i", "change.patch"]],
+)
+
+prefix_rule(
+    pattern = [["Remove-Item", "remove-item", "ri", "rd", "rmdir", "del", "erase"]],
+    decision = "prompt",
+    justification = "Deleting files needs the person's approval.",
+)
+
+prefix_rule(
+    pattern = ["docker", ["rm", "rmi"]],
+    decision = "prompt",
+    justification = "Removing Docker data needs the person's approval.",
+)
+
+prefix_rule(
+    pattern = ["docker", ["volume", "system", "image", "container"], ["rm", "remove", "prune"]],
+    decision = "prompt",
+    justification = "Removing Docker data needs the person's approval.",
+    match = [["docker", "volume", "rm", "supabase_db_uniscept-app"], ["docker", "volume", "remove", "supabase_db_uniscept-app"]],
+    not_match = [["docker", "volume", "ls"]],
+)
+
+prefix_rule(
+    pattern = ["docker", "compose", "down"],
+    decision = "prompt",
+    justification = "Removing Docker data needs the person's approval.",
+)

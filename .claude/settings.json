@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  },
+  "permissions": {
+    "disableBypassPermissionsMode": "disable",
+    "allow": [
+      "Bash(pnpm validate)",
+      "Bash(pnpm type-check)",
+      "Bash(pnpm lint*)",
+      "Bash(pnpm format*)",
+      "Bash(pnpm test*)",
+      "Bash(pnpm build*)",
+      "Bash(pnpm dev)",
+      "Bash(pnpm storybook)",
+      "Bash(pnpm db:start)",
+      "Bash(pnpm db:stop)",
+      "Bash(pnpm db:status)",
+      "Bash(pnpm db:migrate)",
+      "Bash(pnpm verify:account)",
+      "Bash(git fetch origin)",
+      "Bash(git fetch origin --tags)",
+      "Bash(git add*)",
+      "Bash(gh issue view *)",
+      "Bash(gh issue list*)",
+      "Bash(gh pr view *)",
+      "Bash(gh pr list*)",
+      "Bash(gh pr diff *)",
+      "Bash(gh pr checks *)",
+      "Bash(gh run list*)",
+      "Bash(gh run view *)",
+      "mcp__notion__API-get-self",
+      "mcp__notion__API-post-search",
+      "mcp__notion__API-retrieve-a-page",
+      "mcp__notion__API-retrieve-page-markdown",
+      "mcp__notion__API-retrieve-a-page-property",
+      "mcp__notion__API-get-block-children",
+      "mcp__notion__API-retrieve-a-block",
+      "mcp__notion__API-retrieve-a-comment",
+      "mcp__notion__API-retrieve-a-database",
+      "mcp__notion__API-retrieve-a-data-source",
+      "mcp__notion__API-query-data-source",
+      "mcp__notion__API-list-data-source-templates",
+      "mcp__claude_ai_Github__issue_read",
+      "mcp__claude_ai_Github__pull_request_read",
+      "mcp__claude_ai_Github__get_file_contents",
+      "mcp__claude_ai_Github__list_issues",
+      "mcp__claude_ai_Github__list_pull_requests",
+      "mcp__claude_ai_Github__search_issues",
+      "mcp__claude_ai_Github__search_code",
+      "mcp__verifier-browser"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.local)",
+      "Read(./.env.*.local)",
+      "Read(./.env.development)",
+      "Read(./.env.production)",
+      "Read(./.env.test)",
+      "Read(./supabase/.temp/**)",
+      "Read(./supabase/.env*)",
+      "Read(~/.supabase/**)",
+      "Read(~/.claude.json)",
+      "Read(~/.claude/.credentials.json)",
+      "Read(~/.codex/auth.json)",
+      "Read(~/.config/gh/**)",
+      "Read(~/AppData/Roaming/GitHub CLI/**)",
+      "Read(~/.git-credentials)",
+      "Read(~/.ssh/**)",
+      "Read(~/.npmrc)",
+      "Read(~/.docker/config.json)",
+      "Read(~/AppData/Roaming/com.vercel.cli/**)",
+      "Read(~/.local/share/com.vercel.cli/**)",
+      "Read(~/Library/Application Support/com.vercel.cli/**)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": ["${CLAUDE_PROJECT_DIR}/.agents/hooks/guard.mjs", "claude"],
+            "timeout": 10,
+            "onFailure": "block"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": ["${CLAUDE_PROJECT_DIR}/.agents/hooks/guard.mjs", "claude"],
+            "timeout": 10,
+            "onFailure": "block"
+          }
+        ]
+      }
+    ]
+  }
+}

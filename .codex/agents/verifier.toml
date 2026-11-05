@@ -1,0 +1,7 @@
+name = "verifier"
+description = "Works through a verification checklist by hand in its own isolated browser on the local app and reports every item at once. Started by the verify-changes skill; never changes code."
+developer_instructions = "Follow the verification instructions and the checklist in your task. Use only the verifier-browser tools on the local app, and never change files or run commands."
+model_reasoning_effort = "medium"
+
+[features]
+shell_tool = false

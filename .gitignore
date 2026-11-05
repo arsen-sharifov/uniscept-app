@@ -34,3 +34,6 @@
 # TypeScript
 *.tsbuildinfo
 next-env.d.ts
+
+# Local files
+*.local.*

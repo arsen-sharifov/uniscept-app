@@ -20,3 +20,21 @@ export interface IUnitExportScene {
   nodes: IUnitExportSceneNode[];
   edges: IUnitExportSceneEdge[];
 }
+
+export interface IUnitToolHookInput {
+  tool_name: string;
+  tool_input: object;
+  cwd?: string;
+  agent_type?: string;
+}
+
+export interface IUnitPromptHookInput {
+  hook_event_name: 'UserPromptSubmit';
+  prompt: string;
+}
+
+export interface IUnitGuardDecision {
+  name: string;
+  input: IUnitToolHookInput | IUnitPromptHookInput;
+  expected: { decision: 'deny' | 'ask' | 'allow'; codex?: 'asks' | 'blocks' };
+}

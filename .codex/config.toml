@@ -1,0 +1,37 @@
+approval_policy = "on-request"
+approvals_reviewer = "user"
+sandbox_mode = "workspace-write"
+
+[sandbox_workspace_write]
+network_access = false
+
+[shell_environment_policy]
+ignore_default_excludes = false
+experimental_use_profile = false
+
+[apps._default]
+enabled = false
+default_tools_approval_mode = "prompt"
+
+[mcp_servers.verifier-browser]
+command = "npx"
+args = ["-y", "@playwright/mcp@0.0.83", "--isolated", "--headless", "--allowed-origins", "http://localhost:3000;http://127.0.0.1:3000;http://localhost:54321;http://127.0.0.1:54321;http://localhost:54324;http://127.0.0.1:54324", "--output-dir", "artifacts/verify"]
+default_tools_approval_mode = "approve"
+
+[mcp_servers.notion]
+command = "npx"
+args = ["-y", "@notionhq/notion-mcp-server@2.5.2"]
+env_vars = ["NOTION_TOKEN"]
+default_tools_approval_mode = "prompt"
+tools.API-get-self.approval_mode = "approve"
+tools.API-post-search.approval_mode = "approve"
+tools.API-retrieve-a-page.approval_mode = "approve"
+tools.API-retrieve-page-markdown.approval_mode = "approve"
+tools.API-retrieve-a-page-property.approval_mode = "approve"
+tools.API-get-block-children.approval_mode = "approve"
+tools.API-retrieve-a-block.approval_mode = "approve"
+tools.API-retrieve-a-comment.approval_mode = "approve"
+tools.API-retrieve-a-database.approval_mode = "approve"
+tools.API-retrieve-a-data-source.approval_mode = "approve"
+tools.API-query-data-source.approval_mode = "approve"
+tools.API-list-data-source-templates.approval_mode = "approve"

@@ -1,5 +1,5 @@
 name: Docs
-description: Documentation only (README, conventions, code docs)
+description: Documentation only (Notion pages, one-line README updates)
 title: 'DEV: '
 labels: [docs]
 body:
@@ -15,4 +15,4 @@ body:
     attributes:
       label: Target
       description: Optional
-      placeholder: README / docs/ / inline / etc.
+      placeholder: Notion page / README

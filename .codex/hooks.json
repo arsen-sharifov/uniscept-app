@@ -1,0 +1,26 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"const {execFileSync,spawnSync}=require('node:child_process');const {readFileSync}=require('node:fs');const {join}=require('node:path');const deny=(reason)=>process.stdout.write(JSON.stringify({hookSpecificOutput:{hookEventName:'PreToolUse',permissionDecision:'deny',permissionDecisionReason:reason}}));try{const root=execFileSync('git',['rev-parse','--show-toplevel'],{encoding:'utf8'}).trim();const result=spawnSync(process.execPath,[join(root,'.agents/hooks/guard.mjs'),'codex'],{input:readFileSync(0),encoding:'utf8',timeout:8000});if(result.status===0){process.stdout.write(result.stdout);}else{deny(result.stderr.trim()||'The assistant guard could not check this call.');}}catch(error){deny('The assistant guard could not start: '+error.message);}\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"const {execFileSync,spawnSync}=require('node:child_process');const {readFileSync}=require('node:fs');const {join}=require('node:path');const block=(reason)=>process.stdout.write(JSON.stringify({decision:'block',reason:reason}));try{const root=execFileSync('git',['rev-parse','--show-toplevel'],{encoding:'utf8'}).trim();const result=spawnSync(process.execPath,[join(root,'.agents/hooks/guard.mjs'),'codex'],{input:readFileSync(0),encoding:'utf8',timeout:8000});if(result.status===0){process.stdout.write(result.stdout);}else{block(result.stderr.trim()||'The assistant guard could not check this prompt.');}}catch(error){block('The assistant guard could not start: '+error.message);}\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

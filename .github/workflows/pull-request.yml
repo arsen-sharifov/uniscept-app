@@ -1,0 +1,50 @@
+name: Pull request
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - edited
+      - reopened
+      - synchronize
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  conventions:
+    name: Conventions
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      BASE_REF: ${{ github.base_ref }}
+      HEAD_REF: ${{ github.head_ref }}
+      HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      PR_TITLE: ${{ github.event.pull_request.title }}
+      PR_BODY: ${{ github.event.pull_request.body }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup
+        uses: ./.github/actions/setup
+
+      - name: Check commits
+        run: pnpm exec commitlint --from "origin/$BASE_REF" --to "$HEAD_SHA" --verbose
+
+      - name: Check title, description, scopes and version
+        run: |
+          printf '%s\n' "$PR_TITLE" | pnpm exec commitlint --verbose
+          node scripts/conventions/pull-request.mjs
+
+      - name: Check hidden characters
+        run: node scripts/conventions/hidden-characters.mjs

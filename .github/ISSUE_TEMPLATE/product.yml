@@ -1,6 +1,6 @@
 name: Product
 description: Product feature or scope (PRD-style, may split into dev issues)
-title: 'product: '
+title: 'PROD: '
 labels: [product]
 body:
   - type: textarea

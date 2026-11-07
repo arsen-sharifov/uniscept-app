@@ -5,6 +5,7 @@
       "subtitle": "Bem-vindo de volta",
       "email": "E-mail",
       "password": "Palavra-passe",
+      "forgotPassword": "Esqueceu-se da palavra-passe?",
       "submit": "Entrar",
       "submitting": "A entrar…",
       "emailSent": "Verifique o seu e-mail para confirmar a conta.",
@@ -59,6 +60,35 @@
       "switchAccount": "Sair e aceitar",
       "stay": "Manter a sessão"
     },
+    "forgotPassword": {
+      "heading": "Redefina a sua palavra-passe",
+      "subtitle": "Introduza o seu e-mail e enviaremos uma hiperligação para definir uma nova palavra-passe.",
+      "email": "E-mail",
+      "submit": "Enviar hiperligação",
+      "submitting": "A enviar…",
+      "sentHeading": "Verifique o seu e-mail",
+      "sentSubtitle": "Siga a hiperligação do e-mail para definir uma nova palavra-passe.",
+      "sent": "Se existir uma conta para {email}, enviámos uma hiperligação de redefinição para esse endereço. A hiperligação funciona uma única vez e expira dentro de 1 hora.",
+      "resend": "Enviar novamente",
+      "resendIn": "Enviar novamente em {seconds, number} s",
+      "resent": "Pedido enviado novamente. Verifique a caixa de entrada e a pasta de spam.",
+      "backToSignIn": "Voltar ao início de sessão",
+      "remembered": "Lembrou-se?"
+    },
+    "resetPassword": {
+      "heading": "Defina uma nova palavra-passe",
+      "subtitle": "Escolha uma nova palavra-passe para a sua conta.",
+      "password": "Nova palavra-passe",
+      "confirmPassword": "Confirmar palavra-passe",
+      "passwordMismatch": "As palavras-passe não coincidem",
+      "submit": "Guardar palavra-passe",
+      "submitting": "A guardar…",
+      "updated": "Palavra-passe atualizada. Sessão iniciada.",
+      "rejectedHeading": "Esta hiperligação não pode ser usada",
+      "rejectedSubtitle": "As hiperligações de redefinição funcionam uma única vez e expiram após 1 hora.",
+      "rejected": "Esta hiperligação de redefinição é inválida, já foi usada ou expirou.",
+      "requestNew": "Pedir uma nova hiperligação"
+    },
     "placeholders": {
       "name": "João Silva",
       "email": "name@example.com",
@@ -68,7 +98,9 @@
       "invalidInviteCode": "Código de convite inválido",
       "signInFailed": "Não foi possível iniciar sessão",
       "signUpFailed": "Não foi possível criar a conta",
-      "joinFailed": "Não foi possível configurar a conta"
+      "joinFailed": "Não foi possível configurar a conta",
+      "resetRequestFailed": "Não foi possível enviar a hiperligação",
+      "resetFailed": "Não foi possível definir a nova palavra-passe"
     },
     "confirmed": {
       "heading": "E-mail confirmado",
@@ -970,6 +1002,11 @@
         "currentPassword": "Palavra-passe atual",
         "currentPasswordRequired": "Introduza a palavra-passe atual",
         "currentPasswordIncorrect": "A palavra-passe atual está incorreta",
+        "forgotPassword": "Esqueceu-se da palavra-passe atual?",
+        "sendResetLink": "Enviar-me uma hiperligação de redefinição",
+        "sendingResetLink": "A enviar…",
+        "resetLinkSent": "Enviámos uma hiperligação de redefinição para {email}. Expira dentro de 1 hora.",
+        "resetLinkFailed": "Não foi possível enviar a hiperligação",
         "passwordSame": "A nova palavra-passe deve ser diferente da atual",
         "newPassword": "Nova palavra-passe",
         "confirmPassword": "Confirmar palavra-passe",

@@ -5,6 +5,7 @@
       "subtitle": "Bon retour",
       "email": "Email",
       "password": "Mot de passe",
+      "forgotPassword": "Mot de passe oublié ?",
       "submit": "Se connecter",
       "submitting": "Connexion en cours…",
       "emailSent": "Vérifiez votre email pour confirmer votre compte.",
@@ -59,6 +60,35 @@
       "switchAccount": "Se déconnecter et accepter",
       "stay": "Rester connecté"
     },
+    "forgotPassword": {
+      "heading": "Réinitialisez votre mot de passe",
+      "subtitle": "Saisissez votre email et nous vous enverrons un lien pour définir un nouveau mot de passe.",
+      "email": "Email",
+      "submit": "Envoyer le lien",
+      "submitting": "Envoi…",
+      "sentHeading": "Vérifiez votre email",
+      "sentSubtitle": "Suivez le lien de l'email pour définir un nouveau mot de passe.",
+      "sent": "Si un compte existe pour {email}, nous avons envoyé un lien de réinitialisation à cette adresse. Le lien ne fonctionne qu'une fois et expire dans 1 heure.",
+      "resend": "Renvoyer",
+      "resendIn": "Renvoyer dans {seconds, number} s",
+      "resent": "Demande renvoyée. Vérifiez votre boîte de réception et vos spams.",
+      "backToSignIn": "Retour à la connexion",
+      "remembered": "Vous vous en souvenez ?"
+    },
+    "resetPassword": {
+      "heading": "Définissez un nouveau mot de passe",
+      "subtitle": "Choisissez un nouveau mot de passe pour votre compte.",
+      "password": "Nouveau mot de passe",
+      "confirmPassword": "Confirmer le mot de passe",
+      "passwordMismatch": "Les mots de passe ne correspondent pas",
+      "submit": "Enregistrer le mot de passe",
+      "submitting": "Enregistrement…",
+      "updated": "Mot de passe mis à jour. Vous êtes connecté.",
+      "rejectedHeading": "Ce lien ne peut pas être utilisé",
+      "rejectedSubtitle": "Les liens de réinitialisation ne fonctionnent qu'une fois et expirent au bout d'une heure.",
+      "rejected": "Ce lien de réinitialisation est invalide, déjà utilisé ou expiré.",
+      "requestNew": "Demander un nouveau lien"
+    },
     "placeholders": {
       "name": "Jean Dupont",
       "email": "name@example.com",
@@ -68,7 +98,9 @@
       "invalidInviteCode": "Code d'invitation invalide",
       "signInFailed": "Impossible de se connecter",
       "signUpFailed": "Impossible de créer le compte",
-      "joinFailed": "Impossible de configurer le compte"
+      "joinFailed": "Impossible de configurer le compte",
+      "resetRequestFailed": "Impossible d'envoyer le lien de réinitialisation",
+      "resetFailed": "Impossible de définir le nouveau mot de passe"
     },
     "confirmed": {
       "heading": "Email confirmé",
@@ -970,6 +1002,11 @@
         "currentPassword": "Mot de passe actuel",
         "currentPasswordRequired": "Saisissez votre mot de passe actuel",
         "currentPasswordIncorrect": "Le mot de passe actuel est incorrect",
+        "forgotPassword": "Mot de passe actuel oublié ?",
+        "sendResetLink": "Recevoir un lien de réinitialisation",
+        "sendingResetLink": "Envoi…",
+        "resetLinkSent": "Nous avons envoyé un lien de réinitialisation à {email}. Il expire dans 1 heure.",
+        "resetLinkFailed": "Impossible d'envoyer le lien de réinitialisation",
         "passwordSame": "Le nouveau mot de passe doit différer de l'actuel",
         "newPassword": "Nouveau mot de passe",
         "confirmPassword": "Confirmer le mot de passe",

@@ -1,7 +1,8 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { verifyPassword } from '@api/server/utils';
+import { sendPasswordResetEmail, verifyPassword } from '@api/server/utils';
 import { event } from '@mocks/events';
+import { RESET_EMAIL_SENT } from '@mocks/serverAuth';
 import { createClient } from '@mocks/supabaseJs';
 
 vi.mock('@supabase/supabase-js', () => import('@mocks/supabaseJs'));
@@ -9,6 +10,7 @@ vi.mock('@/lib/events', () => import('@mocks/events'));
 
 const signInWithPassword = vi.fn();
 const signOut = vi.fn();
+const resetPasswordForEmail = vi.fn();
 
 afterEach(() => {
   vi.unstubAllEnvs();
@@ -72,6 +74,39 @@ describe('verifyPassword', () => {
         expect(event.error).toHaveBeenCalledExactlyOnceWith(failure, {
           toast: false,
           context: 'auth.endPasswordCheckSession',
+        });
+      });
+    });
+  });
+});
+
+describe('sendPasswordResetEmail', () => {
+  describe('GIVEN the public Supabase project settings and the app address', () => {
+    beforeEach(() => {
+      vi.stubEnv('NEXT_PUBLIC_SUPABASE_URL', 'https://project.supabase.co');
+      vi.stubEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY', 'anon-key');
+      vi.stubEnv('NEXT_PUBLIC_APP_URL', 'https://app.uniscept.dev');
+      resetPasswordForEmail.mockResolvedValue(RESET_EMAIL_SENT);
+      vi.mocked(createClient).mockReturnValue({ auth: { resetPasswordForEmail } } as never);
+    });
+
+    describe('WHEN a reset email is sent', () => {
+      let result: Awaited<ReturnType<typeof sendPasswordResetEmail>>;
+
+      beforeEach(async () => {
+        result = await sendPasswordResetEmail('user@uniscept.dev');
+      });
+
+      test('THEN a fresh anon client that keeps no session sends it and its result is returned', () => {
+        expect(result).toBe(RESET_EMAIL_SENT);
+        expect(createClient).toHaveBeenCalledExactlyOnceWith('https://project.supabase.co', 'anon-key', {
+          auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+        });
+      });
+
+      test('THEN the link leads back to the reset page of the app', () => {
+        expect(resetPasswordForEmail).toHaveBeenCalledExactlyOnceWith('user@uniscept.dev', {
+          redirectTo: 'https://app.uniscept.dev/reset-password',
         });
       });
     });

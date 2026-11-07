@@ -1,5 +1,7 @@
 import type { SignOut } from '@supabase/supabase-js';
 
+import type { TLocale, TPasswordResetRequestResult } from '@interfaces';
+
 import { createClient } from '@/lib/supabase';
 
 import { toResponseError } from './utils';
@@ -10,13 +12,13 @@ export const signIn = (email: string, password: string) => {
   return supabase.auth.signInWithPassword({ email, password });
 };
 
-export const signUp = (email: string, password: string, name: string) => {
+export const signUp = (email: string, password: string, name: string, locale: TLocale) => {
   const supabase = createClient();
 
   return supabase.auth.signUp({
     email,
     password,
-    options: { data: { name, plan: 'beta' } },
+    options: { data: { name, plan: 'beta', locale } },
   });
 };
 
@@ -32,10 +34,35 @@ export const verifyInvitation = (tokenHash: string) => {
   return supabase.auth.verifyOtp({ token_hash: tokenHash, type: 'invite' });
 };
 
-export const completeInvitedAccount = (name: string, password: string) => {
+export const completeInvitedAccount = (name: string, password: string, locale: TLocale) => {
   const supabase = createClient();
 
-  return supabase.auth.updateUser({ password, data: { name, plan: 'beta' } });
+  return supabase.auth.updateUser({ password, data: { name, plan: 'beta', locale } });
+};
+
+export const requestPasswordReset = async (email: string): Promise<TPasswordResetRequestResult> => {
+  const response = await fetch('/auth/password-reset', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  });
+
+  if (response.ok) return 'sent';
+  if (response.status === 429) return 'throttled';
+
+  throw await toResponseError(response, 'Password reset request failed');
+};
+
+export const verifyPasswordReset = (tokenHash: string) => {
+  const supabase = createClient();
+
+  return supabase.auth.verifyOtp({ token_hash: tokenHash, type: 'recovery' });
+};
+
+export const completePasswordReset = (password: string) => {
+  const supabase = createClient();
+
+  return supabase.auth.updateUser({ password });
 };
 
 export const signOut = async (options?: SignOut): Promise<void> => {

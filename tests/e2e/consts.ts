@@ -82,6 +82,10 @@ export const REJECTED_EMAIL = `rejected@${E2E_ACCOUNT_DOMAIN}`;
 
 export const NEW_PASSWORD = 'Uniscept-E2E-2!';
 
+export const RESET_EMAIL_SUBJECT = 'Reset your Uniscept password';
+
+export const RESET_EMAIL_SUBJECT_UK = 'Відновлення пароля Uniscept';
+
 export const ONBOARDING_QUESTION = 'Do we ship on Friday?';
 
 export const ONBOARDING_CLAIM = 'The release checklist is green';

@@ -14,7 +14,7 @@ import {
   verifyInviteCode,
 } from '@api/client';
 import { Stepper, Tooltip } from '@/components';
-import { useTranslations } from '@/i18n';
+import { useLocale, useTranslations } from '@/i18n';
 import { event } from '@/lib/events';
 
 import { AuthButton } from './AuthButton';
@@ -44,6 +44,7 @@ export const SignUpFlow = ({ mode = 'signup', lockedEmail }: ISignUpFlowProps) =
   const router = useRouter();
 
   const t = useTranslations();
+  const locale = useLocale();
   const copy = isInvite
     ? {
         heading: t.auth.signUp.inviteHeading,
@@ -64,7 +65,7 @@ export const SignUpFlow = ({ mode = 'signup', lockedEmail }: ISignUpFlowProps) =
     setLoading(true);
 
     if (isInvite) {
-      const { error: completeError } = await completeInvitedAccount(name, password);
+      const { error: completeError } = await completeInvitedAccount(name, password, locale);
 
       if (completeError) {
         event.error(completeError, { title: t.auth.errors.joinFailed, context: 'auth.completeInvite' });
@@ -123,7 +124,7 @@ export const SignUpFlow = ({ mode = 'signup', lockedEmail }: ISignUpFlowProps) =
       return;
     }
 
-    const { error: authError } = await signUp(email, password, name);
+    const { error: authError } = await signUp(email, password, name, locale);
 
     if (authError) {
       event.error(authError, { title: t.auth.errors.signUpFailed, context: 'auth.signUp' });

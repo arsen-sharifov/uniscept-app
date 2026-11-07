@@ -7,4 +7,11 @@ export const DEFAULT_LOCALE: TLocale = 'en';
 export const LOCALE_COOKIE = 'uniscept-locale';
 export const LOCALE_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
 
-export const PUBLIC_PATHS: readonly string[] = ['/', '/login', '/signup', '/join'];
+export const PUBLIC_PATHS: readonly string[] = [
+  '/',
+  '/login',
+  '/signup',
+  '/join',
+  '/forgot-password',
+  '/reset-password',
+];

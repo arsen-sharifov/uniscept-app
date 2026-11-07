@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { completeInvitedAccount, signUp, verifyInviteCode } from '@mocks/authApi';
 import { event } from '@mocks/events';
-import { TRANSLATIONS } from '@mocks/i18n';
+import { DEFAULT_LOCALE, TRANSLATIONS } from '@mocks/i18n';
 import { router } from '@mocks/navigation';
 import { addUserBadge } from '@mocks/userApi';
 import { acceptWorkspaceInvitation, getMyInvitations } from '@mocks/workspaceApi';
@@ -88,9 +88,9 @@ describe('SignUpFlow', () => {
         });
       });
 
-      test('THEN the account is created and the visitor is asked to confirm the email', () => {
+      test('THEN the account is created in the language of the page and the visitor is asked to confirm the email', () => {
         expect(verifyInviteCode).toHaveBeenCalledExactlyOnceWith('beta-code', 'ada@example.com');
-        expect(signUp).toHaveBeenCalledExactlyOnceWith('ada@example.com', 'secret-pass', 'Ada');
+        expect(signUp).toHaveBeenCalledExactlyOnceWith('ada@example.com', 'secret-pass', 'Ada', DEFAULT_LOCALE);
         expect(router.push).toHaveBeenCalledExactlyOnceWith('/login?emailSent=true');
       });
     });
@@ -178,9 +178,9 @@ describe('SignUpFlow', () => {
         });
       });
 
-      test('THEN the account is completed, every pending invitation is accepted and the platform opens', () => {
+      test('THEN the account is completed in the language of the page, every pending invitation is accepted and the platform opens', () => {
         expect(screen.getByLabelText(TRANSLATIONS.auth.signUp.accountStep.email)).toHaveValue('invitee@example.com');
-        expect(completeInvitedAccount).toHaveBeenCalledExactlyOnceWith('Grace', 'secret-pass');
+        expect(completeInvitedAccount).toHaveBeenCalledExactlyOnceWith('Grace', 'secret-pass', DEFAULT_LOCALE);
         expect(acceptWorkspaceInvitation.mock.calls).toEqual([['inv-1'], ['inv-2']]);
         expect(addUserBadge).toHaveBeenCalledExactlyOnceWith('collaborator');
         expect(router.push).toHaveBeenCalledExactlyOnceWith('/platform');

@@ -4,6 +4,7 @@ export * from './collections';
 export * from './dom';
 export * from './onboarding';
 export * from './params';
+export * from './passwordReset';
 export * from './preferences';
 export * from './roles';
 export * from './rootAttributes';

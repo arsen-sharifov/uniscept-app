@@ -1,15 +1,25 @@
 import { createHash, timingSafeEqual } from 'node:crypto';
 
 import type { AuthError, User } from '@supabase/supabase-js';
-import { NextResponse } from 'next/server';
+import { after, NextResponse } from 'next/server';
 
 import {
   INVITE_RATE_LIMIT_MAX_ATTEMPTS,
   INVITE_RATE_LIMIT_WINDOW_MS,
   PASSWORD_CHECK_RATE_LIMIT_MAX_ATTEMPTS,
   PASSWORD_CHECK_RATE_LIMIT_WINDOW_MS,
+  PASSWORD_RESET_EMAIL_RATE_LIMIT_MAX_ATTEMPTS,
+  PASSWORD_RESET_EMAIL_RATE_LIMIT_WINDOW_MS,
+  PASSWORD_RESET_IP_RATE_LIMIT_MAX_ATTEMPTS,
+  PASSWORD_RESET_IP_RATE_LIMIT_WINDOW_MS,
+  PASSWORD_RESET_REQUEST_COOKIE,
+  PASSWORD_RESET_REQUEST_COOKIE_PATH,
+  PASSWORD_RESET_RESEND_MAX_ATTEMPTS,
+  PASSWORD_RESET_RESEND_WINDOW_MS,
+  PASSWORD_RESET_RESEND_WINDOW_SECONDS,
 } from '@constants';
 import { event } from '@/lib/events';
+import { toPasswordResetCookie } from '@/lib/utils';
 
 import {
   authenticateRequest,
@@ -18,6 +28,7 @@ import {
   getClientIp,
   isSameOriginRequest,
   normalizeEmail,
+  sendPasswordResetEmail,
   verifyPassword,
 } from './utils';
 
@@ -30,6 +41,37 @@ const allowPasswordCheck = createRateLimiter({
   maxAttempts: PASSWORD_CHECK_RATE_LIMIT_MAX_ATTEMPTS,
   windowMs: PASSWORD_CHECK_RATE_LIMIT_WINDOW_MS,
 });
+
+const allowPasswordResetFromIp = createRateLimiter({
+  maxAttempts: PASSWORD_RESET_IP_RATE_LIMIT_MAX_ATTEMPTS,
+  windowMs: PASSWORD_RESET_IP_RATE_LIMIT_WINDOW_MS,
+});
+
+const allowPasswordResetResend = createRateLimiter({
+  maxAttempts: PASSWORD_RESET_RESEND_MAX_ATTEMPTS,
+  windowMs: PASSWORD_RESET_RESEND_WINDOW_MS,
+});
+
+const allowPasswordResetForEmail = createRateLimiter({
+  maxAttempts: PASSWORD_RESET_EMAIL_RATE_LIMIT_MAX_ATTEMPTS,
+  windowMs: PASSWORD_RESET_EMAIL_RATE_LIMIT_WINDOW_MS,
+});
+
+const rememberPasswordResetRequest = (response: NextResponse, email: string): NextResponse => {
+  response.cookies.set(
+    PASSWORD_RESET_REQUEST_COOKIE,
+    toPasswordResetCookie({ email, resendAt: Date.now() + PASSWORD_RESET_RESEND_WINDOW_MS }),
+    {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+      path: PASSWORD_RESET_REQUEST_COOKIE_PATH,
+      maxAge: PASSWORD_RESET_RESEND_WINDOW_SECONDS,
+    },
+  );
+
+  return response;
+};
 
 const digest = (value: string) => createHash('sha256').update(value, 'utf8').digest();
 
@@ -91,6 +133,38 @@ export const handleVerifyInvite = async (request: Request) => {
   }
 
   return NextResponse.json({ valid: true });
+};
+
+export const handleRequestPasswordReset = async (request: Request) => {
+  if (!isSameOriginRequest(request)) {
+    return NextResponse.json({ error: { message: 'Forbidden' } }, { status: 403 });
+  }
+
+  const body = await request.json().catch(() => null);
+  const email = normalizeEmail(body?.email);
+
+  if (!email) {
+    return NextResponse.json({ error: { message: 'Invalid request' } }, { status: 400 });
+  }
+
+  if (
+    !allowPasswordResetFromIp(getClientIp(request)) ||
+    !allowPasswordResetResend(email) ||
+    !allowPasswordResetForEmail(email)
+  ) {
+    return rememberPasswordResetRequest(
+      NextResponse.json({ error: { message: 'Too many attempts, try again later' } }, { status: 429 }),
+      email,
+    );
+  }
+
+  after(async () => {
+    const result = await sendPasswordResetEmail(email).catch((error: unknown) => ({ error }));
+
+    if (result.error) event.error(result.error, { toast: false, context: 'auth.sendPasswordResetEmail' });
+  });
+
+  return rememberPasswordResetRequest(NextResponse.json({ success: true }), email);
 };
 
 export const handleChangePassword = async (request: Request) => {

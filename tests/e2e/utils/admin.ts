@@ -102,6 +102,12 @@ export const deletePreferences = async (userId: string): Promise<void> => {
   if (error) throw new Error(`Could not reset the preferences of ${userId}: ${error.message}`);
 };
 
+export const seedLanguage = async (userId: string, language: string): Promise<void> => {
+  const { error } = await getAdminClient().from('user_preferences').upsert({ user_id: userId, language });
+
+  if (error) throw new Error(`Could not set the language of ${userId}: ${error.message}`);
+};
+
 export const deleteOnboarding = async (userId: string): Promise<void> => {
   const { error } = await getAdminClient().from('user_onboarding').delete().eq('user_id', userId);
 

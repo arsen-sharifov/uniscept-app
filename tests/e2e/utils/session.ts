@@ -1,3 +1,5 @@
+import { randomInt } from 'node:crypto';
+
 import type { Page } from '@playwright/test';
 
 import { COPY } from '../consts';
@@ -11,6 +13,14 @@ export const signIn = async (page: Page, email: string, password: string): Promi
   await page.getByLabel(COPY.auth.signIn.password).fill(password);
   await page.getByRole('button', { name: COPY.auth.signIn.submit, exact: true }).click();
   await page.waitForURL(isPlatformUrl);
+};
+
+export const assignClientAddress = async (page: Page): Promise<string> => {
+  const address = `10.${randomInt(256)}.${randomInt(256)}.${randomInt(256)}`;
+
+  await page.setExtraHTTPHeaders({ 'x-forwarded-for': address });
+
+  return address;
 };
 
 export const signOut = async (page: Page): Promise<void> => {

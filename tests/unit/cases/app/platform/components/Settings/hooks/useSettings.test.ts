@@ -6,6 +6,7 @@ import {
   deleteAccount,
   getMyOwnedSharedWorkspaces,
   getUser,
+  requestPasswordReset,
   updateEmail,
   updatePassword,
   updateUserMetadata,
@@ -26,6 +27,7 @@ import { useSettings } from '@/app/platform/components/Settings/hooks';
 import { event } from '@/lib/events';
 
 vi.mock('@api/client', async () => ({
+  ...(await import('@mocks/authApi')),
   ...(await import('@mocks/canvasApi')),
   ...(await import('@mocks/userApi')),
   ...(await import('@mocks/workspaceApi')),
@@ -81,6 +83,10 @@ describe('useSettings', () => {
       test('THEN the account deletion and its shared workspace check pass through to the api', () => {
         expect(settings.current.deleteAccount).toBe(deleteAccount);
         expect(settings.current.getMyOwnedSharedWorkspaces).toBe(getMyOwnedSharedWorkspaces);
+      });
+
+      test('THEN the reset link request passes through to the api', () => {
+        expect(settings.current.requestPasswordReset).toBe(requestPasswordReset);
       });
     });
   });

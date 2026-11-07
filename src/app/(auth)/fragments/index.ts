@@ -4,6 +4,8 @@ export * from './AuthHeading';
 export * from './AuthInput';
 export * from './AuthLabel';
 export * from './AuthLink';
+export * from './AuthNotice';
 export * from './AuthPanel';
+export * from './ForgotPasswordFlow';
 export * from './PlanStep';
 export * from './SignUpFlow';

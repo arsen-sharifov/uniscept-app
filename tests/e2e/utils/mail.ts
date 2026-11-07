@@ -9,6 +9,8 @@ const VERIFY_LINK_PATTERN = /https?:\/\/\S+\/auth\/v1\/verify\S+/;
 
 const JOIN_LINK_PATTERN = /https?:\/\/\S+\/join\?token_hash=\S+/;
 
+const RESET_LINK_PATTERN = /https?:\/\/\S+\/reset-password\?token_hash=\S+/;
+
 const wait = (durationMs: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, durationMs));
 
 const readJson = async <T>(path: string): Promise<T> => {
@@ -26,7 +28,7 @@ const findNewestMessageId = async (email: string): Promise<string | null> => {
   return mailbox.messages[0]?.ID ?? null;
 };
 
-const readEmailLink = async (email: string, pattern: RegExp, attempt = 0): Promise<string> => {
+const readNewestMessage = async (email: string, attempt = 0): Promise<IE2EMailMessage> => {
   const messageId = await findNewestMessageId(email);
 
   if (!messageId) {
@@ -34,10 +36,14 @@ const readEmailLink = async (email: string, pattern: RegExp, attempt = 0): Promi
 
     await wait(POLL_INTERVAL_MS);
 
-    return readEmailLink(email, pattern, attempt + 1);
+    return readNewestMessage(email, attempt + 1);
   }
 
-  const message = await readJson<IE2EMailMessage>(`/api/v1/message/${messageId}`);
+  return readJson<IE2EMailMessage>(`/api/v1/message/${messageId}`);
+};
+
+const readEmailLink = async (email: string, pattern: RegExp): Promise<string> => {
+  const message = await readNewestMessage(email);
   const link = message.Text.match(pattern)?.[0];
 
   if (!link) throw new Error(`The email to ${email} carries no link matching ${pattern}`);
@@ -48,3 +54,7 @@ const readEmailLink = async (email: string, pattern: RegExp, attempt = 0): Promi
 export const readConfirmationLink = (email: string): Promise<string> => readEmailLink(email, VERIFY_LINK_PATTERN);
 
 export const readInviteLink = (email: string): Promise<string> => readEmailLink(email, JOIN_LINK_PATTERN);
+
+export const readResetLink = (email: string): Promise<string> => readEmailLink(email, RESET_LINK_PATTERN);
+
+export const readEmailSubject = async (email: string): Promise<string> => (await readNewestMessage(email)).Subject;

@@ -1,5 +1,7 @@
 import type { LucideIcon } from 'lucide-react';
 
+import type { TLocale } from './i18n';
+
 export type TAvatarIcon =
   | 'cat'
   | 'dog'
@@ -78,4 +80,5 @@ export interface IUserMetadata {
   avatarIcon?: string;
   badges?: string[];
   plan?: string;
+  locale?: TLocale;
 }

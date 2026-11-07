@@ -48,6 +48,7 @@ export interface IE2EMailboxSearch {
 }
 
 export interface IE2EMailMessage {
+  Subject: string;
   Text: string;
 }
 

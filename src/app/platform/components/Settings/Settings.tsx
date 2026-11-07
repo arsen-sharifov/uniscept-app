@@ -32,8 +32,16 @@ export const Settings = ({ onClose, preferences, updatePreference }: ISettingsPr
   const t = useTranslations();
   const titleId = useId();
   const [activeSection, setActiveSection] = useState<TSettingsSection>('profile');
-  const { user, loading, updateProfile, changeEmail, changePassword, getMyOwnedSharedWorkspaces, deleteAccount } =
-    useSettings();
+  const {
+    user,
+    loading,
+    updateProfile,
+    changeEmail,
+    changePassword,
+    requestPasswordReset,
+    getMyOwnedSharedWorkspaces,
+    deleteAccount,
+  } = useSettings();
 
   const renderSection = () => {
     if (loading && (activeSection === 'profile' || activeSection === 'plan')) {
@@ -57,7 +65,9 @@ export const Settings = ({ onClose, preferences, updatePreference }: ISettingsPr
     if (activeSection === 'security') {
       return (
         <SecuritySection
+          email={user?.email}
           onChangePassword={changePassword}
+          onRequestPasswordReset={requestPasswordReset}
           onCheckDeletion={getMyOwnedSharedWorkspaces}
           onDeleteAccount={deleteAccount}
         />

@@ -5,6 +5,7 @@
       "subtitle": "Bine ați revenit",
       "email": "Email",
       "password": "Parolă",
+      "forgotPassword": "Ați uitat parola?",
       "submit": "Autentificare",
       "submitting": "Se autentifică…",
       "emailSent": "Verificați emailul pentru a confirma contul.",
@@ -59,6 +60,35 @@
       "switchAccount": "Deconectați-vă și acceptați",
       "stay": "Rămâneți autentificat"
     },
+    "forgotPassword": {
+      "heading": "Resetați parola",
+      "subtitle": "Introduceți emailul și vă vom trimite un link pentru a seta o parolă nouă.",
+      "email": "Email",
+      "submit": "Trimiteți linkul de resetare",
+      "submitting": "Se trimite…",
+      "sentHeading": "Verificați emailul",
+      "sentSubtitle": "Urmați linkul din email pentru a seta o parolă nouă.",
+      "sent": "Dacă există un cont pentru {email}, am trimis un link de resetare la această adresă. Linkul funcționează o singură dată și expiră în 1 oră.",
+      "resend": "Trimiteți din nou",
+      "resendIn": "Trimiteți din nou în {seconds, number} s",
+      "resent": "Cererea a fost trimisă din nou. Verificați căsuța de email și dosarul de spam.",
+      "backToSignIn": "Înapoi la autentificare",
+      "remembered": "V-ați amintit parola?"
+    },
+    "resetPassword": {
+      "heading": "Setați o parolă nouă",
+      "subtitle": "Alegeți o parolă nouă pentru contul dumneavoastră.",
+      "password": "Parolă nouă",
+      "confirmPassword": "Confirmați parola",
+      "passwordMismatch": "Parolele nu coincid",
+      "submit": "Salvați parola",
+      "submitting": "Se salvează…",
+      "updated": "Parola a fost actualizată. Sunteți autentificat.",
+      "rejectedHeading": "Acest link nu poate fi folosit",
+      "rejectedSubtitle": "Linkurile de resetare funcționează o singură dată și expiră după 1 oră.",
+      "rejected": "Acest link de resetare este invalid, a fost deja folosit sau a expirat.",
+      "requestNew": "Cereți un link nou"
+    },
     "placeholders": {
       "name": "Ion Popescu",
       "email": "name@example.com",
@@ -68,7 +98,9 @@
       "invalidInviteCode": "Cod de invitație invalid",
       "signInFailed": "Nu s-a putut face autentificarea",
       "signUpFailed": "Nu s-a putut crea contul",
-      "joinFailed": "Nu s-a putut configura contul"
+      "joinFailed": "Nu s-a putut configura contul",
+      "resetRequestFailed": "Nu s-a putut trimite linkul de resetare",
+      "resetFailed": "Nu s-a putut seta parola nouă"
     },
     "confirmed": {
       "heading": "Email confirmat",
@@ -970,6 +1002,11 @@
         "currentPassword": "Parola curentă",
         "currentPasswordRequired": "Introduceți parola curentă",
         "currentPasswordIncorrect": "Parola curentă este incorectă",
+        "forgotPassword": "Ați uitat parola curentă?",
+        "sendResetLink": "Trimiteți-mi un link de resetare",
+        "sendingResetLink": "Se trimite…",
+        "resetLinkSent": "Am trimis un link de resetare la {email}. Expiră în 1 oră.",
+        "resetLinkFailed": "Nu s-a putut trimite linkul de resetare",
         "passwordSame": "Parola nouă trebuie să difere de cea curentă",
         "newPassword": "Parolă nouă",
         "confirmPassword": "Confirmați parola",

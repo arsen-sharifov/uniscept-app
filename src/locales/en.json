@@ -5,6 +5,7 @@
       "subtitle": "Welcome back",
       "email": "Email",
       "password": "Password",
+      "forgotPassword": "Forgot password?",
       "submit": "Sign In",
       "submitting": "Signing in…",
       "emailSent": "Check your email to confirm your account.",
@@ -59,6 +60,35 @@
       "switchAccount": "Sign out and accept",
       "stay": "Stay signed in"
     },
+    "forgotPassword": {
+      "heading": "Reset your password",
+      "subtitle": "Enter your email and we will send you a link to set a new password.",
+      "email": "Email",
+      "submit": "Send reset link",
+      "submitting": "Sending…",
+      "sentHeading": "Check your email",
+      "sentSubtitle": "Follow the link in the email to set a new password.",
+      "sent": "If an account exists for {email}, we have sent a reset link to that address. The link works once and expires in 1 hour.",
+      "resend": "Send again",
+      "resendIn": "Send again in {seconds, number} s",
+      "resent": "Request sent again. Check your inbox and spam folder.",
+      "backToSignIn": "Back to Sign In",
+      "remembered": "Remembered it?"
+    },
+    "resetPassword": {
+      "heading": "Set a new password",
+      "subtitle": "Choose a new password for your account.",
+      "password": "New password",
+      "confirmPassword": "Confirm password",
+      "passwordMismatch": "Passwords do not match",
+      "submit": "Save password",
+      "submitting": "Saving…",
+      "updated": "Password updated. You are signed in.",
+      "rejectedHeading": "This link can't be used",
+      "rejectedSubtitle": "Reset links work once and expire after 1 hour.",
+      "rejected": "This reset link is invalid, already used or expired.",
+      "requestNew": "Request a new link"
+    },
     "placeholders": {
       "name": "John Doe",
       "email": "name@example.com",
@@ -68,7 +98,9 @@
       "invalidInviteCode": "Invalid invite code",
       "signInFailed": "Couldn't sign in",
       "signUpFailed": "Couldn't create the account",
-      "joinFailed": "Couldn't set up the account"
+      "joinFailed": "Couldn't set up the account",
+      "resetRequestFailed": "Couldn't send the reset link",
+      "resetFailed": "Couldn't set the new password"
     },
     "confirmed": {
       "heading": "Email Confirmed",
@@ -970,6 +1002,11 @@
         "currentPassword": "Current password",
         "currentPasswordRequired": "Enter your current password",
         "currentPasswordIncorrect": "Current password is incorrect",
+        "forgotPassword": "Forgot your current password?",
+        "sendResetLink": "Email me a reset link",
+        "sendingResetLink": "Sending…",
+        "resetLinkSent": "We sent a reset link to {email}. It expires in 1 hour.",
+        "resetLinkFailed": "Couldn't send the reset link",
         "passwordSame": "New password must differ from the current one",
         "newPassword": "New password",
         "confirmPassword": "Confirm password",

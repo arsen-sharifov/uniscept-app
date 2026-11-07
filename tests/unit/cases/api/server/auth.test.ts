@@ -4,20 +4,47 @@ import {
   INVITE_RATE_LIMIT_MAX_ATTEMPTS,
   INVITE_RATE_LIMIT_WINDOW_MS,
   PASSWORD_CHECK_RATE_LIMIT_MAX_ATTEMPTS,
+  PASSWORD_RESET_EMAIL_RATE_LIMIT_MAX_ATTEMPTS,
+  PASSWORD_RESET_IP_RATE_LIMIT_MAX_ATTEMPTS,
+  PASSWORD_RESET_IP_RATE_LIMIT_WINDOW_MS,
+  PASSWORD_RESET_REQUEST_COOKIE,
+  PASSWORD_RESET_RESEND_WINDOW_MS,
+  PASSWORD_RESET_RESEND_WINDOW_SECONDS,
 } from '@constants';
-import { handleChangePassword, handleDeleteAccount, handleVerifyInvite } from '@api/server';
+import { handleChangePassword, handleDeleteAccount, handleRequestPasswordReset, handleVerifyInvite } from '@api/server';
 import { primeAdminClient } from '@mocks/adminClient';
+import { RESET_CLOCK } from '@mocks/authApi';
 import { event } from '@mocks/events';
-import { verifyPassword, WRONG_PASSWORD } from '@mocks/serverAuth';
+import { runAfterResponse } from '@mocks/nextServer';
+import {
+  ANSWERED_RESET_COOKIE,
+  RESET_EMAIL_CRASH,
+  RESET_EMAIL_SENT,
+  RESET_EMAIL_THROTTLED,
+  sendPasswordResetEmail,
+  verifyPassword,
+  WRONG_PASSWORD,
+} from '@mocks/serverAuth';
 import { primeServerClient } from '@mocks/supabaseServer';
 
 vi.mock('@/lib/supabase/server', () => import('@mocks/supabaseServer'));
 vi.mock('@api/server/utils/adminClient', () => import('@mocks/adminClient'));
 vi.mock('@api/server/utils/auth', () => import('@mocks/serverAuth'));
 vi.mock('@/lib/events', () => import('@mocks/events'));
+vi.mock('next/server', async (importOriginal) => ({
+  ...(await importOriginal<Record<string, unknown>>()),
+  ...(await import('@mocks/nextServer')),
+}));
 
 const verifyRequest = (ip: string, body: unknown, headers?: Record<string, string>): Request =>
   new Request('http://localhost/auth/verify-invite', {
+    method: 'POST',
+    headers: { 'x-forwarded-for': ip, ...headers },
+    body: typeof body === 'string' ? body : JSON.stringify(body),
+  });
+
+const resetRequest = (ip: string, body: unknown, headers?: Record<string, string>): Request =>
+  new Request('http://localhost/auth/password-reset', {
     method: 'POST',
     headers: { 'x-forwarded-for': ip, ...headers },
     body: typeof body === 'string' ? body : JSON.stringify(body),
@@ -43,6 +70,7 @@ let response: Response;
 beforeEach(() => {
   vi.stubEnv('INVITE_CODE', 'secret-code');
   verifyPassword.mockResolvedValue({ error: null });
+  sendPasswordResetEmail.mockResolvedValue(RESET_EMAIL_SENT);
   admin = primeAdminClient();
 });
 
@@ -243,6 +271,235 @@ describe('handleVerifyInvite', () => {
 
       test('THEN a fresh window accepts the code', () => {
         expect(response.status).toBe(200);
+      });
+    });
+  });
+});
+
+describe('handleRequestPasswordReset', () => {
+  describe('GIVEN a visitor who forgot the password', () => {
+    describe('WHEN a reset link is requested for an email', () => {
+      beforeEach(async () => {
+        response = await handleRequestPasswordReset(resetRequest('ip-reset', { email: '  Forgot@User.DEV ' }));
+        await runAfterResponse();
+      });
+
+      test('THEN the request is answered as sent and the link goes to the normalized email', async () => {
+        expect(response.status).toBe(200);
+        await expect(response.json()).resolves.toEqual({ success: true });
+        expect(sendPasswordResetEmail).toHaveBeenCalledExactlyOnceWith('forgot@user.dev');
+      });
+    });
+
+    describe('WHEN the answer leaves before the work scheduled after it', () => {
+      beforeEach(async () => {
+        response = await handleRequestPasswordReset(resetRequest('ip-reset-early', { email: 'early@user.dev' }));
+      });
+
+      test('THEN the answer does not wait for the email, so its timing does not reveal the account', () => {
+        expect(response.status).toBe(200);
+        expect(sendPasswordResetEmail).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('WHEN the request carries no valid email', () => {
+      beforeEach(async () => {
+        response = await handleRequestPasswordReset(resetRequest('ip-reset-invalid', { email: 'nope' }));
+        await runAfterResponse();
+      });
+
+      test('THEN the request is rejected, no link is sent and nothing is remembered', () => {
+        expect(response.status).toBe(400);
+        expect(sendPasswordResetEmail).not.toHaveBeenCalled();
+        expect(response.headers.get('set-cookie')).toBeNull();
+      });
+    });
+
+    describe('WHEN a malformed body is sent', () => {
+      beforeEach(async () => {
+        response = await handleRequestPasswordReset(resetRequest('ip-reset-broken', 'not json'));
+        await runAfterResponse();
+      });
+
+      test('THEN the request is rejected and no link is sent', () => {
+        expect(response.status).toBe(400);
+        expect(sendPasswordResetEmail).not.toHaveBeenCalled();
+      });
+    });
+  });
+
+  describe('GIVEN a visitor whose reset request is answered at a known time', () => {
+    beforeEach(() => {
+      vi.useFakeTimers({ toFake: ['Date'] });
+      vi.setSystemTime(RESET_CLOCK);
+    });
+
+    describe('WHEN a reset link is requested', () => {
+      beforeEach(async () => {
+        response = await handleRequestPasswordReset(resetRequest('ip-reset-cookie', { email: 'cookie@user.dev' }));
+      });
+
+      test('THEN the answer remembers the request for the reset page until the pause is over', () => {
+        expect(response.headers.get('set-cookie')).toContain(ANSWERED_RESET_COOKIE);
+        expect(response.headers.get('set-cookie')).toContain('Path=/forgot-password');
+        expect(response.headers.get('set-cookie')).toContain(`Max-Age=${PASSWORD_RESET_RESEND_WINDOW_SECONDS}`);
+        expect(response.headers.get('set-cookie')).toContain('HttpOnly');
+      });
+    });
+  });
+
+  describe('GIVEN an account the auth server refuses to mail again so soon', () => {
+    beforeEach(() => {
+      sendPasswordResetEmail.mockResolvedValue(RESET_EMAIL_THROTTLED);
+    });
+
+    describe('WHEN a reset link is requested for it', () => {
+      beforeEach(async () => {
+        response = await handleRequestPasswordReset(resetRequest('ip-reset-throttled', { email: 'known@user.dev' }));
+        await runAfterResponse();
+      });
+
+      test('THEN the answer is the same as for a sent link and the refusal is logged without a toast', async () => {
+        expect(response.status).toBe(200);
+        await expect(response.json()).resolves.toEqual({ success: true });
+        expect(event.error).toHaveBeenCalledExactlyOnceWith(RESET_EMAIL_THROTTLED.error, {
+          toast: false,
+          context: 'auth.sendPasswordResetEmail',
+        });
+      });
+    });
+  });
+
+  describe('GIVEN an email sender that throws instead of returning an error', () => {
+    beforeEach(() => {
+      sendPasswordResetEmail.mockRejectedValue(RESET_EMAIL_CRASH);
+    });
+
+    describe('WHEN a reset link is requested', () => {
+      beforeEach(async () => {
+        response = await handleRequestPasswordReset(resetRequest('ip-reset-crash', { email: 'crash@user.dev' }));
+        await runAfterResponse();
+      });
+
+      test('THEN the answer stays the same and the failure is still logged without a toast', () => {
+        expect(response.status).toBe(200);
+        expect(event.error).toHaveBeenCalledExactlyOnceWith(RESET_EMAIL_CRASH, {
+          toast: false,
+          context: 'auth.sendPasswordResetEmail',
+        });
+      });
+    });
+  });
+
+  describe('GIVEN a request sent from another site', () => {
+    describe('WHEN the browser marks the request as cross-site', () => {
+      beforeEach(async () => {
+        response = await handleRequestPasswordReset(
+          resetRequest('ip-reset-cross-site', { email: 'forgot@user.dev' }, { 'sec-fetch-site': 'cross-site' }),
+        );
+        await runAfterResponse();
+      });
+
+      test('THEN the request is forbidden and no link is sent', () => {
+        expect(response.status).toBe(403);
+        expect(sendPasswordResetEmail).not.toHaveBeenCalled();
+      });
+    });
+  });
+
+  describe('GIVEN an email that got a link less than a minute ago', () => {
+    beforeEach(async () => {
+      vi.useFakeTimers({ toFake: ['Date'] });
+      await handleRequestPasswordReset(resetRequest('ip-pause-first', { email: 'paused@user.dev' }));
+    });
+
+    describe('WHEN another link is asked for it from another address within the minute', () => {
+      beforeEach(async () => {
+        response = await handleRequestPasswordReset(resetRequest('ip-pause-second', { email: 'Paused@User.dev' }));
+        await runAfterResponse();
+      });
+
+      test('THEN the request is throttled however the page was reopened', () => {
+        expect(response.status).toBe(429);
+        expect(sendPasswordResetEmail).toHaveBeenCalledExactlyOnceWith('paused@user.dev');
+        expect(response.headers.get('set-cookie')).toContain(`${PASSWORD_RESET_REQUEST_COOKIE}=`);
+      });
+    });
+
+    describe('WHEN another link is asked for it once the minute has passed', () => {
+      beforeEach(async () => {
+        vi.setSystemTime(Date.now() + PASSWORD_RESET_RESEND_WINDOW_MS);
+        response = await handleRequestPasswordReset(resetRequest('ip-pause-later', { email: 'paused@user.dev' }));
+        await runAfterResponse();
+      });
+
+      test('THEN the new link is sent', () => {
+        expect(response.status).toBe(200);
+        expect(sendPasswordResetEmail).toHaveBeenLastCalledWith('paused@user.dev');
+      });
+    });
+  });
+
+  describe('GIVEN an email that already got as many links as the hourly limit allows, a minute apart', () => {
+    beforeEach(async () => {
+      vi.useFakeTimers({ toFake: ['Date'] });
+      await Array.from({ length: PASSWORD_RESET_EMAIL_RATE_LIMIT_MAX_ATTEMPTS }).reduce<Promise<unknown>>(
+        (previous, _, index) =>
+          previous.then(() => {
+            vi.setSystemTime(Date.now() + PASSWORD_RESET_RESEND_WINDOW_MS);
+
+            return handleRequestPasswordReset(resetRequest(`ip-inbox-${index}`, { email: 'flooded@user.dev' }));
+          }),
+        Promise.resolve(),
+      );
+    });
+
+    describe('WHEN one more link is requested from another address a minute later', () => {
+      beforeEach(async () => {
+        vi.setSystemTime(Date.now() + PASSWORD_RESET_RESEND_WINDOW_MS);
+        response = await handleRequestPasswordReset(resetRequest('ip-inbox-extra', { email: 'Flooded@User.dev' }));
+        await runAfterResponse();
+      });
+
+      test('THEN the request is throttled and the inbox gets no further link', () => {
+        expect(response.status).toBe(429);
+        expect(sendPasswordResetEmail).toHaveBeenCalledTimes(PASSWORD_RESET_EMAIL_RATE_LIMIT_MAX_ATTEMPTS);
+      });
+    });
+  });
+
+  describe('GIVEN a client that asked for as many links as the per-minute limit allows', () => {
+    beforeEach(async () => {
+      vi.useFakeTimers({ toFake: ['Date'] });
+      await Promise.all(
+        Array.from({ length: PASSWORD_RESET_IP_RATE_LIMIT_MAX_ATTEMPTS }, (_, index) =>
+          handleRequestPasswordReset(resetRequest('ip-spray', { email: `spray-${index}@user.dev` })),
+        ),
+      );
+    });
+
+    describe('WHEN a link for one more email is requested within the window', () => {
+      beforeEach(async () => {
+        response = await handleRequestPasswordReset(resetRequest('ip-spray', { email: 'spray-extra@user.dev' }));
+        await runAfterResponse();
+      });
+
+      test('THEN the request is throttled before any link is sent', () => {
+        expect(response.status).toBe(429);
+        expect(sendPasswordResetEmail).not.toHaveBeenCalledWith('spray-extra@user.dev');
+      });
+    });
+
+    describe('WHEN a link is requested once the window has passed', () => {
+      beforeEach(async () => {
+        vi.setSystemTime(Date.now() + PASSWORD_RESET_IP_RATE_LIMIT_WINDOW_MS);
+        response = await handleRequestPasswordReset(resetRequest('ip-spray', { email: 'spray-later@user.dev' }));
+        await runAfterResponse();
+      });
+
+      test('THEN a fresh window accepts the request and sends the link', () => {
+        expect(response.status).toBe(200);
+        expect(sendPasswordResetEmail).toHaveBeenCalledWith('spray-later@user.dev');
       });
     });
   });

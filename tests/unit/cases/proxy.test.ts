@@ -59,6 +59,28 @@ describe('proxy', () => {
       });
     });
 
+    describe('WHEN they open the forgotten password page', () => {
+      beforeEach(async () => {
+        response = await proxy(new NextRequest('http://localhost:3000/forgot-password'));
+      });
+
+      test('THEN the public page renders without a redirect', () => {
+        expect(response.headers.get('location')).toBeNull();
+        expect(response.headers.get('x-middleware-request-x-pathname')).toBe('/forgot-password');
+      });
+    });
+
+    describe('WHEN they open an emailed password reset link', () => {
+      beforeEach(async () => {
+        response = await proxy(new NextRequest('http://localhost:3000/reset-password?token_hash=abc'));
+      });
+
+      test('THEN the public page renders without a redirect', () => {
+        expect(response.headers.get('location')).toBeNull();
+        expect(response.headers.get('x-middleware-request-x-pathname')).toBe('/reset-password');
+      });
+    });
+
     describe('WHEN they call an auth route', () => {
       beforeEach(async () => {
         response = await proxy(new NextRequest('http://localhost:3000/auth/verify-invite'));
@@ -131,6 +153,17 @@ describe('proxy', () => {
         expect(response.headers.get('location')).toBeNull();
         expect(response.headers.get('x-middleware-request-x-pathname')).toBe('/join');
         expect(ssrAuth.exchangeCodeForSession).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('WHEN they open an emailed password reset link', () => {
+      beforeEach(async () => {
+        response = await proxy(new NextRequest('http://localhost:3000/reset-password?token_hash=abc'));
+      });
+
+      test('THEN the reset page renders instead of the platform taking over', () => {
+        expect(response.headers.get('location')).toBeNull();
+        expect(response.headers.get('x-middleware-request-x-pathname')).toBe('/reset-password');
       });
     });
   });

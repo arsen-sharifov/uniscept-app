@@ -8,6 +8,7 @@ import {
   deleteAccount,
   getMyOwnedSharedWorkspaces,
   getUser,
+  requestPasswordReset,
   updateEmail,
   updatePassword,
   updateUserMetadata,
@@ -66,6 +67,7 @@ export const useSettings = () => {
     updateProfile,
     changeEmail,
     changePassword,
+    requestPasswordReset,
     getMyOwnedSharedWorkspaces,
     deleteAccount,
   };

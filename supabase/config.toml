@@ -235,6 +235,10 @@ content_path = "./supabase/templates/invite.html"
 subject = "Confirm your Uniscept account"
 content_path = "./supabase/templates/confirmation.html"
 
+[auth.email.template.recovery]
+subject = '{{ $locale := printf "%v" .Data.locale }}{{ if eq $locale "uk" }}Відновлення пароля Uniscept{{ else if eq $locale "ro" }}Resetați parola Uniscept{{ else if eq $locale "fr" }}Réinitialisez votre mot de passe Uniscept{{ else if eq $locale "es" }}Restablezca su contraseña de Uniscept{{ else if eq $locale "pt" }}Redefina a sua palavra-passe do Uniscept{{ else }}Reset your Uniscept password{{ end }}'
+content_path = "./supabase/templates/recovery.html"
+
 # Uncomment to customize notification email template
 # [auth.email.notification.password_changed]
 # enabled = true

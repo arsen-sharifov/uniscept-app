@@ -1,6 +1,7 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { requestPasswordReset } from '@mocks/authApi';
 import { TRANSLATIONS } from '@mocks/i18n';
 import { PREFERENCES } from '@mocks/preferences';
 import { getUser, updateUserMetadata, UNNAMED_ACCOUNT } from '@mocks/userApi';
@@ -9,6 +10,7 @@ import { useOnboardingStore } from '@/lib/onboarding';
 
 vi.mock('next/navigation', () => import('@mocks/navigation'));
 vi.mock('@api/client', async () => ({
+  ...(await import('@mocks/authApi')),
   ...(await import('@mocks/userApi')),
   ...(await import('@mocks/workspaceApi')),
 }));
@@ -61,6 +63,20 @@ describe('Settings', () => {
 
       test('THEN the password form shows', () => {
         expect(screen.getByLabelText(TRANSLATIONS.platform.settings.security.currentPassword)).toBeInTheDocument();
+      });
+    });
+
+    describe('WHEN a reset link is requested from the security section', () => {
+      beforeEach(async () => {
+        requestPasswordReset.mockResolvedValue('sent');
+        fireEvent.click(screen.getByRole('button', { name: TRANSLATIONS.platform.settings.sections.security }));
+        await act(async () => {
+          fireEvent.click(screen.getByRole('button', { name: TRANSLATIONS.platform.settings.security.sendResetLink }));
+        });
+      });
+
+      test('THEN the link goes to the email of the loaded account', () => {
+        expect(requestPasswordReset).toHaveBeenCalledExactlyOnceWith(UNNAMED_ACCOUNT.email);
       });
     });
 

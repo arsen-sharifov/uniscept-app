@@ -2,12 +2,15 @@ import { afterEach, describe, expect, test, vi } from 'vitest';
 
 import {
   completeInvitedAccount,
+  completePasswordReset,
   getSession,
+  requestPasswordReset,
   signIn,
   signOut,
   signUp,
   verifyInvitation,
   verifyInviteCode,
+  verifyPasswordReset,
 } from '@api/client';
 import { primeFetch } from '@mocks/fetch';
 import { primeSupabase } from '@mocks/supabase';
@@ -37,15 +40,15 @@ describe('signIn', () => {
 describe('signUp', () => {
   describe('GIVEN new account details', () => {
     describe('WHEN the account is registered', () => {
-      test('THEN the payload pins the beta plan', async () => {
+      test('THEN the payload pins the beta plan and the language of the page', async () => {
         const { client } = primeSupabase([]);
 
-        await signUp('user@example.com', 'secret', 'Ada');
+        await signUp('user@example.com', 'secret', 'Ada', 'uk');
 
         expect(client.auth.signUp).toHaveBeenCalledExactlyOnceWith({
           email: 'user@example.com',
           password: 'secret',
-          options: { data: { name: 'Ada', plan: 'beta' } },
+          options: { data: { name: 'Ada', plan: 'beta', locale: 'uk' } },
         });
       });
     });
@@ -83,15 +86,82 @@ describe('verifyInvitation', () => {
 describe('completeInvitedAccount', () => {
   describe('GIVEN an invited user finishing setup', () => {
     describe('WHEN the account is completed', () => {
-      test('THEN the update pins the password and beta plan', async () => {
+      test('THEN the update pins the password, the beta plan and the language of the page', async () => {
         const { client } = primeSupabase([]);
 
-        await completeInvitedAccount('Ada', 'secret');
+        await completeInvitedAccount('Ada', 'secret', 'fr');
 
         expect(client.auth.updateUser).toHaveBeenCalledExactlyOnceWith({
           password: 'secret',
-          data: { name: 'Ada', plan: 'beta' },
+          data: { name: 'Ada', plan: 'beta', locale: 'fr' },
         });
+      });
+    });
+  });
+});
+
+describe('requestPasswordReset', () => {
+  describe('GIVEN the server accepts the request', () => {
+    describe('WHEN a reset link is requested', () => {
+      test('THEN the email is posted as json and the link is reported as sent', async () => {
+        const fetchSpy = primeFetch(200);
+
+        await expect(requestPasswordReset('user@example.com')).resolves.toBe('sent');
+        expect(fetchSpy).toHaveBeenCalledExactlyOnceWith('/auth/password-reset', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: 'user@example.com' }),
+        });
+      });
+    });
+  });
+
+  describe('GIVEN a client throttled by the rate limit', () => {
+    describe('WHEN a reset link is requested', () => {
+      test('THEN the request is reported as throttled instead of failing', async () => {
+        primeFetch(429);
+
+        await expect(requestPasswordReset('user@example.com')).resolves.toBe('throttled');
+      });
+    });
+  });
+
+  describe('GIVEN a failing server', () => {
+    describe('WHEN a reset link is requested', () => {
+      test('THEN the request fails with the server status', async () => {
+        primeFetch(500);
+
+        await expect(requestPasswordReset('user@example.com')).rejects.toMatchObject({ status: 500 });
+      });
+    });
+  });
+});
+
+describe('verifyPasswordReset', () => {
+  describe('GIVEN the token hash of an emailed reset link', () => {
+    describe('WHEN the link is verified', () => {
+      test('THEN the hash is checked as a recovery and the auth result is returned', async () => {
+        const { client } = primeSupabase([]);
+
+        await expect(verifyPasswordReset('hash-1')).resolves.toEqual({
+          data: { user: null, session: null },
+          error: null,
+        });
+        expect(client.auth.verifyOtp).toHaveBeenCalledExactlyOnceWith({ token_hash: 'hash-1', type: 'recovery' });
+      });
+    });
+  });
+});
+
+describe('completePasswordReset', () => {
+  describe('GIVEN a session opened by a reset link', () => {
+    describe('WHEN the new password is saved', () => {
+      test('THEN only the password is updated', async () => {
+        const { client } = primeSupabase([]);
+
+        await completePasswordReset('new-secret');
+
+        expect(client.auth.updateUser).toHaveBeenCalledExactlyOnceWith({ password: 'new-secret' });
       });
     });
   });

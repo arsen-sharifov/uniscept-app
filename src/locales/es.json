@@ -5,6 +5,7 @@
       "subtitle": "Bienvenido de nuevo",
       "email": "Correo",
       "password": "Contraseña",
+      "forgotPassword": "¿Olvidó su contraseña?",
       "submit": "Iniciar sesión",
       "submitting": "Iniciando sesión…",
       "emailSent": "Revise su correo para confirmar su cuenta.",
@@ -59,6 +60,35 @@
       "switchAccount": "Cerrar sesión y aceptar",
       "stay": "Mantener la sesión"
     },
+    "forgotPassword": {
+      "heading": "Restablezca su contraseña",
+      "subtitle": "Introduzca su correo y le enviaremos un enlace para establecer una nueva contraseña.",
+      "email": "Correo",
+      "submit": "Enviar enlace",
+      "submitting": "Enviando…",
+      "sentHeading": "Revise su correo",
+      "sentSubtitle": "Siga el enlace del correo para establecer una nueva contraseña.",
+      "sent": "Si existe una cuenta para {email}, hemos enviado a esa dirección un enlace para restablecer la contraseña. El enlace funciona una sola vez y caduca en 1 hora.",
+      "resend": "Enviar de nuevo",
+      "resendIn": "Enviar de nuevo en {seconds, number} s",
+      "resent": "Solicitud enviada de nuevo. Revise su bandeja de entrada y la carpeta de spam.",
+      "backToSignIn": "Volver al inicio de sesión",
+      "remembered": "¿La recordó?"
+    },
+    "resetPassword": {
+      "heading": "Establezca una nueva contraseña",
+      "subtitle": "Elija una nueva contraseña para su cuenta.",
+      "password": "Nueva contraseña",
+      "confirmPassword": "Confirmar contraseña",
+      "passwordMismatch": "Las contraseñas no coinciden",
+      "submit": "Guardar contraseña",
+      "submitting": "Guardando…",
+      "updated": "Contraseña actualizada. Ha iniciado sesión.",
+      "rejectedHeading": "Este enlace no se puede usar",
+      "rejectedSubtitle": "Los enlaces de restablecimiento funcionan una sola vez y caducan tras 1 hora.",
+      "rejected": "Este enlace de restablecimiento no es válido, ya se usó o ha caducado.",
+      "requestNew": "Pedir un enlace nuevo"
+    },
     "placeholders": {
       "name": "Juan Pérez",
       "email": "name@example.com",
@@ -68,7 +98,9 @@
       "invalidInviteCode": "Código de invitación inválido",
       "signInFailed": "No se pudo iniciar sesión",
       "signUpFailed": "No se pudo crear la cuenta",
-      "joinFailed": "No se pudo configurar la cuenta"
+      "joinFailed": "No se pudo configurar la cuenta",
+      "resetRequestFailed": "No se pudo enviar el enlace",
+      "resetFailed": "No se pudo establecer la nueva contraseña"
     },
     "confirmed": {
       "heading": "Correo confirmado",
@@ -970,6 +1002,11 @@
         "currentPassword": "Contraseña actual",
         "currentPasswordRequired": "Introduzca su contraseña actual",
         "currentPasswordIncorrect": "La contraseña actual es incorrecta",
+        "forgotPassword": "¿Olvidó su contraseña actual?",
+        "sendResetLink": "Enviarme un enlace para restablecer la contraseña",
+        "sendingResetLink": "Enviando…",
+        "resetLinkSent": "Hemos enviado un enlace para restablecer la contraseña a {email}. Caduca en 1 hora.",
+        "resetLinkFailed": "No se pudo enviar el enlace",
         "passwordSame": "La nueva contraseña debe ser distinta de la actual",
         "newPassword": "Nueva contraseña",
         "confirmPassword": "Confirmar contraseña",

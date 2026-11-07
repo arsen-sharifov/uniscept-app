@@ -647,3 +647,19 @@ export const deleteAccountByEmail = async (email: string): Promise<void> => {
 
   if (accountId) await deleteAccount(accountId);
 };
+
+export const readAccountMetadata = async (userId: string): Promise<Record<string, unknown>> => {
+  const { data, error } = await getAdminClient().auth.admin.getUserById(userId);
+
+  if (error || !data.user) {
+    throw new Error(`Could not read the account ${userId}: ${error?.message ?? 'no user returned'}`);
+  }
+
+  return data.user.user_metadata;
+};
+
+export const seedAccountMetadata = async (userId: string, metadata: Record<string, unknown>): Promise<void> => {
+  const { error } = await getAdminClient().auth.admin.updateUserById(userId, { user_metadata: metadata });
+
+  if (error) throw new Error(`Could not update the metadata of ${userId}: ${error.message}`);
+};

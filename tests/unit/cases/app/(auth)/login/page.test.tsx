@@ -6,6 +6,7 @@ import { event } from '@mocks/events';
 import { TRANSLATIONS } from '@mocks/i18n';
 import { router, searchParams } from '@mocks/navigation';
 import LoginPage from '@/app/(auth)/login/page';
+import { useAuthFlowStore } from '@/lib/stores';
 
 vi.mock('@api/client', () => import('@mocks/authApi'));
 vi.mock('next/navigation', () => import('@mocks/navigation'));
@@ -19,6 +20,7 @@ afterEach(() => {
   cleanup();
   searchParams.delete('emailSent');
   searchParams.delete('error');
+  useAuthFlowStore.getState().reset();
   vi.useRealTimers();
 });
 
@@ -41,6 +43,16 @@ describe('LoginPage', () => {
       test('THEN the platform opens', () => {
         expect(signIn).toHaveBeenCalledExactlyOnceWith('ada@example.com', 'secret-pass');
         expect(router.push).toHaveBeenCalledExactlyOnceWith('/platform');
+      });
+    });
+
+    describe('WHEN the forgotten password link is followed', () => {
+      beforeEach(() => {
+        fireEvent.click(screen.getByRole('link', { name: TRANSLATIONS.auth.signIn.forgotPassword }));
+      });
+
+      test('THEN the typed email is handed over to the reset request', () => {
+        expect(useAuthFlowStore.getState().draftEmail).toBe('ada@example.com');
       });
     });
 
@@ -125,6 +137,13 @@ describe('LoginPage', () => {
       test('THEN no link notice is shown', () => {
         expect(screen.queryByRole('alert')).toBeNull();
         expect(screen.queryByText(TRANSLATIONS.auth.signIn.emailSent)).toBeNull();
+      });
+
+      test('THEN a way to reset a forgotten password is offered', () => {
+        expect(screen.getByRole('link', { name: TRANSLATIONS.auth.signIn.forgotPassword })).toHaveAttribute(
+          'href',
+          '/forgot-password',
+        );
       });
     });
   });

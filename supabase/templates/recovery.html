@@ -1,0 +1,230 @@
+{{- $locale := "en" -}} {{- $requested := printf "%v" .Data.locale -}} {{- if or (eq $requested "uk") (eq $requested
+"ro") (eq $requested "fr") (eq $requested "es") (eq $requested "pt") -}} {{- $locale = $requested -}} {{- end -}}
+<!doctype html>
+<html lang="{{ $locale }}">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>
+      {{ if eq $locale "uk" }}Відновлення пароля{{ else if eq $locale "ro" }}Resetați parola{{ else if eq $locale "fr"
+      }}Réinitialisez votre mot de passe{{ else if eq $locale "es" }}Restablezca su contraseña{{ else if eq $locale "pt"
+      }}Redefina a sua palavra-passe{{ else }}Reset your password{{ end }}
+    </title>
+  </head>
+  <body
+    style="
+      margin: 0;
+      padding: 0;
+      background-color: #000000;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    "
+  >
+    <table cellpadding="0" cellspacing="0" role="presentation" style="background-color: #000000" width="100%">
+      <tr>
+        <td align="center" style="padding: 40px 20px">
+          <table cellpadding="0" cellspacing="0" role="presentation" style="max-width: 500px; width: 100%" width="500">
+            <tr>
+              <td
+                style="
+                  background: linear-gradient(135deg, #0a0a0a 0%, #111111 50%, #0a0a0a 100%);
+                  border-radius: 20px 20px 0 0;
+                  padding: 48px 40px 40px;
+                  text-align: center;
+                  border: 1px solid rgba(255, 255, 255, 0.06);
+                  border-bottom: none;
+                "
+              >
+                <table cellpadding="0" cellspacing="0" role="presentation" style="margin: 0 auto 32px">
+                  <tr>
+                    <td
+                      style="
+                        background: linear-gradient(135deg, #10b981, #06b6d4);
+                        border-radius: 12px;
+                        padding: 10px 14px;
+                      "
+                    >
+                      <span style="font-size: 18px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px">U</span>
+                    </td>
+                    <td style="padding-left: 10px">
+                      <span style="font-size: 22px; font-weight: 700; color: #ffffff; letter-spacing: -0.5px"
+                        >Uniscept</span
+                      >
+                    </td>
+                  </tr>
+                </table>
+
+                <h1 style="margin: 0 0 12px; font-size: 26px; font-weight: 700; color: #ffffff; letter-spacing: -0.5px">
+                  {{ if eq $locale "uk" }}Відновлення пароля{{ else if eq $locale "ro" }}Resetați parola{{ else if eq
+                  $locale "fr" }}Réinitialisez votre mot de passe{{ else if eq $locale "es" }}Restablezca su
+                  contraseña{{ else if eq $locale "pt" }}Redefina a sua palavra-passe{{ else }}Reset your password{{ end
+                  }}
+                </h1>
+                <p style="margin: 0; font-size: 15px; color: rgba(255, 255, 255, 0.5); line-height: 1.6">
+                  {{ if eq $locale "uk" }}Встановіть новий пароль для свого акаунта Uniscept.{{ else if eq $locale "ro"
+                  }}Setați o parolă nouă pentru contul dumneavoastră Uniscept.{{ else if eq $locale "fr" }}Définissez un
+                  nouveau mot de passe pour votre compte Uniscept.{{ else if eq $locale "es" }}Establezca una nueva
+                  contraseña para su cuenta de Uniscept.{{ else if eq $locale "pt" }}Defina uma nova palavra-passe para
+                  a sua conta Uniscept.{{ else }}Set a new password for your Uniscept account.{{ end }}
+                </p>
+              </td>
+            </tr>
+
+            <tr>
+              <td
+                style="
+                  height: 2px;
+                  background: linear-gradient(90deg, #10b981, #06b6d4, #8b5cf6);
+                  border-left: 1px solid rgba(255, 255, 255, 0.06);
+                  border-right: 1px solid rgba(255, 255, 255, 0.06);
+                "
+              ></td>
+            </tr>
+
+            <tr>
+              <td
+                style="
+                  background-color: #0f0f0f;
+                  padding: 40px;
+                  border: 1px solid rgba(255, 255, 255, 0.06);
+                  border-top: none;
+                  border-bottom: none;
+                "
+              >
+                <table
+                  cellpadding="0"
+                  cellspacing="0"
+                  role="presentation"
+                  style="
+                    background-color: rgba(255, 255, 255, 0.03);
+                    border-radius: 12px;
+                    border: 1px solid rgba(255, 255, 255, 0.06);
+                  "
+                  width="100%"
+                >
+                  <tr>
+                    <td style="padding: 24px; text-align: center">
+                      <p
+                        style="
+                          margin: 0 0 4px;
+                          font-size: 13px;
+                          font-weight: 600;
+                          color: rgba(255, 255, 255, 0.4);
+                          text-transform: uppercase;
+                          letter-spacing: 1px;
+                        "
+                      >
+                        {{ if eq $locale "uk" }}Акаунт{{ else if eq $locale "ro" }}Cont{{ else if eq $locale "fr"
+                        }}Compte{{ else if eq $locale "es" }}Cuenta{{ else if eq $locale "pt" }}Conta{{ else }}Account{{
+                        end }}
+                      </p>
+                      <p style="margin: 0; font-size: 15px; font-weight: 600; color: #ffffff; word-break: break-all">
+                        {{ .Email }}
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+
+                <p
+                  style="
+                    margin: 24px 0 0;
+                    font-size: 14px;
+                    color: rgba(255, 255, 255, 0.6);
+                    line-height: 1.6;
+                    text-align: center;
+                  "
+                >
+                  {{ if eq $locale "uk" }}Ми отримали запит на скидання пароля для цього акаунта. Посилання нижче
+                  спрацює один раз і діє 1 годину.{{ else if eq $locale "ro" }}Am primit o cerere de resetare a parolei
+                  pentru acest cont. Linkul de mai jos funcționează o singură dată și expiră în 1 oră.{{ else if eq
+                  $locale "fr" }}Nous avons reçu une demande de réinitialisation du mot de passe de ce compte. Le lien
+                  ci-dessous ne fonctionne qu'une fois et expire dans 1 heure.{{ else if eq $locale "es" }}Recibimos una
+                  solicitud para restablecer la contraseña de esta cuenta. El enlace de abajo funciona una sola vez y
+                  caduca en 1 hora.{{ else if eq $locale "pt" }}Recebemos um pedido para redefinir a palavra-passe desta
+                  conta. A hiperligação abaixo funciona uma única vez e expira dentro de 1 hora.{{ else }}We received a
+                  request to reset the password for this account. The link below works once and expires in 1 hour.{{ end
+                  }}
+                </p>
+
+                <table cellpadding="0" cellspacing="0" role="presentation" style="margin-top: 28px" width="100%">
+                  <tr>
+                    <td align="center">
+                      <a
+                        href="{{ .RedirectTo }}?token_hash={{ .TokenHash }}"
+                        style="
+                          display: inline-block;
+                          width: 100%;
+                          max-width: 340px;
+                          padding: 14px 32px;
+                          background: linear-gradient(135deg, #10b981, #06b6d4);
+                          color: #ffffff;
+                          font-size: 15px;
+                          font-weight: 700;
+                          text-decoration: none;
+                          border-radius: 12px;
+                          text-align: center;
+                          letter-spacing: -0.2px;
+                        "
+                        target="_blank"
+                      >
+                        {{ if eq $locale "uk" }}Встановити новий пароль{{ else if eq $locale "ro" }}Setați o parolă
+                        nouă{{ else if eq $locale "fr" }}Définir un nouveau mot de passe{{ else if eq $locale "es"
+                        }}Establecer una nueva contraseña{{ else if eq $locale "pt" }}Definir nova palavra-passe{{ else
+                        }}Set a new password{{ end }}
+                      </a>
+                    </td>
+                  </tr>
+                </table>
+
+                <p
+                  style="
+                    margin: 24px 0 0;
+                    font-size: 12px;
+                    color: rgba(255, 255, 255, 0.25);
+                    text-align: center;
+                    line-height: 1.6;
+                  "
+                >
+                  {{ if eq $locale "uk" }}Якщо ви не надсилали цей запит, просто проігноруйте лист. Ваш пароль не
+                  зміниться.{{ else if eq $locale "ro" }}Dacă nu ați solicitat acest lucru, ignorați acest e-mail.
+                  Parola dumneavoastră rămâne aceeași.{{ else if eq $locale "fr" }}Si vous n'êtes pas à l'origine de
+                  cette demande, ignorez cet e-mail. Votre mot de passe reste inchangé.{{ else if eq $locale "es" }}Si
+                  no lo solicitó, ignore este correo. Su contraseña no cambiará.{{ else if eq $locale "pt" }}Se não fez
+                  este pedido, ignore este e-mail. A sua palavra-passe mantém-se igual.{{ else }}If you did not ask for
+                  this, ignore this email. Your password stays the same.{{ end }}
+                </p>
+              </td>
+            </tr>
+
+            <tr>
+              <td
+                style="
+                  background-color: #080808;
+                  border-radius: 0 0 20px 20px;
+                  padding: 24px 40px;
+                  border: 1px solid rgba(255, 255, 255, 0.06);
+                  border-top: none;
+                  text-align: center;
+                "
+              >
+                <p style="margin: 0 0 6px; font-size: 12px; color: rgba(255, 255, 255, 0.2)">
+                  &copy; 2026 Uniscept &middot; {{ if eq $locale "uk" }}Будуйте знання. Не хаос.{{ else if eq $locale
+                  "ro" }}Construiți cunoaștere. Nu haos.{{ else if eq $locale "fr" }}Construisez du savoir. Pas du
+                  chaos.{{ else if eq $locale "es" }}Construya conocimiento. No caos.{{ else if eq $locale "pt"
+                  }}Construa conhecimento. Não caos.{{ else }}Build knowledge. Not chaos.{{ end }}
+                </p>
+                <p style="margin: 0; font-size: 11px; color: rgba(255, 255, 255, 0.12)">
+                  {{ if eq $locale "uk" }}Це автоматичне повідомлення. Будь ласка, не відповідайте на нього.{{ else if
+                  eq $locale "ro" }}Acesta este un mesaj automat. Vă rugăm să nu răspundeți.{{ else if eq $locale "fr"
+                  }}Ceci est un message automatique. Merci de ne pas y répondre.{{ else if eq $locale "es" }}Este es un
+                  mensaje automático. Por favor, no responda.{{ else if eq $locale "pt" }}Esta é uma mensagem
+                  automática. Por favor, não responda.{{ else }}This is an automated message. Please do not reply.{{ end
+                  }}
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

@@ -1,11 +1,11 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
-import type { IWorkspace, TChangePasswordResult } from '@interfaces';
+import type { IWorkspace, TChangePasswordResult, TPasswordResetRequestResult } from '@interfaces';
 
-import { TRANSLATIONS } from '@mocks/i18n';
+import { translate, TRANSLATIONS } from '@mocks/i18n';
 import { router } from '@mocks/navigation';
-import { API_FAILURE } from '@mocks/userApi';
+import { API_FAILURE, NAMED_USER } from '@mocks/userApi';
 import { SHARED_WORKSPACES } from '@mocks/workspace';
 import { SecuritySection } from '@/app/platform/components/Settings/fragments';
 import { event } from '@/lib/events';
@@ -17,15 +17,21 @@ vi.mock('@/lib/events', () => import('@mocks/events'));
 const onChangePassword = vi.fn<() => Promise<TChangePasswordResult>>();
 const onCheckDeletion = vi.fn<() => Promise<Pick<IWorkspace, 'id' | 'name'>[]>>();
 const onDeleteAccount = vi.fn<(password: string) => Promise<void>>();
+const onRequestPasswordReset = vi.fn<(email: string) => Promise<TPasswordResetRequestResult>>();
 
-const renderSection = () =>
+const renderSection = (email?: string) =>
   render(
     <SecuritySection
+      email={email}
       onChangePassword={onChangePassword}
+      onRequestPasswordReset={onRequestPasswordReset}
       onCheckDeletion={onCheckDeletion}
       onDeleteAccount={onDeleteAccount}
     />,
   );
+
+const resetLinkButton = () =>
+  screen.getByRole('button', { name: TRANSLATIONS.platform.settings.security.sendResetLink });
 
 const deleteAccountButton = () =>
   screen.getByRole('button', { name: TRANSLATIONS.platform.settings.security.deleteAccount });
@@ -359,6 +365,92 @@ describe('SecuritySection', () => {
         });
         expect(screen.queryByText(TRANSLATIONS.platform.settings.security.deleteFailed)).not.toBeInTheDocument();
         expect(router.push).not.toHaveBeenCalled();
+      });
+    });
+  });
+
+  describe('GIVEN a signed-in account that forgot its current password', () => {
+    beforeEach(() => {
+      onRequestPasswordReset.mockResolvedValue('sent');
+      renderSection(NAMED_USER.email);
+    });
+
+    describe('WHEN a reset link is requested', () => {
+      beforeEach(async () => {
+        await act(async () => {
+          fireEvent.click(resetLinkButton());
+        });
+      });
+
+      test('THEN the link goes to the email of the account', () => {
+        expect(onRequestPasswordReset).toHaveBeenCalledExactlyOnceWith(NAMED_USER.email);
+      });
+
+      test('THEN the person is told where the link went instead of being offered another one', () => {
+        expect(screen.getByRole('status')).toHaveTextContent(
+          translate('platform.settings.security.resetLinkSent', { email: NAMED_USER.email }),
+        );
+        expect(
+          screen.queryByRole('button', { name: TRANSLATIONS.platform.settings.security.sendResetLink }),
+        ).toBeNull();
+      });
+    });
+  });
+
+  describe('GIVEN a reset link request the server throttles', () => {
+    beforeEach(() => {
+      onRequestPasswordReset.mockResolvedValue('throttled');
+      renderSection(NAMED_USER.email);
+    });
+
+    describe('WHEN a reset link is requested', () => {
+      beforeEach(async () => {
+        await act(async () => {
+          fireEvent.click(resetLinkButton());
+        });
+      });
+
+      test('THEN the same line as for a sent link is shown instead of an error', () => {
+        expect(screen.getByRole('status')).toHaveTextContent(
+          translate('platform.settings.security.resetLinkSent', { email: NAMED_USER.email }),
+        );
+        expect(event.error).not.toHaveBeenCalled();
+      });
+    });
+  });
+
+  describe('GIVEN a reset link request that fails on the api', () => {
+    beforeEach(() => {
+      onRequestPasswordReset.mockRejectedValue(API_FAILURE);
+      renderSection(NAMED_USER.email);
+    });
+
+    describe('WHEN a reset link is requested', () => {
+      beforeEach(async () => {
+        await act(async () => {
+          fireEvent.click(resetLinkButton());
+        });
+      });
+
+      test('THEN the failure is reported and the request can be repeated', () => {
+        expect(event.error).toHaveBeenCalledExactlyOnceWith(API_FAILURE, {
+          title: TRANSLATIONS.platform.settings.security.resetLinkFailed,
+          context: 'asyncAction',
+        });
+        expect(screen.queryByRole('status')).toBeNull();
+        expect(resetLinkButton()).toBeEnabled();
+      });
+    });
+  });
+
+  describe('GIVEN an account whose email has not loaded yet', () => {
+    describe('WHEN the section renders', () => {
+      beforeEach(() => {
+        renderSection();
+      });
+
+      test('THEN no reset link can be requested yet', () => {
+        expect(resetLinkButton()).toBeDisabled();
       });
     });
   });

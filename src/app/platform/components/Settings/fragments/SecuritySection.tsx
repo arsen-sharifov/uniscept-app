@@ -4,7 +4,12 @@ import { ShieldAlert, ShieldCheck } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-import type { IChangePasswordPayload, IWorkspace, TChangePasswordResult } from '@interfaces';
+import type {
+  IChangePasswordPayload,
+  IWorkspace,
+  TChangePasswordResult,
+  TPasswordResetRequestResult,
+} from '@interfaces';
 import { MIN_PASSWORD_LENGTH } from '@constants';
 import { useAsyncAction } from '@hooks';
 import { useTranslations } from '@/i18n';
@@ -14,12 +19,20 @@ import { SectionHeader } from './SectionHeader';
 import { SettingsPrimaryButton } from './SettingsPrimaryButton';
 
 interface ISecuritySectionProps {
+  email?: string;
   onChangePassword: (payload: IChangePasswordPayload) => Promise<TChangePasswordResult>;
+  onRequestPasswordReset: (email: string) => Promise<TPasswordResetRequestResult>;
   onCheckDeletion: () => Promise<Pick<IWorkspace, 'id' | 'name'>[]>;
   onDeleteAccount: (password: string) => Promise<void>;
 }
 
-export const SecuritySection = ({ onChangePassword, onCheckDeletion, onDeleteAccount }: ISecuritySectionProps) => {
+export const SecuritySection = ({
+  email,
+  onChangePassword,
+  onRequestPasswordReset,
+  onCheckDeletion,
+  onDeleteAccount,
+}: ISecuritySectionProps) => {
   const router = useRouter();
   const t = useTranslations();
 
@@ -29,8 +42,10 @@ export const SecuritySection = ({ onChangePassword, onCheckDeletion, onDeleteAcc
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deletePassword, setDeletePassword] = useState('');
   const [sharedWorkspaces, setSharedWorkspaces] = useState<Pick<IWorkspace, 'id' | 'name'>[]>([]);
+  const [resetLinkSentTo, setResetLinkSentTo] = useState<string | null>(null);
 
   const passwordAction = useAsyncAction();
+  const resetLinkAction = useAsyncAction();
   const deletionCheck = useAsyncAction();
   const deleteAction = useAsyncAction();
 
@@ -75,6 +90,15 @@ export const SecuritySection = ({ onChangePassword, onCheckDeletion, onDeleteAcc
     }, t.platform.settings.security.updateFailed);
   };
 
+  const handleRequestPasswordReset = () => {
+    if (!email) return;
+
+    resetLinkAction.run(async () => {
+      await onRequestPasswordReset(email);
+      setResetLinkSentTo(email);
+    }, t.platform.settings.security.resetLinkFailed);
+  };
+
   const handleOpenDelete = async () => {
     setSharedWorkspaces([]);
     await deletionCheck.run(async () => setSharedWorkspaces(await onCheckDeletion()), t.common.errorTitles.loadFailed);
@@ -116,12 +140,36 @@ export const SecuritySection = ({ onChangePassword, onCheckDeletion, onDeleteAcc
           </div>
 
           <div className="mt-4 space-y-3">
-            <PasswordField
-              label={t.platform.settings.security.currentPassword}
-              autoComplete="current-password"
-              value={currentPassword}
-              onChange={setCurrentPassword}
-            />
+            <div>
+              <PasswordField
+                label={t.platform.settings.security.currentPassword}
+                autoComplete="current-password"
+                value={currentPassword}
+                onChange={setCurrentPassword}
+              />
+              <p className="mt-1.5 text-[11.5px] leading-snug text-[color:var(--text-muted)]">
+                {resetLinkSentTo && (
+                  <output className="text-[color:var(--status-success)]">
+                    {t('platform.settings.security.resetLinkSent', { email: resetLinkSentTo })}
+                  </output>
+                )}
+                {!resetLinkSentTo && (
+                  <>
+                    {t.platform.settings.security.forgotPassword}{' '}
+                    <button
+                      type="button"
+                      onClick={handleRequestPasswordReset}
+                      disabled={resetLinkAction.loading || !email}
+                      className="cursor-pointer rounded-sm font-medium text-[color:var(--accent-text)] underline-offset-4 transition-colors duration-200 ease-out hover:underline focus-visible:ring-2 focus-visible:ring-[color:var(--ring-focus)] focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:no-underline motion-reduce:transition-none"
+                    >
+                      {resetLinkAction.loading
+                        ? t.platform.settings.security.sendingResetLink
+                        : t.platform.settings.security.sendResetLink}
+                    </button>
+                  </>
+                )}
+              </p>
+            </div>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <PasswordField
                 label={t.platform.settings.security.newPassword}

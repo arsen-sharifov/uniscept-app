@@ -6,8 +6,9 @@ import { type SubmitEvent, useEffect, useState } from 'react';
 import { getSession, signIn } from '@api/client';
 import { useTranslations } from '@/i18n';
 import { event } from '@/lib/events';
+import { useAuthFlowStore } from '@/lib/stores';
 
-import { AuthButton, AuthField, AuthHeading, AuthLink } from '../fragments';
+import { AuthButton, AuthField, AuthHeading, AuthLink, AuthNotice } from '../fragments';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -59,18 +60,15 @@ const LoginPage = () => {
       <AuthHeading title={t.auth.signIn.heading} subtitle={t.auth.signIn.subtitle} />
 
       {invalidLink && (
-        <div
-          role="alert"
-          className="mb-4 rounded-lg border border-[color:var(--hero-refuted)]/35 bg-[color:var(--hero-refuted)]/10 px-4 py-3 text-center font-grotesk text-sm text-[color:var(--hero-refuted)]"
-        >
+        <AuthNotice tone="alert" className="mb-4">
           {t.auth.signIn.invalidLink}
-        </div>
+        </AuthNotice>
       )}
 
       {emailSent && (
-        <div className="mb-4 rounded-lg border border-[color:var(--hero-tainted)]/35 bg-[color:var(--hero-tainted)]/10 px-4 py-3 text-center font-grotesk text-sm text-[color:var(--hero-tainted)]">
+        <AuthNotice tone="notice" className="mb-4">
           {t.auth.signIn.emailSent}
-        </div>
+        </AuthNotice>
       )}
 
       <form onSubmit={handleLogin} className="space-y-4">
@@ -92,7 +90,13 @@ const LoginPage = () => {
           onChange={(inputEvent) => setPassword(inputEvent.target.value)}
           required
           placeholder={t.auth.placeholders.password}
-        />
+        >
+          <p className="mt-1.5 text-right font-grotesk text-xs">
+            <AuthLink href="/forgot-password" onClick={() => useAuthFlowStore.getState().setDraftEmail(email.trim())}>
+              {t.auth.signIn.forgotPassword}
+            </AuthLink>
+          </p>
+        </AuthField>
 
         <AuthButton type="submit" disabled={loading} className="w-full">
           {loading ? t.auth.signIn.submitting : t.auth.signIn.submit}

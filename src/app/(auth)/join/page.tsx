@@ -1,6 +1,5 @@
 'use client';
 
-import type { User } from '@supabase/supabase-js';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -8,9 +7,8 @@ import { getSession, signOut, verifyInvitation } from '@api/client';
 import { useTranslations } from '@/i18n';
 import { event } from '@/lib/events';
 
-import { AuthButton, AuthHeading, SignUpFlow } from '../fragments';
-
-const isUnfinishedInvitee = (user: User): boolean => Boolean(user.invited_at) && !user.user_metadata.plan;
+import { AuthButton, AuthHeading, AuthNotice, SignUpFlow } from '../fragments';
+import { isUnfinishedInvitee } from '../utils';
 
 const JoinPage = () => {
   const [invitedEmail, setInvitedEmail] = useState<string | null>(null);
@@ -86,9 +84,9 @@ const JoinPage = () => {
       <AuthHeading title={t.auth.join.heading} subtitle={t.auth.join.subtitle} />
 
       {signedInEmail && (
-        <p className="mb-4 rounded-lg border border-[color:var(--hero-tainted)]/35 bg-[color:var(--hero-tainted)]/10 px-4 py-3 text-center font-grotesk text-sm text-[color:var(--hero-tainted)]">
+        <AuthNotice tone="notice" className="mb-4">
           {t('auth.join.signedInAs', { email: signedInEmail })}
-        </p>
+        </AuthNotice>
       )}
 
       <div className="space-y-2">

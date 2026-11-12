@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/nextjs-vite';
+import type { Decorator, Meta, StoryObj } from '@storybook/nextjs-vite';
 import { useArgs } from 'storybook/preview-api';
 import { fn } from 'storybook/test';
 
@@ -17,6 +17,12 @@ import {
 import { ToolbarWithExportMenu, ToolbarWithState, type IToolbarWithStateProps } from './fragments';
 import { ARG_CATEGORIES } from '../../consts';
 import { withCanvasStore } from '../../decorators';
+
+const WithShortWindow: Decorator = (Story) => (
+  <div className="flex h-80 justify-end p-3">
+    <Story />
+  </div>
+);
 
 const meta: Meta<typeof Toolbar> = {
   title: 'Components/Toolbar',
@@ -232,4 +238,19 @@ export const MinimalSingleGroup: Story = {
       ] satisfies IToolGroup[];
     },
   }),
+};
+
+export const ShortWindow: Story = {
+  name: 'Short window',
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The full tool set in a window too short to hold it. The tool groups scroll inside the rail with the scrollbar hidden, while the export and help buttons stay pinned at the bottom so their menus are never clipped.',
+      },
+    },
+  },
+  args: { threadId: EXPORT_THREAD_ID, threadName: EXPORT_THREAD_NAME },
+  decorators: [WithShortWindow, withCanvasStore({ threadId: EXPORT_THREAD_ID, nodes: exportMenuNodes })],
+  render: renderToolbar(),
 };

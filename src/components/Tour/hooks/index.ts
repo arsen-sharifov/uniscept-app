@@ -1,4 +1,5 @@
 export * from './useAnchorFocus';
+export * from './useAnchorInCanvasView';
 export * from './useAnchorInView';
 export * from './useCardPosition';
 export * from './useExampleScene';

@@ -18,7 +18,7 @@ export const LIGHT_SCHEME_QUERY = '(prefers-color-scheme: light)';
 export const FINE_POINTER_QUERY = '(pointer: fine)';
 export const DESKTOP_QUERY = '(min-width: 1024px)';
 
-export const LANDING_SCREEN_SELECTOR = ':scope > .snap-start';
+export const LANDING_SCREEN_SELECTOR = ':scope > .landing-screen';
 
 export const LANDING_SECTION_GROUND_CLASSES: Record<TLandingSectionGround, string> = {
   field: 'bg-[color:var(--hero-veil-field)]',
@@ -232,6 +232,7 @@ export const HERO_ENTRANCE_NODE_STAGGER_MS = 70;
 export const HERO_ENTRANCE_EDGE_BASE_MS = 500;
 export const HERO_ENTRANCE_EDGE_STAGGER_MS = 90;
 export const HERO_REMEASURE_DELAY_MS = 320;
+export const HERO_STAGE_DESIGN_WIDTH_PX = 600;
 
 export const HOW_IT_WORKS_STEP_DELAY_MS = 550;
 export const VALIDATION_VIGNETTE_PHASES = 3;
@@ -242,11 +243,14 @@ export const STREAM_DECISION_INDEX = 4;
 
 export const TILT_MAX_DEG = 2.4;
 export const TICKER_DURATION_MS = 650;
-export const SCREEN_VISIBLE_THRESHOLD = 0.5;
-export const SNAP_HEADER_OFFSET_PX = 80;
+export const SCREEN_CENTER_LINE_MARGIN = '-50% 0px -50% 0px';
 export const SNAP_GESTURE_LOCK_MS = 900;
 export const SNAP_EDGE_TOLERANCE_PX = 4;
+export const SNAP_START_PADDING_PX = 20;
+export const SNAP_END_PADDING_PX = 44;
 export const SNAP_MIN_DELTA_PX = 8;
+export const SNAP_WHEEL_QUIET_MS = 200;
+export const SNAP_SMOOTH_STEP_PX = 50;
 export const ARRIVAL_CONTENT_CAP_MS = 2200;
 
 export const AURORA_FRAME_STEP_CAP_MS = 100;

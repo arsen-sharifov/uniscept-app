@@ -1,9 +1,9 @@
 import { describe, expect, test } from 'vitest';
 
 import { bareNode, measuredNode } from '@mocks/canvas';
-import { VIEW, MENU } from '@mocks/geometry';
+import { MENU, RECENTERED_VIEWPORT, REMEMBERED_VIEWPORT, RESIZED_VIEW, VIEW } from '@mocks/geometry';
 import { OVERLAY_VIEWPORT_MARGIN } from '@/components/Canvas/consts';
-import { clampToViewport, hasNodeOutsideView } from '@/components/Canvas/utils';
+import { clampToViewport, hasNodeOutsideView, keepViewportCenter } from '@/components/Canvas/utils';
 
 describe('hasNodeOutsideView', () => {
   describe('GIVEN nodes inside the visible area at the default viewport', () => {
@@ -94,6 +94,28 @@ describe('clampToViewport', () => {
           x: OVERLAY_VIEWPORT_MARGIN,
           y: OVERLAY_VIEWPORT_MARGIN,
         });
+      });
+    });
+  });
+});
+
+describe('keepViewportCenter', () => {
+  describe('GIVEN a panned and zoomed view', () => {
+    describe('WHEN the canvas grows wider and shorter', () => {
+      test('THEN the view moves by half of each change so the centre stays in place', () => {
+        expect(keepViewportCenter(REMEMBERED_VIEWPORT, VIEW, RESIZED_VIEW)).toEqual(RECENTERED_VIEWPORT);
+      });
+    });
+
+    describe('WHEN the canvas goes back to its earlier size', () => {
+      test('THEN the original view returns', () => {
+        expect(keepViewportCenter(RECENTERED_VIEWPORT, RESIZED_VIEW, VIEW)).toEqual(REMEMBERED_VIEWPORT);
+      });
+    });
+
+    describe('WHEN the canvas keeps its size', () => {
+      test('THEN the view does not move', () => {
+        expect(keepViewportCenter(REMEMBERED_VIEWPORT, VIEW, VIEW)).toEqual(REMEMBERED_VIEWPORT);
       });
     });
   });

@@ -41,19 +41,19 @@ export const ValidationVignette = () => {
         nodeId="vv-p"
         tone={premiseRefuted ? 'refuted' : 'valid'}
         label={t.landing.product.vignettes.validationPremise}
-        className="absolute top-3 left-3 w-36 sm:top-4 sm:left-4 sm:w-44"
+        className="absolute top-3 left-3 w-[min(11rem,32%)] sm:top-4 sm:left-4"
       />
       <MiniNode
         nodeId="vv-s"
         tone="valid"
         label={t.landing.product.vignettes.validationSafe}
-        className="absolute bottom-3 left-3 w-36 sm:bottom-4 sm:left-[30%] sm:w-44"
+        className="absolute bottom-3 left-3 w-[min(11rem,32%)] sm:bottom-4 sm:left-[30%]"
       />
       <MiniNode
         nodeId="vv-c"
         tone={conclusionAffected ? 'affected' : 'valid'}
         label={t.landing.product.vignettes.validationConclusion}
-        className="absolute top-1/2 right-3 w-36 -translate-y-1/2 sm:right-4 sm:w-44"
+        className="absolute top-1/2 right-3 w-[min(11rem,32%)] -translate-y-1/2 sm:right-4"
       />
     </CanvasVignette>
   );

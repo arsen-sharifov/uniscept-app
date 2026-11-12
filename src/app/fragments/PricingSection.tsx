@@ -13,12 +13,12 @@ export const PricingSection = () => {
 
   return (
     <Section ground="deep">
-      <div className="mx-auto max-w-6xl">
+      <div className="mx-auto w-full max-w-landing">
         <div className="mb-10 max-w-2xl">
           <SectionHeading title={t.landing.pricing.title} subtitle={t.landing.pricing.subtitle} />
         </div>
 
-        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-5 min-[36rem]:grid-cols-2 lg:grid-cols-4">
           {plans.map((plan) => (
             <TiltPanel key={plan.id}>
               <PricingCard plan={plan} />

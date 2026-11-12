@@ -4,15 +4,26 @@ import { onTestFinished, vi } from 'vitest';
 export const domRect = (overrides: Partial<DOMRect>): DOMRect =>
   ({ top: 0, right: 0, bottom: 0, left: 0, width: 0, height: 0, x: 0, y: 0, ...overrides }) as DOMRect;
 
+export const rectAt = (rect: Partial<DOMRect>): DOMRect => {
+  const { top = 0, left = 0, width = 0, height = 0 } = rect;
+
+  return domRect({ right: left + width, bottom: top + height, ...rect });
+};
+
 export const elementAt = (attributes: Record<string, string>, rect: Partial<DOMRect>, tag = 'div'): HTMLElement => {
   const element = document.createElement(tag);
-  const { top = 0, left = 0, width = 0, height = 0 } = rect;
   Object.entries(attributes).forEach(([name, value]) => element.setAttribute(name, value));
-  vi.spyOn(element, 'getBoundingClientRect').mockReturnValue(
-    domRect({ right: left + width, bottom: top + height, ...rect }),
-  );
+  vi.spyOn(element, 'getBoundingClientRect').mockReturnValue(rectAt(rect));
 
   return element;
+};
+
+export const scrollerAt = (rect: Partial<DOMRect>, ...children: HTMLElement[]): HTMLElement => {
+  const scroller = elementAt({}, rect);
+  scroller.style.overflowY = 'auto';
+  scroller.append(...children);
+
+  return scroller;
 };
 
 export const pointerEvent = (clientX = 0, clientY = 0, shiftKey = false): ReactMouseEvent =>
@@ -134,6 +145,7 @@ export const stubResizeObserver = () => {
 
 export const stubIntersectionObserver = () => {
   const observers = new Map<IntersectionObserverCallback, Set<Element>>();
+  const settings: (IntersectionObserverInit | undefined)[] = [];
 
   vi.stubGlobal(
     'IntersectionObserver',
@@ -142,8 +154,9 @@ export const stubIntersectionObserver = () => {
       observe = (target: Element) => this.targets.add(target);
       disconnect = () => this.targets.clear();
 
-      constructor(callback: IntersectionObserverCallback) {
+      constructor(callback: IntersectionObserverCallback, options?: IntersectionObserverInit) {
         observers.set(callback, this.targets);
+        settings.push(options);
       }
     },
   );
@@ -159,6 +172,7 @@ export const stubIntersectionObserver = () => {
   return {
     intersect: (only?: Element) => report(true, only),
     leave: (only?: Element) => report(false, only),
+    lastOptions: () => settings.at(-1),
   };
 };
 

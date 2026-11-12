@@ -61,7 +61,7 @@ export const LanguagePicker = ({ onChange }: ILanguagePickerProps) => {
         {pending && t.platform.settings.languageSaving}
       </output>
 
-      <div aria-busy={pending} className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
+      <div aria-busy={pending} className="grid grid-cols-2 gap-2.5 @md:grid-cols-3">
         {LOCALES.map((locale) => {
           const isActive = locale === activeLocale;
 

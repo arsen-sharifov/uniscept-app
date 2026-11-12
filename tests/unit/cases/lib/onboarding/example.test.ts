@@ -1,18 +1,28 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import type { TExampleNodeKey, TExampleTarget } from '@interfaces';
-import {
-  EXAMPLE_CANVAS_TIMEOUT_MS,
-  EXAMPLE_COMMENT_FIT_PADDING,
-  EXAMPLE_FIT_PADDING,
-  EXAMPLE_NODES,
-  EXAMPLE_STEP_DELAY_MS,
-} from '@constants';
+import { EXAMPLE_CANVAS_TIMEOUT_MS, EXAMPLE_COMMENT_RESERVE, EXAMPLE_NODES, EXAMPLE_STEP_DELAY_MS } from '@constants';
+import { elementAt } from '@mocks/browser';
 import { THREAD_ID, questionNode } from '@mocks/canvas';
 import { TRANSLATIONS } from '@mocks/i18n';
+import {
+  EXAMPLE_CANVAS_RECT,
+  EXAMPLE_CORNER_CARD_RECT,
+  EXAMPLE_FIT_PADDING,
+  EXAMPLE_FLAT_CONTENT,
+  EXAMPLE_MARGINS,
+  EXAMPLE_SIDEBAR_CARD_RECT,
+  EXAMPLE_TALL_CONTENT,
+} from '@mocks/onboarding';
 import { FULL_ACCESS } from '@mocks/roles';
 import { ECanvasTool } from '@/components/tools';
-import { createExampleIds, playExampleAct, waitForExampleCanvas, writeExampleQuestion } from '@/lib/onboarding';
+import {
+  createExampleIds,
+  pickExampleFitPadding,
+  playExampleAct,
+  waitForExampleCanvas,
+  writeExampleQuestion,
+} from '@/lib/onboarding';
 import { useCanvasStore, usePermissionsStore } from '@/lib/stores';
 
 let ids: Record<TExampleTarget, string>;
@@ -33,9 +43,63 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  document.body.replaceChildren();
   canvas().clearCanvas();
   usePermissionsStore.getState().clearAccess();
   vi.useRealTimers();
+});
+
+describe('pickExampleFitPadding', () => {
+  describe('GIVEN no tour card on screen', () => {
+    describe('WHEN the padding is picked', () => {
+      test('THEN the canvas keeps its usual margins', () => {
+        expect(pickExampleFitPadding(EXAMPLE_CANVAS_RECT, null, EXAMPLE_TALL_CONTENT)).toEqual(EXAMPLE_MARGINS);
+      });
+    });
+  });
+
+  describe('GIVEN a tour card that stays over the sidebar', () => {
+    describe('WHEN the padding is picked', () => {
+      test('THEN the canvas keeps its usual margins', () => {
+        expect(pickExampleFitPadding(EXAMPLE_CANVAS_RECT, EXAMPLE_SIDEBAR_CARD_RECT, EXAMPLE_TALL_CONTENT)).toEqual(
+          EXAMPLE_MARGINS,
+        );
+      });
+    });
+  });
+
+  describe('GIVEN a tour card that reaches into the bottom-left of the canvas', () => {
+    describe('WHEN the padding is picked for a tall graph', () => {
+      test('THEN the graph moves to the free strip beside the card', () => {
+        expect(pickExampleFitPadding(EXAMPLE_CANVAS_RECT, EXAMPLE_CORNER_CARD_RECT, EXAMPLE_TALL_CONTENT)).toEqual({
+          ...EXAMPLE_MARGINS,
+          left: 148,
+        });
+      });
+    });
+
+    describe('WHEN the padding is picked for a wide flat graph', () => {
+      test('THEN the graph moves to the free strip above the card', () => {
+        expect(pickExampleFitPadding(EXAMPLE_CANVAS_RECT, EXAMPLE_CORNER_CARD_RECT, EXAMPLE_FLAT_CONTENT)).toEqual({
+          ...EXAMPLE_MARGINS,
+          bottom: 236,
+        });
+      });
+    });
+  });
+
+  describe('GIVEN room kept free for an open comments panel', () => {
+    describe('WHEN the padding is picked', () => {
+      test('THEN the reserve is added to the margin on its side', () => {
+        expect(pickExampleFitPadding(EXAMPLE_CANVAS_RECT, null, EXAMPLE_TALL_CONTENT, EXAMPLE_COMMENT_RESERVE)).toEqual(
+          {
+            ...EXAMPLE_MARGINS,
+            right: 368,
+          },
+        );
+      });
+    });
+  });
 });
 
 describe('waitForExampleCanvas', () => {
@@ -197,8 +261,30 @@ describe('playExampleAct', () => {
         ]);
       });
 
-      test('THEN the view is refitted above the card and the tool goes back to Select', () => {
-        expect(canvas()).toMatchObject({ fitPadding: EXAMPLE_FIT_PADDING, activeTool: ECanvasTool.Select });
+      test('THEN the whole graph is refitted and the tool goes back to Select', () => {
+        expect(canvas().fitOptions).toEqual({});
+        expect(canvas().activeTool).toBe(ECanvasTool.Select);
+      });
+    });
+
+    describe('WHEN the option is argued while the tour card covers the bottom-left of the canvas', () => {
+      beforeEach(async () => {
+        document.body.append(
+          elementAt({ 'data-tour': 'canvas' }, EXAMPLE_CANVAS_RECT),
+          elementAt({ 'data-tour-card': '' }, EXAMPLE_CORNER_CARD_RECT, 'dialog'),
+        );
+        const played = playExampleAct(
+          { type: 'argue', keys: ['capsule', 'oneButton'] },
+          TRANSLATIONS.platform.onboarding.example,
+          ids,
+          isLive,
+        );
+        await vi.runAllTimersAsync();
+        await played;
+      });
+
+      test('THEN the graph is refitted into the free strip beside the card', () => {
+        expect(canvas().fitOptions).toEqual({ padding: { ...EXAMPLE_FIT_PADDING, left: '148px' } });
       });
     });
 
@@ -281,7 +367,43 @@ describe('playExampleAct', () => {
         expect(nodeAt('bean')?.data.comments).toEqual([
           expect.objectContaining({ text: TRANSLATIONS.platform.onboarding.example.comments.bean }),
         ]);
-        expect(canvas()).toMatchObject({ openCommentsNodeId: ids.bean, fitPadding: EXAMPLE_COMMENT_FIT_PADDING });
+        expect(canvas()).toMatchObject({ openCommentsNodeId: ids.bean, fitOptions: { nodeIds: [ids.bean] } });
+      });
+    });
+
+    describe('WHEN the doubt is left while the canvas is on screen', () => {
+      beforeEach(async () => {
+        document.body.append(elementAt({ 'data-tour': 'canvas' }, EXAMPLE_CANVAS_RECT));
+        const commented = playExampleAct(
+          { type: 'comment', key: 'bean' },
+          TRANSLATIONS.platform.onboarding.example,
+          ids,
+          isLive,
+        );
+        await vi.runAllTimersAsync();
+        await commented;
+      });
+
+      test('THEN the view closes in on that option and keeps room for its comments', () => {
+        expect(canvas().fitOptions).toEqual({
+          padding: { ...EXAMPLE_FIT_PADDING, right: '368px' },
+          nodeIds: [ids.bean],
+        });
+      });
+    });
+
+    describe('WHEN a scene frames the canvas after the speaker has stopped drawing', () => {
+      beforeEach(async () => {
+        document.body.append(elementAt({ 'data-tour': 'canvas' }, EXAMPLE_CANVAS_RECT));
+        canvas().setActiveTool(ECanvasTool.Connect);
+        const framed = playExampleAct({ type: 'frame' }, TRANSLATIONS.platform.onboarding.example, ids, isLive);
+        await vi.runAllTimersAsync();
+        await framed;
+      });
+
+      test('THEN the whole graph is refitted inside the canvas margins and the tool goes back to Select', () => {
+        expect(canvas().fitOptions).toEqual({ padding: EXAMPLE_FIT_PADDING });
+        expect(canvas().activeTool).toBe(ECanvasTool.Select);
       });
     });
 

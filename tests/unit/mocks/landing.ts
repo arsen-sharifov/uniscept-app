@@ -16,18 +16,35 @@ export const heroClaim = (id: IHeroClaim['id'], overrides: Partial<IHeroClaim> =
 
 export const heroEdge = (source: string, target: string): IHeroEdge => ({ id: `${source}-${target}`, source, target });
 
+export const LANDING_HEADER_OFFSET_PX = 80;
+
+export const COMPACT_HEADER_OFFSET_PX = 56;
+
+export const TALL_SCREEN_HEIGHT_PX = 1400;
+
+export const TALL_SCREEN_END_PX = 800;
+
+const landingScreen = (offsetTop: number) => {
+  const screen = document.createElement('section');
+  screen.className = 'landing-screen';
+  setElementLayout(screen, { offsetTop, offsetHeight: 600 });
+
+  return screen;
+};
+
 export const landingPager = () => {
   const container = document.createElement('div');
+  const screens = { first: landingScreen(0), second: landingScreen(600) };
   setElementLayout(container, { clientHeight: 600 });
+  container.style.scrollPaddingTop = `${LANDING_HEADER_OFFSET_PX}px`;
+  container.append(screens.first, screens.second);
 
-  [0, 600].forEach((offsetTop) => {
-    const screen = document.createElement('section');
-    screen.className = 'snap-start';
-    setElementLayout(screen, { offsetTop, offsetHeight: 600 });
-    container.append(screen);
-  });
+  return { container, screens, ref: { current: container } };
+};
 
-  return { container, ref: { current: container } };
+export const stretchFirstScreen = ({ screens }: ReturnType<typeof landingPager>) => {
+  setElementLayout(screens.first, { offsetHeight: TALL_SCREEN_HEIGHT_PX });
+  setElementLayout(screens.second, { offsetTop: TALL_SCREEN_HEIGHT_PX });
 };
 
 export const HERO_EDGES = [heroEdge('q', 'p1'), heroEdge('q', 'missing')];

@@ -114,7 +114,7 @@ export const ReferenceSearchPanelContent = ({
       aria-modal="true"
       data-tour="canvasReferenceSearch"
       aria-label={t.platform.canvas.referenceSearch.placeholder}
-      className="fixed inset-auto z-50 flex w-80 animate-rise-up flex-col overflow-hidden rounded-xl border border-[color:var(--border)] bg-[color:var(--surface)] font-grotesk text-[color:var(--text)] shadow-[var(--shadow-modal)] motion-reduce:animate-none"
+      className="fixed inset-auto z-50 flex max-h-[calc(100dvh-1rem)] w-80 animate-rise-up flex-col overflow-hidden rounded-xl border border-[color:var(--border)] bg-[color:var(--surface)] font-grotesk text-[color:var(--text)] shadow-[var(--shadow-modal)] motion-reduce:animate-none"
     >
       <div className="flex items-center gap-2 border-b border-[color:var(--border)] px-2.5 py-2.5">
         <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-[color:var(--accent-soft)] text-[color:var(--accent-text)]">
@@ -141,7 +141,7 @@ export const ReferenceSearchPanelContent = ({
         </div>
       </div>
 
-      <div aria-busy={loading} className="flex max-h-72 flex-col gap-px overflow-y-auto p-1">
+      <div aria-busy={loading} className="flex max-h-72 min-h-0 flex-col gap-px overflow-y-auto p-1">
         <ReferenceSearchResults
           nodes={filtered}
           loading={loading}

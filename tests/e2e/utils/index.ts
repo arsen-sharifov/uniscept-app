@@ -2,6 +2,7 @@ export * from './admin';
 export * from './canvas';
 export * from './env';
 export * from './feedback';
+export * from './layout';
 export * from './mail';
 export * from './onboarding';
 export * from './session';

@@ -1,6 +1,8 @@
 import type { Node } from '@xyflow/react';
 
 import type {
+  IAnchorRect,
+  ISize,
   ITourGeometry,
   ITourPermissions,
   ITourSnapshot,
@@ -68,6 +70,17 @@ export const READY_SNAPSHOT = snapshot({
 });
 
 export const EXAMPLE_CREATE_ERROR = new Error('create failed');
+
+export const EXAMPLE_CANVAS_RECT: IAnchorRect = { top: 40, left: 280, width: 700, height: 600 };
+export const EXAMPLE_CORNER_CARD_RECT: IAnchorRect = { top: 420, left: 12, width: 400, height: 210 };
+export const EXAMPLE_SIDEBAR_CARD_RECT: IAnchorRect = { top: 420, left: 12, width: 240, height: 210 };
+export const EXAMPLE_TALL_CONTENT: ISize = { width: 600, height: 600 };
+export const EXAMPLE_FLAT_CONTENT: ISize = { width: 1600, height: 120 };
+export const EXAMPLE_MARGINS = { top: 36, right: 28, bottom: 36, left: 28 };
+export const EXAMPLE_FIT_PADDING = { top: '36px', right: '28px', bottom: '36px', left: '28px' };
+export const RESOLVED_THREAD_RECT: IAnchorRect = { top: 300, left: 24, width: 220, height: 32 };
+export const SIDEBAR_TREE_RECT: IAnchorRect = { top: 200, left: 12, width: 244, height: 257 };
+export const HIDDEN_RESOLVED_THREAD_RECT: IAnchorRect = { top: 564, left: 24, width: 220, height: 32 };
 
 export const ACTION_STEP: ITourStep = { copyKey: 'baseThread', placement: 'right', pose: 'point', isDone: () => false };
 export const READ_STEP: ITourStep = { copyKey: 'baseIntro', placement: 'center', pose: 'think' };

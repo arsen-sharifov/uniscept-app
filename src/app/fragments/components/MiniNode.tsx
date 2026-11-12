@@ -27,7 +27,7 @@ export const MiniNode = ({ tone, label, nodeId, commentCount, className }: IMini
       data-status={tone}
       data-hero-node={nodeId}
       className={clsx(
-        'mini-node flex flex-col gap-1 rounded-xl border border-[color:var(--border-strong)] bg-[color:var(--surface-elevated)] px-2.5 py-2 shadow-[var(--shadow-pip)]',
+        'mini-node flex flex-col gap-1 rounded-xl border border-[color:var(--border-strong)] bg-[color:var(--surface-elevated)] px-2.5 py-2 shadow-[var(--shadow-pip)] @max-[17rem]:px-2 @max-[17rem]:[--node-band-tracking:0.06em]',
         className,
       )}
     >

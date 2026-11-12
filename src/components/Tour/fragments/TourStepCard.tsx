@@ -5,7 +5,7 @@ import { X } from 'lucide-react';
 import { type ReactNode, useRef } from 'react';
 
 import type { IAnchorRect, ITourStep } from '@interfaces';
-import { TOUR_CARD_WIDTH } from '@constants';
+import { TOUR_CARD_VIEWPORT_SHARE_VW, TOUR_CARD_WIDTH } from '@constants';
 import { Mascot } from '@/components/Mascot';
 import { useTranslations } from '@/i18n';
 
@@ -80,8 +80,8 @@ export const TourStepCard = ({
       />
 
       <div
-        className="app-panel relative rounded-2xl border border-[color:var(--border)] px-4 py-4 shadow-[var(--shadow-modal)]"
-        style={{ width: TOUR_CARD_WIDTH }}
+        className="app-panel relative max-h-[calc(100dvh-1.5rem)] overflow-y-auto rounded-2xl border border-[color:var(--border)] px-4 py-4 shadow-[var(--shadow-modal)]"
+        style={{ width: `min(${TOUR_CARD_WIDTH}px, ${TOUR_CARD_VIEWPORT_SHARE_VW}vw)` }}
       >
         <button
           type="button"

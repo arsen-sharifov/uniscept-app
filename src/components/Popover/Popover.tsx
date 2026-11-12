@@ -7,6 +7,8 @@ import { createPortal } from 'react-dom';
 import type { IPopoverTrigger, TPopoverPlacement } from '@interfaces';
 import { useEscapeKey, useMounted, useViewportChange } from '@hooks';
 
+import { POPOVER_VIEWPORT_MARGIN_PX } from './consts';
+
 export interface IPopoverProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -42,7 +44,13 @@ export const Popover = ({
     panelElement.style.zIndex = '50';
     panelElement.style.minWidth = `${rect.width}px`;
 
-    if (placement.startsWith('bottom')) {
+    const isBelow = placement.startsWith('bottom');
+    const space = isBelow
+      ? window.innerHeight - rect.bottom - offset - POPOVER_VIEWPORT_MARGIN_PX
+      : rect.top - offset - POPOVER_VIEWPORT_MARGIN_PX;
+    panelElement.style.setProperty('--popover-space', `${Math.max(space, 0)}px`);
+
+    if (isBelow) {
       panelElement.style.top = `${rect.bottom + offset}px`;
       panelElement.style.bottom = '';
     } else {
@@ -52,7 +60,7 @@ export const Popover = ({
     if (placement.endsWith('start')) {
       panelElement.style.left = `${rect.left}px`;
     } else {
-      panelElement.style.left = `${Math.max(8, rect.right - panelWidth)}px`;
+      panelElement.style.left = `${Math.max(POPOVER_VIEWPORT_MARGIN_PX, rect.right - panelWidth)}px`;
     }
   }, [triggerElement, placement, offset]);
 
@@ -110,7 +118,7 @@ export const Popover = ({
             aria-labelledby={triggerId}
             tabIndex={-1}
             className={clsx(
-              'inset-auto overflow-hidden rounded-xl border border-[color:var(--border)] bg-[color:var(--surface)] text-[color:var(--text)] shadow-[var(--shadow-modal)] outline-none',
+              'inset-auto max-h-[min(var(--popover-space,100dvh),var(--popover-cap,100dvh))] overflow-x-hidden overflow-y-auto rounded-xl border border-[color:var(--border)] bg-[color:var(--surface)] text-[color:var(--text)] shadow-[var(--shadow-modal)] outline-none',
               panelClassName,
             )}
           >

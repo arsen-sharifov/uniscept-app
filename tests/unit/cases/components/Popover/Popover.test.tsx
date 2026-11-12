@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { domRect } from '@mocks/browser';
 import { Popover } from '@/components/Popover';
+import { POPOVER_VIEWPORT_MARGIN_PX } from '@/components/Popover/consts';
 
 const onOpenChange = vi.fn();
 
@@ -203,6 +204,12 @@ describe('Popover', () => {
           left: '240px',
         });
       });
+
+      test('THEN the panel may only grow into the room above the trigger', () => {
+        expect(screen.getByRole('dialog').style.getPropertyValue('--popover-space')).toBe(
+          `${500 - 8 - POPOVER_VIEWPORT_MARGIN_PX}px`,
+        );
+      });
     });
 
     describe('WHEN the page scrolls and the trigger moves with it', () => {
@@ -216,6 +223,12 @@ describe('Popover', () => {
       test('THEN the panel follows the trigger', () => {
         expect(screen.getByRole('dialog').style.bottom).toBe(`${window.innerHeight - 420 + 8}px`);
       });
+
+      test('THEN the room for the panel follows the trigger too', () => {
+        expect(screen.getByRole('dialog').style.getPropertyValue('--popover-space')).toBe(
+          `${420 - 8 - POPOVER_VIEWPORT_MARGIN_PX}px`,
+        );
+      });
     });
 
     describe('WHEN the window resizes', () => {
@@ -225,6 +238,38 @@ describe('Popover', () => {
 
       test('THEN it asks to close', () => {
         expect(onOpenChange).toHaveBeenCalledExactlyOnceWith(false);
+      });
+    });
+  });
+
+  describe('GIVEN a popover opened below a trigger close to the bottom of the window', () => {
+    beforeEach(() => {
+      rerender = render(withSelfFocusingField(false)).rerender;
+      vi.spyOn(screen.getByRole('button', { name: 'Workspaces' }), 'getBoundingClientRect').mockReturnValue(
+        domRect({
+          top: window.innerHeight - 60,
+          bottom: window.innerHeight - 30,
+          left: 20,
+          right: 220,
+          width: 200,
+          height: 30,
+        }),
+      );
+    });
+
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    describe('WHEN it opens', () => {
+      beforeEach(() => {
+        rerender(withSelfFocusingField(true));
+      });
+
+      test('THEN the panel may only grow into the room left below the trigger', () => {
+        expect(screen.getByRole('dialog').style.getPropertyValue('--popover-space')).toBe(
+          `${30 - 8 - POPOVER_VIEWPORT_MARGIN_PX}px`,
+        );
       });
     });
   });

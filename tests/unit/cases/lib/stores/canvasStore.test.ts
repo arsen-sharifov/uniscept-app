@@ -76,20 +76,21 @@ describe('canvasStore', () => {
       });
     });
 
-    describe('WHEN a fit is asked for with room kept free and then without', () => {
+    describe('WHEN a fit is asked for around chosen nodes with room kept free and then around the whole canvas', () => {
       let requestsBefore: number;
-      let padded: unknown;
+      let focused: unknown;
 
       beforeEach(() => {
         requestsBefore = useCanvasStore.getState().fitRequest;
-        useCanvasStore.getState().requestFit({ bottom: '300px' });
-        padded = useCanvasStore.getState().fitPadding;
+        useCanvasStore.getState().requestFit({ padding: { bottom: '300px' }, nodeIds: ['n1'] });
+        focused = useCanvasStore.getState().fitOptions;
         useCanvasStore.getState().requestFit();
       });
 
-      test('THEN each request carries its own padding', () => {
-        expect(padded).toEqual({ bottom: '300px' });
-        expect(useCanvasStore.getState()).toMatchObject({ fitRequest: requestsBefore + 2, fitPadding: null });
+      test('THEN each request carries its own options', () => {
+        expect(focused).toEqual({ padding: { bottom: '300px' }, nodeIds: ['n1'] });
+        expect(useCanvasStore.getState().fitRequest).toBe(requestsBefore + 2);
+        expect(useCanvasStore.getState().fitOptions).toEqual({});
       });
     });
 

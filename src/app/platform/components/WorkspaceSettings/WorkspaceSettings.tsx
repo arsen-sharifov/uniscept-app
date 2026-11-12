@@ -89,10 +89,17 @@ export const WorkspaceSettings = ({
   };
 
   return (
-    <Modal open onClose={onClose} width="max-w-[960px]" overflowHidden labelledBy={titleId}>
+    <Modal
+      open
+      onClose={onClose}
+      width="max-w-[960px]"
+      overflowHidden
+      labelledBy={titleId}
+      className="h-[min(86dvh,56rem)]"
+    >
       <div
         data-tour="workspaceSettingsModal"
-        className="relative flex h-[86vh] rounded-2xl font-grotesk text-[color:var(--text)]"
+        className="relative flex h-full rounded-2xl font-grotesk text-[color:var(--text)]"
       >
         <WorkspaceSettingsSidebar activeSection={activeSection} onSectionChange={setActiveSection} />
 
@@ -105,7 +112,7 @@ export const WorkspaceSettings = ({
           <X className="h-4 w-4" aria-hidden />
         </button>
 
-        <div className="min-w-0 flex-1 [scrollbar-width:none] overflow-y-auto px-10 py-8 [&::-webkit-scrollbar]:hidden">
+        <div className="scrollbar-hidden @container min-w-0 flex-1 overflow-y-auto px-[clamp(1.25rem,3vw,2.5rem)] py-8">
           <h2
             id={titleId}
             className="mb-6 font-grotesk text-lg font-semibold tracking-tight text-[color:var(--text-strong)]"

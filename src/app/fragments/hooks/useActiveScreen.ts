@@ -2,7 +2,7 @@
 
 import { type RefObject, useEffect, useState } from 'react';
 
-import { LANDING_SCREEN_SELECTOR, SCREEN_VISIBLE_THRESHOLD } from '../consts';
+import { LANDING_SCREEN_SELECTOR, SCREEN_CENTER_LINE_MARGIN } from '../consts';
 
 export const useActiveScreen = (containerRef: RefObject<HTMLElement | null>): number => {
   const [activeIndex, setActiveIndex] = useState(0);
@@ -26,7 +26,7 @@ export const useActiveScreen = (containerRef: RefObject<HTMLElement | null>): nu
           entry.target.classList.remove('on-screen');
         });
       },
-      { root: container, threshold: SCREEN_VISIBLE_THRESHOLD },
+      { root: container, rootMargin: SCREEN_CENTER_LINE_MARGIN },
     );
 
     screens.forEach((screen) => observer.observe(screen));

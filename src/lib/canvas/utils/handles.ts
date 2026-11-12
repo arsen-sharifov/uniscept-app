@@ -20,7 +20,7 @@ export const getHandleAnchor = ({ x, y, width, height }: IRect, handleId: THandl
   }
 };
 
-const toRect = (node: Node): IRect => ({
+export const toNodeRect = (node: Node): IRect => ({
   x: node.position.x,
   y: node.position.y,
   width: node.measured?.width ?? DEFAULT_NODE_WIDTH,
@@ -47,4 +47,4 @@ export const findNearestSides = (source: IRect, target: IRect): IHandlePair => {
 };
 
 export const findNearestHandlePair = (source: Node, target: Node): IHandlePair =>
-  findNearestSides(toRect(source), toRect(target));
+  findNearestSides(toNodeRect(source), toNodeRect(target));

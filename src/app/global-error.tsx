@@ -13,7 +13,7 @@ const GlobalError = ({ error, reset }: IRouteError) => {
 
   return (
     <html lang="en">
-      <body className="flex min-h-screen items-center justify-center bg-[#eef4f0] px-6 font-sans text-[#0c1210] antialiased">
+      <body className="flex min-h-dvh items-center justify-center bg-[#eef4f0] px-6 font-sans text-[#0c1210] antialiased">
         <div className="relative flex w-full max-w-sm flex-col items-center gap-2 overflow-hidden rounded-xl border border-[rgba(13,19,16,0.09)] bg-[#ffffff] px-6 py-7 text-center shadow-[0_24px_60px_-28px_rgba(13,19,16,0.22)]">
           <span aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[3px] bg-[#dc2626]" />
 

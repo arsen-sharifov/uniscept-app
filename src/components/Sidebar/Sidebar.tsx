@@ -176,7 +176,7 @@ export const Sidebar = ({
 
   return (
     <>
-      <aside className="app-glass relative z-40 flex h-full w-64 shrink-0 flex-col rounded-2xl border border-[color:var(--border)] transition-[background-color,border-color] duration-200 ease-out select-none motion-reduce:transition-none">
+      <aside className="app-glass scrollbar-hidden relative z-40 flex h-full w-[clamp(12.5rem,calc(8.5rem+12vw),16rem)] shrink-0 flex-col overflow-y-auto overscroll-contain rounded-2xl border border-[color:var(--border)] transition-[background-color,border-color] duration-200 ease-out select-none motion-reduce:transition-none">
         <div className="border-b border-[color:var(--border)] px-4 py-3">
           <Logo className="text-base text-[color:var(--text-strong)]" />
         </div>
@@ -212,7 +212,7 @@ export const Sidebar = ({
           <div
             data-sidebar-scroll
             data-tour="sidebarTree"
-            className="relative flex flex-1 [scrollbar-width:none] flex-col overflow-x-hidden overflow-y-auto scroll-smooth px-2 pt-3 pb-2 [&::-webkit-scrollbar]:hidden"
+            className="scrollbar-hidden relative flex min-h-32 flex-1 flex-col overflow-x-hidden overflow-y-auto scroll-smooth px-2 pt-3 pb-2"
           >
             <div className="mb-1 flex items-center justify-between px-2">
               <div className="flex items-center gap-1.5 font-mono-ui text-[10px] font-bold tracking-[0.14em] text-[color:var(--text-label)] uppercase">

@@ -11,7 +11,7 @@ interface ISectionRailProps {
 export const SectionRail = ({ labels, activeIndex, onSelect }: ISectionRailProps) => (
   <nav
     aria-label={labels[0]}
-    className="fixed top-1/2 right-5 z-40 hidden -translate-y-1/2 flex-col items-center gap-2.5 lg:flex"
+    className="fixed top-1/2 right-5 z-40 flex -translate-y-1/2 flex-col items-center gap-2.5"
   >
     {labels.map((label, index) => (
       <button

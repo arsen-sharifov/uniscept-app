@@ -6,7 +6,14 @@ import type { TCanvasNode } from '@interfaces';
 
 import { stubAnimationFrame } from '@mocks/browser';
 import { canvasNode, questionNode } from '@mocks/canvas';
-import { VIEW, DEFAULT_VIEWPORT, REMEMBERED_VIEWPORT, MOVED_VIEWPORT } from '@mocks/geometry';
+import {
+  VIEW,
+  DEFAULT_VIEWPORT,
+  REMEMBERED_VIEWPORT,
+  MOVED_VIEWPORT,
+  RESIZED_VIEW,
+  RECENTERED_VIEWPORT,
+} from '@mocks/geometry';
 import { routePath, router, searchParams } from '@mocks/navigation';
 import {
   ARRIVAL_CLEANUP_MS,
@@ -218,6 +225,23 @@ describe('useCanvasViewport', () => {
       });
     });
 
+    describe('WHEN the window is resized while the arrival glides to the node', () => {
+      beforeEach(() => {
+        act(() =>
+          useCanvasStore
+            .getState()
+            .loadCanvas('thread-arrival', { nodes: [nodeAt('target', 3000, 3000)], edges: [], authors: {} }),
+        );
+        act(() => frames.flush());
+        act(() => harness.current.flow.setState(RESIZED_VIEW));
+      });
+
+      test('THEN the glide is not cut short by recentring the view', () => {
+        expect(harness.current.viewport.arriving).toBe(true);
+        expect(onSetViewport).not.toHaveBeenCalled();
+      });
+    });
+
     describe('WHEN its canvas holds only an unnamed question', () => {
       beforeEach(() => {
         act(() =>
@@ -321,13 +345,28 @@ describe('useCanvasViewport', () => {
 
     describe('WHEN a fit is asked for with room kept free', () => {
       beforeEach(() => {
-        act(() => useCanvasStore.getState().requestFit({ top: '80px' }));
+        act(() => useCanvasStore.getState().requestFit({ padding: { top: '80px' } }));
       });
 
       test('THEN the canvas is fitted with that padding', () => {
         expect(harness.current.flow.getState()).toMatchObject({
           fitViewQueued: true,
           fitViewOptions: { duration: FIT_REQUEST_DURATION_MS, padding: { top: '80px' }, maxZoom: 1 },
+        });
+      });
+    });
+
+    describe('WHEN a fit is asked for around one node', () => {
+      beforeEach(() => {
+        act(() => useCanvasStore.getState().requestFit({ padding: { right: '340px' }, nodeIds: ['n1'] }));
+      });
+
+      test('THEN only that node is fitted into view', () => {
+        expect(harness.current.flow.getState().fitViewOptions).toEqual({
+          nodes: [{ id: 'n1' }],
+          duration: FIT_REQUEST_DURATION_MS,
+          padding: { right: '340px' },
+          maxZoom: 1,
         });
       });
     });
@@ -353,6 +392,72 @@ describe('useCanvasViewport', () => {
 
       test('THEN nothing is fitted', () => {
         expect(harness.current.flow.getState().fitViewQueued).toBe(false);
+      });
+    });
+  });
+
+  describe('GIVEN a canvas that has not been measured yet', () => {
+    beforeEach(() => {
+      harness = renderHook(
+        () => ({ viewport: useCanvasViewport({ threadId: 'thread-sized', defaultZoom: 100 }), flow: useStoreApi() }),
+        { wrapper: ReactFlowProvider },
+      ).result;
+      harness.current.flow.setState({ panZoom: { setViewport: onSetViewport } as never });
+    });
+
+    describe('WHEN it is measured for the first time', () => {
+      beforeEach(() => {
+        act(() => harness.current.flow.setState(VIEW));
+      });
+
+      test('THEN the view is left as it is', () => {
+        expect(onSetViewport).not.toHaveBeenCalled();
+      });
+    });
+  });
+
+  describe('GIVEN a measured canvas showing a panned and zoomed view', () => {
+    beforeEach(() => {
+      harness = renderHook(
+        () => ({ viewport: useCanvasViewport({ threadId: 'thread-sized', defaultZoom: 100 }), flow: useStoreApi() }),
+        { wrapper: ReactFlowProvider },
+      ).result;
+      harness.current.flow.setState({
+        ...VIEW,
+        transform: [REMEMBERED_VIEWPORT.x, REMEMBERED_VIEWPORT.y, REMEMBERED_VIEWPORT.zoom],
+        panZoom: { setViewport: onSetViewport } as never,
+      });
+    });
+
+    describe('WHEN the window resizes the canvas', () => {
+      beforeEach(() => {
+        act(() => harness.current.flow.setState(RESIZED_VIEW));
+      });
+
+      test('THEN the view moves so its centre stays in place', () => {
+        expect(onSetViewport).toHaveBeenCalledExactlyOnceWith(RECENTERED_VIEWPORT, undefined);
+      });
+    });
+
+    describe('WHEN the canvas is hidden and loses its size', () => {
+      beforeEach(() => {
+        act(() => harness.current.flow.setState({ width: 0, height: 0 }));
+      });
+
+      test('THEN the view is left as it is', () => {
+        expect(onSetViewport).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('WHEN only the view changes', () => {
+      beforeEach(() => {
+        act(() =>
+          harness.current.flow.setState({ transform: [MOVED_VIEWPORT.x, MOVED_VIEWPORT.y, MOVED_VIEWPORT.zoom] }),
+        );
+      });
+
+      test('THEN nothing is moved back', () => {
+        expect(onSetViewport).not.toHaveBeenCalled();
       });
     });
   });

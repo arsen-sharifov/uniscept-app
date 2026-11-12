@@ -24,3 +24,9 @@ export const clampToViewport = ({ x, y }: IScreenPoint, { width, height }: ISize
   x: clampAxis(x, width, viewport.width),
   y: clampAxis(y, height, viewport.height),
 });
+
+export const keepViewportCenter = ({ x, y, zoom }: Viewport, previous: ISize, next: ISize): Viewport => ({
+  x: x + (next.width - previous.width) / 2,
+  y: y + (next.height - previous.height) / 2,
+  zoom,
+});

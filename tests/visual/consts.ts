@@ -200,6 +200,12 @@ export const VISUAL_CONFIG: IVisualConfig = {
       urlArgs: 'open:true',
     },
     {
+      name: 'modal-scrollable',
+      storyId: 'components-modal--scrollable',
+      capture: 'viewport',
+      urlArgs: 'open:true',
+    },
+    {
       name: 'popover-open',
       storyId: 'components-popover--opened-by-default',
       capture: 'popover',
@@ -377,6 +383,16 @@ export const VISUAL_CONFIG: IVisualConfig = {
     {
       name: 'toolbar-read-only',
       storyId: 'components-toolbar--read-only',
+      capture: 'aside',
+    },
+    {
+      name: 'toolbar-short-window',
+      storyId: 'components-toolbar--short-window',
+      capture: 'aside',
+    },
+    {
+      name: 'sidebar-short-window',
+      storyId: 'components-sidebar--short-window',
       capture: 'aside',
     },
     {

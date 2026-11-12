@@ -70,7 +70,7 @@ export const Modal = ({
     <div
       onTransitionEnd={handleTransitionEnd}
       className={clsx(
-        'fixed inset-0 flex items-center justify-center transition-opacity duration-200 ease-out starting:opacity-0',
+        'fixed inset-0 flex items-center justify-center p-[clamp(0.75rem,2vw,1.5rem)] transition-opacity duration-200 ease-out starting:opacity-0',
         layerClassName,
         open ? 'opacity-100' : 'pointer-events-none opacity-0',
       )}
@@ -86,7 +86,7 @@ export const Modal = ({
         aria-describedby={describedBy}
         tabIndex={-1}
         className={clsx(
-          'app-panel relative max-h-[90vh] w-full rounded-2xl border border-[color:var(--border)] text-[color:var(--text)] transition-[opacity,translate,scale] duration-200 ease-out outline-none motion-reduce:transition-none starting:translate-y-2 starting:scale-95 starting:opacity-0',
+          'app-panel relative max-h-full w-full rounded-2xl border border-[color:var(--border)] text-[color:var(--text)] transition-[opacity,translate,scale] duration-200 ease-out outline-none motion-reduce:transition-none starting:translate-y-2 starting:scale-95 starting:opacity-0',
           open ? 'translate-y-0 scale-100 opacity-100' : 'translate-y-2 scale-95 opacity-0',
           width,
           overflowHidden ? 'overflow-hidden' : 'overflow-y-auto',

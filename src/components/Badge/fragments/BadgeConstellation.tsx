@@ -7,7 +7,7 @@ interface IBadgeConstellationProps {
 }
 
 export const BadgeConstellation = ({ pips }: IBadgeConstellationProps) => (
-  <div className="flex items-center gap-1">
+  <div className="flex flex-wrap items-center gap-1">
     {pips.map(({ id, icon: Icon, label, earned }) => (
       <span
         key={id}

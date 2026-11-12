@@ -1,4 +1,4 @@
-import type { IExampleNodeLayout, TBadgeId, TExampleNodeKey, TFitPadding, TGuideId, TTourAnchor } from '@interfaces';
+import type { IExampleNodeLayout, TBadgeId, TExampleNodeKey, TGuideId, THandleId, TTourAnchor } from '@interfaces';
 
 export const ONBOARDING_BADGE_ID: TBadgeId = 'initiate';
 
@@ -99,6 +99,7 @@ export const SPOTLIGHT_RADIUS = 14;
 
 export const TOUR_CARD_WIDTH = 332;
 export const TOUR_HINT_WIDTH = 284;
+export const TOUR_CARD_VIEWPORT_SHARE_VW = 42;
 export const TOUR_CARD_GAP = 18;
 export const TOUR_VIEWPORT_MARGIN = 12;
 
@@ -122,6 +123,8 @@ export const EXAMPLE_STEP_DELAY_MS = 450;
 
 export const EXAMPLE_CANVAS_TIMEOUT_MS = 10000;
 
-export const EXAMPLE_FIT_PADDING: TFitPadding = { top: '6%', x: '4%', bottom: '300px' };
+export const EXAMPLE_FIT_MARGIN: Record<THandleId, number> = { top: 0.06, right: 0.04, bottom: 0.06, left: 0.04 };
 
-export const EXAMPLE_COMMENT_FIT_PADDING: TFitPadding = { ...EXAMPLE_FIT_PADDING, right: '340px' };
+export const EXAMPLE_COMMENT_RESERVE: Partial<Record<THandleId, number>> = { right: 340 };
+
+export const EXAMPLE_CARD_CLEARANCE_PX = 16;

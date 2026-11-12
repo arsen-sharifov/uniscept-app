@@ -9,7 +9,7 @@ interface IToolbarSkeletonProps {
 }
 
 export const ToolbarSkeleton = ({ groups }: IToolbarSkeletonProps) => (
-  <div aria-hidden className="flex flex-1 flex-col items-stretch px-2 pt-1">
+  <div aria-hidden className="flex min-h-0 flex-1 flex-col items-stretch overflow-hidden px-2 pt-1">
     {groups.map((group, index) => (
       <div
         key={group.id}

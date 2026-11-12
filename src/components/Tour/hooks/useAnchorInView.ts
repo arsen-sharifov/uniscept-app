@@ -1,37 +1,29 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 
 import type { TTourAnchor } from '@interfaces';
 import { REDUCED_MOTION_QUERY } from '@constants';
+import { useViewportChange } from '@hooks';
 import { findAnchorElement } from '@/lib/onboarding';
-import { useCanvasStore } from '@/lib/stores';
 
-import { isInside } from '../utils';
+import { CANVAS_ANCHOR_SELECTOR } from '../consts';
+import { isScrolledIntoView } from '../utils';
 
 export const useAnchorInView = (anchor: TTourAnchor | null) => {
-  const requestFit = useCanvasStore((state) => state.requestFit);
-
-  useEffect(() => {
+  const reveal = useCallback(() => {
     if (!anchor) return;
 
     const element = findAnchorElement(anchor);
-    if (!element) return;
-
-    const canvas = element.closest('[data-tour="canvas"]');
-    const box = element.getBoundingClientRect();
-
-    if (canvas) {
-      if (canvas !== element && !isInside(box, canvas.getBoundingClientRect())) requestFit();
-
-      return;
-    }
-
-    if (box.top >= 0 && box.bottom <= window.innerHeight) return;
+    if (!element || element.closest(CANVAS_ANCHOR_SELECTOR) || isScrolledIntoView(element)) return;
 
     element.scrollIntoView({
       block: 'nearest',
       behavior: window.matchMedia(REDUCED_MOTION_QUERY).matches ? 'instant' : 'smooth',
     });
-  }, [anchor, requestFit]);
+  }, [anchor]);
+
+  useEffect(() => reveal(), [reveal]);
+
+  useViewportChange({ onResize: reveal, enabled: anchor !== null });
 };

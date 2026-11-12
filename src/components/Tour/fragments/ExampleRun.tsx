@@ -7,7 +7,7 @@ import { joinAnchors, useOnboardingStore } from '@/lib/onboarding';
 import { ExampleChoice } from './ExampleChoice';
 import { TourSpotlight } from './TourSpotlight';
 import { TourStepCard } from './TourStepCard';
-import { useExampleScene, useTourGeometry } from '../hooks';
+import { useAnchorInView, useExampleScene, useTourGeometry } from '../hooks';
 
 interface IExampleRunProps {
   guide: IGuideDefinition;
@@ -27,7 +27,9 @@ export const ExampleRun = ({ guide, stepIndex, snapshot, onCreateExample, onDele
   const { busy, removeExample } = useExampleScene(step?.act ?? null, stepIndex, onCreateExample, onDeleteExample);
   const anchorKey = joinAnchors(step?.anchors?.(snapshot));
   const openKey = joinAnchors(step?.openAnchors);
-  const { rect, open } = useTourGeometry(anchorKey, openKey);
+  const { rect, anchor, open } = useTourGeometry(anchorKey, openKey);
+
+  useAnchorInView(anchor);
 
   const removeAndFinish = async () => {
     await removeExample();
@@ -41,6 +43,7 @@ export const ExampleRun = ({ guide, stepIndex, snapshot, onCreateExample, onDele
       <TourSpotlight rect={rect} lit={open} open={[]} />
       <TourStepCard
         step={step}
+        rect={rect}
         index={stepIndex}
         total={guide.steps.length}
         busy={busy}

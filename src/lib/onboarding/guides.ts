@@ -71,7 +71,7 @@ const exampleScene = (
   act,
   anchors: followSpeaker,
   openAnchors: CANVAS_OPEN,
-  placement: 'bottom',
+  placement: 'corner',
   pose,
 });
 
@@ -612,8 +612,12 @@ export const GUIDES: readonly IGuideDefinition[] = [
       exampleScene('exampleDropCapsule', 'ergo', { type: 'status', status: 'invalid', keys: ['capsule'] }, 'think'),
       exampleScene('exampleValid', 'nodi', { type: 'status', status: 'valid', keys: ['bean', 'perCup', 'payback'] }),
       exampleScene('exampleAnswer', 'ergo', { type: 'answer', key: 'bean' }),
-      { ...exampleScene('exampleResolved', 'nodi'), anchors: at('sidebarThreadResolved') },
-      exampleScene('exampleWrap', 'ergo', undefined, 'cheer'),
+      {
+        ...exampleScene('exampleResolved', 'nodi', { type: 'frame' }),
+        anchors: at('sidebarThreadResolved'),
+        placement: 'right',
+      },
+      exampleScene('exampleWrap', 'ergo', { type: 'frame' }, 'cheer'),
       exampleScene('exampleKeep', 'nodi', undefined, 'idle'),
     ],
   },

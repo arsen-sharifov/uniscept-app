@@ -544,10 +544,10 @@ describe('GUIDES', () => {
     });
 
     describe('WHEN the moves are played in order', () => {
-      test('THEN the thread comes first and the closing scenes play nothing', () => {
+      test('THEN the thread comes first, the wrap-up only frames the canvas and the last scene plays nothing', () => {
         expect(exampleActs.at(0)).toEqual({ type: 'thread' });
+        expect(exampleSteps.at(-2)?.act).toEqual({ type: 'frame' });
         expect(exampleSteps.at(-1)?.act).toBeUndefined();
-        expect(exampleSteps.at(-2)?.act).toBeUndefined();
       });
 
       test('THEN the canvas stays small: eight to twelve nodes counting the question', () => {

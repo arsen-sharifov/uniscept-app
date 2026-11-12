@@ -14,6 +14,13 @@ const onToolClick = vi.fn();
 
 const helpButton = () => screen.getByRole('button', { name: TRANSLATIONS.platform.onboarding.menuLabel });
 
+const toolList = (): HTMLElement => {
+  const list = screen.getByRole('group', { name: 'Navigate' }).parentElement;
+  if (!list) throw new Error('The tool groups are not inside a list');
+
+  return list;
+};
+
 beforeEach(() => {
   useOnboardingStore.setState({ offerOpen: false, pickerOpen: false, run: null, hint: null });
 });
@@ -157,6 +164,18 @@ describe('Toolbar', () => {
       });
     });
 
+    describe('WHEN the tool list scrolls once the tooltip shows', () => {
+      beforeEach(() => {
+        fireEvent.pointerEnter(screen.getByRole('button', { name: 'Pan' }));
+        act(() => vi.advanceTimersByTime(TOOLTIP_DELAY_MS));
+        fireEvent.scroll(toolList());
+      });
+
+      test('THEN the tooltip hides instead of pointing past the moved tool', () => {
+        expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
+      });
+    });
+
     describe('WHEN the pointer leaves a tool before the delay', () => {
       beforeEach(() => {
         fireEvent.pointerEnter(screen.getByRole('button', { name: 'Pan' }));
@@ -215,6 +234,22 @@ describe('Toolbar', () => {
           TRANSLATIONS.platform.canvas.export.label,
           TRANSLATIONS.platform.onboarding.menuLabel,
         ]);
+      });
+    });
+  });
+
+  describe('GIVEN a toolbar of a named thread with tool groups', () => {
+    beforeEach(() => {
+      render(<Toolbar threadId="thread-1" threadName="Thread" groups={TOOL_GROUPS} />);
+    });
+
+    describe('WHEN it renders', () => {
+      test('THEN the export and help menus stay pinned outside the scrolling tool list', () => {
+        expect(toolList()).toContainElement(screen.getByRole('button', { name: 'Pan' }));
+        expect(toolList()).not.toContainElement(
+          screen.getByRole('button', { name: TRANSLATIONS.platform.canvas.export.label }),
+        );
+        expect(toolList()).not.toContainElement(helpButton());
       });
     });
   });

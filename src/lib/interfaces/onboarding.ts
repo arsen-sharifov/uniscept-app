@@ -78,7 +78,7 @@ export type TTourAnchor =
 export type TTourSignal =
   'canvasExported' | 'nodeLabelled' | 'themePicked' | 'patternPicked' | 'editorTuned' | 'profileSaved';
 
-export type TTourPlacement = 'left' | 'right' | 'top' | 'bottom' | 'center';
+export type TTourPlacement = 'left' | 'right' | 'top' | 'bottom' | 'center' | 'corner';
 
 export type TTourButtonVariant = 'primary' | 'secondary';
 
@@ -131,8 +131,12 @@ export interface IExampleAnswerAct {
   key: TExampleOptionKey;
 }
 
+export interface IExampleFrameAct {
+  type: 'frame';
+}
+
 export type TExampleAct =
-  IExampleThreadAct | IExampleArgueAct | IExampleCommentAct | IExampleStatusAct | IExampleAnswerAct;
+  IExampleThreadAct | IExampleArgueAct | IExampleCommentAct | IExampleStatusAct | IExampleAnswerAct | IExampleFrameAct;
 
 export type TExampleCanvasAct = Exclude<TExampleAct, IExampleThreadAct>;
 

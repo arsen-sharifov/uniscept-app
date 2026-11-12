@@ -71,7 +71,7 @@ export const ProfileSection = ({ user, onUpdateProfile, onUpdateEmail }: IProfil
           aria-hidden
           className="pointer-events-none absolute -top-16 -right-20 h-40 w-40 rounded-full bg-[color:var(--accent-soft)] opacity-50 blur-3xl"
         />
-        <div className="relative flex items-center gap-4">
+        <div className="relative flex flex-wrap items-center gap-x-4 gap-y-3">
           <Avatar
             name={trimmedName || userEmail}
             icon={avatarIcon}
@@ -84,8 +84,10 @@ export const ProfileSection = ({ user, onUpdateProfile, onUpdateEmail }: IProfil
             </p>
             <p className="mt-0.5 truncate text-[12px] tracking-tight text-[color:var(--text-muted)]">{userEmail}</p>
           </div>
-          <div className="flex shrink-0 items-center gap-3">
-            <BadgeConstellation pips={constellationPips} />
+          <div className="flex basis-full items-center justify-between gap-3 border-t border-[color:var(--border)] pt-3 pb-1 @3xl:basis-auto @3xl:justify-start @3xl:border-t-0 @3xl:pt-0 @3xl:pb-0">
+            <div className="max-w-[13.75rem] @xl:max-w-none">
+              <BadgeConstellation pips={constellationPips} />
+            </div>
             <span className="font-mono-ui text-[10px] tracking-[0.14em] text-[color:var(--text-label)] uppercase">
               {earnedCount}/{BADGES.length}
             </span>
@@ -94,7 +96,7 @@ export const ProfileSection = ({ user, onUpdateProfile, onUpdateEmail }: IProfil
       </section>
 
       <section>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-3 @md:grid-cols-2">
           <div>
             <SectionHeader
               title={t.platform.settings.profile.displayName}
@@ -158,7 +160,7 @@ export const ProfileSection = ({ user, onUpdateProfile, onUpdateEmail }: IProfil
         <div
           role="radiogroup"
           aria-label={t.platform.settings.profile.avatarTitle}
-          className="grid grid-cols-3 gap-3 sm:grid-cols-7"
+          className="grid grid-cols-3 gap-3 @md:grid-cols-7"
         >
           <PickerCard
             active={avatarIcon === null}
@@ -191,7 +193,7 @@ export const ProfileSection = ({ user, onUpdateProfile, onUpdateEmail }: IProfil
           className="mb-3"
         />
 
-        <div className="grid grid-cols-4 gap-3 sm:grid-cols-8">
+        <div className="grid grid-cols-4 gap-3 @3xl:grid-cols-8">
           {BADGES.map((definition) => (
             <Badge
               key={definition.id}

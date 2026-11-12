@@ -40,11 +40,11 @@ export const Hero = () => {
     <section
       id="top"
       data-phase={phase}
-      className="hero-stage relative z-[1] flex min-h-svh snap-start flex-col justify-center overflow-hidden pt-20"
+      className="hero-stage landing-screen relative z-[1] flex min-h-svh flex-col justify-center overflow-hidden pt-(--landing-header-height)"
     >
       <div aria-hidden className="hero-quiet absolute inset-0 z-0" />
 
-      <div className="relative mx-auto grid w-full max-w-7xl items-center gap-12 px-6 py-10 lg:grid-cols-[1fr_1.05fr] lg:gap-10 lg:px-8">
+      <div className="relative mx-auto grid w-full max-w-landing-wide items-center gap-12 px-landing-rail py-10 lg:grid-cols-[1fr_1.05fr] lg:gap-10">
         <div>
           <h1 className="font-grotesk text-[clamp(2.9rem,5vw,5.25rem)] leading-[0.98] font-extrabold tracking-[-0.03em] text-balance text-[color:var(--hero-title)]">
             {t.landing.hero.title}{' '}

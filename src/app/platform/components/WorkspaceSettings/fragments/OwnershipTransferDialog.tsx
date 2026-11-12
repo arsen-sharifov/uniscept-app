@@ -54,7 +54,7 @@ export const OwnershipTransferDialog = ({ member, onConfirm, onCancel }: IOwners
         aria-labelledby={titleId}
         aria-describedby={descriptionId}
         tabIndex={-1}
-        className="app-panel relative w-full max-w-md rounded-xl border border-[color:var(--border)] p-6 font-grotesk text-[color:var(--text)] transition-all duration-200 ease-out outline-none motion-reduce:transition-none starting:translate-y-2 starting:scale-95 starting:opacity-0"
+        className="app-panel relative max-h-full w-full max-w-md overflow-y-auto rounded-xl border border-[color:var(--border)] p-6 font-grotesk text-[color:var(--text)] transition-all duration-200 ease-out outline-none motion-reduce:transition-none starting:translate-y-2 starting:scale-95 starting:opacity-0"
       >
         <div className="flex items-center gap-3">
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[color:var(--status-warning-border)] bg-[color:var(--status-warning-bg)] text-[color:var(--status-warning)]">

@@ -170,7 +170,7 @@ export const SecuritySection = ({
                 )}
               </p>
             </div>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-3 @md:grid-cols-2">
               <PasswordField
                 label={t.platform.settings.security.newPassword}
                 autoComplete="new-password"

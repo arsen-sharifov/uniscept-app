@@ -59,7 +59,7 @@ const WorkspaceLayout = ({ children }: { children: ReactNode }) => {
   const workspaceSettingsTarget = workspaces.find((workspace) => workspace.id === workspaceSettingsId);
 
   return (
-    <div className="relative flex h-screen w-screen gap-3 overflow-hidden bg-[color:var(--app-bg-tint)] p-3 transition-colors duration-200 ease-out">
+    <div className="relative flex h-dvh w-full gap-[clamp(0.5rem,1vw,0.75rem)] overflow-hidden bg-[color:var(--app-bg-tint)] p-[clamp(0.5rem,1vw,0.75rem)] transition-colors duration-200 ease-out">
       <div
         aria-hidden
         className="pointer-events-none fixed inset-0 z-0"

@@ -1,3 +1,5 @@
+import type { ISize, TNodeStatus, TTranslations } from '@interfaces';
+
 export type TE2ERoleKey = 'owner' | 'member' | 'viewer';
 
 export interface IE2ESupabaseEnv {
@@ -41,6 +43,7 @@ export interface IE2ENodeSeed {
   label: string;
   x: number;
   y: number;
+  status?: NonNullable<TNodeStatus>;
 }
 
 export interface IE2EMailboxSearch {
@@ -58,4 +61,15 @@ export interface IE2EWorkerFixtures {
 
 export interface IE2ETestFixtures {
   workspace: IE2EWorkspace;
+}
+
+export interface IE2ETranslation {
+  name: string;
+  locale: string;
+  copy: TTranslations;
+}
+
+export interface IE2EScreenSize {
+  name: string;
+  viewport: ISize;
 }

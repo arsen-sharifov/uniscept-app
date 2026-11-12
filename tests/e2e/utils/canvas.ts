@@ -1,5 +1,7 @@
 import { type Download, expect, type Locator, type Page } from '@playwright/test';
 
+import type { IScreenPoint, TTranslations } from '@interfaces';
+
 import {
   CANVAS_NODE_TYPE,
   CONTEXT_MENU_ATTEMPTS,
@@ -38,19 +40,27 @@ export const expectSaved = async (page: Page): Promise<void> => {
   await expect(page.locator(SAVE_STATE_SELECTOR)).toHaveAttribute(SAVE_STATE_ATTRIBUTE, SAVE_STATE_SAVED);
 };
 
-const getToolbar = (page: Page): Locator =>
+export const getToolbar = (page: Page): Locator =>
   page.getByRole('complementary', { name: COPY.platform.canvas.tools.ariaLabel });
 
+export const getToolbarButton = (page: Page, label: string): Locator =>
+  getToolbar(page).getByRole('button', { name: label, exact: true });
+
 export const selectTool = async (page: Page, label: string): Promise<void> => {
-  await getToolbar(page).getByRole('button', { name: label, exact: true }).click();
+  await getToolbarButton(page, label).click();
 };
 
-export const downloadExport = async (page: Page, format: string): Promise<Download> => {
-  await getToolbar(page).getByRole('button', { name: COPY.platform.canvas.export.label, exact: true }).click();
+export const openExportMenu = async (page: Page): Promise<Locator> => {
+  await getToolbarButton(page, COPY.platform.canvas.export.label).click();
 
   const menu = page.getByRole('menu', { name: COPY.platform.canvas.export.label });
   await expect(menu).toBeVisible();
 
+  return menu;
+};
+
+export const downloadExport = async (page: Page, format: string): Promise<Download> => {
+  const menu = await openExportMenu(page);
   const [download] = await Promise.all([
     page.waitForEvent('download', { timeout: EXPORT_TIMEOUT_MS }),
     menu.getByRole('menuitem', { name: format }).click(),
@@ -94,11 +104,12 @@ export const editQuestion = async (page: Page, label: string): Promise<void> => 
 const openContextMenu = async (
   page: Page,
   target: Locator,
-  options: { force?: boolean; position?: { x: number; y: number } } = {},
+  options: { force?: boolean; position?: IScreenPoint; copy?: TTranslations } = {},
   attempt = 1,
 ): Promise<Locator> => {
-  await target.click({ button: 'right', ...options });
-  const menu = page.getByRole('menu', { name: COPY.platform.canvas.context.ariaLabel });
+  const { copy = COPY, ...click } = options;
+  await target.click({ button: 'right', ...click });
+  const menu = page.getByRole('menu', { name: copy.platform.canvas.context.ariaLabel });
   const opened = await menu
     .waitFor({ state: 'visible', timeout: CONTEXT_MENU_TIMEOUT_MS })
     .then(() => true)
@@ -116,13 +127,24 @@ const openContextMenu = async (
   return openContextMenu(page, target, options, attempt + 1);
 };
 
-export const openNodeMenu = (page: Page, node: Locator): Promise<Locator> => openContextMenu(page, node);
+export const openNodeMenu = (page: Page, node: Locator, copy = COPY): Promise<Locator> =>
+  openContextMenu(page, node, { copy });
 
 export const openEdgeMenu = (page: Page): Promise<Locator> =>
   openContextMenu(page, getEdges(page).first(), { force: true });
 
-export const openPaneMenu = (page: Page, position: { x: number; y: number }): Promise<Locator> =>
+export const openPaneMenu = (page: Page, position: IScreenPoint): Promise<Locator> =>
   openContextMenu(page, getPane(page), { position });
+
+export const openReferenceSearch = async (page: Page, position: IScreenPoint): Promise<Locator> => {
+  await selectTool(page, COPY.platform.canvas.tools.items.crossReference.label);
+  await getPane(page).click({ position });
+
+  const panel = page.getByRole('dialog', { name: COPY.platform.canvas.referenceSearch.placeholder });
+  await expect(panel).toBeVisible();
+
+  return panel;
+};
 
 export const addNodeComment = async (node: Locator, text: string): Promise<void> => {
   await node.hover();

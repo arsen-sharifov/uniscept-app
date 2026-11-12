@@ -46,13 +46,13 @@ export const HowItWorksSection = () => {
             nodeId="hv2-a"
             tone="open"
             label={t.landing.howItWorks.vignettes.pro}
-            className="absolute bottom-3 left-2 w-[8.25rem] md:w-[9rem]"
+            className="absolute bottom-3 left-2 w-[min(9rem,calc(50%-0.75rem))]"
           />
           <MiniNode
             nodeId="hv2-b"
             tone="open"
             label={t.landing.howItWorks.vignettes.con}
-            className="absolute right-2 bottom-3 w-[8.25rem] md:w-[9rem]"
+            className="absolute right-2 bottom-3 w-[min(9rem,calc(50%-0.75rem))]"
           />
         </CanvasVignette>
       ),
@@ -65,13 +65,13 @@ export const HowItWorksSection = () => {
             nodeId="hv3-a"
             tone="valid"
             label={t.landing.howItWorks.vignettes.pro}
-            className="absolute top-2 left-2 w-[8.25rem] md:w-[9rem]"
+            className="absolute top-2 left-2 w-[min(9rem,calc(50%-0.75rem))]"
           />
           <MiniNode
             nodeId="hv3-b"
             tone="refuted"
             label={t.landing.howItWorks.vignettes.con}
-            className="absolute top-2 right-2 w-[8.25rem] md:w-[9rem]"
+            className="absolute top-2 right-2 w-[min(9rem,calc(50%-0.75rem))]"
           />
           <MiniNode
             nodeId="hv3-c"
@@ -86,7 +86,7 @@ export const HowItWorksSection = () => {
 
   return (
     <Section>
-      <div className="mx-auto max-w-6xl">
+      <div className="mx-auto w-full max-w-landing">
         <div className="mb-10 max-w-2xl">
           <SectionHeading title={t.landing.howItWorks.title} subtitle={t.landing.howItWorks.subtitle} />
         </div>

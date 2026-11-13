@@ -30,7 +30,7 @@ export const ShortcutsHelp = ({ open, groups, activeTool, onClose }: IShortcutsH
   if (!open || typeof window === 'undefined') return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-[60] flex items-center justify-center px-4">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-[clamp(0.75rem,2vw,1.5rem)]">
       <Scrim onClick={onClose} blurred />
 
       <dialog
@@ -39,7 +39,7 @@ export const ShortcutsHelp = ({ open, groups, activeTool, onClose }: IShortcutsH
         ref={dialogRef}
         aria-modal="true"
         aria-label={t.platform.canvas.shortcuts.ariaLabel}
-        className="app-panel relative w-full max-w-[640px] animate-rise-up overflow-hidden rounded-xl border border-[color:var(--border)] text-[color:var(--text)] shadow-[var(--shadow-modal)] motion-reduce:animate-none"
+        className="app-panel @container relative flex max-h-full w-full max-w-[640px] animate-rise-up flex-col overflow-hidden rounded-xl border border-[color:var(--border)] text-[color:var(--text)] shadow-[var(--shadow-modal)] motion-reduce:animate-none"
       >
         <div className="flex items-center justify-between gap-3 border-b border-[color:var(--border)] px-5 py-3.5">
           <div className="flex min-w-0 items-center gap-2.5">
@@ -67,7 +67,7 @@ export const ShortcutsHelp = ({ open, groups, activeTool, onClose }: IShortcutsH
           </button>
         </div>
 
-        <div className="grid max-h-[64vh] grid-cols-1 gap-x-6 overflow-y-auto px-5 py-4 sm:grid-cols-2">
+        <div className="grid min-h-0 grid-cols-1 gap-x-6 overflow-y-auto px-5 py-4 @lg:grid-cols-2">
           {groups.map((group) => (
             <section key={group.id} className="mb-4 break-inside-avoid">
               {group.label && (

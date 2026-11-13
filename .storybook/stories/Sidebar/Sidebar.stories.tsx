@@ -13,6 +13,12 @@ const WithFullscreen: Decorator = (Story) => (
   </div>
 );
 
+const WithShortWindow: Decorator = (Story) => (
+  <div className="h-80 p-3">
+    <Story />
+  </div>
+);
+
 const meta: Meta<typeof Sidebar> = {
   title: 'Components/Sidebar',
   component: Sidebar,
@@ -101,6 +107,26 @@ export const FlatThreads: Story = {
 };
 
 export const Overflow: Story = {
+  render: SidebarWithState,
+  args: {
+    items: manyItems,
+    workspaces,
+    activeWorkspaceId: defaultWorkspaceId,
+    activeItemId: 'scroll-t5',
+  },
+};
+
+export const ShortWindow: Story = {
+  name: 'Short window',
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A long tree in a window too short for the whole rail. The tree keeps a usable minimum height and the rail itself scrolls, so the header, the workspace switcher and the search all stay reachable.',
+      },
+    },
+  },
+  decorators: [WithShortWindow],
   render: SidebarWithState,
   args: {
     items: manyItems,

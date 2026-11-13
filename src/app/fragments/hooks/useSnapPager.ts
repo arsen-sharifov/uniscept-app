@@ -2,12 +2,17 @@
 
 import { type RefObject, useEffect } from 'react';
 
+import type { ILandingScreenRange } from '@interfaces';
+
 import {
   LANDING_SCREEN_SELECTOR,
   SNAP_EDGE_TOLERANCE_PX,
+  SNAP_END_PADDING_PX,
   SNAP_GESTURE_LOCK_MS,
-  SNAP_HEADER_OFFSET_PX,
   SNAP_MIN_DELTA_PX,
+  SNAP_SMOOTH_STEP_PX,
+  SNAP_START_PADDING_PX,
+  SNAP_WHEEL_QUIET_MS,
 } from '../consts';
 import { useReducedMotion } from './useReducedMotion';
 
@@ -22,14 +27,15 @@ export const useSnapPager = (containerRef: RefObject<HTMLElement | null>) => {
     if (screens.length === 0) return;
 
     const listeners = new AbortController();
+    const glideBehavior = reducedMotion ? 'instant' : 'smooth';
 
-    let locked = false;
     let gesture: AbortController | null = null;
     let fallback: number | null = null;
+    let quiet: number | null = null;
+    let pendingTop: number | null = null;
 
     const settle = () => {
-      container.style.scrollSnapType = '';
-      locked = false;
+      pendingTop = null;
 
       if (fallback !== null) window.clearTimeout(fallback);
       fallback = null;
@@ -37,48 +43,110 @@ export const useSnapPager = (containerRef: RefObject<HTMLElement | null>) => {
       gesture = null;
     };
 
-    const handleWheel = (event: WheelEvent) => {
-      if (event.ctrlKey || Math.abs(event.deltaY) < SNAP_MIN_DELTA_PX) return;
+    const holdUntilQuiet = () => {
+      if (quiet !== null) window.clearTimeout(quiet);
+      quiet = window.setTimeout(() => {
+        quiet = null;
+      }, SNAP_WHEEL_QUIET_MS);
+    };
 
-      const targets = screens.map((screen) => Math.max(screen.offsetTop - SNAP_HEADER_OFFSET_PX, 0));
-      const top = container.scrollTop;
-      const direction = event.deltaY > 0 ? 1 : -1;
-      const current = targets.reduce(
-        (accumulator, target, index) => (target <= top + SNAP_EDGE_TOLERANCE_PX ? index : accumulator),
-        0,
-      );
-      const screen = screens[current];
-      const currentTarget = targets[current];
-      if (!screen || currentTarget === undefined) return;
-
-      const visibleHeight = container.clientHeight - SNAP_HEADER_OFFSET_PX;
-      const oversized = screen.offsetHeight > visibleHeight + SNAP_EDGE_TOLERANCE_PX;
-      const interiorRoom =
-        direction > 0
-          ? screen.offsetTop + screen.offsetHeight - (top + container.clientHeight) > SNAP_EDGE_TOLERANCE_PX
-          : top - currentTarget > SNAP_EDGE_TOLERANCE_PX;
-      if (oversized && interiorRoom) return;
-
-      event.preventDefault();
-      if (locked) return;
-
-      const next = Math.min(Math.max(current + direction, 0), targets.length - 1);
-      const nextTarget = targets[next];
-      if (next === current || nextTarget === undefined) return;
-
-      locked = true;
-      container.style.scrollSnapType = 'none';
-      container.scrollTo({ top: nextTarget, behavior: reducedMotion ? 'auto' : 'smooth' });
+    const glideTo = (target: number) => {
+      holdUntilQuiet();
+      container.scrollTo({ top: target, behavior: glideBehavior });
 
       gesture = new AbortController();
       container.addEventListener('scrollend', settle, { once: true, signal: gesture.signal });
       fallback = window.setTimeout(settle, SNAP_GESTURE_LOCK_MS);
     };
 
+    const scrollWithin = (target: number, step: number) => {
+      pendingTop = target;
+      container.scrollTo({ top: target, behavior: Math.abs(step) < SNAP_SMOOTH_STEP_PX ? 'instant' : glideBehavior });
+    };
+
+    const measureRanges = (): ILandingScreenRange[] => {
+      const headerOffset = Number.parseFloat(getComputedStyle(container).scrollPaddingTop) || 0;
+
+      return screens.map((screen) => {
+        const start = Math.max(screen.offsetTop - headerOffset, 0);
+
+        return { start, end: Math.max(screen.offsetTop + screen.offsetHeight - container.clientHeight, start) };
+      });
+    };
+
+    const leaveScreen = (
+      range: ILandingScreenRange,
+      neighbor: ILandingScreenRange | undefined,
+      top: number,
+      direction: number,
+    ) => {
+      if (direction < 0 && top > range.end + SNAP_EDGE_TOLERANCE_PX) {
+        glideTo(range.end);
+
+        return;
+      }
+
+      const edge = direction > 0 ? range.end : range.start;
+      const unseen = (edge - top) * direction;
+      const padding = direction > 0 ? SNAP_END_PADDING_PX : SNAP_START_PADDING_PX;
+      if (unseen > padding) {
+        holdUntilQuiet();
+        scrollWithin(edge, edge - top);
+
+        return;
+      }
+
+      if (neighbor) {
+        glideTo(direction > 0 ? neighbor.start : neighbor.end);
+
+        return;
+      }
+
+      if (Math.abs(edge - top) > SNAP_EDGE_TOLERANCE_PX) glideTo(edge);
+    };
+
+    const handleWheel = (event: WheelEvent) => {
+      if (event.ctrlKey || Math.abs(event.deltaX) > Math.abs(event.deltaY)) return;
+
+      event.preventDefault();
+
+      if (gesture || quiet !== null) {
+        holdUntilQuiet();
+
+        return;
+      }
+
+      const ranges = measureRanges();
+      const top = pendingTop ?? container.scrollTop;
+      const current = ranges.findLastIndex((range) => range.start <= top + SNAP_EDGE_TOLERANCE_PX);
+      const range = ranges[current];
+      if (!range) return;
+
+      const nextTop = top + event.deltaY;
+      if (nextTop >= range.start - SNAP_EDGE_TOLERANCE_PX && nextTop <= range.end + SNAP_EDGE_TOLERANCE_PX) {
+        scrollWithin(Math.min(Math.max(nextTop, range.start), range.end), event.deltaY);
+
+        return;
+      }
+
+      if (Math.abs(event.deltaY) < SNAP_MIN_DELTA_PX) return;
+
+      const direction = Math.sign(event.deltaY);
+      leaveScreen(range, ranges[current + direction], top, direction);
+    };
+
     container.addEventListener('wheel', handleWheel, { passive: false, signal: listeners.signal });
+    container.addEventListener(
+      'scrollend',
+      () => {
+        pendingTop = null;
+      },
+      { signal: listeners.signal },
+    );
 
     return () => {
       settle();
+      if (quiet !== null) window.clearTimeout(quiet);
       listeners.abort();
     };
   }, [containerRef, reducedMotion]);

@@ -109,7 +109,7 @@ export const Scrollable: Story = {
       <div className="px-6 py-5">
         <h2 className="text-lg font-bold text-[color:var(--text-strong)]">Scrollable content</h2>
         <p className="mt-2 text-[13px] text-[color:var(--text-muted)]">
-          The modal body scrolls when content exceeds 90vh.
+          The modal body scrolls when its content is taller than the window, keeping a margin from every edge.
         </p>
         <div className="mt-4 space-y-3">
           {Array.from({ length: 30 }).map((_, index) => (

@@ -90,7 +90,11 @@ export const Toolbar = ({
       >
         {pending && <ToolbarSkeleton groups={pendingGroups} />}
 
-        <div hidden={pending} className="flex flex-1 flex-col items-stretch px-2 pt-1">
+        <div
+          hidden={pending}
+          onScroll={hideHover}
+          className="scrollbar-hidden flex min-h-0 flex-1 flex-col items-stretch overflow-y-auto overscroll-contain px-2 pt-1"
+        >
           {groups.map((group, index) => (
             <fieldset
               key={group.id}

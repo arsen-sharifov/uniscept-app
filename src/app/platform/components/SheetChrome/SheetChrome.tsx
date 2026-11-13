@@ -15,7 +15,7 @@ export const SheetChrome = ({ workspaceName, threadName }: ISheetChromeProps) =>
         <span aria-hidden className="shrink-0 text-[color:var(--text-faint)]">
           ·
         </span>
-        <span className="shrink-0 text-[color:var(--text-label)]">{workspaceName}</span>
+        <span className="max-w-[40%] truncate text-[color:var(--text-label)]">{workspaceName}</span>
       </>
     )}
     {threadName && (

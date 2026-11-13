@@ -6,7 +6,7 @@ const NotFound = async () => {
   const t = await getTranslations();
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[color:var(--app-bg)] px-6">
+    <div className="flex min-h-dvh items-center justify-center bg-[color:var(--app-bg)] px-6">
       <div className="app-panel relative flex w-full max-w-sm flex-col items-center gap-2 overflow-hidden rounded-xl border border-[color:var(--border)] px-6 py-7 text-center">
         <span
           aria-hidden

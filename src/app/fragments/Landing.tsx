@@ -32,7 +32,7 @@ export const Landing = () => {
   return (
     <LandingWorld
       ref={containerRef}
-      className="h-svh snap-y snap-mandatory scroll-pt-20 overflow-y-auto scroll-smooth motion-reduce:scroll-auto"
+      className="h-svh scroll-pt-(--landing-header-height) overflow-y-auto scroll-smooth motion-reduce:scroll-auto"
     >
       <div aria-hidden className="landing-grain pointer-events-none fixed inset-0 noise-texture" />
       <HeroEdgeMarkers />
@@ -45,7 +45,7 @@ export const Landing = () => {
       <BuildersSection />
       <HowItWorksSection />
       <PricingSection />
-      <div className="relative z-[1] flex min-h-[calc(100svh-5rem)] snap-start flex-col">
+      <div className="landing-screen relative z-[1] flex min-h-[calc(100svh-var(--landing-header-height))] flex-col">
         <CTASection />
         <Footer />
       </div>

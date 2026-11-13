@@ -20,7 +20,7 @@ export const SettingsSkeleton = ({ section }: ISettingsSkeletonProps) => {
       <div aria-hidden className="space-y-4">
         <Skeleton className="h-2.5 w-28" />
         <Skeleton className="h-3 w-96 max-w-full" />
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-3 @md:grid-cols-2">
           {Array.from({ length: SETTINGS_SKELETON_PLAN_CARDS }, (_, plan) => (
             <Skeleton key={plan} className="h-44 rounded-xl" />
           ))}
@@ -31,20 +31,20 @@ export const SettingsSkeleton = ({ section }: ISettingsSkeletonProps) => {
 
   return (
     <div aria-hidden className="space-y-4">
-      <section className="flex items-center gap-4 rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-elevated)] px-5 py-2.5">
+      <section className="flex flex-wrap items-center gap-x-4 gap-y-3 rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-elevated)] px-5 py-2.5">
         <Skeleton className="h-16 w-16 shrink-0 rounded-full" />
         <div className="min-w-0 flex-1 space-y-2">
           <Skeleton className="h-4 w-40" />
           <Skeleton className="h-2.5 w-56" />
         </div>
-        <div className="hidden shrink-0 gap-1.5 sm:flex">
+        <div className="flex basis-full gap-1.5 border-t border-[color:var(--border)] pt-3 pb-1 @3xl:basis-auto @3xl:border-t-0 @3xl:pt-0 @3xl:pb-0">
           {Array.from({ length: SETTINGS_SKELETON_BADGE_DOTS }, (_, badge) => (
             <Skeleton key={badge} className="h-6 w-6 rounded-full" />
           ))}
         </div>
       </section>
 
-      <section className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <section className="grid grid-cols-1 gap-3 @md:grid-cols-2">
         <div className="space-y-1.5">
           <Skeleton className="h-2.5 w-24" />
           <Skeleton className="h-[38px] w-full rounded-lg" />

@@ -63,11 +63,22 @@ export const startBasePass = async (page: Page): Promise<void> => {
   await getGuideRow(page, COPY.platform.onboarding.guides.baseTitle).click();
 };
 
-export const watchExample = async (page: Page): Promise<void> => {
+const walkExampleScenes = async (page: Page, scenes: typeof EXAMPLE_SCENES): Promise<void> => {
   await runHelpAction(page, COPY.platform.onboarding.menuGuides);
   await getGuideRow(page, COPY.platform.onboarding.guides.exampleTitle).click();
-  await EXAMPLE_SCENES.reduce(async (previous, scene) => {
+  await scenes.reduce(async (previous, scene) => {
     await previous;
     await readOnStep(page, COPY.platform.onboarding.steps[scene].title);
   }, Promise.resolve());
+};
+
+export const watchExample = (page: Page): Promise<void> => walkExampleScenes(page, EXAMPLE_SCENES);
+
+export const watchExampleUntil = async (page: Page, scene: (typeof EXAMPLE_SCENES)[number]): Promise<void> => {
+  await walkExampleScenes(page, EXAMPLE_SCENES.slice(0, EXAMPLE_SCENES.indexOf(scene)));
+  await expect(
+    getStepCard(page, COPY.platform.onboarding.steps[scene].title).getByRole('button', {
+      name: COPY.platform.onboarding.stepNext,
+    }),
+  ).toBeEnabled();
 };

@@ -90,15 +90,22 @@ export const Settings = ({ onClose, preferences, updatePreference }: ISettingsPr
   };
 
   return (
-    <Modal open onClose={onClose} width="max-w-[1100px]" overflowHidden labelledBy={titleId}>
+    <Modal
+      open
+      onClose={onClose}
+      width="max-w-[1100px]"
+      overflowHidden
+      labelledBy={titleId}
+      className="h-[min(86dvh,56rem)]"
+    >
       <div
         data-tour="settingsModal"
         data-theme={preferences.theme}
-        className="flex h-[86vh] rounded-2xl font-grotesk text-[color:var(--text)] transition-[color] duration-200 ease-out motion-reduce:transition-none"
+        className="flex h-full rounded-2xl font-grotesk text-[color:var(--text)] transition-[color] duration-200 ease-out motion-reduce:transition-none"
       >
         <SettingsSidebar activeSection={activeSection} onSectionChange={setActiveSection} />
 
-        <div className="relative flex-1 [scrollbar-width:none] overflow-y-auto px-10 py-5 [&::-webkit-scrollbar]:hidden">
+        <div className="scrollbar-hidden @container relative min-w-0 flex-1 overflow-y-auto px-[clamp(1.25rem,3vw,2.5rem)] py-5">
           <button
             type="button"
             onClick={onClose}

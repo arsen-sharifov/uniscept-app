@@ -96,7 +96,7 @@ export const AppearanceSection = ({ preferences, onUpdate }: IAppearanceSectionP
         <div
           role="radiogroup"
           aria-label={t.platform.settings.appearance.theme}
-          className="grid grid-cols-2 gap-3 sm:grid-cols-4"
+          className="grid grid-cols-2 gap-3 @lg:grid-cols-4"
         >
           {THEMES.map(({ value, labelKey, descriptionKey, systemPair, icon: Icon }) => {
             const isActive = value === preferences.theme;
@@ -166,7 +166,7 @@ export const AppearanceSection = ({ preferences, onUpdate }: IAppearanceSectionP
         <div
           role="radiogroup"
           aria-label={t.platform.settings.appearance.canvas}
-          className="grid grid-cols-2 gap-3 sm:grid-cols-4"
+          className="grid grid-cols-2 gap-3 @lg:grid-cols-4"
         >
           {CANVAS_PATTERNS.map(({ value, labelKey, descriptionKey, icon: Icon }) => {
             const isActive = value === preferences.canvasPattern;

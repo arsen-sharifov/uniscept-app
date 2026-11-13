@@ -29,7 +29,7 @@ export const PlanSection = ({ user }: IPlanSectionProps) => {
           description={t.platform.settings.plan.blurb}
         />
 
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-3 @md:grid-cols-2">
           {plans.map((plan) => {
             const isCurrent = (currentPlanId === 'beta' && plan.id === 'demo') || plan.id === currentPlanId;
             const isLocked = !AVAILABLE_PLAN_IDS.includes(plan.id);
@@ -65,7 +65,7 @@ export const PlanSection = ({ user }: IPlanSectionProps) => {
                 <div
                   aria-hidden
                   className={clsx(
-                    'relative flex h-16 w-full items-center border-b px-4',
+                    'relative flex h-16 w-full items-end border-b px-4 pb-3',
                     isCurrent
                       ? 'border-[color:var(--border-active)] bg-[color:var(--accent-soft)]'
                       : 'border-[color:var(--border)] bg-[color:var(--surface-soft)]',

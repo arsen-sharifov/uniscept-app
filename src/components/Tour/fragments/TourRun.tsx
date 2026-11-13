@@ -8,7 +8,7 @@ import { joinAnchors, useOnboardingStore } from '@/lib/onboarding';
 
 import { TourSpotlight } from './TourSpotlight';
 import { TourStepCard } from './TourStepCard';
-import { useAnchorFocus, useAnchorInView, useTourGeometry } from '../hooks';
+import { useAnchorFocus, useAnchorInCanvasView, useAnchorInView, useTourGeometry } from '../hooks';
 
 interface ITourRunProps {
   guide: IGuideDefinition;
@@ -39,6 +39,7 @@ export const TourRun = ({ guide, stepIndex, snapshot }: ITourRunProps) => {
 
   useAnchorFocus(anchor);
   useAnchorInView(anchor);
+  useAnchorInCanvasView(anchor);
 
   useEffect(() => {
     snapshotRef.current = snapshot;

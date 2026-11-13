@@ -1,15 +1,24 @@
-import { cleanup, renderHook } from '@testing-library/react';
+import { cleanup, fireEvent, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { REDUCED_MOTION_QUERY } from '@constants';
-import { elementAt, stubMediaQueries, stubScrollIntoView } from '@mocks/browser';
-import { CANVAS_RECT } from '@mocks/geometry';
+import { elementAt, rectAt, scrollerAt, stubMediaQueries, stubScrollIntoView } from '@mocks/browser';
+import {
+  CANVAS_NODE_BELOW_VIEW_RECT,
+  CANVAS_RECT,
+  SIDEBAR_ANCHOR_BELOW_WINDOW_RECT,
+  SIDEBAR_ANCHOR_IN_WINDOW_RECT,
+  TOOL_BELOW_RAIL_RECT,
+  TOOL_IN_RAIL_RECT,
+  TOOL_RAIL_RECT,
+} from '@mocks/geometry';
 import { useAnchorInView } from '@/components/Tour/hooks';
 import { useCanvasStore } from '@/lib/stores';
 
 let fitsBefore: number;
 let media: ReturnType<typeof stubMediaQueries>;
 let scrollIntoView: ReturnType<typeof stubScrollIntoView>;
+let tool: HTMLElement;
 
 beforeEach(() => {
   Object.defineProperty(window, 'innerHeight', { configurable: true, value: 900 });
@@ -29,7 +38,7 @@ describe('useAnchorInView', () => {
   describe('GIVEN a canvas node below the visible part of the canvas', () => {
     beforeEach(() => {
       const canvas = elementAt({ 'data-tour': 'canvas' }, CANVAS_RECT);
-      canvas.append(elementAt({ 'data-tour': 'canvasNode' }, { top: 700, left: 600, width: 180, height: 90 }));
+      canvas.append(elementAt({ 'data-tour': 'canvasNode' }, CANVAS_NODE_BELOW_VIEW_RECT));
       document.body.append(canvas);
       fitsBefore = useCanvasStore.getState().fitRequest;
     });
@@ -39,38 +48,16 @@ describe('useAnchorInView', () => {
         renderHook(() => useAnchorInView('canvasNode'));
       });
 
-      test('THEN the canvas is asked to fit its content and the page does not scroll', () => {
-        expect(useCanvasStore.getState().fitRequest).toBe(fitsBefore + 1);
+      test('THEN the page does not scroll and the canvas keeps its viewport', () => {
         expect(scrollIntoView).not.toHaveBeenCalled();
-      });
-    });
-  });
-
-  describe('GIVEN a canvas node inside the visible part of the canvas', () => {
-    beforeEach(() => {
-      const canvas = elementAt({ 'data-tour': 'canvas' }, CANVAS_RECT);
-      canvas.append(elementAt({ 'data-tour': 'canvasNode' }, { top: 200, left: 600, width: 180, height: 90 }));
-      document.body.append(canvas);
-      fitsBefore = useCanvasStore.getState().fitRequest;
-    });
-
-    describe('WHEN a step points at it', () => {
-      beforeEach(() => {
-        renderHook(() => useAnchorInView('canvasNode'));
-      });
-
-      test('THEN the canvas keeps its viewport and the page does not scroll', () => {
         expect(useCanvasStore.getState().fitRequest).toBe(fitsBefore);
-        expect(scrollIntoView).not.toHaveBeenCalled();
       });
     });
   });
 
   describe('GIVEN a sidebar anchor below the bottom of the window', () => {
     beforeEach(() => {
-      document.body.append(
-        elementAt({ 'data-tour': 'sidebarThreadResolved' }, { top: 910, left: 24, width: 20, height: 20 }),
-      );
+      document.body.append(elementAt({ 'data-tour': 'sidebarThreadResolved' }, SIDEBAR_ANCHOR_BELOW_WINDOW_RECT));
       fitsBefore = useCanvasStore.getState().fitRequest;
     });
 
@@ -89,9 +76,7 @@ describe('useAnchorInView', () => {
   describe('GIVEN a sidebar anchor below the bottom of the window and a user who prefers reduced motion', () => {
     beforeEach(() => {
       media.change(REDUCED_MOTION_QUERY, true);
-      document.body.append(
-        elementAt({ 'data-tour': 'sidebarThreadResolved' }, { top: 910, left: 24, width: 20, height: 20 }),
-      );
+      document.body.append(elementAt({ 'data-tour': 'sidebarThreadResolved' }, SIDEBAR_ANCHOR_BELOW_WINDOW_RECT));
     });
 
     describe('WHEN a step points at it', () => {
@@ -107,9 +92,7 @@ describe('useAnchorInView', () => {
 
   describe('GIVEN a sidebar anchor inside the window', () => {
     beforeEach(() => {
-      document.body.append(
-        elementAt({ 'data-tour': 'sidebarThreadResolved' }, { top: 300, left: 24, width: 20, height: 20 }),
-      );
+      document.body.append(elementAt({ 'data-tour': 'sidebarThreadResolved' }, SIDEBAR_ANCHOR_IN_WINDOW_RECT));
     });
 
     describe('WHEN a step points at it', () => {
@@ -123,18 +106,49 @@ describe('useAnchorInView', () => {
     });
   });
 
-  describe('GIVEN an anchor that is not on screen', () => {
+  describe('GIVEN a toolbar tool inside the window but below the visible part of its scrolling rail', () => {
     beforeEach(() => {
-      fitsBefore = useCanvasStore.getState().fitRequest;
+      document.body.append(
+        scrollerAt(TOOL_RAIL_RECT, elementAt({ 'data-tour': 'toolbarCrossReference' }, TOOL_BELOW_RAIL_RECT)),
+      );
     });
 
     describe('WHEN a step points at it', () => {
       beforeEach(() => {
-        renderHook(() => useAnchorInView('canvasNode'));
+        renderHook(() => useAnchorInView('toolbarCrossReference'));
       });
 
-      test('THEN the canvas is not asked to fit', () => {
-        expect(useCanvasStore.getState().fitRequest).toBe(fitsBefore);
+      test('THEN the rail scrolls it into view by the nearest edge', () => {
+        expect(scrollIntoView).toHaveBeenCalledExactlyOnceWith({ block: 'nearest', behavior: 'smooth' });
+      });
+    });
+  });
+
+  describe('GIVEN a toolbar tool shown inside its scrolling rail', () => {
+    beforeEach(() => {
+      tool = elementAt({ 'data-tour': 'toolbarCrossReference' }, TOOL_IN_RAIL_RECT);
+      document.body.append(scrollerAt(TOOL_RAIL_RECT, tool));
+    });
+
+    describe('WHEN a step points at it', () => {
+      beforeEach(() => {
+        renderHook(() => useAnchorInView('toolbarCrossReference'));
+      });
+
+      test('THEN nothing scrolls', () => {
+        expect(scrollIntoView).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('WHEN a step points at it and a window resize leaves it below the visible part of the rail', () => {
+      beforeEach(() => {
+        renderHook(() => useAnchorInView('toolbarCrossReference'));
+        vi.mocked(tool.getBoundingClientRect).mockReturnValue(rectAt(TOOL_BELOW_RAIL_RECT));
+        fireEvent(window, new Event('resize'));
+      });
+
+      test('THEN the rail scrolls it back into view', () => {
+        expect(scrollIntoView).toHaveBeenCalledExactlyOnceWith({ block: 'nearest', behavior: 'smooth' });
       });
     });
   });

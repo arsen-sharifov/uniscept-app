@@ -13,7 +13,7 @@ export const BuildersSection = () => {
 
   return (
     <Section ground="deep">
-      <div className="mx-auto max-w-6xl">
+      <div className="mx-auto w-full max-w-landing">
         <div className="mb-8 max-w-2xl">
           <SectionHeading title={t.landing.builders.title} subtitle={t.landing.builders.subtitle} />
         </div>
@@ -54,13 +54,13 @@ export const BuildersSection = () => {
                         nodeId={`bv-${thread.id[0]}-a`}
                         tone={thread.nodeTones.a}
                         label={t.landing.builders[thread.id].nodeA}
-                        className="absolute top-2.5 left-2.5 w-32"
+                        className="absolute top-2.5 left-2.5 w-[min(8rem,calc(50%-0.875rem))]"
                       />
                       <MiniNode
                         nodeId={`bv-${thread.id[0]}-b`}
                         tone={thread.nodeTones.b}
                         label={t.landing.builders[thread.id].nodeB}
-                        className="absolute right-2.5 bottom-2.5 w-32"
+                        className="absolute right-2.5 bottom-2.5 w-[min(8rem,calc(50%-0.875rem))]"
                       />
                     </CanvasVignette>
 

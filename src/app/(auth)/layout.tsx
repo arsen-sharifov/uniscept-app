@@ -13,7 +13,7 @@ const AuthLayout = ({ children }: { children: ReactNode }) => {
   const t = useTranslations();
 
   return (
-    <LandingWorld className="relative flex min-h-screen flex-col items-center justify-center px-6 py-12">
+    <LandingWorld className="relative flex min-h-dvh flex-col items-center justify-center px-6 py-[clamp(1.5rem,6dvh,3rem)]">
       <div className="relative z-[1] flex w-full max-w-md flex-col items-center">
         <Link
           href="/"

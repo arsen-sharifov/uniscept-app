@@ -21,13 +21,13 @@ export const ReferencesVignette = () => {
         nodeId="rv-s"
         tone="valid"
         label={t.landing.product.vignettes.referencesSource}
-        className="absolute top-3 left-3 w-32"
+        className="absolute top-3 left-3 w-[min(8rem,44%)]"
       />
       <MiniNode
         nodeId="rv-r"
         tone="reference"
         label={t.landing.product.vignettes.referencesSource}
-        className="absolute right-3 bottom-3 w-32 animate-node-pulse motion-reduce:animate-none"
+        className="absolute right-3 bottom-3 w-[min(8rem,44%)] animate-node-pulse motion-reduce:animate-none"
       />
     </CanvasVignette>
   );

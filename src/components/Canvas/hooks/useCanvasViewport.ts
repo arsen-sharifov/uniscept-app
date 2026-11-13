@@ -16,7 +16,7 @@ import {
   FIT_REQUEST_DURATION_MS,
   FRESH_FIT_PADDING,
 } from '../consts';
-import { hasNodeOutsideView } from '../utils';
+import { hasNodeOutsideView, keepViewportCenter } from '../utils';
 
 export const useCanvasViewport = ({ threadId, defaultZoom }: IUseCanvasViewportOptions): IUseCanvasViewportResult => {
   const { fitView, getViewport, setViewport } = useReactFlow();
@@ -102,13 +102,27 @@ export const useCanvasViewport = ({ threadId, defaultZoom }: IUseCanvasViewportO
       useCanvasStore.subscribe((state, previous) => {
         if (state.fitRequest === previous.fitRequest) return;
 
+        const { padding = FRESH_FIT_PADDING, nodeIds } = state.fitOptions;
         fitView({
+          nodes: nodeIds?.map((id) => ({ id })),
           duration: FIT_REQUEST_DURATION_MS,
-          padding: state.fitPadding ?? FRESH_FIT_PADDING,
+          padding,
           maxZoom: defaultZoom / 100,
         });
       }),
     [fitView, defaultZoom],
+  );
+
+  useEffect(
+    () =>
+      storeApi.subscribe((state, previous) => {
+        const isResized = state.width !== previous.width || state.height !== previous.height;
+        const isMeasured = Math.min(state.width, state.height, previous.width, previous.height) > 0;
+        if (!isResized || !isMeasured || arriving) return;
+
+        setViewport(keepViewportCenter(getViewport(), previous, state));
+      }),
+    [storeApi, getViewport, setViewport, arriving],
   );
 
   return { defaultViewport, arriving, onMoveEnd };

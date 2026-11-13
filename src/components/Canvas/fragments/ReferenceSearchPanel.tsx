@@ -1,6 +1,7 @@
 'use client';
 
 import { useReactFlow } from '@xyflow/react';
+import { createPortal } from 'react-dom';
 
 import type { INodeReference } from '@interfaces';
 
@@ -22,7 +23,7 @@ export const ReferenceSearchPanel = ({ nodes = [], loading = false }: IReference
 
   if (!referenceSearchPosition) return null;
 
-  return (
+  return createPortal(
     <ReferenceSearchPanelContent
       key={`${referenceSearchPosition.x},${referenceSearchPosition.y}`}
       nodes={nodes}
@@ -31,6 +32,7 @@ export const ReferenceSearchPanel = ({ nodes = [], loading = false }: IReference
       screenPosition={flowToScreenPosition(referenceSearchPosition)}
       onSelect={addReferenceNode}
       onClose={() => setReferenceSearchPosition(null)}
-    />
+    />,
+    document.body,
   );
 };

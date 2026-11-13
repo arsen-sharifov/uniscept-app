@@ -29,7 +29,7 @@ export const NodeBand = ({ tone, label, trailing }: INodeBandProps) => {
         style={{ color }}
       >
         <Icon className="h-3 w-3 shrink-0" strokeWidth={2.5} />
-        <span className="min-w-0 flex-1 truncate font-mono-ui text-[9px] font-bold tracking-[0.16em] uppercase">
+        <span className="min-w-0 flex-1 truncate font-mono-ui text-[9px] font-bold tracking-(--node-band-tracking,0.16em) uppercase">
           {label}
         </span>
         {trailing}

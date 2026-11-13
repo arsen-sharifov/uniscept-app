@@ -70,7 +70,7 @@ export const WorkspaceSwitcher = ({
       }}
       placement="bottom-start"
       offset={6}
-      panelClassName="w-60 max-h-[60vh] overflow-y-auto [scrollbar-width:thin]"
+      panelClassName="w-60 [--popover-cap:60vh]"
       renderTrigger={(trigger) => (
         <button
           type="button"

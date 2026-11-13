@@ -87,6 +87,11 @@ export interface IProductFeature {
   span: string;
 }
 
+export interface ILandingScreenRange {
+  start: number;
+  end: number;
+}
+
 export interface IHowItWorksStep {
   id: THowItWorksStepId;
   vignette: ReactNode;

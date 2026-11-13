@@ -1,6 +1,16 @@
 import { describe, expect, test } from 'vitest';
 
-import { BROWSER_VIEWPORT, CARD_SIZE, PLACEMENT_ANCHOR_RECT } from '@mocks/geometry';
+import {
+  BROWSER_VIEWPORT,
+  CARD_SIZE,
+  COMPACT_STEP_CARD_SIZE,
+  LEFT_OF_MIDDLE_ANCHOR_RECT,
+  LOW_ANCHOR_RECT,
+  NARROW_STEP_CARD_SIZE,
+  PLACEMENT_ANCHOR_RECT,
+  RIGHT_OF_MIDDLE_ANCHOR_RECT,
+  ZOOMED_LAPTOP_VIEWPORT,
+} from '@mocks/geometry';
 import { placeCard } from '@/components/Tour/utils';
 
 describe('placeCard', () => {
@@ -25,6 +35,18 @@ describe('placeCard', () => {
         expect(placeCard(PLACEMENT_ANCHOR_RECT, 'center', CARD_SIZE, BROWSER_VIEWPORT)).toEqual({
           left: 570,
           top: 370,
+        });
+      });
+    });
+  });
+
+  describe('GIVEN a step that docks its card in the corner', () => {
+    describe('WHEN the card is placed', () => {
+      test('THEN it sits in the bottom-left corner of the viewport, anchor or not', () => {
+        expect(placeCard(null, 'corner', CARD_SIZE, BROWSER_VIEWPORT)).toEqual({ left: 12, top: 728 });
+        expect(placeCard(PLACEMENT_ANCHOR_RECT, 'corner', CARD_SIZE, BROWSER_VIEWPORT)).toEqual({
+          left: 12,
+          top: 728,
         });
       });
     });
@@ -59,6 +81,39 @@ describe('placeCard', () => {
         const wide = { top: 0, left: 0, width: 1440, height: 900 };
 
         expect(placeCard(wide, 'right', CARD_SIZE, BROWSER_VIEWPORT)).toEqual({ left: 570, top: 686 });
+      });
+    });
+  });
+
+  describe('GIVEN a window too small for the card beside an anchor right of the middle', () => {
+    describe('WHEN the card is placed', () => {
+      test('THEN it moves to the bottom left corner so the anchor stays visible', () => {
+        expect(placeCard(RIGHT_OF_MIDDLE_ANCHOR_RECT, 'right', NARROW_STEP_CARD_SIZE, ZOOMED_LAPTOP_VIEWPORT)).toEqual({
+          left: 12,
+          top: 46,
+        });
+      });
+    });
+  });
+
+  describe('GIVEN a window too small for the card beside an anchor left of the middle', () => {
+    describe('WHEN the card is placed', () => {
+      test('THEN it moves to the bottom right corner so the anchor stays visible', () => {
+        expect(placeCard(LEFT_OF_MIDDLE_ANCHOR_RECT, 'right', NARROW_STEP_CARD_SIZE, ZOOMED_LAPTOP_VIEWPORT)).toEqual({
+          left: 331,
+          top: 46,
+        });
+      });
+    });
+  });
+
+  describe('GIVEN a window too small for the card beside an anchor low in the window', () => {
+    describe('WHEN the card is placed', () => {
+      test('THEN it moves to the top corner where it covers none of the anchor', () => {
+        expect(placeCard(LOW_ANCHOR_RECT, 'right', COMPACT_STEP_CARD_SIZE, ZOOMED_LAPTOP_VIEWPORT)).toEqual({
+          left: 12,
+          top: 12,
+        });
       });
     });
   });

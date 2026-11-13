@@ -11,7 +11,7 @@ export const CTASection = () => {
   const t = useTranslations();
 
   return (
-    <Section ground="close" snap={false}>
+    <Section ground="close" isScreen={false}>
       <div aria-hidden className="cta-glow absolute inset-0" />
 
       <div className="relative mx-auto max-w-4xl py-8 text-center">

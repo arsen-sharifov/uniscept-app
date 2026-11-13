@@ -4,11 +4,25 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import type { TTourStepKey } from '@interfaces';
 import { EXAMPLE_CANVAS_TIMEOUT_MS } from '@constants';
-import { stubAnimationFrame, stubResizeObserver } from '@mocks/browser';
+import {
+  elementAt,
+  scrollerAt,
+  stubAnimationFrame,
+  stubMediaQueries,
+  stubProperty,
+  stubResizeObserver,
+  stubScrollIntoView,
+} from '@mocks/browser';
 import { THREAD_ID, questionNode } from '@mocks/canvas';
 import { event } from '@mocks/events';
 import { TRANSLATIONS } from '@mocks/i18n';
-import { snapshot, EXAMPLE_CREATE_ERROR } from '@mocks/onboarding';
+import {
+  snapshot,
+  EXAMPLE_CREATE_ERROR,
+  HIDDEN_RESOLVED_THREAD_RECT,
+  RESOLVED_THREAD_RECT,
+  SIDEBAR_TREE_RECT,
+} from '@mocks/onboarding';
 import { FULL_ACCESS } from '@mocks/roles';
 import { ECanvasTool } from '@/components/tools';
 import { ExampleRun } from '@/components/Tour';
@@ -27,6 +41,7 @@ const indexOf = (copyKey: TTourStepKey) => guide.steps.findIndex((step) => step.
 
 const threadStep = indexOf('exampleThread');
 const capsuleStep = indexOf('exampleCapsule');
+const resolvedStep = indexOf('exampleResolved');
 
 const exampleRun = (stepIndex: number) => (
   <ExampleRun
@@ -40,12 +55,13 @@ const exampleRun = (stepIndex: number) => (
 
 const button = (name: string) => screen.queryByRole('button', { name });
 
+let frames: ReturnType<typeof stubAnimationFrame>;
 let observer: ReturnType<typeof stubResizeObserver>;
 let rerender: (ui: ReactNode) => void;
 
 beforeEach(() => {
   vi.useFakeTimers();
-  stubAnimationFrame();
+  frames = stubAnimationFrame();
   observer = stubResizeObserver();
   vi.spyOn(HTMLDialogElement.prototype, 'offsetWidth', 'get').mockReturnValue(400);
   vi.spyOn(HTMLDialogElement.prototype, 'offsetHeight', 'get').mockReturnValue(220);
@@ -55,11 +71,13 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  document.body.replaceChildren();
   useOnboardingStore.getState().forget();
   useCanvasStore.getState().clearCanvas();
   usePermissionsStore.getState().clearAccess();
   vi.useRealTimers();
   vi.unstubAllGlobals();
+  vi.restoreAllMocks();
 });
 
 describe('ExampleRun', () => {
@@ -273,6 +291,69 @@ describe('ExampleRun', () => {
 
       test('THEN the example thread is still created only once', () => {
         expect(onCreateExample).toHaveBeenCalledOnce();
+      });
+    });
+  });
+
+  describe('GIVEN a scene one of the speakers plays on the canvas', () => {
+    beforeEach(() => {
+      useOnboardingStore.setState({ run: { guideId: EXAMPLE_GUIDE_ID, stepIndex: capsuleStep } });
+    });
+
+    describe('WHEN its card is measured', () => {
+      beforeEach(() => {
+        render(exampleRun(capsuleStep));
+        act(() => observer.resize());
+      });
+
+      test('THEN the card docks in the bottom-left corner, clear of the middle of the canvas', () => {
+        expect(screen.getByRole('dialog')).toHaveStyle({ left: '12px', top: '536px' });
+      });
+    });
+  });
+
+  describe('GIVEN the scene that points at the resolved thread in the sidebar', () => {
+    beforeEach(() => {
+      stubProperty(document, 'elementsFromPoint', () => []);
+      document.body.append(elementAt({ 'data-tour': 'sidebarThreadResolved' }, RESOLVED_THREAD_RECT));
+      useOnboardingStore.setState({ run: { guideId: EXAMPLE_GUIDE_ID, stepIndex: resolvedStep } });
+    });
+
+    describe('WHEN its card is measured', () => {
+      beforeEach(() => {
+        render(exampleRun(resolvedStep));
+        act(() => observer.resize());
+        act(() => frames.flush());
+      });
+
+      test('THEN the card sits beside the thread instead of covering it', () => {
+        expect(screen.getByRole('dialog')).toHaveStyle({ left: '262px', top: '206px' });
+      });
+    });
+  });
+
+  describe('GIVEN the scene that points at a resolved thread scrolled out of the sidebar list', () => {
+    let scrollIntoView: ReturnType<typeof stubScrollIntoView>;
+
+    beforeEach(() => {
+      stubMediaQueries();
+      scrollIntoView = stubScrollIntoView();
+      stubProperty(document, 'elementsFromPoint', () => []);
+      document.body.append(
+        scrollerAt(SIDEBAR_TREE_RECT, elementAt({ 'data-tour': 'sidebarThreadResolved' }, HIDDEN_RESOLVED_THREAD_RECT)),
+      );
+      useOnboardingStore.setState({ run: { guideId: EXAMPLE_GUIDE_ID, stepIndex: resolvedStep } });
+    });
+
+    describe('WHEN the scene starts', () => {
+      beforeEach(() => {
+        render(exampleRun(resolvedStep));
+        act(() => observer.resize());
+        act(() => frames.flush());
+      });
+
+      test('THEN the sidebar list scrolls the thread into view', () => {
+        expect(scrollIntoView).toHaveBeenCalledExactlyOnceWith({ block: 'nearest', behavior: 'smooth' });
       });
     });
   });

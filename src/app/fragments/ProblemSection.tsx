@@ -13,7 +13,7 @@ export const ProblemSection = () => {
 
   return (
     <Section id="problem" ground="deep">
-      <div className="mx-auto max-w-6xl">
+      <div className="mx-auto w-full max-w-landing">
         <div className="mb-10 max-w-2xl">
           <SectionHeading title={t.landing.problem.title} subtitle={t.landing.problem.subtitle} />
         </div>

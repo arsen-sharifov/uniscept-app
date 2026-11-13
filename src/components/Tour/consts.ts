@@ -24,6 +24,7 @@ export const OPPOSITE_PLACEMENT: Record<TTourPlacement, TTourPlacement> = {
   top: 'bottom',
   bottom: 'top',
   center: 'center',
+  corner: 'corner',
 };
 
 export const SPEAKERS: Record<TMascotCharacter, ITourSpeaker> = {
@@ -47,3 +48,7 @@ export const TOUR_BUTTON_SIZES: Record<TTourButtonSize, string> = {
   sm: 'px-3.5 text-[12.5px] whitespace-nowrap',
   md: 'px-4 text-sm',
 };
+
+export const SCROLLING_OVERFLOW_VALUES: ReadonlySet<string> = new Set(['auto', 'scroll']);
+
+export const CANVAS_ANCHOR_SELECTOR = '[data-tour="canvas"]';

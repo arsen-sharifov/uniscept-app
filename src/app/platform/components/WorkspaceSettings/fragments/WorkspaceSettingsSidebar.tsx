@@ -20,7 +20,7 @@ export const WorkspaceSettingsSidebar = ({ activeSection, onSectionChange }: IWo
   return (
     <div
       data-tour="workspaceSettingsNav"
-      className="w-52 shrink-0 overflow-y-auto border-r border-[color:var(--border)] bg-[color:var(--surface-overlay)] py-4 transition-[background-color,border-color] duration-200 ease-out motion-reduce:transition-none"
+      className="w-[clamp(10.5rem,calc(4.5rem+14vw),13rem)] shrink-0 overflow-y-auto border-r border-[color:var(--border)] bg-[color:var(--surface-overlay)] py-4 transition-[background-color,border-color] duration-200 ease-out motion-reduce:transition-none"
     >
       {WORKSPACE_SETTINGS_GROUPS.map((group, index) => (
         <div key={group.labelKey} className={clsx('px-3 py-3', index > 0 && 'border-t border-[color:var(--border)]')}>

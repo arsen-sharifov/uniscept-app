@@ -1,0 +1,1 @@
+export const POPOVER_VIEWPORT_MARGIN_PX = 8;

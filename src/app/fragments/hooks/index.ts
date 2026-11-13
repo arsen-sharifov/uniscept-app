@@ -4,5 +4,6 @@ export * from './useHeroCascade';
 export * from './useMediaQuery';
 export * from './useReducedMotion';
 export * from './useSnapPager';
+export * from './useStageScale';
 export * from './useVignettePhase';
 export * from './useWorldArrival';

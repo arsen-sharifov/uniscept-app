@@ -182,6 +182,7 @@ export const seedNodes = async (threadId: string, createdBy: string, seeds: IE2E
         position_y: seed.y,
         label: seed.label,
         created_by: createdBy,
+        ...(seed.status && { status: seed.status }),
       })),
     )
     .select('id')

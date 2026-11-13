@@ -22,13 +22,13 @@ export const CollaborationVignette = () => {
         tone="valid"
         label={t.landing.product.vignettes.collaborationClaim}
         commentCount={commentCount}
-        className="absolute top-4 left-4 w-32 sm:w-48"
+        className="absolute top-4 left-4 w-[min(12rem,40%)]"
       />
       <MiniNode
         nodeId="cv-b"
         tone="open"
         label={t.landing.product.vignettes.collaborationClaimB}
-        className="absolute right-4 bottom-4 w-28 sm:w-44"
+        className="absolute right-4 bottom-4 w-[min(11rem,36%)]"
       />
       <span className="absolute top-4 right-4 flex -space-x-1.5">
         {['M', 'T'].map((initial) => (

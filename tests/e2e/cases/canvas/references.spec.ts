@@ -3,13 +3,12 @@ import { expect, test } from '../../fixtures';
 import {
   expectSaved,
   getNode,
-  getPane,
   getReferenceNode,
   openNodeMenu,
+  openReferenceSearch,
   seedNodes,
   seedReferenceNode,
   seedThread,
-  selectTool,
   waitForCanvas,
 } from '../../utils';
 
@@ -28,11 +27,7 @@ test.describe('cross-canvas references', () => {
 
     test.describe('WHEN the cross-reference tool links that node through the search panel and the page is reloaded', () => {
       test.beforeEach(async ({ page }) => {
-        await selectTool(page, COPY.platform.canvas.tools.items.crossReference.label);
-        await getPane(page).click({ position: { x: 480, y: 600 } });
-
-        const panel = page.getByRole('dialog', { name: COPY.platform.canvas.referenceSearch.placeholder });
-        await expect(panel).toBeVisible();
+        const panel = await openReferenceSearch(page, { x: 480, y: 600 });
         await panel.getByRole('combobox').fill('Key insight');
         await panel.getByRole('option', { name: 'Key insight' }).click();
         await expect(getReferenceNode(page)).toBeVisible();

@@ -3,7 +3,7 @@
 import { useRef } from 'react';
 
 import type { TTourHint } from '@interfaces';
-import { SPOTLIGHT_RADIUS, TOUR_HINT_WIDTH } from '@constants';
+import { SPOTLIGHT_RADIUS, TOUR_CARD_VIEWPORT_SHARE_VW, TOUR_HINT_WIDTH } from '@constants';
 import { Mascot } from '@/components/Mascot';
 import { useTranslations } from '@/i18n';
 import { useOnboardingStore } from '@/lib/onboarding';
@@ -51,8 +51,8 @@ export const TourHint = ({ hint }: ITourHintProps) => {
         className="fixed inset-auto z-70 m-0 flex items-end gap-1 border-0 bg-transparent p-0 text-inherit"
       >
         <div
-          className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] px-4 py-4 text-[color:var(--text)] shadow-[var(--shadow-modal)]"
-          style={{ width: TOUR_HINT_WIDTH }}
+          className="max-h-[calc(100dvh-1.5rem)] overflow-y-auto rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] px-4 py-4 text-[color:var(--text)] shadow-[var(--shadow-modal)]"
+          style={{ width: `min(${TOUR_HINT_WIDTH}px, ${TOUR_CARD_VIEWPORT_SHARE_VW}vw)` }}
         >
           <h3 className="font-grotesk text-[15px] leading-snug font-semibold tracking-tight text-[color:var(--text-strong)]">
             {t.platform.onboarding.continueHint[hint].title}

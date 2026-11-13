@@ -29,7 +29,7 @@ export const CanvasVignette = ({
     <div
       ref={stageRef}
       className={clsx(
-        'canvas-vignette relative overflow-hidden rounded-lg border border-[color:var(--hero-hairline-soft)] bg-[color:var(--hero-ground-deep)]',
+        'canvas-vignette @container relative overflow-hidden rounded-lg border border-[color:var(--hero-hairline-soft)] bg-[color:var(--hero-ground-deep)]',
         className,
       )}
     >

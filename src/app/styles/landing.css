@@ -3,11 +3,21 @@
   --font-mono-ui: var(--font-hero-mono), 'JetBrains Mono', Consolas, monospace;
 }
 
+@theme {
+  --container-landing: clamp(72rem, 72vw, 86rem);
+  --container-landing-wide: clamp(80rem, 80vw, 96rem);
+}
+
+@utility px-landing-rail {
+  padding-inline: max(2rem, calc(3.5rem - max(0px, (100vw - var(--container-landing-wide)) / 2)));
+}
+
 @utility noise-texture {
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
 }
 
 .landing-world {
+  --landing-header-height: 5rem;
   --hero-ground: #0b0f0d;
   --hero-ground-deep: #080c0a;
   --hero-ground-text: rgba(240, 253, 246, 0.92);
@@ -65,6 +75,11 @@
   --hero-stream-prompt: rgba(240, 253, 246, 0.32);
   color-scheme: dark;
   background-color: var(--hero-ground);
+  scrollbar-width: none;
+}
+
+.landing-world::-webkit-scrollbar {
+  display: none;
 }
 
 .landing-grain {
@@ -185,15 +200,15 @@
   transform-origin: left center;
 }
 
-.snap-start.on-screen .sweep-strip {
+.landing-screen.on-screen .sweep-strip {
   animation: strip-sweep 550ms cubic-bezier(0.16, 1, 0.3, 1) 100ms both;
 }
 
-.snap-start.on-screen .step-numeral {
+.landing-screen.on-screen .step-numeral {
   animation: numeral-tick 450ms cubic-bezier(0.16, 1, 0.3, 1) var(--act-delay, 0ms) both;
 }
 
-.snap-start.on-screen .canvas-vignette svg path:not(.hero-edge-flow) {
+.landing-screen.on-screen .canvas-vignette svg path:not(.hero-edge-flow) {
   animation: hero-edge-draw 700ms cubic-bezier(0.16, 1, 0.3, 1) calc(var(--act-delay, 0ms) + 250ms) both;
 }
 
@@ -206,7 +221,7 @@
   }
 }
 
-.snap-start.on-screen .how-panel .mini-node {
+.landing-screen.on-screen .how-panel .mini-node {
   animation: node-settle 500ms cubic-bezier(0.16, 1, 0.3, 1) var(--act-delay, 0ms) both;
 }
 
@@ -361,13 +376,9 @@
   opacity: 0.25;
 }
 
-@media (min-width: 1024px) {
+@media (max-height: 35rem) {
   .landing-world {
-    scrollbar-width: none;
-  }
-
-  .landing-world::-webkit-scrollbar {
-    display: none;
+    --landing-header-height: 3.5rem;
   }
 }
 
@@ -399,10 +410,10 @@
   .stream-stamp,
   .type-caret,
   .code-pulse,
-  .snap-start.on-screen .how-panel .mini-node,
-  .snap-start.on-screen .sweep-strip,
-  .snap-start.on-screen .step-numeral,
-  .snap-start.on-screen .canvas-vignette svg path:not(.hero-edge-flow) {
+  .landing-screen.on-screen .how-panel .mini-node,
+  .landing-screen.on-screen .sweep-strip,
+  .landing-screen.on-screen .step-numeral,
+  .landing-screen.on-screen .canvas-vignette svg path:not(.hero-edge-flow) {
     animation: none;
   }
 }

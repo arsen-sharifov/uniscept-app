@@ -30,7 +30,7 @@ export const ProductSection = () => {
 
   return (
     <Section id="product" tight>
-      <div className="mx-auto max-w-6xl">
+      <div className="mx-auto w-full max-w-landing">
         <div className="mb-5 max-w-3xl">
           <SectionHeading title={t.landing.product.title} subtitle={t.landing.product.subtitle1}>
             <p className="mt-2 font-grotesk text-lg font-semibold text-[color:var(--hero-ground-text)] lg:text-xl">

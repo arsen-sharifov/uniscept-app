@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { type ReactNode, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 
 import { ECanvasNodeType, type ICanvasNodeData, type TCanvasContextMenu } from '@interfaces';
 import { useClickOutside, useEscapeKey, useMenuKeyboardNavigation } from '@hooks';
@@ -264,16 +265,17 @@ export const ContextMenu = ({ menu, onClose }: IContextMenuProps) => {
 
   if (isEmpty) return null;
 
-  return (
+  return createPortal(
     <div
       ref={containerRef}
       role="menu"
       tabIndex={-1}
       aria-label={t.platform.canvas.context.ariaLabel}
       onKeyDown={handleKeyDown}
-      className="fixed z-50 flex w-56 animate-rise-down flex-col rounded-xl border border-[color:var(--border)] bg-[color:var(--surface)] p-1 font-grotesk text-[color:var(--text)] shadow-[var(--shadow-modal)] outline-none select-none motion-reduce:animate-none"
+      className="fixed z-50 flex max-h-[calc(100dvh-1rem)] w-max max-w-[min(20rem,calc(100vw-1rem))] min-w-56 animate-rise-down flex-col overflow-y-auto rounded-xl border border-[color:var(--border)] bg-[color:var(--surface)] p-1 font-grotesk text-[color:var(--text)] shadow-[var(--shadow-modal)] outline-none select-none motion-reduce:animate-none"
     >
       {items}
-    </div>
+    </div>,
+    document.body,
   );
 };

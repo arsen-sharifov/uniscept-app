@@ -9,8 +9,8 @@ export const Header = () => {
 
   return (
     <header className="fixed top-0 z-50 w-full border-b border-[color:var(--hero-hairline)] bg-[color:var(--hero-header-veil)] backdrop-blur-xl">
-      <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <div className="flex h-20 items-center justify-between">
+      <div className="mx-auto max-w-landing-wide px-landing-rail">
+        <div className="flex h-(--landing-header-height) items-center justify-between">
           <button
             type="button"
             onClick={() => document.getElementById('top')?.scrollIntoView({ block: 'start' })}

@@ -27,7 +27,7 @@ export const EditorSection = ({ preferences, onUpdate }: IEditorSectionProps) =>
           description={t.platform.settings.editor.blurb}
         />
 
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-3 @md:grid-cols-2">
           <BehaviorCard
             diorama={<SnapDiorama active={preferences.snapToGrid} />}
             label={t.platform.settings.editor.snapToGrid}

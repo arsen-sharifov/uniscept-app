@@ -15,6 +15,7 @@ import { create } from 'zustand';
 
 import {
   ECanvasNodeType,
+  type ICanvasFitOptions,
   type ICanvasHistoryState,
   type ICanvasNodeData,
   type ICanvasSnapshot,
@@ -24,7 +25,6 @@ import {
   type TCanvasAuthors,
   type TCanvasNode,
   type TCanvasOperation,
-  type TFitPadding,
   type TNodeStatus,
   type TReferenceNode,
 } from '@interfaces';
@@ -61,7 +61,7 @@ interface ICanvasState extends ICanvasHistoryState {
   openCommentsNodeId: string | null;
   middlePan: boolean;
   fitRequest: number;
-  fitPadding: TFitPadding | null;
+  fitOptions: ICanvasFitOptions;
 }
 
 interface ICanvasStore extends ICanvasState {
@@ -71,7 +71,7 @@ interface ICanvasStore extends ICanvasState {
   closeAllOverlays: () => void;
   setOpenCommentsNodeId: (id: string | null) => void;
   setMiddlePan: (active: boolean) => void;
-  requestFit: (padding?: TFitPadding) => void;
+  requestFit: (options?: ICanvasFitOptions) => void;
   onNodesChange: OnNodesChange;
   onEdgesChange: OnEdgesChange;
   addNode: (position: XYPosition, id?: string) => void;
@@ -102,7 +102,7 @@ const CLEARED_OVERLAYS = {
   openCommentsNodeId: null,
 } as const;
 
-const EMPTY_CANVAS_STATE: Omit<ICanvasState, 'threadId' | 'hydrated' | 'fitRequest' | 'fitPadding'> = {
+const EMPTY_CANVAS_STATE: Omit<ICanvasState, 'threadId' | 'hydrated' | 'fitRequest' | 'fitOptions'> = {
   nodes: [],
   edges: [],
   authors: {},
@@ -115,7 +115,7 @@ const INITIAL_STATE: ICanvasState = {
   threadId: null,
   hydrated: false,
   fitRequest: 0,
-  fitPadding: null,
+  fitOptions: {},
   ...EMPTY_CANVAS_STATE,
 };
 
@@ -277,7 +277,7 @@ export const useCanvasStore = create<ICanvasStore>()(
         setOpenCommentsNodeId: (id) =>
           set(id === null ? { openCommentsNodeId: null } : { openCommentsNodeId: id, editingNodeId: null }),
 
-        requestFit: (padding) => set((state) => ({ fitRequest: state.fitRequest + 1, fitPadding: padding ?? null })),
+        requestFit: (options = {}) => set((state) => ({ fitRequest: state.fitRequest + 1, fitOptions: options })),
 
         setMiddlePan: (active) => set({ middlePan: active }),
 

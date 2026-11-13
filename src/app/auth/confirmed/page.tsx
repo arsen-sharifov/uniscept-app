@@ -11,7 +11,7 @@ const ConfirmedPage = () => {
   const t = useTranslations();
 
   return (
-    <LandingWorld className="relative flex min-h-screen flex-col items-center justify-center px-6">
+    <LandingWorld className="relative flex min-h-dvh flex-col items-center justify-center px-6">
       <Logo className="relative z-[1] mb-12 text-2xl text-[color:var(--hero-title)]" />
 
       <AuthPanel className="relative z-[1] w-full max-w-sm text-center">

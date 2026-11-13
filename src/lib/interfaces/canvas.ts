@@ -32,6 +32,11 @@ export type THandleId = 'top' | 'right' | 'bottom' | 'left';
 
 export type TFitPadding = NonNullable<FitViewOptions['padding']>;
 
+export interface ICanvasFitOptions {
+  padding?: TFitPadding;
+  nodeIds?: readonly string[];
+}
+
 export interface IComment {
   id: string;
   text: string;

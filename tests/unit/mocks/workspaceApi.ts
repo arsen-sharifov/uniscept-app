@@ -24,6 +24,7 @@ export const getWorkspace = vi.fn();
 export const getWorkspaceInvitations = vi.fn();
 export const getWorkspaceMembers = vi.fn();
 export const getWorkspaceRoles = vi.fn();
+export const leaveWorkspace = vi.fn();
 export const moveFolder = vi.fn();
 export const moveThread = vi.fn();
 export const moveWorkspace = vi.fn();

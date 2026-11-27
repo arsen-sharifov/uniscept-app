@@ -37,6 +37,14 @@ export const removeWorkspaceMember = async (workspaceId: string, userId: string)
   if (error) throw error;
 };
 
+export const leaveWorkspace = async (workspaceId: string): Promise<void> => {
+  const supabase = createClient();
+
+  const { error } = await supabase.rpc('leave_workspace', { p_workspace_id: workspaceId });
+
+  if (error) throw error;
+};
+
 export const transferWorkspaceOwnership = async (workspaceId: string, newOwnerId: string): Promise<void> => {
   const supabase = createClient();
 

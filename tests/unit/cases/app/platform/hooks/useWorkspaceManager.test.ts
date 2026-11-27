@@ -20,6 +20,7 @@ import {
   getMyWorkspaces,
   getThreads,
   getUser,
+  leaveWorkspace,
   moveFolder,
   moveThread,
   moveWorkspace,
@@ -643,6 +644,48 @@ describe('useWorkspaceManager', () => {
       });
     });
 
+    describe('WHEN they leave the active workspace', () => {
+      let isLeft: boolean;
+
+      beforeEach(async () => {
+        await act(async () => {
+          isLeft = await manager.current.onLeaveWorkspace('ws-1');
+          await vi.advanceTimersByTimeAsync(0);
+        });
+      });
+
+      test('THEN the next workspace takes over with a fresh tree', () => {
+        expect(isLeft).toBe(true);
+        expect(leaveWorkspace).toHaveBeenCalledExactlyOnceWith('ws-1');
+        expect(manager.current.workspaces).toEqual([workspaceItem('ws-2'), workspaceItem('ws-3', false)]);
+        expect(manager.current.activeWorkspaceId).toBe('ws-2');
+        expect(getFolders).toHaveBeenLastCalledWith('ws-2');
+      });
+
+      test('THEN the user is routed home and notified', () => {
+        expect(router.push).toHaveBeenCalledExactlyOnceWith('/platform');
+        expect(event.success).toHaveBeenCalledExactlyOnceWith(TRANSLATIONS.platform.workspaceSettings.general.left);
+      });
+    });
+
+    describe('WHEN they leave a workspace they cannot manage that is not active', () => {
+      beforeEach(async () => {
+        await act(async () => {
+          await manager.current.onLeaveWorkspace('ws-3');
+          await vi.advanceTimersByTimeAsync(0);
+        });
+      });
+
+      test('THEN only that workspace leaves the list and the open thread stays put', () => {
+        expect(leaveWorkspace).toHaveBeenCalledExactlyOnceWith('ws-3');
+        expect(manager.current.workspaces).toEqual([workspaceItem('ws-1'), workspaceItem('ws-2')]);
+        expect(manager.current.activeWorkspaceId).toBe('ws-1');
+        expect(manager.current.navItems).toEqual(INITIAL_TREE);
+        expect(router.push).not.toHaveBeenCalled();
+        expect(event.success).toHaveBeenCalledExactlyOnceWith(TRANSLATIONS.platform.workspaceSettings.general.left);
+      });
+    });
+
     describe('WHEN they drag the first workspace to the end', () => {
       beforeEach(async () => {
         await act(async () => {
@@ -910,6 +953,23 @@ describe('useWorkspaceManager', () => {
         expect(event.success).toHaveBeenCalledExactlyOnceWith(TRANSLATIONS.platform.sidebar.workspacesDeleted);
       });
     });
+
+    describe('WHEN they leave it', () => {
+      beforeEach(async () => {
+        await act(async () => {
+          await manager.current.onLeaveWorkspace('ws-1');
+          await vi.advanceTimersByTimeAsync(0);
+        });
+      });
+
+      test('THEN no workspace stays active and the tree empties', () => {
+        expect(manager.current.workspaces).toEqual([]);
+        expect(manager.current.activeWorkspaceId).toBeNull();
+        expect(manager.current.navItems).toEqual([]);
+        expect(router.push).toHaveBeenCalledExactlyOnceWith('/platform');
+        expect(event.success).toHaveBeenCalledExactlyOnceWith(TRANSLATIONS.platform.workspaceSettings.general.left);
+      });
+    });
   });
 
   describe('GIVEN workspace writes that fail on the api', () => {
@@ -919,6 +979,7 @@ describe('useWorkspaceManager', () => {
       vi.mocked(updateWorkspaceName).mockRejectedValue(new Error('db down'));
       vi.mocked(deleteWorkspace).mockRejectedValue(new Error('db down'));
       vi.mocked(deleteWorkspaces).mockRejectedValue(new Error('db down'));
+      vi.mocked(leaveWorkspace).mockRejectedValue(new Error('db down'));
 
       manager = renderHook(() => useWorkspaceManager()).result;
       await act(async () => {
@@ -982,6 +1043,29 @@ describe('useWorkspaceManager', () => {
         expect(event.error).toHaveBeenCalledExactlyOnceWith(expect.any(Error), {
           title: TRANSLATIONS.common.errorTitles.deleteFailed,
           context: 'sidebar.deleteWorkspace',
+        });
+      });
+    });
+
+    describe('WHEN they leave the active workspace', () => {
+      let isLeft: boolean;
+
+      beforeEach(async () => {
+        await act(async () => {
+          isLeft = await manager.current.onLeaveWorkspace('ws-1');
+          await vi.advanceTimersByTimeAsync(0);
+        });
+      });
+
+      test('THEN the workspace stays and the failure surfaces', () => {
+        expect(isLeft).toBe(false);
+        expect(manager.current.workspaces).toEqual(workspaceList());
+        expect(manager.current.activeWorkspaceId).toBe('ws-1');
+        expect(router.push).not.toHaveBeenCalled();
+        expect(event.success).not.toHaveBeenCalled();
+        expect(event.error).toHaveBeenCalledExactlyOnceWith(expect.any(Error), {
+          title: TRANSLATIONS.platform.workspaceSettings.general.leaveFailed,
+          context: 'sidebar.leaveWorkspace',
         });
       });
     });

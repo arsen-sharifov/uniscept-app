@@ -198,6 +198,31 @@ test.describe('workspace members management', () => {
       });
     });
 
+    test.describe('WHEN the role menu of the member opens', () => {
+      test.beforeEach(async ({ page }) => {
+        await getWorkspaceSettingsModal(page)
+          .getByRole('button', {
+            name: `${COPY.platform.workspaceSettings.members.changeRole}: ${COPY.platform.workspaceSettings.roleNames.member}`,
+          })
+          .click();
+      });
+
+      test('THEN the whole menu shows', async ({ page }) => {
+        await expect(
+          getWorkspaceSettingsModal(page).getByRole('listbox', {
+            name: COPY.platform.workspaceSettings.members.changeRole,
+          }),
+        ).toBeInViewport({ ratio: 1 });
+      });
+
+      test('THEN every member row stays in full view', async ({ page, account }) => {
+        const modal = getWorkspaceSettingsModal(page);
+
+        await expect(modal.getByText(account.email, { exact: true })).toBeInViewport({ ratio: 1 });
+        await expect(modal.getByText(member.email, { exact: true })).toBeInViewport({ ratio: 1 });
+      });
+    });
+
     test.describe('WHEN the member is removed after the inline confirmation', () => {
       test.beforeEach(async ({ page }) => {
         const modal = getWorkspaceSettingsModal(page);

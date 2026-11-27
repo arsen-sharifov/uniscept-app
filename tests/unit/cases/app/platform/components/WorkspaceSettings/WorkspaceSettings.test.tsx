@@ -17,14 +17,34 @@ vi.mock('@/i18n', () => import('@mocks/i18n'));
 vi.mock('@/lib/events', () => import('@mocks/events'));
 
 const onRename = vi.fn();
+const onLeave = vi.fn();
 const onClose = vi.fn();
+
+const primeSettings = (userId: string) => {
+  vi.mocked(getUser).mockResolvedValue({ data: { user: { id: userId } }, error: null } as never);
+  vi.mocked(getWorkspace).mockResolvedValue(WORKSPACE);
+  vi.mocked(getWorkspaceRoles).mockResolvedValue([OWNER_ROLE, MEMBER_ROLE]);
+  vi.mocked(getWorkspaceMembers).mockResolvedValue([
+    workspaceMember('user-1', 'role-owner', { roleKey: 'owner', isOwner: true }),
+    workspaceMember('user-2', 'role-member', { roleKey: 'member' }),
+  ]);
+  vi.mocked(getWorkspaceInvitations).mockResolvedValue([]);
+};
+
+const leaveButton = () => screen.getByRole('button', { name: TRANSLATIONS.platform.workspaceSettings.general.leave });
 
 describe('WorkspaceSettings', () => {
   describe('GIVEN workspace settings that are still loading', () => {
     beforeEach(() => {
       vi.mocked(getWorkspace).mockReturnValue(Promise.withResolvers<IWorkspace>().promise);
       render(
-        <WorkspaceSettings workspaceId="ws-1" workspaceName="Product Lab" onRename={onRename} onClose={onClose} />,
+        <WorkspaceSettings
+          workspaceId="ws-1"
+          workspaceName="Product Lab"
+          onRename={onRename}
+          onLeave={onLeave}
+          onClose={onClose}
+        />,
       );
     });
 
@@ -51,18 +71,17 @@ describe('WorkspaceSettings', () => {
 
   describe('GIVEN loaded settings of a workspace the owner opened', () => {
     beforeEach(async () => {
-      vi.mocked(getUser).mockResolvedValue({ data: { user: { id: 'user-1' } }, error: null } as never);
-      vi.mocked(getWorkspace).mockResolvedValue(WORKSPACE);
-      vi.mocked(getWorkspaceRoles).mockResolvedValue([OWNER_ROLE, MEMBER_ROLE]);
-      vi.mocked(getWorkspaceMembers).mockResolvedValue([
-        workspaceMember('user-1', 'role-owner', { roleKey: 'owner', isOwner: true }),
-        workspaceMember('user-2', 'role-member', { roleKey: 'member' }),
-      ]);
-      vi.mocked(getWorkspaceInvitations).mockResolvedValue([]);
+      primeSettings('user-1');
       await act(async () => {
         render(
           <NextIntlClientProvider locale="en" timeZone="UTC">
-            <WorkspaceSettings workspaceId="ws-1" workspaceName="Product Lab" onRename={onRename} onClose={onClose} />
+            <WorkspaceSettings
+              workspaceId="ws-1"
+              workspaceName="Product Lab"
+              onRename={onRename}
+              onLeave={onLeave}
+              onClose={onClose}
+            />
           </NextIntlClientProvider>,
         );
       });
@@ -75,6 +94,10 @@ describe('WorkspaceSettings', () => {
         ).toHaveValue('Product Lab');
         expect(screen.getByText(TRANSLATIONS.platform.workspaceSettings.roleNames.owner)).toBeInTheDocument();
         expect(screen.getByText('Mar 15, 2026')).toBeInTheDocument();
+      });
+
+      test('THEN leaving waits for the ownership transfer', () => {
+        expect(leaveButton()).toHaveAttribute('aria-disabled', 'true');
       });
     });
 
@@ -110,6 +133,53 @@ describe('WorkspaceSettings', () => {
 
       test('THEN the modal asks to close', () => {
         expect(onClose).toHaveBeenCalledOnce();
+      });
+    });
+  });
+
+  describe('GIVEN loaded settings of a workspace a member opened', () => {
+    beforeEach(async () => {
+      primeSettings('user-2');
+      await act(async () => {
+        render(
+          <NextIntlClientProvider locale="en" timeZone="UTC">
+            <WorkspaceSettings
+              workspaceId="ws-1"
+              workspaceName="Product Lab"
+              onRename={onRename}
+              onLeave={onLeave}
+              onClose={onClose}
+            />
+          </NextIntlClientProvider>,
+        );
+      });
+    });
+
+    describe('WHEN they leave and the leave goes through', () => {
+      beforeEach(async () => {
+        onLeave.mockResolvedValue(true);
+        await act(async () => {
+          fireEvent.click(leaveButton());
+        });
+      });
+
+      test('THEN that workspace is left and the settings close', () => {
+        expect(onLeave).toHaveBeenCalledExactlyOnceWith('ws-1');
+        expect(onClose).toHaveBeenCalledOnce();
+      });
+    });
+
+    describe('WHEN they leave and the leave fails', () => {
+      beforeEach(async () => {
+        onLeave.mockResolvedValue(false);
+        await act(async () => {
+          fireEvent.click(leaveButton());
+        });
+      });
+
+      test('THEN the settings stay open with leaving ready again', () => {
+        expect(onClose).not.toHaveBeenCalled();
+        expect(leaveButton()).toHaveAttribute('aria-disabled', 'false');
       });
     });
   });

@@ -1,6 +1,12 @@
 import { describe, expect, test, vi } from 'vitest';
 
-import { getWorkspaceMembers, removeWorkspaceMember, setMemberRole, transferWorkspaceOwnership } from '@api/client';
+import {
+  getWorkspaceMembers,
+  leaveWorkspace,
+  removeWorkspaceMember,
+  setMemberRole,
+  transferWorkspaceOwnership,
+} from '@api/client';
 import { workspaceMemberRow } from '@mocks/rows';
 import { primeSupabase } from '@mocks/supabase';
 
@@ -105,6 +111,31 @@ describe('removeWorkspaceMember', () => {
         vi.mocked(client.rpc).mockResolvedValue({ data: null, error: new Error('db down') });
 
         await expect(removeWorkspaceMember('ws-1', 'user-1')).rejects.toThrow('db down');
+      });
+    });
+  });
+});
+
+describe('leaveWorkspace', () => {
+  describe('GIVEN a workspace the caller belongs to', () => {
+    describe('WHEN the caller leaves it', () => {
+      test('THEN the rpc receives the workspace id', async () => {
+        const { client } = primeSupabase([]);
+
+        await leaveWorkspace('ws-1');
+
+        expect(client.rpc).toHaveBeenCalledExactlyOnceWith('leave_workspace', { p_workspace_id: 'ws-1' });
+      });
+    });
+  });
+
+  describe('GIVEN a failing rpc', () => {
+    describe('WHEN the caller leaves the workspace', () => {
+      test('THEN the error propagates', async () => {
+        const { client } = primeSupabase([]);
+        vi.mocked(client.rpc).mockResolvedValue({ data: null, error: new Error('db down') });
+
+        await expect(leaveWorkspace('ws-1')).rejects.toThrow('db down');
       });
     });
   });

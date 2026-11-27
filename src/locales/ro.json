@@ -1146,7 +1146,14 @@
         "saving": "Se salvează…",
         "membersStat": "Membri",
         "roleStat": "Rolul dumneavoastră",
-        "createdStat": "Creat"
+        "createdStat": "Creat",
+        "leaveTitle": "Părăsiți spațiul de lucru",
+        "leaveHint": "Veți pierde accesul până când cineva vă invită din nou. Nodurile și comentariile dumneavoastră rămân și vă afișează ca fost membru.",
+        "leaveOwnerHint": "Sunteți proprietarul acestui spațiu de lucru. Transferați proprietatea altui membru înainte de a-l părăsi.",
+        "leave": "Părăsiți",
+        "leaving": "Se părăsește…",
+        "left": "Ați părăsit spațiul de lucru",
+        "leaveFailed": "Nu s-a putut părăsi spațiul de lucru"
       },
       "members": {
         "hint": "Persoanele cu acces la acest spațiu de lucru.",

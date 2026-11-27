@@ -33,6 +33,7 @@ const WorkspaceLayout = ({ children }: { children: ReactNode }) => {
     onCreateWorkspace,
     onRenameWorkspace,
     onDeleteWorkspace,
+    onLeaveWorkspace,
     onMoveWorkspace,
     onCreateThread,
     onCreateFolder,
@@ -142,6 +143,7 @@ const WorkspaceLayout = ({ children }: { children: ReactNode }) => {
           workspaceId={workspaceSettingsTarget.id}
           workspaceName={workspaceSettingsTarget.name}
           onRename={onRenameWorkspace}
+          onLeave={onLeaveWorkspace}
           onWorkspacesChanged={reloadWorkspaces}
           onClose={() => setWorkspaceSettingsId(null)}
         />

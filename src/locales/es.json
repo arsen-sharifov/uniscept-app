@@ -1146,7 +1146,14 @@
         "saving": "Guardando…",
         "membersStat": "Miembros",
         "roleStat": "Su rol",
-        "createdStat": "Creado el"
+        "createdStat": "Creado el",
+        "leaveTitle": "Salir del espacio de trabajo",
+        "leaveHint": "Perderá el acceso hasta que reciba una nueva invitación. Sus nodos y comentarios se mantienen y aparecen como de un antiguo miembro.",
+        "leaveOwnerHint": "Es propietario de este espacio de trabajo. Transfiera la propiedad a otro miembro antes de salir.",
+        "leave": "Salir",
+        "leaving": "Saliendo…",
+        "left": "Salió del espacio de trabajo",
+        "leaveFailed": "No se pudo salir del espacio de trabajo"
       },
       "members": {
         "hint": "Personas con acceso a este espacio de trabajo.",

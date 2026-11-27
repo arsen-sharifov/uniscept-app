@@ -114,7 +114,7 @@ export const MemberRow = ({
   };
 
   return (
-    <div className="group flex items-center gap-3 px-3 py-2.5 transition-colors duration-150 hover:bg-[color:var(--surface-overlay)] motion-reduce:transition-none">
+    <div className="group flex items-center gap-3 px-3 py-2.5 transition-colors duration-150 first:rounded-t-xl last:rounded-b-xl hover:bg-[color:var(--surface-overlay)] motion-reduce:transition-none">
       <Avatar name={displayName} icon={member.avatarIcon} size="sm" />
       <div className="min-w-0 flex-1">
         <p className="flex items-center gap-1.5 font-grotesk text-sm font-medium text-[color:var(--text-strong)]">

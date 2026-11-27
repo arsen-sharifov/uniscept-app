@@ -84,7 +84,7 @@ export const MembersSection = ({
             {members.length}
           </span>
         </header>
-        <div className="divide-y divide-[color:var(--border)] overflow-hidden rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-elevated)]">
+        <div className="divide-y divide-[color:var(--border)] rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-elevated)]">
           {members.map((member) => (
             <MemberRow
               key={member.userId}

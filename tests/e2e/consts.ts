@@ -102,6 +102,12 @@ export const DEFAULT_WORKSPACE_NAME = 'New Workspace';
 
 export const SHARED_WORKSPACE_NAME = 'Invitation source';
 
+export const LEFT_WORKSPACE_NAME = 'Shared lab';
+
+export const OWN_THREAD_NAME = 'Own notes';
+
+export const SIGNED_OUT_STATE = { cookies: [], origins: [] };
+
 export const CUSTOM_ROLE_NAME = 'Reviewer';
 
 export const SHORT_WINDOW = { width: 683, height: 320 };

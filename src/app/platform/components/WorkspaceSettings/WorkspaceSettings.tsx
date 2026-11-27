@@ -22,6 +22,7 @@ interface IWorkspaceSettingsProps {
   workspaceId: string;
   workspaceName: string;
   onRename: (id: string, name: string) => Promise<void> | void;
+  onLeave: (id: string) => Promise<boolean>;
   onWorkspacesChanged?: () => void;
   onClose: () => void;
 }
@@ -30,6 +31,7 @@ export const WorkspaceSettings = ({
   workspaceId,
   workspaceName,
   onRename,
+  onLeave,
   onWorkspacesChanged,
   onClose,
 }: IWorkspaceSettingsProps) => {
@@ -37,6 +39,11 @@ export const WorkspaceSettings = ({
   const titleId = useId();
   const [activeSection, setActiveSection] = useState<TWorkspaceSettingsSection>('general');
   const settings = useWorkspaceSettings(workspaceId, onWorkspacesChanged);
+
+  const handleLeave = async (id: string) => {
+    const isLeft = await onLeave(id);
+    if (isLeft) onClose();
+  };
 
   const renderSection = () => {
     if (settings.loading) {
@@ -51,8 +58,10 @@ export const WorkspaceSettings = ({
           createdAt={settings.workspace?.createdAt ?? null}
           memberCount={settings.members.length}
           currentRoleName={settings.currentRoleName}
+          isOwner={settings.currentRole?.isOwner ?? false}
           canManageWorkspace={settings.canManageWorkspace}
           onRename={onRename}
+          onLeave={handleLeave}
         />
       );
     }

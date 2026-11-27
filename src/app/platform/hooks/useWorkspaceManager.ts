@@ -20,6 +20,7 @@ import {
   getMyInvitations,
   getMyWorkspaces,
   getThreads,
+  leaveWorkspace,
   moveFolder,
   moveThread,
   moveWorkspace,
@@ -338,6 +339,32 @@ export const useWorkspaceManager = () => {
     [workspaces, router, activateFirstWorkspace, t],
   );
 
+  const handleLeaveWorkspace = useCallback(
+    async (id: string): Promise<boolean> => {
+      try {
+        await leaveWorkspace(id);
+      } catch (error) {
+        event.error(error, {
+          title: t.platform.workspaceSettings.general.leaveFailed,
+          context: 'sidebar.leaveWorkspace',
+        });
+
+        return false;
+      }
+
+      setWorkspaces((previous) => previous.filter((workspace) => workspace.id !== id));
+      if (activeWorkspaceRef.current === id) {
+        activateFirstWorkspace(workspaces.filter((workspace) => workspace.id !== id));
+        router.push('/platform');
+      }
+
+      event.success(t.platform.workspaceSettings.general.left);
+
+      return true;
+    },
+    [workspaces, router, activateFirstWorkspace, t],
+  );
+
   const handleCreateThread = useCallback(
     async (folderId?: string, name?: string): Promise<string | null> => {
       if (!activeWorkspaceId) return null;
@@ -640,6 +667,7 @@ export const useWorkspaceManager = () => {
     onCreateWorkspace: handleCreateWorkspace,
     onRenameWorkspace: handleRenameWorkspace,
     onDeleteWorkspace: handleDeleteWorkspace,
+    onLeaveWorkspace: handleLeaveWorkspace,
     onMoveWorkspace: handleMoveWorkspace,
     onCreateThread: handleCreateThread,
     onCreateFolder: handleCreateFolder,

@@ -1146,7 +1146,14 @@
         "saving": "Saving…",
         "membersStat": "Members",
         "roleStat": "Your role",
-        "createdStat": "Created"
+        "createdStat": "Created",
+        "leaveTitle": "Leave workspace",
+        "leaveHint": "You lose access until someone invites you again. Your nodes and comments stay and show you as a former member.",
+        "leaveOwnerHint": "You own this workspace. Transfer ownership to another member before you leave.",
+        "leave": "Leave",
+        "leaving": "Leaving…",
+        "left": "You left the workspace",
+        "leaveFailed": "Couldn't leave the workspace"
       },
       "members": {
         "hint": "People with access to this workspace.",

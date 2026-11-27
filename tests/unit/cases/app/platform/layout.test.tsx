@@ -16,11 +16,12 @@ import {
   getWorkspace,
   getWorkspaceMembers,
   getWorkspaceRoles,
+  leaveWorkspace,
 } from '@api/client';
 import { stubAnimationFrame, stubResizeObserver } from '@mocks/browser';
 import { TRANSLATIONS } from '@mocks/i18n';
 import { routeParams } from '@mocks/navigation';
-import { FULL_ACCESS, OWNER_ROLE, workspaceMember } from '@mocks/roles';
+import { EDIT_ACCESS, FULL_ACCESS, MEMBER_ROLE, OWNER_ROLE, workspaceMember } from '@mocks/roles';
 import { threadInput, workspaceItem } from '@mocks/sidebar';
 import { primeSupabase } from '@mocks/supabase';
 import { USER_WITH_METADATA_RESPONSE } from '@mocks/userApi';
@@ -174,6 +175,43 @@ describe('WorkspaceLayout', () => {
         expect(
           screen.queryByRole('dialog', { name: TRANSLATIONS.platform.workspaceSettings.sections.general }),
         ).not.toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('GIVEN a member whose only workspace is shared with them and whose settings are open', () => {
+    beforeEach(async () => {
+      vi.mocked(getMyWorkspaces).mockResolvedValue([workspaceItem('ws-1', false)]);
+      vi.mocked(getMyWorkspacePermissions).mockResolvedValue(EDIT_ACCESS);
+      vi.mocked(getWorkspaceRoles).mockResolvedValue([OWNER_ROLE, MEMBER_ROLE]);
+      vi.mocked(getWorkspaceMembers).mockResolvedValue([
+        workspaceMember('user-2', 'role-owner', { roleKey: 'owner', isOwner: true }),
+        workspaceMember('user-1', 'role-member', { roleKey: 'member' }),
+      ]);
+      await act(async () => {
+        render(layoutElement);
+      });
+      fireEvent.click(screen.getByRole('button', { expanded: false, name: /Workspace ws-1/ }));
+      await act(async () => {
+        fireEvent.click(screen.getByTitle(TRANSLATIONS.platform.sidebar.workspaceSettings));
+      });
+    });
+
+    describe('WHEN they leave the workspace', () => {
+      beforeEach(async () => {
+        await act(async () => {
+          fireEvent.click(screen.getByRole('button', { name: TRANSLATIONS.platform.workspaceSettings.general.leave }));
+        });
+      });
+
+      test('THEN the settings close and the platform offers to create a workspace', () => {
+        expect(leaveWorkspace).toHaveBeenCalledExactlyOnceWith('ws-1');
+        expect(
+          screen.queryByRole('dialog', { name: TRANSLATIONS.platform.workspaceSettings.sections.general }),
+        ).not.toBeInTheDocument();
+        expect(
+          within(screen.getByRole('main')).getByText(TRANSLATIONS.platform.onboarding.emptyWorkspaceTitle),
+        ).toBeInTheDocument();
       });
     });
   });

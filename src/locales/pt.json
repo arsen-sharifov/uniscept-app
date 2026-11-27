@@ -1146,7 +1146,14 @@
         "saving": "A guardar…",
         "membersStat": "Membros",
         "roleStat": "A sua função",
-        "createdStat": "Criado"
+        "createdStat": "Criado",
+        "leaveTitle": "Sair do espaço de trabalho",
+        "leaveHint": "Perderá o acesso até receber um novo convite. Os seus nós e comentários mantêm-se e passam a aparecer como de um antigo membro.",
+        "leaveOwnerHint": "É proprietário deste espaço de trabalho. Transfira a propriedade para outro membro antes de sair.",
+        "leave": "Sair",
+        "leaving": "A sair…",
+        "left": "Saiu do espaço de trabalho",
+        "leaveFailed": "Não foi possível sair do espaço de trabalho"
       },
       "members": {
         "hint": "Pessoas com acesso a este espaço de trabalho.",
